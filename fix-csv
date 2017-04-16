@@ -1,0 +1,184 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Perform some one-time fixes to the MacArthur Foundation 100&Change CSV file
+#
+# This is necessary because not everything can be addressed with the
+# 'sanitize' script.  The 'sanitize' script isn't aware of CSV rows or
+# columns; it just treats the whole CSV file as a normal text file.
+# But for, e.g., fixing the YouTube links (see features.org for more),
+# we really need a one-time transformation that knows what cell it's
+# operating on.
+#
+# Copyright (C) 2017 Open Tech Strategies, LLC
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+##########################################################################
+#                                                                        #
+#   NOTE: This code is highly specific to the needs of the MacArthur     #
+#   Foundation and is unlikely to be correct for your CSV.  It is        #
+#   open source software, so please modify it to suit your needs.        #
+#                                                                        #
+##########################################################################
+
+__doc__ = """\
+Perform some one-time fixes to the MacArthur Foundation 100&Change CSV file.
+
+Usage:
+
+  $ fix-csv CSV_INPUT FIXED_CSV_OUTPUT
+
+There are no options, because this is for a one-time transformation;
+anything that would be an option should just be hardcoded in anyway.
+"""
+
+import csv
+import sys
+import re
+import HTMLParser  # In Python 3, we'd use html.parser
+
+
+def collapse_replace(string, old, new):
+    "Return STRING, with OLD repeatedly replaced by NEW until no more OLD."
+    while string.find(old) != -1: 
+        string = string.replace(old, new)
+    return string
+
+
+def main():
+    if len(sys.argv) != 3:
+        sys.stderr.write(
+            "ERROR: need CSV_INPUT and NEW_CSV_OUTPUT arguments.\n\n")
+        sys.stderr.write(__doc__)
+        sys.exit(1)
+    csv_reader = csv.reader(open(sys.argv[1], 'rb'),
+                            delimiter=',', quotechar='"')
+    csv_writer = csv.writer(open(sys.argv[2], 'wb'),
+                            delimiter=',', quotechar='"', lineterminator="\n")
+    html_parser = HTMLParser.HTMLParser()
+
+    header_row = next(csv_reader)
+    # Rename some of the columns.  Remember, we're off-by-one from the
+    # human-readable column numbers, because of 0-based indexing.
+    # Also, if we didn't know that the header data was all in the
+    # ASCII subset of UTF-8, we'd convert to unicode and back here.
+    #
+    # TODO: This whole header-column renaming thing might get moved to
+    # csv2wiki and generalized.
+    header_row[60] = 'Total Score'
+    header_row[61] = 'Trait 1 (Meaningful)'
+    header_row[62] = 'Trait 2 (Verifiable)'
+    header_row[63] = 'Trait 3 (Feasible)'
+    header_row[64] = 'Trait 4 (Durable)'
+    header_row[65] = 'Trait 1 (Meaningful): Comment 1'
+    header_row[66] = 'Trait 1 (Meaningful): Comment 2'
+    header_row[67] = 'Trait 1 (Meaningful): Comment 3'
+    header_row[68] = 'Trait 1 (Meaningful): Comment 4'
+    header_row[69] = 'Trait 1 (Meaningful): Comment 5'
+    header_row[70] = 'Trait 2 (Verifiable): Comment 1'
+    header_row[71] = 'Trait 2 (Verifiable): Comment 2'
+    header_row[72] = 'Trait 2 (Verifiable): Comment 3'
+    header_row[73] = 'Trait 2 (Verifiable): Comment 4'
+    header_row[74] = 'Trait 2 (Verifiable): Comment 5'
+    header_row[75] = 'Trait 3 (Feasible): Comment 1'
+    header_row[76] = 'Trait 3 (Feasible): Comment 2'
+    header_row[77] = 'Trait 3 (Feasible): Comment 3'
+    header_row[78] = 'Trait 3 (Feasible): Comment 4'
+    header_row[79] = 'Trait 3 (Feasible): Comment 5'
+    header_row[80] = 'Trait 4 (Durable): Comment 1'
+    header_row[81] = 'Trait 4 (Durable): Comment 2'
+    header_row[82] = 'Trait 4 (Durable): Comment 3'
+    header_row[83] = 'Trait 4 (Durable): Comment 4'
+    header_row[84] = 'Trait 4 (Durable): Comment 5'
+    # These were guesses -- we might need to revert them.
+    header_row[85] = 'Valid Submission'
+    header_row[86] = 'Big Bet / Enduring Commitment Alignment'
+    header_row[85] = 'Reason For Turndown'
+    # Done with the headers.
+    csv_writer.writerow(header_row)
+
+    # For now, use a version of the regexp that only handles an
+    # "nbsp;" that comes between two non-closing HTML tags, that is,
+    # handle "<foo>&nbsp;<bar>" but not "</foo>&nbsp;<bar>".  The
+    # only difference is that "/?" has been taken out of this regular
+    # expression: "(?m)(</?[a-z]+>)&nbsp;(<[a-z]+>)".
+    #
+    # We should handle "</foo>&nbsp;<bar>" too, and will, but for now,
+    # let's just duplicate the exact behavior of the 'sanitize' script.
+    intertag_nbsp_re = re.compile('(?m)(<[a-z]+>)&nbsp;(<[a-z]+>)')
+
+    # Actually, some invalid identifiers would still match this,
+    # because this regular expression doesn't check the length.
+    # That's okay; we check length manually at the call site.
+    youtube_id_re = re.compile('^[-_a-zA-Z0-9]+$')
+
+    row_num = 1
+    for row in csv_reader:
+        new_row = []
+        cell_num = 0
+        for cell in row:
+            new_cell = cell.decode('utf-8')
+            # A straight-up HTML-unescaping might be the right thing
+            # (i.e., new_cell = html_parser.unescape(new_cell) below)
+            # in the long run, but for now, let's do the same limited
+            # set of unescapings the original 'sanitize' script did:
+            new_cell = new_cell.replace('&amp;', '&')
+            new_cell = new_cell.replace('&lt;', '<')
+            new_cell = new_cell.replace('&gt;', '>')
+            # The rest should be recursively collapsing replacements:
+            new_cell = collapse_replace(new_cell, u'&nbsp;&nbsp;', u'&nbsp;')
+            new_cell = collapse_replace(new_cell, u'&nbsp; ', u' ')
+            new_cell = collapse_replace(new_cell, u' &nbsp;', u' ')
+            new_cell = collapse_replace(new_cell, u'&nbsp;</', u'</')
+            new_cell = collapse_replace(new_cell, u'\\"', u'"')
+            new_cell = re.sub(intertag_nbsp_re, u'\\1 \\2', new_cell)
+            if cell_num == 89:  # The pitch video cell may need fixing.
+                # They all just an ID like "iIrGUi95ko4", not a URL
+                # like "https://www.youtube.com/watch?v=iIrGUi95ko4".
+                #
+                # The rules for YouTube video identifiers seem to be:
+                #
+                #   * Exactly 11 characters long
+                #   * Alphanumerics, "-", and "_" only (no spaces)
+                #
+                # There are a few special cases we handle below too.
+
+                # "5m_6jsAwYNA " had trailing whitespace:
+                new_cell = new_cell.strip()
+                # "/JO7Eg6Kc-qk" kept their leading slash:
+                if new_cell.find("/") == 0:
+                    new_cell = new_cell[1:]
+                if ((len(new_cell) == 11 and youtube_id_re.match(new_cell))
+                    # One valid ID had "&feature" tacked on to the
+                    # end, and two had time markers in the URL.
+                    # Since we know they're valid, just say yes.
+                    or new_cell.find("&feature") != -1
+                    or new_cell.find("?t=") != -1):
+                    # Okay, any of the above can become a video URL:
+                    new_cell = "https://www.youtube.com/watch?v=" + new_cell
+                else: # There were 8 with no video that we could find:
+                    new_cell = ('<span style='
+                            + '"color: red; font-family: monospace;" >'
+                            + 'Could not convert "'
+                            + new_cell
+                            + '" to a YouTube video URL.'
+                            + '</span>')
+            new_row.append(new_cell.encode('utf-8'))
+            cell_num += 1
+        row_num += 1
+        csv_writer.writerow(new_row)
+
+if __name__ == '__main__':
+    main()

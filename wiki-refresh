@@ -1,0 +1,101 @@
+#!/bin/sh
+
+# Load all the 100&Change proposals into a wiki.
+#
+# Copyright (C) 2017  Open Tech Strategies, LLC
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+##########################################################################
+#                                                                        #
+#   NOTE: This code is highly specific to the particular filenames and   #
+#   working environment used by Open Tech Strategies on a project for    #
+#   the MacArthur Foundation.  For our own convenience, we have left     #
+#   those assumptions in place.  That means this script won't work if    #
+#   someone else tries to run it; we publish it just as an example.      #
+#   It is open source software, so please modify it to suit your needs.  #
+#                                                                        #
+##########################################################################
+
+
+CSV_INPUT=100andchangeExport-all-judges.csv
+
+MACFOUND_DIR=`dirname "${0}"`
+
+CSV2WIKI_CONFIG="${MACFOUND_DIR}"/csv2wiki-config
+
+if [ ! -f "${CSV2WIKI_CONFIG}" ]; then
+  echo "ERROR: No csv2wiki-config file found.  You probably want"
+  echo "to do 'cp csv2wiki-config.tmpl csv2wiki-config' (and"
+  echo "then edit csv2wiki-config as needed, of course)."
+  echo ""
+  exit 1
+fi
+
+# By the end of this conditional chain, ${CSV2WIKI} should point
+# to the csv2wiki script.
+CSV2WIKI=${OTSDIR}/clients/macarthur/eval-system/ots-tools/csv2wiki
+if [ ! -x ${CSV2WIKI} ]; then
+  CSV2WIKI=`dirname ${MACFOUND_DIR}`/ots-tools/csv2wiki
+fi
+if [ ! -x ${CSV2WIKI} ]; then
+  CSV2WIKI=${OTSDIR}/clients/macarthur/eval-system/r/ots-tools/csv2wiki
+fi
+if [ ! -x ${CSV2WIKI} ]; then
+  CSV2WIKI=${OTSDIR}/ots-tools/csv2wiki
+fi
+if [ ! -x ${CSV2WIKI} ]; then
+  CSV2WIKI=${OTSDIR}/r/ots-tools/csv2wiki
+fi
+if [ ! -x ${CSV2WIKI} ]; then
+  # Okay, let's get medieval on the situation.
+  git clone git@github.com:OpenTechStrategies/ots-tools.git
+  CSV2WIKI=`pwd`/ots-tools/csv2wiki
+fi
+if [ ! -x ${CSV2WIKI} ]; then
+  echo "ERROR: Unable to find or clone 'csv2wiki'."
+  exit 1
+fi
+
+# Test that csv2wiki works.
+if ${CSV2WIKI} --help > /dev/null; then
+  echo "Great, it works." > /dev/null
+else
+  echo "ERROR: Problem running ${CSV2WIKI}."
+  echo "Most likely you need to install the 'mwclient' and 'unidecode'"
+  echo "Python modules.  Do 'sudo pip install mwclient' and"
+  echo "'sudo pip install unidecode' and try running this script again."
+  exit 1
+fi
+
+# In case we need this later.
+OTS_TOOLS=`dirname ${CSV2WIKI}`
+
+SANITIZE="${MACFOUND_DIR}"/fix-csv
+
+# First we're working on sanitization (wiki conversion comes later).
+echo "Sanitizing..."
+${SANITIZE} "${CSV_INPUT}" "sanitized-${CSV_INPUT}"
+# ...the above command produces "sanitized-${CSV_INPUT}".
+echo "Done sanitizing."
+echo ""
+
+# Do a test run on 1% of the entries:
+echo "Creating wiki..."
+${CSV2WIKI}                                       \
+    --pare 100                                    \
+    -c ${CSV2WIKI_CONFIG}                         \
+    sanitized-${CSV_INPUT}
+echo "Done creating wiki."
+echo ""
