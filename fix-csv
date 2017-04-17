@@ -109,15 +109,12 @@ def main():
     # Done with the headers.
     csv_writer.writerow(header_row)
 
-    # For now, use a version of the regexp that only handles an
-    # "nbsp;" that comes between two non-closing HTML tags, that is,
-    # handle "<foo>&nbsp;<bar>" but not "</foo>&nbsp;<bar>".  The
-    # only difference is that "/?" has been taken out of this regular
-    # expression: "(?m)(</?[a-z]+>)&nbsp;(<[a-z]+>)".
-    #
-    # We should handle "</foo>&nbsp;<bar>" too, and will, but for now,
-    # let's just duplicate the exact behavior of the 'sanitize' script.
-    intertag_nbsp_re = re.compile('(?m)(<[a-z]+>)&nbsp;(<[a-z]+>)')
+    # Convert "<foo>&nbsp;<bar>" and "</foo>&nbsp;<bar>" to
+    # to "<foo> <bar>" and "</foo> <bar>" respectively.  This is
+    # because those particular instances of "&nbsp;" in the data are
+    # not very convincing, and they create noise when we're looking
+    # for unnecessary escaping elsewhere.
+    intertag_nbsp_re = re.compile('(?m)(</?[a-z]+>)&nbsp;(<[a-z]+>)')
 
     # Actually, some invalid identifiers would still match this,
     # because this regular expression doesn't check the length.
