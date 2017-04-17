@@ -154,7 +154,7 @@ def main():
                 if new_cell == "" or new_cell.lower() == "select":
                     # Cannot use special formatting here because this
                     # will be used as a category, not just as a value.
-                    new_cell = "NONE: No Primary Thematic Area Selected"
+                    new_cell = "No Primary Thematic Area Selected"
             if cell_num == 89:  # The pitch video cell may need fixing.
                 # They all just an ID like "iIrGUi95ko4", not a URL
                 # like "https://www.youtube.com/watch?v=iIrGUi95ko4".
