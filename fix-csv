@@ -144,6 +144,17 @@ def main():
             new_cell = collapse_replace(new_cell, u'&nbsp;</', u'</')
             new_cell = collapse_replace(new_cell, u'\\"', u'"')
             new_cell = re.sub(intertag_nbsp_re, u'\\1 \\2', new_cell)
+            if cell_num == 11:  # Some entries have "Select" as the topic
+                # Column 12 (11 in 0-based) is "Primary Thematic Area",
+                # and it's usually "Affordable and Clean Energy" or
+                # "Sustainable Cities, Communities and Regions" or
+                # something like that.  But in a few entries it's
+                # blank or "Select", which must be handled specially.
+                new_cell = new_cell.strip()
+                if new_cell == "" or new_cell.lower() == "select":
+                    # Cannot use special formatting here because this
+                    # will be used as a category, not just as a value.
+                    new_cell = "NONE: No Primary Thematic Area Selected"
             if cell_num == 89:  # The pitch video cell may need fixing.
                 # They all just an ID like "iIrGUi95ko4", not a URL
                 # like "https://www.youtube.com/watch?v=iIrGUi95ko4".
