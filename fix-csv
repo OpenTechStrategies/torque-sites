@@ -70,43 +70,6 @@ def main():
     html_parser = HTMLParser.HTMLParser()
 
     header_row = next(csv_reader)
-    # Rename some of the columns.  Remember, we're off-by-one from the
-    # human-readable column numbers, because of 0-based indexing.
-    # Also, if we didn't know that the header data was all in the
-    # ASCII subset of UTF-8, we'd convert to unicode and back here.
-    #
-    # TODO: This whole header-column renaming thing might get moved to
-    # csv2wiki and generalized.
-    header_row[60] = 'Total Score'
-    header_row[61] = 'Trait 1 (Meaningful)'
-    header_row[62] = 'Trait 2 (Verifiable)'
-    header_row[63] = 'Trait 3 (Feasible)'
-    header_row[64] = 'Trait 4 (Durable)'
-    header_row[65] = 'Trait 1 (Meaningful): Comment 1'
-    header_row[66] = 'Trait 1 (Meaningful): Comment 2'
-    header_row[67] = 'Trait 1 (Meaningful): Comment 3'
-    header_row[68] = 'Trait 1 (Meaningful): Comment 4'
-    header_row[69] = 'Trait 1 (Meaningful): Comment 5'
-    header_row[70] = 'Trait 2 (Verifiable): Comment 1'
-    header_row[71] = 'Trait 2 (Verifiable): Comment 2'
-    header_row[72] = 'Trait 2 (Verifiable): Comment 3'
-    header_row[73] = 'Trait 2 (Verifiable): Comment 4'
-    header_row[74] = 'Trait 2 (Verifiable): Comment 5'
-    header_row[75] = 'Trait 3 (Feasible): Comment 1'
-    header_row[76] = 'Trait 3 (Feasible): Comment 2'
-    header_row[77] = 'Trait 3 (Feasible): Comment 3'
-    header_row[78] = 'Trait 3 (Feasible): Comment 4'
-    header_row[79] = 'Trait 3 (Feasible): Comment 5'
-    header_row[80] = 'Trait 4 (Durable): Comment 1'
-    header_row[81] = 'Trait 4 (Durable): Comment 2'
-    header_row[82] = 'Trait 4 (Durable): Comment 3'
-    header_row[83] = 'Trait 4 (Durable): Comment 4'
-    header_row[84] = 'Trait 4 (Durable): Comment 5'
-    # These were guesses -- we might need to revert them.
-    header_row[85] = 'Valid Submission'
-    header_row[86] = 'Big Bet / Enduring Commitment Alignment'
-    header_row[85] = 'Reason For Turndown'
-    # Done with the headers.
     csv_writer.writerow(header_row)
 
     # Convert "<foo>&nbsp;<bar>" and "</foo>&nbsp;<bar>" to
