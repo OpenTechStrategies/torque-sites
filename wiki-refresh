@@ -45,23 +45,23 @@ fi
 
 # By the end of this conditional chain, ${CSV2WIKI} should point
 # to the csv2wiki script.
-CSV2WIKI=${OTSDIR}/clients/macarthur/eval-system/ots-tools/csv2wiki
+CSV2WIKI=${OTSDIR}/clients/macarthur/eval-system/csv2wiki/csv2wiki
 if [ ! -x ${CSV2WIKI} ]; then
-  CSV2WIKI=`dirname ${MACFOUND_DIR}`/ots-tools/csv2wiki
+  CSV2WIKI=`dirname ${MACFOUND_DIR}`/csv2wiki/csv2wiki
 fi
 if [ ! -x ${CSV2WIKI} ]; then
-  CSV2WIKI=${OTSDIR}/clients/macarthur/eval-system/r/ots-tools/csv2wiki
+  CSV2WIKI=${OTSDIR}/clients/macarthur/eval-system/r/csv2wiki/csv2wiki
 fi
 if [ ! -x ${CSV2WIKI} ]; then
-  CSV2WIKI=${OTSDIR}/ots-tools/csv2wiki
+  CSV2WIKI=${OTSDIR}/csv2wiki/csv2wiki
 fi
 if [ ! -x ${CSV2WIKI} ]; then
-  CSV2WIKI=${OTSDIR}/r/ots-tools/csv2wiki
+  CSV2WIKI=${OTSDIR}/r/csv2wiki/csv2wiki
 fi
 if [ ! -x ${CSV2WIKI} ]; then
   # Okay, let's get medieval on the situation.
-  git clone git@github.com:OpenTechStrategies/ots-tools.git
-  CSV2WIKI=`pwd`/ots-tools/csv2wiki
+  git clone git@github.com:OpenTechStrategies/csv2wiki.git
+  CSV2WIKI=`pwd`/csv2wiki/csv2wiki
 fi
 if [ ! -x ${CSV2WIKI} ]; then
   echo "ERROR: Unable to find or clone 'csv2wiki'."
