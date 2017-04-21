@@ -22,6 +22,9 @@ serve as an example or a template for other similar efforts.
   [csv2wiki](https://github.com/OpenTechStrategies/csv2wiki)
   to create pages in a [MediaWiki](https://www.mediawiki.org/)
   instance.
+  
+  To run `wiki-refresh`, you should first copy `csv2wiki-config.tmpl`
+  to `csv2wiki-config` and edit the latter in the obvious ways.
 
   This system has been tested with MediaWiki 1.28.  There are a few
   notes in
