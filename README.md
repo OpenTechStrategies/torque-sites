@@ -19,13 +19,13 @@ serve as an example or a template for other similar efforts.
   transformations to a specific CSV file from the MacArthur
   Foundation, and then runs the transformed CSV through the
   general-purpose script
-  [csv2wiki](https://github.com/OpenTechStrategies/ots-tools/blob/master/csv2wiki)
+  [csv2wiki](https://github.com/OpenTechStrategies/csv2wiki)
   to create pages in a [MediaWiki](https://www.mediawiki.org/)
   instance.
 
   This system has been tested with MediaWiki 1.28.  There are a few
   notes in
-  [csv2wiki](https://github.com/OpenTechStrategies/ots-tools/blob/master/csv2wiki)'s
+  [csv2wiki](https://github.com/OpenTechStrategies/csv2wiki)'s
   documentation about things to watch out for with MediaWiki, e.g.,
   you might have to run MediaWiki's `rebuildall.php` script to get the
   categories feature working, some MediaWiki instances may have
