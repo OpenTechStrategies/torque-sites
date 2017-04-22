@@ -47,6 +47,7 @@ anything that would be an option should just be hardcoded in anyway.
 import csv
 import sys
 import re
+import getopt
 import HTMLParser  # In Python 3, we'd use html.parser
 
 
@@ -58,14 +59,30 @@ def collapse_replace(string, old, new):
 
 
 def main():
-    if len(sys.argv) != 3:
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], '',
+                                   ["show-table-problem"])
+    except getopt.GetoptError as err:
+        sys.stderr.write("ERROR: '%s'\n" % err)
+        sys.exit(2)
+
+    show_table_problem = False
+    for o, a in opts:
+        if o in ("--show-table-problem",):
+            show_table_problem = True
+        else:
+            sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
+            sys.exit(2)
+
+    if len(args) != 2:
         sys.stderr.write(
             "ERROR: need CSV_INPUT and NEW_CSV_OUTPUT arguments.\n\n")
         sys.stderr.write(__doc__)
         sys.exit(1)
-    csv_reader = csv.reader(open(sys.argv[1], 'rb'),
+
+    csv_reader = csv.reader(open(args[0], 'rb'),
                             delimiter=',', quotechar='"')
-    csv_writer = csv.writer(open(sys.argv[2], 'wb'),
+    csv_writer = csv.writer(open(args[1], 'wb'),
                             delimiter=',', quotechar='"', lineterminator="\n")
     html_parser = HTMLParser.HTMLParser()
 
@@ -87,6 +104,7 @@ def main():
     row_num = 1
     for row in csv_reader:
         new_row = []
+        org_name = None   # used only for debugging output
         cell_num = 0
         for cell in row:
             new_cell = cell.decode('utf-8')
@@ -104,6 +122,8 @@ def main():
             new_cell = collapse_replace(new_cell, u'&nbsp;</', u'</')
             new_cell = collapse_replace(new_cell, u'\\"', u'"')
             new_cell = re.sub(intertag_nbsp_re, u'\\1 \\2', new_cell)
+            if org_name is None:
+                org_name = new_cell
             if cell_num == 11:  # Some entries have "Select" as the topic
                 # Column 12 (11 in 0-based) is "Primary Thematic Area",
                 # and it's usually "Affordable and Clean Energy" or
@@ -115,6 +135,11 @@ def main():
                     # Cannot use special formatting here because this
                     # will be used as a category, not just as a value.
                     new_cell = "No Primary Thematic Area Selected"
+            if (show_table_problem
+                and new_cell.find('<table') != -1 
+                and new_cell.find('</table') == -1):
+                    sys.stderr.write("DEBUG: unclosed <table>: row %d, cell %d (%s): '%s':\n'%s'\n\n" 
+                                     % (row_num, cell_num, header_row[cell_num - 1], org_name, new_cell))
             if cell_num == 89:  # The pitch video cell may need fixing.
                 # They all just an ID like "iIrGUi95ko4", not a URL
                 # like "https://www.youtube.com/watch?v=iIrGUi95ko4".
