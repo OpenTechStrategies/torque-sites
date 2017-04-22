@@ -83,10 +83,11 @@ fi
 OTS_TOOLS=`dirname ${CSV2WIKI}`
 
 SANITIZE="${MACFOUND_DIR}"/fix-csv
+SANITIZED="`dirname ${CSV_INPUT}`/sanitized-`basename ${CSV_INPUT}`"
 
 # First we're working on sanitization (wiki conversion comes later).
 echo "Sanitizing..."
-${SANITIZE} "${CSV_INPUT}" "sanitized-${CSV_INPUT}"
+${SANITIZE} "${CSV_INPUT}" ${SANITIZED}
 # ...the above command produces "sanitized-${CSV_INPUT}".
 echo "Done sanitizing."
 echo ""
@@ -96,6 +97,6 @@ echo "Creating wiki..."
 ${CSV2WIKI}                                       \
     --pare 100                                    \
     -c ${CSV2WIKI_CONFIG}                         \
-    sanitized-${CSV_INPUT}
+    ${SANITIZED}
 echo "Done creating wiki."
 echo ""
