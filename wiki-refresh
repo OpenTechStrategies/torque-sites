@@ -28,7 +28,6 @@
 #                                                                        #
 ##########################################################################
 
-
 MACFOUND_DIR=`dirname "${0}"`
 
 CSV2WIKI_CONFIG="${MACFOUND_DIR}"/csv2wiki-config
@@ -41,7 +40,7 @@ if [ ! -f "${CSV2WIKI_CONFIG}" ]; then
   exit 1
 fi
 
-CSV_INPUT=`grep "^csv" ${CSV2WIKI_CONFIG}|sed "s/[^:]: //"`
+CSV_INPUT=`grep "^csv" ${CSV2WIKI_CONFIG}|sed "s/^csv: //"`
 
 # By the end of this conditional chain, ${CSV2WIKI} should point
 # to the csv2wiki script.
