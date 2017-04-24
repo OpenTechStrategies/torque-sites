@@ -40,7 +40,8 @@ if [ ! -f "${CSV2WIKI_CONFIG}" ]; then
   exit 1
 fi
 
-CSV_INPUT=`grep "^csv" ${CSV2WIKI_CONFIG}|sed "s/^csv: //"`
+PREFIX_RE="^csv:[[:space:]]+"
+CSV_INPUT=`grep -E "${PREFIX_RE}" ${CSV2WIKI_CONFIG} | sed -E "s/${PREFIX_RE}//"`
 
 # By the end of this conditional chain, ${CSV2WIKI} should point
 # to the csv2wiki script.
