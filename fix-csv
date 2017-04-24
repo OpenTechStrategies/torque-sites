@@ -38,7 +38,7 @@ Perform some one-time fixes to the MacArthur Foundation 100&Change CSV file.
 
 Usage:
 
-  $ fix_csv CSV_INPUT FIXED_CSV_OUTPUT
+  $ fix-csv CSV_INPUT FIXED_CSV_OUTPUT
 
 There are no options, because this is for a one-time transformation;
 anything that would be an option should just be hardcoded in anyway.

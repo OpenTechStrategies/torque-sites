@@ -82,7 +82,7 @@ fi
 # In case we need this later.
 OTS_TOOLS=`dirname ${CSV2WIKI}`
 
-SANITIZE="${MACFOUND_DIR}"/fix_csv
+SANITIZE="${MACFOUND_DIR}"/fix-csv
 SANITIZED="`dirname ${CSV_INPUT}`/sanitized-`basename ${CSV_INPUT}`"
 
 # First we're working on sanitization (wiki conversion comes later).
