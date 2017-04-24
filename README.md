@@ -15,7 +15,7 @@ serve as an example or a template for other similar efforts.
   CSV->wiki conversion system.
 
   Start from the [wiki-refresh](wiki-refresh) script and see how it
-  drives first [fix-csv](fix-csv), which performs some one-time
+  drives first [fix_csv](fix_csv), which performs some one-time
   transformations to a specific CSV file from the MacArthur
   Foundation, and then runs the transformed CSV through the
   general-purpose script
