@@ -91,11 +91,9 @@ a well-formed version of html, which closes any open, dangling tags.
 
     """
 
-    # Suppress warnings about urls in the text
+    # Parse html and suppress warnings about urls in the text
     warnings.filterwarnings("ignore",
                             category=UserWarning, module='bs4')
-
-    # Have beautiful parse the html
     soup = BeautifulSoup(html, "html.parser")
 
     # Return well-formed html
