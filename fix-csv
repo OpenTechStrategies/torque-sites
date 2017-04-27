@@ -110,7 +110,7 @@ def main():
                             delimiter=',', quotechar='"')
     csv_writer = csv.writer(open(args[1], 'wb'),
                             delimiter=',', quotechar='"', lineterminator="\n")
-    html_parser = HTMLParser.HTMLParser()
+    #html_parser = HTMLParser.HTMLParser()
 
     header_row = next(csv_reader)
     csv_writer.writerow(header_row)
