@@ -16,8 +16,8 @@ def get_fixed():
 
 def test_fix_quotes():
     fixed = get_fixed()
-    print r'''There shouldn't be any "" or \"" after we fix the csv.''' 
-    assert not "" in fixed
+    print r'''There shouldn't be any "" or \"" after we fix the csv.'''
+    assert not '""' in fixed
     
 def test_table_problem():
     fixed = get_fixed()
