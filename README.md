@@ -34,3 +34,7 @@ serve as an example or a template for other similar efforts.
   categories feature working, some MediaWiki instances may have
   spam-prevention features enabled that prevent csv2wiki from creating
   pages containing URLs, etc.
+
+## Dependencies
+
+ * [fix-csv](fix-csv) requires beautifulsoup4

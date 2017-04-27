@@ -44,6 +44,7 @@ There are no options, because this is for a one-time transformation;
 anything that would be an option should just be hardcoded in anyway.
 """
 
+from bs4 import BeautifulSoup
 import csv
 import sys
 import re
@@ -57,7 +58,32 @@ def collapse_replace(string, old, new):
         string = string.replace(old, new)
     return string
 
+def weaken_the_strong(html):
+    """If <strong> tags cover everything in html, remove them.  But if
+<strong> tags are used only sometimes, maybe they're meaningful, so
+leave them.  Basically, we want to retard strength, not eliminate
+it."""
 
+    # If there's no strength here, move on.
+    if not "<strong>" in html:
+        return html
+    
+    # Remove the stuff inside strong tags
+    soup = BeautifulSoup(html, "html.parser")
+    while "<strong>" in unicode(soup):
+        soup.strong.extract()
+
+    # Check whether the non-bold stuff is more than just tags and
+    # punctuation.  If not, all the important stuff was bold, so strip
+    # bold and return.
+    if re.sub(r"\W", "", soup.get_text()) == "":
+        return re.sub("</?strong>", "", html)
+
+    # OTOH, if the non-bold stuff contained letters or numbers, maybe
+    # there's real content there, which means the html was a mix of
+    # bold and non-bold text.  Better to leave it alone.
+    return html
+    
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], '',
@@ -124,6 +150,7 @@ def main():
             new_cell = re.sub(intertag_nbsp_re, u'\\1 \\2', new_cell)
             if org_name is None:
                 org_name = new_cell
+            new_cell = weaken_the_strong(new_cell)
             if cell_num == 11:  # Some entries have "Select" as the topic
                 # Column 12 (11 in 0-based) is "Primary Thematic Area",
                 # and it's usually "Affordable and Clean Energy" or
