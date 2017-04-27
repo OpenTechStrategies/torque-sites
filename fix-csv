@@ -50,7 +50,7 @@ import sys
 import re
 import getopt
 import HTMLParser  # In Python 3, we'd use html.parser
-
+import warnings
 
 def collapse_replace(string, old, new):
     "Return STRING, with OLD repeatedly replaced by NEW until no more OLD."
@@ -83,7 +83,24 @@ it."""
     # there's real content there, which means the html was a mix of
     # bold and non-bold text.  Better to leave it alone.
     return html
-    
+
+def form_well(html):
+    """Some of our original html includes tables that cut off without
+closing tags.  They leave <td> tags open too.  This function returns
+a well-formed version of html, which closes any open, dangling tags.
+
+    """
+
+    # Suppress warnings about urls in the text
+    warnings.filterwarnings("ignore",
+                            category=UserWarning, module='bs4')
+
+    # Have beautiful parse the html
+    soup = BeautifulSoup(html, "html.parser")
+
+    # Return well-formed html
+    return unicode(soup)
+
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], '',
@@ -151,6 +168,7 @@ def main():
             if org_name is None:
                 org_name = new_cell
             new_cell = weaken_the_strong(new_cell)
+            new_cell = form_well(new_cell)
             if cell_num == 11:  # Some entries have "Select" as the topic
                 # Column 12 (11 in 0-based) is "Primary Thematic Area",
                 # and it's usually "Affordable and Clean Energy" or
