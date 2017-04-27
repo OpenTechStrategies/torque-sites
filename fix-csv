@@ -141,7 +141,7 @@ def main():
                     sys.stderr.write("DEBUG: unclosed <table>: row %d, col %d (%s): '%s':\n'%s'\n\n" 
                                      % (row_num, cell_num, header_row[cell_num - 1], org_name, new_cell))
             if cell_num == 89:  # The pitch video cell may need fixing.
-                # They all just an ID like "iIrGUi95ko4", not a URL
+                # They all contain just an ID like "iIrGUi95ko4", not a URL
                 # like "https://www.youtube.com/watch?v=iIrGUi95ko4".
                 #
                 # The rules for YouTube video identifiers seem to be:
