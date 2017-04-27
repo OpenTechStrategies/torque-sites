@@ -147,7 +147,7 @@ def main():
 
     row_num = 1
     for row in csv_reader:
-        if row_num % pare != 0:
+        if pare != 0 and row_num % pare != 0:
             row_num += 1
             continue
 
