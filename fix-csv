@@ -97,9 +97,16 @@ a well-formed version of html, which closes any open, dangling tags.
                             category=UserWarning, module='bs4')
     soup = BeautifulSoup(html, "html.parser")
 
-    # Return well-formed html
-    return unicode(soup)
+    # Return well-formed html as a soup object
+    return soup
 
+def fix_anchors(soup):
+    """Anchors appear as <a href="url">text</a>, but wikimedia expects that to be [url text], so swap those here."""
+    for a in soup.select('a'):
+        a.replace_with(
+            BeautifulSoup(u"[{1} {0}]".format(a.text, a['href']), 'html.parser'))
+    return soup
+    
 def fix_csv(fname_in, fname_out=None, pare=0, show_table_problem=False):
     csv_reader = csv.reader(open(fname_in, 'rb'),
                             delimiter=',', quotechar='"')
@@ -152,9 +159,10 @@ def fix_csv(fname_in, fname_out=None, pare=0, show_table_problem=False):
             new_cell = re.sub(intertag_nbsp_re, u'\\1 \\2', new_cell)
             if org_name is None:
                 org_name = new_cell
+            soup = form_well(new_cell)
+            new_cell = unicode(fix_anchors(soup))
             new_cell = weaken_the_strong(new_cell)
-            new_cell = form_well(new_cell)
-
+            
             # The parsing for lists requires an asterisk at the start
             # of the line, but some entries use bullets. This regex
             # swaps the bullets for asterisks.
