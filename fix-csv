@@ -172,7 +172,7 @@ def main():
 
             # The parsing for lists requires an asterisk at the start
             # of the line, but some entries use bullets. This regex
-            # swaps the bullets for spaces.
+            # swaps the bullets for asterisks.
             pat = re.compile(u"^•", re.MULTILINE)
             new_cell = re.sub(pat, u"*", new_cell)
 
