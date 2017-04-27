@@ -160,8 +160,8 @@ def fix_csv(fname_in, fname_out=None, pare=0, show_table_problem=False):
             if org_name is None:
                 org_name = new_cell
             soup = form_well(new_cell)
-            new_cell = unicode(fix_anchors(soup))
-            new_cell = weaken_the_strong(new_cell)
+            soup = fix_anchors(soup)
+            new_cell = weaken_the_strong(unicode(soup))
             
             # The parsing for lists requires an asterisk at the start
             # of the line, but some entries use bullets. This regex
