@@ -88,6 +88,10 @@ SANITIZED="`dirname ${CSV_INPUT}`/sanitized-`basename ${CSV_INPUT}`"
 # First we're working on sanitization (wiki conversion comes later).
 echo "Sanitizing..."
 ${SANITIZE} "${CSV_INPUT}" ${SANITIZED}
+if [ $? -ne 0 ]; then
+		echo Santization failure!
+		exit 1
+fi
 # ...the above command produces "sanitized-${CSV_INPUT}".
 echo "Done sanitizing."
 echo ""
