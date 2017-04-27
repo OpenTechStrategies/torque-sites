@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 
+"""These are tests that ensure our sanitized csv can be fed to
+csv2wiki and result in decent mediawiki pages.  Even if you're not
+using the same csv input we are, these tests might be useful because
+they are aimed at the output, not the input.
+
+"""
+
 import imp
 
 # We named fix-csv using a dash and left out the .py extension, so
