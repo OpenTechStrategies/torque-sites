@@ -46,10 +46,10 @@ anything that would be an option should just be hardcoded in anyway.
 
 from bs4 import BeautifulSoup
 import csv
-import sys
-import re
 import getopt
 import HTMLParser  # In Python 3, we'd use html.parser
+import re
+import sys
 import warnings
 
 def collapse_replace(string, old, new):
