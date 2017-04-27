@@ -102,15 +102,18 @@ a well-formed version of html, which closes any open, dangling tags.
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], '',
-                                   ["show-table-problem"])
+                                   ["pare=", "show-table-problem"])
     except getopt.GetoptError as err:
         sys.stderr.write("ERROR: '%s'\n" % err)
         sys.exit(2)
 
     show_table_problem = False
+    pare = 0
     for o, a in opts:
         if o in ("--show-table-problem",):
             show_table_problem = True
+        elif o=="--pare":
+            pare = int(a)
         else:
             sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
             sys.exit(2)
@@ -144,6 +147,10 @@ def main():
 
     row_num = 1
     for row in csv_reader:
+        if row_num % pare != 0:
+            row_num += 1
+            continue
+
         new_row = []
         org_name = None   # used only for debugging output
         cell_num = 0

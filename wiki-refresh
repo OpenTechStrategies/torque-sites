@@ -87,7 +87,7 @@ SANITIZED="`dirname ${CSV_INPUT}`/sanitized-`basename ${CSV_INPUT}`"
 
 # First we're working on sanitization (wiki conversion comes later).
 echo "Sanitizing..."
-${SANITIZE} "${CSV_INPUT}" ${SANITIZED}
+${SANITIZE} --pare=100 "${CSV_INPUT}" ${SANITIZED}
 if [ $? -ne 0 ]; then
 		echo Santization failure!
 		exit 1
@@ -99,7 +99,6 @@ echo ""
 # Do a test run on 1% of the entries:
 echo "Creating wiki..."
 ${CSV2WIKI}                                       \
-    --pare 100                                    \
     -c ${CSV2WIKI_CONFIG}                         \
     ${SANITIZED}
 echo "Done creating wiki."
