@@ -86,20 +86,17 @@ SANITIZE="${MACFOUND_DIR}"/fix-csv
 SANITIZED="`dirname ${CSV_INPUT}`/sanitized-`basename ${CSV_INPUT}`"
 
 # First we're working on sanitization (wiki conversion comes later).
+# Just convert 1% of the entries, to save time while testing.
 echo "Sanitizing..."
 ${SANITIZE} --pare=100 "${CSV_INPUT}" ${SANITIZED}
 if [ $? -ne 0 ]; then
-		echo Santization failure!
+		echo Sanitization failure!
 		exit 1
 fi
-# ...the above command produces "sanitized-${CSV_INPUT}".
 echo "Done sanitizing."
 echo ""
 
-# Do a test run on 1% of the entries:
 echo "Creating wiki..."
-${CSV2WIKI}                                       \
-    -c ${CSV2WIKI_CONFIG}                         \
-    ${SANITIZED}
+${CSV2WIKI} -c ${CSV2WIKI_CONFIG} ${SANITIZED}
 echo "Done creating wiki."
 echo ""
