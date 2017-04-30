@@ -107,10 +107,17 @@ def fix_anchors(soup):
             BeautifulSoup(u"[{1} {0}]".format(a.text, a['href']), 'html.parser'))
     return soup
     
-def fix_csv(fname_in, fname_out=None, pare=0, show_table_problem=False):
+def fix_csv(fname_in, fname_out, pare=None, show_table_problem=False):
+    """Write a sanizited version of FNAME_IN (a CSV file) to FNAME_OUT.
+
+    If PARE is not None, it is a positive integer indicating that only
+    1 of every PARE entries should be processed, and the others skipped.
+
+    If SHOW_TABLE_PROBLEM is not False, write debugging statements to
+    sys.stderr to show entries that have unclosed <table> tags."""
     csv_reader = csv.reader(open(fname_in, 'rb'),
                             delimiter=',', quotechar='"')
-    out = fname_out and open(fname_out, 'wb') or StringIO.StringIO()
+    out = open(fname_out, 'wb')
     csv_writer = csv.writer(out,
                             delimiter=',', quotechar='"', lineterminator="\n")
     #html_parser = HTMLParser.HTMLParser()
@@ -134,7 +141,7 @@ def fix_csv(fname_in, fname_out=None, pare=0, show_table_problem=False):
     
     row_num = 1
     for row in csv_reader:
-        if pare != 0 and row_num % pare != 0:
+        if pare is not None and row_num % pare != 0:
             row_num += 1
             continue
 
@@ -230,7 +237,7 @@ def main():
         sys.exit(2)
 
     show_table_problem = False
-    pare = 0
+    pare = None
     for o, a in opts:
         if o in ("--show-table-problem",):
             show_table_problem = True
