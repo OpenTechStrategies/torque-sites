@@ -117,8 +117,7 @@ def fix_csv(fname_in, fname_out, pare=None, show_table_problem=False):
     sys.stderr to show entries that have unclosed <table> tags."""
     csv_reader = csv.reader(open(fname_in, 'rb'),
                             delimiter=',', quotechar='"')
-    out = open(fname_out, 'wb')
-    csv_writer = csv.writer(out,
+    csv_writer = csv.writer(open(fname_out, 'wb'),
                             delimiter=',', quotechar='"', lineterminator="\n")
     #html_parser = HTMLParser.HTMLParser()
 
@@ -226,7 +225,6 @@ def fix_csv(fname_in, fname_out, pare=None, show_table_problem=False):
             cell_num += 1
         row_num += 1
         csv_writer.writerow(new_row)
-    return out
 
 def main():
     try:
