@@ -101,7 +101,7 @@ a well-formed version of html, which closes any open, dangling tags.
     return soup
 
 def fix_anchors(soup):
-    """Anchors appear as <a href="url">text</a>, but wikimedia expects that to be [url text], so swap those here."""
+    """Anchors appear as <a href="url">text</a>, but MediaWiki expects that to be [url text], so swap those here."""
     for a in soup.select('a'):
         a.replace_with(
             BeautifulSoup(u"[{1} {0}]".format(a.text, a['href']), 'html.parser'))
