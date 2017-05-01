@@ -103,8 +103,10 @@ a well-formed version of html, which closes any open, dangling tags.
 def fix_anchors(soup):
     """Anchors appear as <a href="url">text</a>, but MediaWiki expects that to be [url text], so swap those here."""
     for a in soup.select('a'):
-        a.replace_with(
-            BeautifulSoup(u"[{1} {0}]".format(a.text, a['href']), 'html.parser'))
+        if a.has_key('href'):  # not a dict, so "if 'href' in a" won't work
+            a.replace_with(
+                BeautifulSoup(u"[{1} {0}]".format(a.text, a['href']), 
+                              'html.parser'))
     return soup
     
 def fix_csv(fname_in, fname_out, pare=None, show_table_problem=False):
