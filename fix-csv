@@ -117,8 +117,6 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
     out = fname_out and open(fname_out, 'wb') or StringIO.StringIO()
     csv_writer = csv.writer(out,
                             delimiter=',', quotechar='"', lineterminator="\n")
-    #html_parser = HTMLParser.HTMLParser()
-
     header_row = next(csv_reader)
     csv_writer.writerow(header_row)
 
