@@ -44,14 +44,13 @@ There are no options, because this is for a one-time transformation;
 anything that would be an option should just be hardcoded in anyway.
 """
 
-from bs4 import BeautifulSoup
 import csv
 import getopt
-import html.parser
 import re
 import io
 import sys
 import warnings
+from bs4 import BeautifulSoup
 
 def collapse_replace(string, old, new):
     "Return STRING, with OLD repeatedly replaced by NEW until no more OLD."
@@ -187,10 +186,12 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
                     # will be used as a category, not just as a value.
                     new_cell = "No Primary Thematic Area Selected"
             if (show_table_problem
-                and new_cell.find('<table') != -1 
+                and new_cell.find('<table') != -1
                 and new_cell.find('</table') == -1):
-                    sys.stderr.write("DEBUG: unclosed <table>: row %d, col %d (%s): '%s':\n'%s'\n\n" 
-                                     % (row_num, cell_num, header_row[cell_num - 1], org_name, new_cell))
+                sys.stderr.write("DEBUG: unclosed <table>: row %d, col %d (%s): '%s':\n'%s'\n\n"
+                                 % (row_num, cell_num,
+                                    header_row[cell_num - 1],
+                                    org_name, new_cell))
             if cell_num == 89:  # The pitch video cell may need fixing.
                 # They all contain just an ID like "iIrGUi95ko4", not a URL
                 # like "https://www.youtube.com/watch?v=iIrGUi95ko4".
@@ -228,6 +229,7 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
     return out
 
 def main():
+    """Sanitize the MacFound input and emit it as html-ized csv."""
     try:
         opts, args = getopt.getopt(sys.argv[1:], '',
                                    ["pare=", "show-table-problem"])
@@ -240,7 +242,7 @@ def main():
     for o, a in opts:
         if o in ("--show-table-problem",):
             show_table_problem = True
-        elif o=="--pare":
+        elif o == "--pare":
             pare = int(a)
         else:
             sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
@@ -251,7 +253,7 @@ def main():
             "ERROR: need CSV_INPUT and NEW_CSV_OUTPUT arguments.\n\n")
         sys.stderr.write(__doc__)
         sys.exit(1)
-    fix_csv(args[0], args[1], pare, show_table_problem)    
+    fix_csv(args[0], args[1], pare, show_table_problem)
 
 if __name__ == '__main__':
     main()
