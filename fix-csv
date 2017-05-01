@@ -118,8 +118,11 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
     except UnicodeDecodeError:
         sys.stderr.write("fix-csv expects utf-8-encoded unicode, not whatever is in this csv file.\n")
         sys.exit(-1)
-                         
-    out = open(fname_out) if fname_out else io.StringIO()
+
+    if fname_out:
+        out = open(fname_out, 'w', encoding="utf-8")
+    else:
+        out = io.StringIO()
     csv_writer = csv.writer(out,
                             delimiter=',', quotechar='"', lineterminator="\n")
     header_row = next(csv_reader)
@@ -223,7 +226,7 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
                             + new_cell
                             + '" to a YouTube video URL.'
                             + '</span>')
-            new_row.append(new_cell.encode('utf-8'))
+            new_row.append(new_cell)
             cell_num += 1
         csv_writer.writerow(new_row)
     return out
