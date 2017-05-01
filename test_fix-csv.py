@@ -8,6 +8,7 @@ not emit markdown-formatted stuff.
 """
 
 import imp
+import re
 
 # We named fix-csv using a dash and left out the .py extension, so
 # this is basically just a regular old import:
@@ -23,5 +24,14 @@ def get_fixed():
    
 def test_table_problem():
     fixed = get_fixed()
-    print("Every table tag should be closed throughout the input.")
+    print("Every table tag should be closed throughout")
     assert fixed.count("<table") == fixed.count("</table>")
+
+def test_anchor():
+    fixed = get_fixed()
+    print("There shouldn't be any &lt;a anchor tags.")
+    if "&lt;a " in fixed:
+        for lt in re.findall(r"&lt;a ", fixed):
+            print(lt)
+    assert not "&lt;a " in fixed
+
