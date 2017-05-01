@@ -37,4 +37,4 @@ serve as an example or a template for other similar efforts.
 
 ## Dependencies
 
- * [fix-csv](fix-csv) requires beautifulsoup4
+* [fix-csv](fix-csv) requires [Beautiful Soup 4](https://www.crummy.com/software/BeautifulSoup/)
