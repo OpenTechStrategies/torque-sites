@@ -147,10 +147,10 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
 
     bullets_re = re.compile(u"^•", re.MULTILINE)
     
-    row_num = 1
+    row_num = 0
     for row in csv_reader:
+        row_num += 1  # first row here is row 1 (the header row was row 0) 
         if pare is not None and row_num % pare != 0:
-            row_num += 1
             continue
 
         new_row = []
@@ -232,7 +232,6 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
                             + '</span>')
             new_row.append(new_cell.encode('utf-8'))
             cell_num += 1
-        row_num += 1
         csv_writer.writerow(new_row)
     return out
 
