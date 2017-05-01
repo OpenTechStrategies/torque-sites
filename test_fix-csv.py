@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """These are tests that ensure our sanitized csv can be fed to
 csv2wiki and result in decent mediawiki pages.  They should check for
@@ -23,5 +23,5 @@ def get_fixed():
    
 def test_table_problem():
     fixed = get_fixed()
-    print "Every table tag should be closed throughout the input."
+    print("Every table tag should be closed throughout the input.")
     assert fixed.count("<table") == fixed.count("</table>")

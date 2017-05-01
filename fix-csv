@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
 # Perform some one-time fixes to the MacArthur Foundation 100&Change CSV file
@@ -47,9 +47,9 @@ anything that would be an option should just be hardcoded in anyway.
 from bs4 import BeautifulSoup
 import csv
 import getopt
-import HTMLParser  # In Python 3, we'd use html.parser
+import html.parser  # In Python 3, we'd use html.parser
 import re
-import StringIO
+import io
 import sys
 import warnings
 
@@ -73,7 +73,7 @@ def weaken_the_strong(html):
     
     # Remove the stuff inside strong tags
     soup = BeautifulSoup(html, "html.parser")
-    while "<strong>" in unicode(soup):
+    while "<strong>" in str(soup):
         soup.strong.extract()
 
     # Check whether the non-bold stuff is more than just tags and
@@ -114,7 +114,7 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
     sys.stderr to show entries that have unclosed <table> tags."""
     csv_reader = csv.reader(open(fname_in, 'rb'),
                             delimiter=',', quotechar='"')
-    out = fname_out and open(fname_out, 'wb') or StringIO.StringIO()
+    out = fname_out and open(fname_out, 'wb') or io.StringIO()
     csv_writer = csv.writer(out,
                             delimiter=',', quotechar='"', lineterminator="\n")
     header_row = next(csv_reader)
@@ -132,7 +132,7 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
     # That's okay; we check length manually at the call site.
     youtube_id_re = re.compile('^[-_a-zA-Z0-9]+$')
 
-    bullets_re = re.compile(u"^•", re.MULTILINE)
+    bullets_re = re.compile("^•", re.MULTILINE)
     
     row_num = 0
     for row in csv_reader:
@@ -153,21 +153,21 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
             new_cell = new_cell.replace('&lt;', '<')
             new_cell = new_cell.replace('&gt;', '>')
             # The rest should be recursively collapsing replacements:
-            new_cell = collapse_replace(new_cell, u'&nbsp;&nbsp;', u'&nbsp;')
-            new_cell = collapse_replace(new_cell, u'&nbsp; ', u' ')
-            new_cell = collapse_replace(new_cell, u' &nbsp;', u' ')
-            new_cell = collapse_replace(new_cell, u'&nbsp;</', u'</')
-            new_cell = collapse_replace(new_cell, u'\\"', u'"')
-            new_cell = re.sub(intertag_nbsp_re, u'\\1 \\2', new_cell)
+            new_cell = collapse_replace(new_cell, '&nbsp;&nbsp;', '&nbsp;')
+            new_cell = collapse_replace(new_cell, '&nbsp; ', ' ')
+            new_cell = collapse_replace(new_cell, ' &nbsp;', ' ')
+            new_cell = collapse_replace(new_cell, '&nbsp;</', '</')
+            new_cell = collapse_replace(new_cell, '\\"', '"')
+            new_cell = re.sub(intertag_nbsp_re, '\\1 \\2', new_cell)
             if org_name is None:
                 org_name = new_cell
             soup = form_well(new_cell)
-            new_cell = weaken_the_strong(unicode(soup))
+            new_cell = weaken_the_strong(str(soup))
             
             # The parsing for lists requires an asterisk at the start
             # of the line, but some entries use bullets. This regex
             # swaps the bullets for asterisks.
-            new_cell = bullets_re.sub(u"*", new_cell)
+            new_cell = bullets_re.sub("*", new_cell)
 
             if cell_num == 11:  # Some entries have "Select" as the topic
                 # Column 12 (11 in 0-based) is "Primary Thematic Area",
