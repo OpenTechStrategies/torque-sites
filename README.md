@@ -45,4 +45,11 @@ serve as an example or a template for other similar efforts.
 
 ## Dependencies
 
-* [fix-csv](fix-csv) requires [Beautiful Soup 4](https://www.crummy.com/software/BeautifulSoup/)
+[fix-csv](fix-csv) requires:
+
+* [Beautiful Soup 4](https://www.crummy.com/software/BeautifulSoup/)
+* [MWClient](https://github.com/mwclient/mwclient)
+* [Unidecode](https://pypi.python.org/pypi/Unidecode) 
+
+To install all of these, do `pip install bs4 mwclient unidecode`.
+
