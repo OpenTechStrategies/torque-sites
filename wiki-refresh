@@ -33,15 +33,19 @@ MACFOUND_DIR=`dirname "${0}"`
 CSV2WIKI_CONFIG="${MACFOUND_DIR}"/csv2wiki-config
 
 if [ ! -f "${CSV2WIKI_CONFIG}" ]; then
-  echo "ERROR: No csv2wiki-config file found.  You probably want"
-  echo "to do 'cp csv2wiki-config.tmpl csv2wiki-config' (and"
-  echo "then edit csv2wiki-config as needed, of course)."
+  echo "ERROR: No csv2wiki-config file found."
+  echo ""
+  echo "Try doing 'cp csv2wiki-config.tmpl csv2wiki-config' and"
+  echo "then editing csv2wiki-config as needed.  The main thing"
+  echo 'is to make sure the value of the "csv: " option is some'
+  echo 'filename beginning with "sanitized-".  This script will'
+  echo "look for the file without that prefix, sanitize it, and"
+  echo "then run csv2wiki on the resultant CSV input, whose name"
+  echo 'will be the same as the original but with the prefix'
+  echo '"sanitized-".'
   echo ""
   exit 1
 fi
-
-PREFIX_RE="^csv:[[:space:]]+"
-CSV_INPUT=`grep -E "${PREFIX_RE}" ${CSV2WIKI_CONFIG} | sed -E "s/${PREFIX_RE}//"`
 
 # By the end of this conditional chain, ${CSV2WIKI} should point
 # to the csv2wiki script.
@@ -82,13 +86,17 @@ fi
 # In case we need this later.
 OTS_TOOLS=`dirname ${CSV2WIKI}`
 
-SANITIZE="${MACFOUND_DIR}"/fix-csv
-SANITIZED="`dirname ${CSV_INPUT}`/sanitized-`basename ${CSV_INPUT}`"
+SANITIZER="${MACFOUND_DIR}"/fix-csv
+SANITIZATION_PREFIX="sanitized-"
+OPT_PREFIX_RE="^csv:[[:space:]]+${SANITIZATION_PREFIX}"
+RAW_CSV=`grep -E "${OPT_PREFIX_RE}" ${CSV2WIKI_CONFIG} | sed -E "s|${OPT_PREFIX_RE}||"`
+SANITIZED_CSV="`dirname ${RAW_CSV}`/${SANITIZATION_PREFIX}`basename ${RAW_CSV}`"
 
 # First we're working on sanitization (wiki conversion comes later).
 # Just convert 1% of the entries, to save time while testing.
 echo "Sanitizing..."
-${SANITIZE} --pare=100 "${CSV_INPUT}" ${SANITIZED}
+
+${SANITIZER} --pare=100 "${RAW_CSV}" ${SANITIZED_CSV}
 if [ $? -ne 0 ]; then
 		echo Sanitization failure!
 		exit 1
@@ -97,6 +105,6 @@ echo "Done sanitizing."
 echo ""
 
 echo "Creating wiki..."
-${CSV2WIKI} -c ${CSV2WIKI_CONFIG} ${SANITIZED}
+${CSV2WIKI} -c ${CSV2WIKI_CONFIG} ${SANITIZED_CSV}
 echo "Done creating wiki."
 echo ""
