@@ -110,8 +110,13 @@ def fix_anchors(soup):
                               'html.parser'))
     return soup
     
-def fix_csv(fname_in, fname_out, pare=None, show_table_problem=False):
+def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
     """Write a sanitized version of FNAME_IN (a CSV file) to FNAME_OUT.
+
+    FNAME_IN is a filename.  FNAME_OUT is either a filename or None.
+    If it is None, then write output to a returned StringIO object;
+    otherwise, write output to the named file (and the return value is
+    undefined).
 
     If PARE is not None, it is a positive integer indicating that only
     1 of every PARE entries should be processed, and the others skipped.
@@ -120,7 +125,8 @@ def fix_csv(fname_in, fname_out, pare=None, show_table_problem=False):
     sys.stderr to show entries that have unclosed <table> tags."""
     csv_reader = csv.reader(open(fname_in, 'rb'),
                             delimiter=',', quotechar='"')
-    csv_writer = csv.writer(open(fname_out, 'wb'),
+    out = fname_out and open(fname_out, 'wb') or StringIO.StringIO()
+    csv_writer = csv.writer(out,
                             delimiter=',', quotechar='"', lineterminator="\n")
     #html_parser = HTMLParser.HTMLParser()
 
@@ -228,6 +234,7 @@ def fix_csv(fname_in, fname_out, pare=None, show_table_problem=False):
             cell_num += 1
         row_num += 1
         csv_writer.writerow(new_row)
+    return out
 
 def main():
     try:
