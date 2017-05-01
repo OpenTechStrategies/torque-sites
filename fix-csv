@@ -144,7 +144,7 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
         org_name = None   # used only for debugging output
         cell_num = 0
         for cell in row:
-            new_cell = cell.decode('utf-8')
+            new_cell = cell
             # A straight-up HTML-unescaping might be the right thing
             # (i.e., new_cell = html_parser.unescape(new_cell) below)
             # in the long run, but for now, let's do the same limited
