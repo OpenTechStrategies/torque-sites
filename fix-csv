@@ -112,9 +112,9 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
 
     If SHOW_TABLE_PROBLEM is not False, write debugging statements to
     sys.stderr to show entries that have unclosed <table> tags."""
-    csv_reader = csv.reader(open(fname_in, 'rb'),
+    csv_reader = csv.reader(open(fname_in),
                             delimiter=',', quotechar='"')
-    out = fname_out and open(fname_out, 'wb') or io.StringIO()
+    out = open(fname_out) if fname_out else io.StringIO()
     csv_writer = csv.writer(out,
                             delimiter=',', quotechar='"', lineterminator="\n")
     header_row = next(csv_reader)
