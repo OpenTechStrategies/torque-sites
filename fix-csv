@@ -60,11 +60,13 @@ def collapse_replace(string, old, new):
     return string
 
 def weaken_the_strong(html):
-    """If <strong> tags cover everything in html, remove them.  But if
-<strong> tags are used only sometimes, maybe they're meaningful, so
-leave them.  Basically, we want to retard strength, not eliminate
-it."""
+    """Strip any meaningless <strong>...</strong> tags from HTML.
+    HTML is a Unicode string; the return value is either HTML or a new
+    Unicode string based on HTML.
 
+    If <strong> tags cover everything in HTML, remove the tags.  But if
+    <strong> tags are used only sometimes, maybe they're meaningful, so
+    leave them.  Basically, we want to make strength great again."""
     # If there's no strength here, move on.
     if not "<strong>" in html:
         return html
@@ -86,12 +88,9 @@ it."""
     return html
 
 def form_well(html):
-    """Some of our original html includes tables that cut off without
-closing tags.  They leave <td> tags open too.  This function returns
-a well-formed version of html, which closes any open, dangling tags.
-
-    """
-
+    """Return a well-formed version of HTML with dangling tags closed.
+    Some of the input includes tables that cut off without closing
+    tags; some entries leave <td> tags open too."""
     # Parse html and suppress warnings about urls in the text
     warnings.filterwarnings("ignore",
                             category=UserWarning, module='bs4')
@@ -101,7 +100,9 @@ a well-formed version of html, which closes any open, dangling tags.
     return soup
 
 def fix_anchors(soup):
-    """Anchors appear as <a href="url">text</a>, but MediaWiki expects that to be [url text], so swap those here."""
+    """Return new soup with all of SOUP's href-bearing anchors wikified.
+    That is, anchors of the form <a href="url">text</a> in SOUP will
+    be converted to MediaWiki-style "[url text]"."""
     for a in soup.select('a'):
         if a.has_key('href'):  # not a dict, so "if 'href' in a" won't work
             a.replace_with(
