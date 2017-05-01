@@ -25,7 +25,3 @@ def test_table_problem():
     fixed = get_fixed()
     print "Every table tag should be closed throughout the input."
     assert fixed.count("<table") == fixed.count("</table>")
-
-def test_fix_anchors():
-    fixed = get_fixed()
-    assert not "<a href=" in fixed

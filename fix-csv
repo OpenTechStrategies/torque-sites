@@ -99,17 +99,6 @@ def form_well(html):
     # Return well-formed html as a soup object
     return soup
 
-def fix_anchors(soup):
-    """Return new soup with all of SOUP's href-bearing anchors wikified.
-    That is, anchors of the form <a href="url">text</a> in SOUP will
-    be converted to MediaWiki-style "[url text]"."""
-    for a in soup.select('a'):
-        if a.has_key('href'):  # not a dict, so "if 'href' in a" won't work
-            a.replace_with(
-                BeautifulSoup(u"[{1} {0}]".format(a.text, a['href']), 
-                              'html.parser'))
-    return soup
-    
 def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
     """Write a sanitized version of FNAME_IN (a CSV file) to FNAME_OUT.
 
@@ -175,7 +164,6 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
             if org_name is None:
                 org_name = new_cell
             soup = form_well(new_cell)
-            soup = fix_anchors(soup)
             new_cell = weaken_the_strong(unicode(soup))
             
             # The parsing for lists requires an asterisk at the start
