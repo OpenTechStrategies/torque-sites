@@ -34,6 +34,14 @@ serve as an example or a template for other similar efforts.
   categories feature working, some MediaWiki instances may have
   spam-prevention features enabled that prevent csv2wiki from creating
   pages containing URLs, etc.
+	
+* fix-csv
+
+  This is a script that wiki-refresh uses to sanitize the csv for
+  csv2wiki.  It takes the data we received from MacArthur and cleans
+  up the HTML.  Then, wiki-refresh runs csv2wiki on the proper html to
+  produce mediawiki input.  The fix-csv script should not emit
+  markdown-formatted text.
 
 ## Dependencies
 

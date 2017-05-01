@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 """These are tests that ensure our sanitized csv can be fed to
-csv2wiki and result in decent mediawiki pages.  Even if you're not
-using the same csv input we are, these tests might be useful because
-they are aimed at the output, not the input.
+csv2wiki and result in decent mediawiki pages.  They should check for
+correct HTML output.  The csv2wiki input expects that.  Fix-csv should
+not emit markdown-formatted stuff.
 
 """
 
