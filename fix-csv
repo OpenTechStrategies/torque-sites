@@ -111,7 +111,7 @@ def fix_anchors(soup):
     return soup
     
 def fix_csv(fname_in, fname_out, pare=None, show_table_problem=False):
-    """Write a sanizited version of FNAME_IN (a CSV file) to FNAME_OUT.
+    """Write a sanitized version of FNAME_IN (a CSV file) to FNAME_OUT.
 
     If PARE is not None, it is a positive integer indicating that only
     1 of every PARE entries should be processed, and the others skipped.
