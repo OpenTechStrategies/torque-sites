@@ -98,6 +98,311 @@ def form_well(html):
     # Return well-formed html as a soup object
     return soup
 
+def fix_headers(header_row):
+    """Update some of the column header strings in HEADER_ROW in place.
+    HEADER_ROW must have exactly the 90 expected elements.
+    There is no return value."""
+    # NOTE: This duplicates functionality already present in csv2wiki,
+    # and it means that we are basically maintaining the same column
+    # rename map both here and in the csv2wiki-config.tmpl file.
+    # However, the map here does much more error checking, since it
+    # can, so we shouldn't try to combine the two maps.  (We could stop
+    # maintaining the other map, and maybe we will, but this is useful
+    # functionality in csv2wiki and we might as well continue testing
+    # it every time we convert this particular spreadsheet to wiki.)
+
+    # List of tuples, where the index of each tuple corresponds
+    # to a column number, adjusted for 0-based indexing (list element
+    # 0 corresponds to column 1).  The first element of each tuple is
+    # the old column name, and the second element is either None,
+    # meaning no change, or else is the new name.
+    rename_map = [
+        # Column 1:
+        ("Registered Organization Name",
+         "Organization",),
+        # Column 2:
+        ("Registration Location",
+         "Location",),
+        # Column 3:
+        ("Legal Status",
+         None,),
+        # Column 4:
+        ("Legal Status - Other",
+         None,),
+        # Column 5:
+        ("Registration Location - Other",
+         None,),
+        # Column 6:
+        ("City",
+         None,),
+        # Column 7:
+        ("State / Province / Region",
+         None,),
+        # Column 8:
+        ("Postal / Zip Code",
+         "Postal Code",),
+        # Column 9:
+        ("Country",
+         None,),
+        # Column 10:
+        ("Phone Number",
+         None,),
+        # Column 11:
+        ("Area of Org Expertise",
+         None,),
+        # Column 12:
+        ("Primary Thematic Area",
+         "Topic",),
+        # Column 13:
+        ("Hear about 100 and Change Selection",
+         None,),
+        # Column 14:
+        ("Hear about 100 and Change Notes",
+         None,),
+        # Column 15:
+        ("Review_Number",
+         "Review Number",),
+        # Column 16:
+        ("Executive Summary",
+         None,),
+        # Column 17:
+        ("Team Purpose",
+         None,),
+        # Column 18:
+        ("Legal Entity Name",
+         None,),
+        # Column 19:
+        ("Principal Organization Point of Contact Name",
+         "Principal Org Contact Name",),
+        # Column 20:
+        ("Principal Organization Point of Contact Title",
+         "Principal Org Contact Title",),
+        # Column 21:
+        ("Principal Organization Point of Contact Phone",
+         "Principal Org Contact Phone",),
+        # Column 22:
+        ("Principal Organization Point of Contact Email",
+         "Principal Org Contact Email",),
+        # Column 23:
+        ("Principal Organization Registration Location",
+         "Principal Org Registration Location",),
+        # Column 24:
+        ("Principal Organization Legal Status",
+         "Principal Org Legal Status",),
+        # Column 25:
+        ("Principal Organization Legal Status - Other",
+         "Principal Org Legal Status - Other",),
+        # Column 26:
+        ("Principal Organization Legal Status - Other - Notes",
+         "Principal Org Legal Status - Other - Notes",),
+        # Column 27:
+        ("Principal Organization Jurisdiction",
+         "Principal Org Jurisdiction",),
+        # Column 28:
+        ("Principal Organization Jurisdiction - Other",
+         "Principal Org Jurisdiction - Other",),
+        # Column 29:
+        ("Principal Organization City",
+         "Principal Org City",),
+        # Column 30:
+        ("Principal Organization State / Province",
+         "Principal Org State / Province",),
+        # Column 31:
+        ("Principal Organization Postal Code",
+         "Principal Org Postal Code",),
+        # Column 32:
+        ("Principal Organization Country",
+         "Principal Org Country",),
+        # Column 33:
+        ("Principal Organization Primary Area of Expertise - Dropdown",
+         "Principal Org Primary Area of Expertise - Dropdown",),
+        # Column 34:
+        ("Principal Organization Primary Area of Expertise - Notes",
+         "Principal Org Primary Area of Expertise - Notes",),
+        # Column 35:
+        ("Principal Organization Primary Thematic Area of Proposed Solution - Dropdown",
+         "Principal Org Primary Thematic Area of Proposed Solution - Dropdown",),
+        # Column 36:
+        ("Principal Organization Primary Thematic Area of Proposed Solution - Notes",
+         "Principal Org Primary Thematic Area of Proposed Solution - Notes",),
+        # Column 37:
+        ("Team Structure",
+         None,),
+        # Column 38:
+        ("Why Collaboration is Effective",
+         None,),
+        # Column 39:
+        ("Problem Statement",
+         None,),
+        # Column 40:
+        ("Proposed Solution",
+         None,),
+        # Column 41:
+        ("Country/State 1",
+         None,),
+        # Column 42:
+        ("Country/State 2",
+         None,),
+        # Column 43:
+        ("Country/State 3",
+         None,),
+        # Column 44:
+        ("Oceans/Space/Global",
+         None,),
+        # Column 45:
+        ("Other Work Location",
+         None,),
+        # Column 46:
+        ("Tactics and Technology",
+         None,),
+        # Column 47:
+        ("Timeline and Key Milestones",
+         None,),
+        # Column 48:
+        ("Evidence of Effectiveness",
+         None,),
+        # Column 49:
+        ("Risk Assessment",
+         None,),
+        # Column 50:
+        ("Plan Monitoring/Evaluation/Learning",
+         None,),
+        # Column 51:
+        ("Previous Performance",
+         None,),
+        # Column 52:
+        ("Organizational Capacity",
+         None,),
+        # Column 53:
+        ("Budget Narrative",
+         None,),
+        # Column 54:
+        ("Resource Requirements and Sustainability",
+         None,),
+        # Column 55:
+        ("Other Considerations",
+         None,),
+        # Column 56:
+        ("Charitable Purpose",
+         None,),
+        # Column 57:
+        ("Private Benefit",
+         None,),
+        # Column 58:
+        ("Lobbying Activities",
+         None,),
+        # Column 59:
+        ("Human Subjects Research",
+         None,),
+        # Column 60:
+        ("Team Story",
+         None,),
+        # Column 61:
+        ("Total_Score",
+         "Total Score",),
+        # Column 62:
+        ("Trait1_Score",
+         "Meaningful?",),
+        # Column 63:
+        ("Trait2_Score",
+         "Verifiable?",),
+        # Column 64:
+        ("Trait3_Score",
+         "Feasible?",),
+        # Column 65:
+        ("Trait4_Score",
+         "Durable?",),
+        # Column 66:
+        ("Trait1_Comment1",
+         "Meaningful? - Comment 1",),
+        # Column 67:
+        ("Trait1_Comment2",
+         "Meaningful? - Comment 2",),
+        # Column 68:
+        ("Trait1_Comment3",
+         "Meaningful? - Comment 3",),
+        # Column 69:
+        ("Trait1_Comment4",
+         "Meaningful? - Comment 4",),
+        # Column 70:
+        ("Trait1_Comment5",
+         "Meaningful? - Comment 5",),
+        # Column 71:
+        ("Trait2_Comment1",
+         "Verifiable? - Comment 1",),
+        # Column 72:
+        ("Trait2_Comment2",
+         "Verifiable? - Comment 2",),
+        # Column 73:
+        ("Trait2_Comment3",
+         "Verifiable? - Comment 3",),
+        # Column 74:
+        ("Trait2_Comment4",
+         "Verifiable? - Comment 4",),
+        # Column 75:
+        ("Trait2_Comment5",
+         "Verifiable? - Comment 5",),
+        # Column 76:
+        ("Trait3_Comment1",
+         "Feasible? - Comment 1",),
+        # Column 77:
+        ("Trait3_Comment2",
+         "Feasible? - Comment 2",),
+        # Column 78:
+        ("Trait3_Comment3",
+         "Feasible? - Comment 3",),
+        # Column 79:
+        ("Trait3_Comment4",
+         "Feasible? - Comment 4",),
+        # Column 80:
+        ("Trait3_Comment5",
+         "Feasible? - Comment 5",),
+        # Column 81:
+        ("Trait4_Comment1",
+         "Durable? - Comment 1",),
+        # Column 82:
+        ("Trait4_Comment2",
+         "Durable? - Comment 2",),
+        # Column 83:
+        ("Trait4_Comment3",
+         "Durable? - Comment 3",),
+        # Column 84:
+        ("Trait4_Comment4",
+         "Durable? - Comment 4",),
+        # Column 85:
+        ("Trait4_Comment5",
+         "Durable? - Comment 5",),
+        # Column 86:
+        ("Valid_Submission",
+         "Valid Submission",),
+        # Column 87:
+        ("Big_Bet_Enduring_Commitment_Alignment",
+         "Big Bet / Enduring Commitment Alignment",),
+        # Column 88:
+        ("Reason_For_Turndown",
+         "Reason For Turndown",),
+        # Column 89:
+        ("Comments",
+         None,),
+        # Column 90:
+        ("Pitch Video Link",
+         None,),
+        ]
+    if len(header_row) != len(rename_map):
+        sys.stderr.write("ERROR: unexpected number of columns (%d)\n"
+                         % len(header_row))
+        sys.exit(1)
+    for i in range(0, 90):
+        if rename_map[i][1] is not None:
+            if header_row[i] == rename_map[i][0]:
+                header_row[i] = rename_map[i][1]
+            else:
+                sys.stderr.write("ERROR: unexcepted column header:\n")
+                sys.stderr.write("       expected \"%s\"\n" % rename_map[i][0])
+                sys.stderr.write("       received \"%s\"\n" % header_row[i])
+                sys.exit(1)
+                
+
 def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
     """Write a sanitized version of FNAME_IN (a CSV file) to FNAME_OUT.
 
@@ -126,6 +431,7 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
     csv_writer = csv.writer(out,
                             delimiter=',', quotechar='"', lineterminator="\n")
     header_row = next(csv_reader)
+    fix_headers(header_row)
     csv_writer.writerow(header_row)
 
     # Convert "<foo>&nbsp;<bar>" and "</foo>&nbsp;<bar>" to
