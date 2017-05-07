@@ -36,13 +36,7 @@ if [ ! -f "${CSV2WIKI_CONFIG}" ]; then
   echo "ERROR: No csv2wiki-config file found."
   echo ""
   echo "Try doing 'cp csv2wiki-config.tmpl csv2wiki-config' and"
-  echo "then editing csv2wiki-config as needed.  The main thing"
-  echo 'is to make sure the value of the "csv: " option is some'
-  echo 'filename beginning with "sanitized-".  This script will'
-  echo "look for the file without that prefix, sanitize it, and"
-  echo "then run csv2wiki on the resultant CSV input, whose name"
-  echo 'will be the same as the original but with the prefix'
-  echo '"sanitized-".'
+  echo "then editing csv2wiki-config as needed."
   echo ""
   exit 1
 fi
@@ -88,8 +82,7 @@ OTS_TOOLS=`dirname ${CSV2WIKI}`
 
 SANITIZER="${MACFOUND_DIR}"/fix-csv
 SANITIZATION_PREFIX="sanitized-"
-OPT_PREFIX_RE="^csv:[[:space:]]+${SANITIZATION_PREFIX}"
-RAW_CSV=`grep -E "${OPT_PREFIX_RE}" ${CSV2WIKI_CONFIG} | sed -E "s|${OPT_PREFIX_RE}||"`
+RAW_CSV="100andchangeExport-all-judges.csv"
 SANITIZED_CSV="`dirname ${RAW_CSV}`/${SANITIZATION_PREFIX}`basename ${RAW_CSV}`"
 
 # First we're working on sanitization (wiki conversion comes later).
