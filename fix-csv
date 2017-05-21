@@ -524,7 +524,14 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
                     or new_cell.find("&feature") != -1
                     or new_cell.find("?t=") != -1):
                     # Okay, any of the above can become a video URL:
-                    new_cell = "https://www.youtube.com/watch?v=" + new_cell
+                    video_id = new_cell
+                    # Note that the "#ev" embed code below requires
+                    # the EmbedVideo MediaWiki extension.  See issue
+                    # #26 for details.
+                    new_cell = "https://www.youtube.com/watch?v="   \
+                              + video_id                            \
+                              + "\n\n"                              \
+                              + "{{#ev:youtube|" + video_id + "}}"
                 else: # There were 8 with no video that we could find:
                     new_cell = ('<span style='
                             + '"color: red; font-family: monospace;" >'
