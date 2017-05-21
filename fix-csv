@@ -542,6 +542,7 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
             new_row.append(new_cell)
             cell_num += 1
         csv_writer.writerow(new_row)
+        print("Sanitized row %d." % row_num)
     return out
 
 def main():
