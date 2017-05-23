@@ -29,26 +29,39 @@
 ##########################################################################
 
 MACFOUND_DIR=`dirname "${0}"`
-
-CSV2WIKI_CONFIG="${MACFOUND_DIR}"/csv2wiki-config
-
-if [ ! -f "${CSV2WIKI_CONFIG}" ]; then
-  echo "ERROR: No csv2wiki-config file found."
+SOURCES_ROOT="${MACFOUND_DIR}/.."
+CSVKIT_DIR="${SOURCES_ROOT}/csvkit"
+DATA_DIR="${1}"
+if [ "${DATA_DIR}" = "" ]; then
+  echo "ERROR: DATA_DIRECTORY argument required."
   echo ""
-  echo "Try doing 'cp csv2wiki-config.tmpl csv2wiki-config' and"
-  echo "then editing csv2wiki-config as needed."
+  echo "Usage: '${0} DATA_DIRECTORY'"
+  echo ""
+  echo "(DATA_DIRECTORY is where all the .csv files are.)"
   echo ""
   exit 1
 fi
 
-# By the end of this conditional chain, ${CSV2WIKI} should point
-# to the csv2wiki script.
-CSV2WIKI=${OTSDIR}/clients/macarthur/eval-system/csv2wiki/csv2wiki
+# Make sure we have csvkit.
+if [ ! -d "${CSVKIT_DIR}" ]; then
+  echo "ERROR: csvkit source tree not found."
+  echo ""
+  echo "Please do this..."
+  echo ""
+  echo "  $ cd ${CSVKIT_DIR}"
+  echo "  $ git clone git@github.com:wireservice/csvkit.git"
+  echo ""
+  echo "...and then try again."
+  exit 1
+fi
+
+# Make sure we have csv2wiki.
+CSV2WIKI="${SOURCES_ROOT}/csv2wiki/csv2wiki"
 if [ ! -x ${CSV2WIKI} ]; then
-  CSV2WIKI=`dirname ${MACFOUND_DIR}`/csv2wiki/csv2wiki
+  CSV2WIKI=${OTSDIR}/clients/macfound/eval-system/csv2wiki/csv2wiki
 fi
 if [ ! -x ${CSV2WIKI} ]; then
-  CSV2WIKI=${OTSDIR}/clients/macarthur/eval-system/r/csv2wiki/csv2wiki
+  CSV2WIKI=${OTSDIR}/clients/macfound/eval-system/r/csv2wiki/csv2wiki
 fi
 if [ ! -x ${CSV2WIKI} ]; then
   CSV2WIKI=${OTSDIR}/csv2wiki/csv2wiki
@@ -58,46 +71,194 @@ if [ ! -x ${CSV2WIKI} ]; then
 fi
 if [ ! -x ${CSV2WIKI} ]; then
   # Okay, let's get medieval on the situation.
-  git clone git@github.com:OpenTechStrategies/csv2wiki.git
-  CSV2WIKI=`pwd`/csv2wiki/csv2wiki
+  (cd "${SOURCES_ROOT}"; \
+   git clone git@github.com:OpenTechStrategies/csv2wiki.git)
+  CSV2WIKI="${SOURCES_ROOT}/csv2wiki/csv2wiki"
 fi
 if [ ! -x ${CSV2WIKI} ]; then
   echo "ERROR: Unable to find or clone 'csv2wiki'."
   exit 1
 fi
-
-# Test that csv2wiki works.
+# Test that csv2wiki actually works.
 if ${CSV2WIKI} --help > /dev/null; then
   echo "Great, it works." > /dev/null
 else
   echo "ERROR: Problem running ${CSV2WIKI}."
+  echo ""
   echo "Most likely you need to install the 'mwclient' and 'unidecode'"
-  echo "Python modules.  Do 'sudo pip install mwclient' and"
-  echo "'sudo pip install unidecode' and try running this script again."
+  echo "Python modules.  Do 'sudo pip install mwclient', and same for"
+  echo "'bs4' and 'unidecode', and try running this script again."
   exit 1
 fi
 
-# In case we need this later.
-OTS_TOOLS=`dirname ${CSV2WIKI}`
+# csv2wiki needs a run-time config file.
+CSV2WIKI_CONFIG="${MACFOUND_DIR}"/csv2wiki-config
+if [ ! -f "${CSV2WIKI_CONFIG}" ]; then
+  echo "ERROR: No csv2wiki-config file found."
+  echo ""
+  echo "Try doing 'cp csv2wiki-config.tmpl csv2wiki-config' and"
+  echo "then editing csv2wiki-config as needed."
+  echo ""
+  exit 1
+fi
+
+MASTER_CSV="${DATA_DIR}/100andchangeExport-all-judges.csv"
+
+# We've extracted the excluded Review Numbers from Exclusions.xlsx.
+# They're saved elsewhere, but for the record, here's how it was done:
+# 
+#   $ cd ${SOURCE_ROOT/csvkit
+#   $ virtualenv --no-site-packages VIRTUAL
+#   (VIRTUAL)$ source VIRTUAL/bin/activate
+#   (VIRTUAL)$ pip install --upgrade pip  # only had to do this once
+#   You are using pip version 6.1.1, however version 9.0.1 is available.
+#   You should consider upgrading via the 'pip install --upgrade pip' command.
+#   Collecting pip
+#     Downloading pip-9.0.1-py2.py3-none-any.whl (1.3MB)
+#       100% |████████████████████████████████| 1.3MB 363kB/s 
+#   Installing collected packages: pip
+#     Found existing installation: pip 6.1.1
+#       Uninstalling pip-6.1.1:
+#         Successfully uninstalled pip-6.1.1
+#   Successfully installed pip-9.0.1
+#   (VIRTUAL)$ pip install -r requirements-py3.txt
+#   ... lots of noise, all indicating success...
+#   (VIRTUAL)$ pip install csvkit
+#   Collecting csvkit
+#     Downloading csvkit-1.0.2.tar.gz (3.8MB)
+#       100% |████████████████████████████████| 3.8MB 300kB/s 
+#   Requirement already satisfied: agate>=1.6.0 in ./VIRTUAL/lib/python2.7/site-packages (from csvkit)
+#   Requirement already satisfied: agate-excel>=0.2.1 in ./VIRTUAL/src/agateexcel (from csvkit)
+#   Requirement already satisfied: agate-dbf>=0.2.0 in ./VIRTUAL/lib/python2.7/site-packages (from csvkit)
+#   Requirement already satisfied: agate-sql>=0.5.2 in ./VIRTUAL/src/agatesql (from csvkit)
+#   Requirement already satisfied: six>=1.6.1 in ./VIRTUAL/lib/python2.7/site-packages (from csvkit)
+#   Requirement already satisfied: Babel>=2.0 in ./VIRTUAL/lib/python2.7/site-packages (from agate>=1.6.0->csvkit)
+#   Requirement already satisfied: pytimeparse>=1.1.5 in ./VIRTUAL/lib/python2.7/site-packages (from agate>=1.6.0->csvkit)
+#   Requirement already satisfied: python-slugify>=1.2.1 in ./VIRTUAL/lib/python2.7/site-packages (from agate>=1.6.0->csvkit)
+#   Requirement already satisfied: leather>=0.3.2 in ./VIRTUAL/lib/python2.7/site-packages (from agate>=1.6.0->csvkit)
+#   Requirement already satisfied: parsedatetime>=2.1 in ./VIRTUAL/lib/python2.7/site-packages (from agate>=1.6.0->csvkit)
+#   Requirement already satisfied: isodate>=0.5.4 in ./VIRTUAL/lib/python2.7/site-packages (from agate>=1.6.0->csvkit)
+#   Requirement already satisfied: xlrd>=0.9.4 in ./VIRTUAL/lib/python2.7/site-packages (from agate-excel>=0.2.1->csvkit)
+#   Requirement already satisfied: openpyxl>=2.3.0 in ./VIRTUAL/lib/python2.7/site-packages (from agate-excel>=0.2.1->csvkit)
+#   Requirement already satisfied: dbfread>=2.0.5 in ./VIRTUAL/lib/python2.7/site-packages (from agate-dbf>=0.2.0->csvkit)
+#   Requirement already satisfied: sqlalchemy>=1.0.8 in ./VIRTUAL/lib/python2.7/site-packages (from agate-sql>=0.5.2->csvkit)
+#   Requirement already satisfied: pytz>=0a in ./VIRTUAL/lib/python2.7/site-packages (from Babel>=2.0->agate>=1.6.0->csvkit)
+#   Requirement already satisfied: Unidecode>=0.04.16 in ./VIRTUAL/lib/python2.7/site-packages (from python-slugify>=1.2.1->agate>=1.6.0->csvkit)
+#   Requirement already satisfied: future in ./VIRTUAL/lib/python2.7/site-packages (from parsedatetime>=2.1->agate>=1.6.0->csvkit)
+#   Requirement already satisfied: jdcal in ./VIRTUAL/lib/python2.7/site-packages (from openpyxl>=2.3.0->agate-excel>=0.2.1->csvkit)
+#   Requirement already satisfied: et_xmlfile in ./VIRTUAL/lib/python2.7/site-packages (from openpyxl>=2.3.0->agate-excel>=0.2.1->csvkit)
+#   Installing collected packages: csvkit
+#     Running setup.py install for csvkit ... done
+#   Successfully installed csvkit-1.0.2
+#   (VIRTUAL)$ 
+#
+#   # Hunh.  So does that mean that, despite the fact that I'm doing
+#   # this all in the latest csvkit source tree, straight from github,
+#   # it nevertheless downloaded release csvkit-1.0.2 from the Net and
+#   # installed that in my virtualenv?  Yes.  How annoying.  How does
+#   # one run a source checkout in virtualenv, again?  And why does
+#   # every programming language have its own way of doing this, so
+#   # that I have to remember a zillion little systems, each slightly
+#   # different?  Also, why do good things happen to bad people?
+#   # 
+#   # Anyway, now we can run the conversion:
+#
+#   (VIRTUAL)$ in2csv ${DATA_DIR}/Exclusions.xlsx > ${DATA_DIR}/Exclusions.csv
+#   .../VIRTUAL/local/lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 0 has no name. Using "a".
+#   .../VIRTUAL/local/lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 1 has no name. Using "b".
+#   .../VIRTUAL/local/lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 2 has no name. Using "c".
+#   .../VIRTUAL/local/lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 3 has no name. Using "d".
+#   .../VIRTUAL/local/lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 4 has no name. Using "e".
+#   .../VIRTUAL/local/lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 5 has no name. Using "f".
+#   (VIRTUAL)$ 
+#
+#   (VIRTUAL)$ csvcut -n ${DATA_DIR}/Exclusions.csv
+#   1: a
+#   2: b
+#   3: c
+#   4: d
+#   5: e
+#   6: f
+#
+#   (VIRTUAL)$ csvlook ~/private/work/ots/clients/macfound/eval-system/data/Exclusions.csv
+#   ...see from output that column "a" has the Review Numbers we want...
+#
+#   (VIRTUAL)$ csvcut -c a ~/private/work/ots/clients/macfound/eval-system/data/Exclusions.csv \
+#                | grep -E "[0-9]+" > ${DATA_DIR}/excluded-review-numbers.txt
+#   (VIRTUAL)$ cat ${DATA_DIR}/excluded-review-numbers.txt
+#   6587
+#   6226
+#   72
+#   671
+#   1095
+#   1723
+#   2681
+#   4046
+#   5861
+#   6381
+#   6728
+#   6882
+#   5653
+#   3030
+#   5073
+#   (VIRTUAL)$ svn add ${DATA_DIR}/excluded-review-numbers.txt
+#   (VIRTUAL)$ svn ci -m "Save excluded Review Numbers (based on Exclusions.xlsx)." \
+#                     ${DATA_DIR}/excluded-review-numbers.txt
+#   (VIRTUAL)$ 
+#
+#   # Okay, leave the Python virtualenv -- we're done with csvkit for now.
+#   (VIRTUAL)$ deactivate
+
+# TODO: wiki-refresh still needs to do the "join" (probably by using the
+# 'csvjoin' command from csvkit) on one or both of these:
+#
+#   - geo-and-topic-revisions-Reclassify-themes-ALL-complete-(merged-assignment-docs).xlsx
+#   - PDF_Public/*.xlsx
+#
+# Then we can create the partners' wiki as well as the MacFound
+# internal wiki.
+
+RAW_CSV="100andchangeExport-all-judges.csv"
 
 SANITIZER="${MACFOUND_DIR}"/fix-csv
-SANITIZATION_PREFIX="sanitized-"
-RAW_CSV="100andchangeExport-all-judges.csv"
-SANITIZED_CSV="`dirname ${RAW_CSV}`/${SANITIZATION_PREFIX}`basename ${RAW_CSV}`"
 
-# First we're working on sanitization (wiki conversion comes later).
-# Just convert 1% of the entries, to save time while testing.
-echo "Sanitizing..."
+# First we sanitize, then we filter, then we join.  MacFound probably
+# wants the Stage 3 spreadsheet as a deliverable, but in principle
+# we could deliver any of them.  (There is some question as to whether
+# they would want filtering to happen before joining or vice versa;
+# we can ask -- it wouldn't be too hard to change the order.)
+STAGE_1_PREFIX="sanitized-"
+STAGE_2_PREFIX="filtered-"
+STAGE_3_PREFIX="joined-"
 
-${SANITIZER} --pare=100 "${RAW_CSV}" ${SANITIZED_CSV}
+STAGE_1_CSV="${STAGE_1_PREFIX}${RAW_CSV}"
+STAGE_2_CSV="${STAGE_2_PREFIX}${RAW_CSV}"
+STAGE_3_CSV="${STAGE_3_PREFIX}${RAW_CSV}"
+
+# Sanitize the updated spreadsheet.
+#
+# Use --pare to convert only 1% of the entries, to save time while testing. 
+echo "Stage 1: Sanitizing..."
+${SANITIZER} --pare=100 "${DATA_DIR}/${RAW_CSV}" "${DATA_DIR}/${STAGE_1_CSV}"
 if [ $? -ne 0 ]; then
 		echo Sanitization failure!
 		exit 1
 fi
-echo "Done sanitizing."
+echo "Done with Stage 1 (sanitizing)."
 echo ""
 
+# Filter out excluded Review Numbers.
+echo "Stage 2: Filtering excluded Review Numbers..."
+. ${CSVKIT_DIR}/VIRTUAL/bin/activate
+csvgrep -c 15 -f "${DATA_DIR}"/excluded-review-numbers.txt -i \
+        "${DATA_DIR}"/${STAGE_1_CSV} > "${DATA_DIR}"/"${STAGE_2_CSV}"
+deactivate
+echo "Done with Stage 2 (filtering excluded Review Numbers)."
+echo ""
+
+# TODO: Next implement Stage 3, the joining.
+
 echo "Creating wiki..."
-${CSV2WIKI} -c ${CSV2WIKI_CONFIG} ${SANITIZED_CSV}
+${CSV2WIKI} -c ${CSV2WIKI_CONFIG} "${DATA_DIR}/${STAGE_2_CSV}"
 echo "Done creating wiki."
 echo ""
