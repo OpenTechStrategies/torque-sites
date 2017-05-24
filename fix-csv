@@ -403,7 +403,8 @@ def fix_headers(header_row):
                 sys.exit(1)
                 
 
-def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
+def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False,
+            reclassifications_csv=None):
     """Write a sanitized version of FNAME_IN (a CSV file) to FNAME_OUT.
 
     FNAME_IN is a filename.  FNAME_OUT is either a filename or None.
@@ -415,11 +416,19 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
     1 of every PARE entries should be processed, and the others skipped.
 
     If SHOW_TABLE_PROBLEM is not False, write debugging statements to
-    sys.stderr to show entries that have unclosed <table> tags."""
+    sys.stderr to show entries that have unclosed <table> tags.
 
+    If RECLASSIFICATIONS_CSV is not None, it is the path to a CSV file
+    that contains reclassification information in column D (4) and an
+    organization name in column A (1)."""
+    reclass_csv_reader = None
     try:
         csv_reader = csv.reader(open(fname_in, encoding='utf-8'),
                                 delimiter=',', quotechar='"')
+        if reclassifications_csv is not None:
+            reclass_csv_reader = csv.reader(open(reclassifications_csv,
+                                                 encoding='utf-8'),
+                                            delimiter=',', quotechar='"')
     except UnicodeDecodeError:
         sys.stderr.write("fix-csv expects utf-8-encoded unicode, not whatever is in this csv file.\n")
         sys.exit(-1)
@@ -433,6 +442,28 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
     header_row = next(csv_reader)
     fix_headers(header_row)
     csv_writer.writerow(header_row)
+
+    # Keys are organization names; values are tuples of this form:
+    #
+    #   (original_classification, new_classification)
+    #
+    # In almost all cases, original_classification is "Other", but
+    # there is at least one case where it's "Housing and Homelessness"
+    # (the organization in that case is "WikiHouse Foundation").
+    #
+    # TODO: Using orgs as the key is problematic, because some orgs
+    # appear more than once.  We could just toss them from the
+    # dictionary, since we have no way of knowing which proposals the
+    # different entries apply to.  It wouldn't even be enough to check
+    # if maybe all the reclassifications for that org were to the same
+    # category, because we still wouldn't know for sure that those are
+    # the only proposals in the main spreadsheet submitted by that org
+    # (though that's also true of all the reclassifications in general).
+    reclassifications = {}
+    if reclass_csv_reader is not None:
+        ignored_headers = next(reclass_csv_reader)
+        for row in reclass_csv_reader:
+            reclassifications[row[0]] = (row[1], row[3],)
 
     # Convert "<foo>&nbsp;<bar>" and "</foo>&nbsp;<bar>" to
     # to "<foo> <bar>" and "</foo> <bar>" respectively.  This is
@@ -453,6 +484,38 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False):
         row_num += 1  # first row here is row 1 (the header row was row 0) 
         if pare is not None and row_num % pare != 0:
             continue
+
+        if row[0] in reclassifications:
+            old, new = reclassifications[row[0]]
+            # Topic ("Primary Thematic Area" is Column 12; we call it
+            # 11 here because row is 0-based not 1-based.
+            found_old_class = row[11].strip().lower()
+            old = old.strip().lower()
+            # sys.stderr.write("DEBUG: FOC: %s\n" % found_old_class)
+            # sys.stderr.write("DEBUG: OLD: %s\n" % old)
+            if (
+                # Mostly old should be "other", except in one case:
+                # for organization "WikiHouse Foundation", old has
+                # a value of 'Housing and Homelessness'.  And it's
+                # the only one matched, which makes me think that
+                # maybe the reclassification sheet's claim that
+                # "other" appears in the original spreadsheet is
+                # bogus, and those proposals actually have some
+                # random different classification.
+                found_old_class == old
+                or (found_old_class == "select" and old == "other")
+                or (found_old_class == ""       and old == "other")):
+                # TODO: data/ambiguous-reclassifications.org has a
+                # list of all orgs that get found more than once by
+                # this match.  But leave it for now, since it's
+                # quite possible all this code will go away, given
+                # how problematic the reclassification data is.
+                # 
+                # sys.stderr.write("DEBUG: for: '%s':\n" % row[0])
+                # sys.stderr.write("       foc: '%s':\n" % found_old_class)
+                # sys.stderr.write("       old: '%s':\n" % old)
+                # sys.stderr.write("       new: '%s':\n" % new)
+                pass
 
         new_row = []
         org_name = None   # used only for debugging output
@@ -549,16 +612,21 @@ def main():
     """Sanitize the MacFound input and emit it as html-ized csv."""
     try:
         opts, args = getopt.getopt(sys.argv[1:], '',
-                                   ["pare=", "show-table-problem"])
+                                   ["pare=",
+                                    "reclassifications=",
+                                    "show-table-problem"])
     except getopt.GetoptError as err:
         sys.stderr.write("ERROR: '%s'\n" % err)
         sys.exit(2)
 
     show_table_problem = False
+    reclassifications_csv = None
     pare = None
     for o, a in opts:
         if o in ("--show-table-problem",):
             show_table_problem = True
+        elif o in ("--reclassifications",):
+            reclassifications_csv = a
         elif o == "--pare":
             pare = int(a)
         else:
@@ -570,7 +638,8 @@ def main():
             "ERROR: need CSV_INPUT and NEW_CSV_OUTPUT arguments.\n\n")
         sys.stderr.write(__doc__)
         sys.exit(1)
-    fix_csv(args[0], args[1], pare, show_table_problem)
+    fix_csv(args[0], args[1], pare, show_table_problem, 
+            reclassifications_csv=reclassifications_csv)
 
 if __name__ == '__main__':
     main()

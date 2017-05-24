@@ -229,17 +229,17 @@ SANITIZER="${MACFOUND_DIR}"/fix-csv
 # we can ask -- it wouldn't be too hard to change the order.)
 STAGE_1_PREFIX="sanitized-"
 STAGE_2_PREFIX="filtered-"
-STAGE_3_PREFIX="joined-"
 
 STAGE_1_CSV="${STAGE_1_PREFIX}${RAW_CSV}"
 STAGE_2_CSV="${STAGE_2_PREFIX}${RAW_CSV}"
-STAGE_3_CSV="${STAGE_3_PREFIX}${RAW_CSV}"
 
 # Sanitize the updated spreadsheet.
 #
 # Use --pare to convert only 1% of the entries, to save time while testing. 
 echo "Stage 1: Sanitizing..."
-${SANITIZER} --pare=100 "${DATA_DIR}/${RAW_CSV}" "${DATA_DIR}/${STAGE_1_CSV}"
+${SANITIZER} --pare=100 --reclassifications="${DATA_DIR}/geo-and-topic-revisions-Reclassify-themes-ALL-complete-(merged-assignment-docs).csv" \
+             "${DATA_DIR}/${RAW_CSV}" \
+             "${DATA_DIR}/${STAGE_1_CSV}"
 if [ $? -ne 0 ]; then
 		echo Sanitization failure!
 		exit 1
@@ -255,8 +255,6 @@ csvgrep -c 15 -f "${DATA_DIR}"/excluded-review-numbers.txt -i \
 deactivate
 echo "Done with Stage 2 (filtering excluded Review Numbers)."
 echo ""
-
-# TODO: Next implement Stage 3, the joining.
 
 echo "Creating wiki..."
 ${CSV2WIKI} -c ${CSV2WIKI_CONFIG} "${DATA_DIR}/${STAGE_2_CSV}"
