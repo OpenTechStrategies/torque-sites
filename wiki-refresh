@@ -48,7 +48,7 @@ if [ ! -d "${CSVKIT_DIR}" ]; then
   echo ""
   echo "Please do this..."
   echo ""
-  echo "  $ cd ${CSVKIT_DIR}"
+  echo "  $ cd $(dirname ${CSVKIT_DIR})"
   echo "  $ git clone git@github.com:wireservice/csvkit.git"
   echo ""
   echo "...and then try again."
