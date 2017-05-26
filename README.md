@@ -53,3 +53,12 @@ serve as an example or a template for other similar efforts.
 
 To install all of these, do `pip install bs4 mwclient unidecode`.
 
+* Mediawiki
+
+This code requires you to have a mediawiki instance.  One thing you
+might want to do is go to the root of your mediawiki code.  This would
+be `/usr/share/mediawiki` if you installed from the Debian repo.  It
+would be `core` if you installed the latest bleeding edge from Git.
+From there, do `patch -p1 <
+/path/to/macfound/repo/wiki_search_strip_tags.patch`, which will strip
+html tags from the snippets that get displayed in search results.
