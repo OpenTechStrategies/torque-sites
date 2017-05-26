@@ -49,6 +49,11 @@ if [ "${DATA_DIR}" = "" ]; then
 fi
 
 # Make sure we have csvkit by checking version on csvgrep.
+# If we don't have it, one way to get it would be:
+#
+#   $ git clone https://github.com/wireservice/csvkit.git
+#   $ cd csvkit
+#   $ sudo python3 setup.py install --prefix=/usr/local
 check_for_bin csvgrep
 csvgrep --version 2&>/dev/null || { echo "csvkit needs to be a recent version. Please upgrade to version 1.0.2+"; exit 1; }
 
