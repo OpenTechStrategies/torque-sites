@@ -39,6 +39,10 @@ function check_for_bin {
 
 
 if [ "${DATA_DIR}" = "" ]; then
+    [ -d "${OTSDIR}/clients/macfound/eval-system/data" ] && DATA_DIR="${OTSDIR}/clients/macfound/eval-system/data"
+fi
+
+if [ "${DATA_DIR}" = "" ]; then
   echo "ERROR: DATA_DIRECTORY argument required."
   echo ""
   echo "Usage: '${0} DATA_DIRECTORY'"
