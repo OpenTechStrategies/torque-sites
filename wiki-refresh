@@ -30,7 +30,6 @@
 
 MACFOUND_DIR=`dirname "${0}"`
 SOURCES_ROOT="${MACFOUND_DIR}/.."
-CSVKIT_DIR="${SOURCES_ROOT}/csvkit"
 DATA_DIR="${1}"
 
 
