@@ -84,7 +84,7 @@ else
   echo "ERROR: Problem running ${CSV2WIKI}."
   echo ""
   echo "Most likely you need to install the 'mwclient' and 'unidecode'"
-  echo "Python modules.  Do 'sudo pip install mwclient', and same for"
+  echo "Python modules.  Do 'pip install mwclient', and same for"
   echo "'bs4' and 'unidecode', and try running this script again."
   exit 1
 fi
