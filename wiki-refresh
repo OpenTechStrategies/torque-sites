@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Load all the 100&Change proposals into a wiki.
 #
@@ -32,6 +32,13 @@ MACFOUND_DIR=`dirname "${0}"`
 SOURCES_ROOT="${MACFOUND_DIR}/.."
 CSVKIT_DIR="${SOURCES_ROOT}/csvkit"
 DATA_DIR="${1}"
+
+
+function check_for_bin {
+	command -v $1 >/dev/null 2>&1 || { echo >&2 "$1 required but it's not available.  Aborting."; exit 1; }
+}
+
+
 if [ "${DATA_DIR}" = "" ]; then
   echo "ERROR: DATA_DIRECTORY argument required."
   echo ""
@@ -42,18 +49,9 @@ if [ "${DATA_DIR}" = "" ]; then
   exit 1
 fi
 
-# Make sure we have csvkit.
-if [ ! -d "${CSVKIT_DIR}" ]; then
-  echo "ERROR: csvkit source tree not found."
-  echo ""
-  echo "Please do this..."
-  echo ""
-  echo "  $ cd $(dirname ${CSVKIT_DIR})"
-  echo "  $ git clone git@github.com:wireservice/csvkit.git"
-  echo ""
-  echo "...and then try again."
-  exit 1
-fi
+# Make sure we have csvkit by checking version on csvgrep.
+check_for_bin csvgrep
+csvgrep --version 2&>/dev/null || { echo "csvkit needs to be a recent version. Please upgrade to version 1.0.2+"; exit 1; }
 
 # Make sure we have csv2wiki.
 CSV2WIKI="${SOURCES_ROOT}/csv2wiki/csv2wiki"
@@ -249,10 +247,8 @@ echo ""
 
 # Filter out excluded Review Numbers.
 echo "Stage 2: Filtering excluded Review Numbers..."
-. ${CSVKIT_DIR}/VIRTUAL/bin/activate
 csvgrep -c 15 -f "${DATA_DIR}"/excluded-review-numbers.txt -i \
         "${DATA_DIR}"/${STAGE_1_CSV} > "${DATA_DIR}"/"${STAGE_2_CSV}"
-deactivate
 echo "Done with Stage 2 (filtering excluded Review Numbers)."
 echo ""
 
