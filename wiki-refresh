@@ -111,87 +111,32 @@ fi
 MASTER_CSV="${DATA_DIR}/100andchangeExport-all-judges.csv"
 
 # We've extracted the excluded Review Numbers from Exclusions.xlsx.
-# They're saved elsewhere, but for the record, here's how it was done:
+# They're saved elsewhere, but for the record, here's how it was done,
+# using the 'in2csv' program from csvkit:
 # 
-#   $ cd ${SOURCE_ROOT/csvkit
-#   $ virtualenv --no-site-packages VIRTUAL
-#   (VIRTUAL)$ source VIRTUAL/bin/activate
-#   (VIRTUAL)$ pip install --upgrade pip  # only had to do this once
-#   You are using pip version 6.1.1, however version 9.0.1 is available.
-#   You should consider upgrading via the 'pip install --upgrade pip' command.
-#   Collecting pip
-#     Downloading pip-9.0.1-py2.py3-none-any.whl (1.3MB)
-#       100% |████████████████████████████████| 1.3MB 363kB/s 
-#   Installing collected packages: pip
-#     Found existing installation: pip 6.1.1
-#       Uninstalling pip-6.1.1:
-#         Successfully uninstalled pip-6.1.1
-#   Successfully installed pip-9.0.1
-#   (VIRTUAL)$ pip install -r requirements-py3.txt
-#   ... lots of noise, all indicating success...
-#   (VIRTUAL)$ pip install csvkit
-#   Collecting csvkit
-#     Downloading csvkit-1.0.2.tar.gz (3.8MB)
-#       100% |████████████████████████████████| 3.8MB 300kB/s 
-#   Requirement already satisfied: agate>=1.6.0 in ./VIRTUAL/lib/python2.7/site-packages (from csvkit)
-#   Requirement already satisfied: agate-excel>=0.2.1 in ./VIRTUAL/src/agateexcel (from csvkit)
-#   Requirement already satisfied: agate-dbf>=0.2.0 in ./VIRTUAL/lib/python2.7/site-packages (from csvkit)
-#   Requirement already satisfied: agate-sql>=0.5.2 in ./VIRTUAL/src/agatesql (from csvkit)
-#   Requirement already satisfied: six>=1.6.1 in ./VIRTUAL/lib/python2.7/site-packages (from csvkit)
-#   Requirement already satisfied: Babel>=2.0 in ./VIRTUAL/lib/python2.7/site-packages (from agate>=1.6.0->csvkit)
-#   Requirement already satisfied: pytimeparse>=1.1.5 in ./VIRTUAL/lib/python2.7/site-packages (from agate>=1.6.0->csvkit)
-#   Requirement already satisfied: python-slugify>=1.2.1 in ./VIRTUAL/lib/python2.7/site-packages (from agate>=1.6.0->csvkit)
-#   Requirement already satisfied: leather>=0.3.2 in ./VIRTUAL/lib/python2.7/site-packages (from agate>=1.6.0->csvkit)
-#   Requirement already satisfied: parsedatetime>=2.1 in ./VIRTUAL/lib/python2.7/site-packages (from agate>=1.6.0->csvkit)
-#   Requirement already satisfied: isodate>=0.5.4 in ./VIRTUAL/lib/python2.7/site-packages (from agate>=1.6.0->csvkit)
-#   Requirement already satisfied: xlrd>=0.9.4 in ./VIRTUAL/lib/python2.7/site-packages (from agate-excel>=0.2.1->csvkit)
-#   Requirement already satisfied: openpyxl>=2.3.0 in ./VIRTUAL/lib/python2.7/site-packages (from agate-excel>=0.2.1->csvkit)
-#   Requirement already satisfied: dbfread>=2.0.5 in ./VIRTUAL/lib/python2.7/site-packages (from agate-dbf>=0.2.0->csvkit)
-#   Requirement already satisfied: sqlalchemy>=1.0.8 in ./VIRTUAL/lib/python2.7/site-packages (from agate-sql>=0.5.2->csvkit)
-#   Requirement already satisfied: pytz>=0a in ./VIRTUAL/lib/python2.7/site-packages (from Babel>=2.0->agate>=1.6.0->csvkit)
-#   Requirement already satisfied: Unidecode>=0.04.16 in ./VIRTUAL/lib/python2.7/site-packages (from python-slugify>=1.2.1->agate>=1.6.0->csvkit)
-#   Requirement already satisfied: future in ./VIRTUAL/lib/python2.7/site-packages (from parsedatetime>=2.1->agate>=1.6.0->csvkit)
-#   Requirement already satisfied: jdcal in ./VIRTUAL/lib/python2.7/site-packages (from openpyxl>=2.3.0->agate-excel>=0.2.1->csvkit)
-#   Requirement already satisfied: et_xmlfile in ./VIRTUAL/lib/python2.7/site-packages (from openpyxl>=2.3.0->agate-excel>=0.2.1->csvkit)
-#   Installing collected packages: csvkit
-#     Running setup.py install for csvkit ... done
-#   Successfully installed csvkit-1.0.2
-#   (VIRTUAL)$ 
-#
-#   # Hunh.  So does that mean that, despite the fact that I'm doing
-#   # this all in the latest csvkit source tree, straight from github,
-#   # it nevertheless downloaded release csvkit-1.0.2 from the Net and
-#   # installed that in my virtualenv?  Yes.  How annoying.  How does
-#   # one run a source checkout in virtualenv, again?  And why does
-#   # every programming language have its own way of doing this, so
-#   # that I have to remember a zillion little systems, each slightly
-#   # different?  Also, why do good things happen to bad people?
-#   # 
-#   # Anyway, now we can run the conversion:
-#
-#   (VIRTUAL)$ in2csv ${DATA_DIR}/Exclusions.xlsx > ${DATA_DIR}/Exclusions.csv
-#   .../VIRTUAL/local/lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 0 has no name. Using "a".
-#   .../VIRTUAL/local/lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 1 has no name. Using "b".
-#   .../VIRTUAL/local/lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 2 has no name. Using "c".
-#   .../VIRTUAL/local/lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 3 has no name. Using "d".
-#   .../VIRTUAL/local/lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 4 has no name. Using "e".
-#   .../VIRTUAL/local/lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 5 has no name. Using "f".
-#   (VIRTUAL)$ 
-#
-#   (VIRTUAL)$ csvcut -n ${DATA_DIR}/Exclusions.csv
+#   $ in2csv ${DATA_DIR}/Exclusions.xlsx > ${DATA_DIR}/Exclusions.csv
+#   .../lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 0 has no name. Using "a".
+#   .../lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 1 has no name. Using "b".
+#   .../lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 2 has no name. Using "c".
+#   .../lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 3 has no name. Using "d".
+#   .../lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 4 has no name. Using "e".
+#   .../lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 5 has no name. Using "f".
+# 
+#   $ csvcut -n ${DATA_DIR}/Exclusions.csv
 #   1: a
 #   2: b
 #   3: c
 #   4: d
 #   5: e
 #   6: f
-#
-#   (VIRTUAL)$ csvlook ~/private/work/ots/clients/macfound/eval-system/data/Exclusions.csv
+# 
+#   $ csvlook ~/private/work/ots/clients/macfound/eval-system/data/Exclusions.csv
 #   ...see from output that column "a" has the Review Numbers we want...
-#
-#   (VIRTUAL)$ csvcut -c a ~/private/work/ots/clients/macfound/eval-system/data/Exclusions.csv \
-#                | grep -E "[0-9]+" > ${DATA_DIR}/excluded-review-numbers.txt
-#   (VIRTUAL)$ cat ${DATA_DIR}/excluded-review-numbers.txt
+# 
+#   $ csvcut -c a ~/private/work/ots/clients/macfound/eval-system/data/Exclusions.csv \
+#           | grep -E "[0-9]+" > ${DATA_DIR}/excluded-review-numbers.txt
+# 
+#   $ cat ${DATA_DIR}/excluded-review-numbers.txt
 #   6587
 #   6226
 #   72
@@ -207,22 +152,13 @@ MASTER_CSV="${DATA_DIR}/100andchangeExport-all-judges.csv"
 #   5653
 #   3030
 #   5073
-#   (VIRTUAL)$ svn add ${DATA_DIR}/excluded-review-numbers.txt
-#   (VIRTUAL)$ svn ci -m "Save excluded Review Numbers (based on Exclusions.xlsx)." \
+# 
+#   $ svn add ${DATA_DIR}/excluded-review-numbers.txt
+# 
+#   $ svn ci -m "Save excluded Review Numbers (based on Exclusions.xlsx)." \
 #                     ${DATA_DIR}/excluded-review-numbers.txt
-#   (VIRTUAL)$ 
-#
-#   # Okay, leave the Python virtualenv -- we're done with csvkit for now.
-#   (VIRTUAL)$ deactivate
-
-# TODO: wiki-refresh still needs to do the "join" (probably by using the
-# 'csvjoin' command from csvkit) on one or both of these:
-#
-#   - geo-and-topic-revisions-Reclassify-themes-ALL-complete-(merged-assignment-docs).xlsx
-#   - PDF_Public/*.xlsx
-#
-# Then we can create the partners' wiki as well as the MacFound
-# internal wiki.
+# 
+#   $ 
 
 RAW_CSV="100andchangeExport-all-judges.csv"
 
@@ -264,3 +200,45 @@ echo "Creating wiki..."
 ${CSV2WIKI} -c ${CSV2WIKI_CONFIG} "${DATA_DIR}/${STAGE_2_CSV}"
 echo "Done creating wiki."
 echo ""
+
+# We need to upload Team MOUs and Team Descriptions as attachments,
+# for those proposals that have one or the other or both available.
+#
+# Make sure that the file "100andchange_team_MoUs.zip" exists in
+# ${DATA_DIR}, i.e., the Dropbox "100andchange_team_MoUs" folder
+# downloaded as a .zip file.  NOTE: there's separate file in Dropbox
+# named "100andchange_team_MoUs-20170509.zip", and it is *not* the one
+# we want.  We want the *folder* "100andchange_team_MoUs", downloaded
+# such that it becomes a .zip file only locally.  Got that?  Good.
+#
+# In ${DATA_DIR}/team-MOUs-and-descriptions/ there are two files
+# already prepared:
+#
+#   - memoranda-of-understanding.txt
+#   - team-descriptions.txt
+#
+# The first was produced via manual inspection (every file that had
+# "mou" case-insensitively in its name in such a way that it it means
+# "memorandum of understanding" and isn't just part of the org's real
+# name).  The second was produced relative to the first:
+#
+#   $ /bin/ls -1 | grep -v memoranda-of-understanding.txt |           \
+#       while read name; do                                           \
+#         if ! grep -q "${name}" memoranda-of-understanding.txt; then \
+#           echo "${name}";                                           \
+#         fi;                                                         \
+#       done
+#
+# We just unpack the MOU and description files directly into the same
+# directory (their names are never going to conflict with the two
+# files above) and upload as appropriate, based on review number,
+# which will always be the front of the file name followed by two
+# underscores, matching this regexp: "^[0-9]+__"
+#
+# TODO: Except, wait, we don't actually have any upload code yet!  We
+# don't even know those APIs!  So comment this part out for now:
+#
+#   SAVED_CWD=`pwd`
+#   cd ${DATA_DIR}/team-MOUs-and-descriptions
+#   unzip -l ../100andchange_team_MoUs.zip
+#   cd ${SAVED_CWD}
