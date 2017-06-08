@@ -197,7 +197,7 @@ echo "Done with Stage 2 (filtering excluded Review Numbers)."
 echo ""
 
 echo "Creating wiki..."
-${CSV2WIKI} -c ${CSV2WIKI_CONFIG} "${DATA_DIR}/${STAGE_2_CSV}"
+${CSV2WIKI} --cat-sort=alpha -c ${CSV2WIKI_CONFIG} "${DATA_DIR}/${STAGE_2_CSV}"
 echo "Done creating wiki."
 echo ""
 
