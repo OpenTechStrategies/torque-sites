@@ -56,12 +56,14 @@ To install all of these, do `pip install bs4 mwclient unidecode`.
 * Mediawiki
 
   This code requires you to have a MediaWiki instance; we are using
-  MediaWiki 1.28.2 for our production servers.
+  MediaWiki 1.28.2 for our production servers.  One thing you might
+  want to do is go to the root of your MediaWiki code (something like
+  `/usr/share/mediawiki` if you installed the Debian package, or
+  `core` if you installed the latest bleeding edge from Git), and run
 
-  One thing you might want to do is go to the root of your MediaWiki
-  code (something like `/usr/share/mediawiki` if you installed the
-  Debian package, or `core` if you installed the latest bleeding edge
-  from Git), and run `patch -p1 < .../wiki_search_strip_tags.patch`
-  (that patch file is in the same directory as this README.md).  This
-  will cause MediaWiki to strip HTML tags from the snippets that get
-  displayed in search results.
+      patch -p1 < .../wiki_search_strip_tags.patch
+
+  (that patch file is in the same directory as this README.md).  
+
+  This will cause MediaWiki to strip HTML tags from the snippets that
+  get displayed in search results.
