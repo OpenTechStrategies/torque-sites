@@ -95,14 +95,15 @@ To install all of these, do `pip install bs4 mwclient unidecode`.
          
   3) Install the PDF-rendering back end:
 
-         $ apt-get install pdftk python-pip stow supervisor
-         $ pip install virtualenv
-         $ mkdir -p /usr/local/stow/mwrender/src
-         $ virtualenv /usr/local/stow/mwrender/src/mwlib
-         $ cd /usr/local/stow/mwrender/src/mwlib
-         $ source bin/activate
-         $ pip install mwlib mwlib.rl pyfribidi # these are pediapress packages
-         $ pip install "pillow<3.0.0" gevent==1.1.2 #downgrade some deps "you'll never get it, i guess this shit is too new"
+         $ sudo su
+         root# apt-get install pdftk python-pip stow supervisor
+         root# pip install virtualenv
+         root# mkdir -p /usr/local/stow/mwrender/src
+         root# virtualenv /usr/local/stow/mwrender/src/mwlib
+         root# cd /usr/local/stow/mwrender/src/mwlib
+         root# source bin/activate
+         (mwlib) root# pip install mwlib mwlib.rl pyfribidi # these are pediapress packages
+         (mwlib) root# pip install "pillow<3.0.0" gevent==1.1.2 #downgrade some deps "you'll never get it, i guess this shit is too new"
 
   4) Install this patch into your newly installed `mwlib`:
 
@@ -114,16 +115,16 @@ To install all of these, do `pip install bs4 mwclient unidecode`.
 
   5) Set up symlinks for various binaries:
 
-         $ mkdir /usr/local/stow/mwrender/bin
+         $ sudo mkdir /usr/local/stow/mwrender/bin
          $ cd /usr/local/stow/mwrender/bin
-         $ printf "#!/bin/sh\n\n/usr/local/stow/mwrender/src/mwlib/bin/python /usr/local/stow/mwrender/src/mwlib/bin/$(basename $0) $@\n" > nserve
-         $ chmod a+x nserve
-         $ ln -s nserve mw-qserve
-         $ ln -s nserve mw-render
-         $ ln -s nserve nslave
-         $ ln -s ../src/mwlib/bin/mw-zip 
+         $ sudo printf "#!/bin/sh\n\n/usr/local/stow/mwrender/src/mwlib/bin/python /usr/local/stow/mwrender/src/mwlib/bin/$(basename $0) $@\n" > nserve
+         $ sudo chmod a+x nserve
+         $ sudo ln -s nserve mw-qserve
+         $ sudo ln -s nserve mw-render
+         $ sudo ln -s nserve nslave
+         $ sudo ln -s ../src/mwlib/bin/mw-zip 
          $ cd ..
-         $ stow -R mwrender
+         $ sudo stow -R mwrender
 
   6) Set up supervisor:
 
@@ -162,9 +163,9 @@ To install all of these, do `pip install bs4 mwclient unidecode`.
 
   7) Tell supervisor to use the new config and start the "collections" group of processes:
 
-         $ mkdir /var/cache/mwrender
-         $ cmod a+rwx /var/cache/mwrender
-         $ supervisorctl reread
-         $ supervisorctl update
-         $ supervisorctl restart collections:*
+         $ sudo mkdir /var/cache/mwrender
+         $ sudo chmod a+rwx /var/cache/mwrender
+         $ sudo supervisorctl reread
+         $ sudo supervisorctl update
+         $ sudo supervisorctl restart collections:*
 
