@@ -50,6 +50,7 @@ import re
 import io
 import sys
 import warnings
+import string
 from bs4 import BeautifulSoup
 
 def collapse_replace(string, old, new):
@@ -244,6 +245,15 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False,
                 # something like that.  But in a few entries it's
                 # blank or "Select", which must be handled specially.
                 new_cell = new_cell.strip()
+                # The data has spurious case variants of the same
+                # category, e.g., "Health and Well-Being" vs
+                # "Health and Well-being".  Fortunately, we can fix it
+                # with a very simple rule: capitalize every word,
+                # except for "and" and "and/or", which we will make
+                # sure are always lower-case.
+                new_cell = string.capwords(new_cell)
+                new_cell = new_cell.replace(" And ", " and ")
+                new_cell = new_cell.replace(" And/or ", " and/or ")
                 if new_cell == "" or new_cell.lower() == "select":
                     # Cannot use special formatting here because this
                     # will be used as a category, not just as a value.
