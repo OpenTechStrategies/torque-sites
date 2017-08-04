@@ -238,6 +238,10 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False,
             # swaps the bullets for asterisks.
             new_cell = bullets_re.sub("*", new_cell)
 
+            # Remember, the cell_nums referenced below are 0-based
+            # *and* from 100andchangeExport-all-judges.csv before it
+            # has any of the supplementary columns cut or spliced in.
+
             if cell_num == 11:  # Some entries have "Select" as the topic
                 # Column 12 (11 in 0-based) is "Primary Thematic Area",
                 # and it's usually "Affordable and Clean Energy" or
