@@ -17,14 +17,16 @@ serve as an example or a template for other similar efforts.
   Start from the [wiki-refresh](wiki-refresh) script and see how it
   drives first [fix-csv](fix-csv), which performs some one-time
   transformations to a specific CSV file from the MacArthur
-  Foundation, and then runs the transformed CSV through the
-  general-purpose script
+  Foundation, then joins some supplemental data using the ever-handy
+  [csvkit suite](https://github.com/wireservice/csvkit), and then runs
+  the final CSV through the general-purpose script
   [csv2wiki](https://github.com/OpenTechStrategies/csv2wiki)
   to create pages in a [MediaWiki](https://www.mediawiki.org/)
   instance.
   
-  To run `wiki-refresh`, you should first copy `csv2wiki-config.tmpl`
-  to `csv2wiki-config` and edit the latter in the obvious ways.
+  To run `wiki-refresh`, you should first copy one of the
+  `macfound-*-csv2wiki-config.tmpl` files to `csv2wiki-config` and
+  edit the latter in the obvious ways.
 
   This system has been tested with MediaWiki 1.28.  There are a few
   notes in
@@ -34,7 +36,7 @@ serve as an example or a template for other similar efforts.
   categories feature working, some MediaWiki instances may have
   spam-prevention features enabled that prevent csv2wiki from creating
   pages containing URLs, etc.
-	
+
 * fix-csv
 
   This is a script that wiki-refresh uses to sanitize the csv for
@@ -50,8 +52,9 @@ serve as an example or a template for other similar efforts.
 * [Beautiful Soup 4](https://www.crummy.com/software/BeautifulSoup/)
 * [MWClient](https://github.com/mwclient/mwclient)
 * [Unidecode](https://pypi.python.org/pypi/Unidecode) 
+* [csvkit](https://github.com/wireservice/csvkit)
 
-To install all of these, do `pip install bs4 mwclient unidecode`.
+To install all of these, do `pip install bs4 mwclient unidecode csvkit`.
 
 * Mediawiki
 

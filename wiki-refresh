@@ -1,6 +1,8 @@
 #!/bin/bash
 
-# Load all the 100&Change proposals into a wiki.
+# Load all the 100&Change proposals into a wiki, and along the way
+# create a 'processed-100andchangeExport-all-judges.csv' file 
+# to give to MacFound.
 #
 # Copyright (C) 2017  Open Tech Strategies, LLC
 #
@@ -164,18 +166,17 @@ RAW_CSV="100andchangeExport-all-judges.csv"
 
 SANITIZER="${MACFOUND_DIR}"/fix-csv
 
-# First we sanitize, then we filter, then we join.  MacFound probably
-# wants the Stage 3 spreadsheet as a deliverable, but in principle
-# we could deliver any of them.  (There is some question as to whether
-# they would want filtering to happen before joining or vice versa;
-# we can ask -- it wouldn't be too hard to change the order.)
+# First we sanitize, then we filter, then we join.  We leave all the
+# intermediate stages in place, in case we need to debug them later.
 STAGE_1_PREFIX="sanitized-"
 STAGE_2_PREFIX="filtered-"
 STAGE_3_PREFIX="joined-"
+STAGE_FINAL_PREFIX="processed-"
 
 STAGE_1_CSV="${STAGE_1_PREFIX}${RAW_CSV}"
 STAGE_2_CSV="${STAGE_2_PREFIX}${RAW_CSV}"
 STAGE_3_CSV="${STAGE_3_PREFIX}${RAW_CSV}"
+STAGE_FINAL_CSV="${STAGE_FINAL_PREFIX}${RAW_CSV}"
 
 ### Sanitize the updated spreadsheet.
 #
@@ -259,8 +260,12 @@ csvjoin -c Review_Number                                              \
 echo "Done with Stage 3 (joining CSVs to add supplemental data)."
 echo ""
 
+# Give the processed CSV its final name, for delivery to MacFound.
+cp "${DATA_DIR}"/"${STAGE_3_CSV}" "${DATA_DIR}"/"${STAGE_FINAL_CSV}"
+
 echo "Creating wiki..."
-${CSV2WIKI} --cat-sort=alpha -c ${CSV2WIKI_CONFIG} "${DATA_DIR}/${STAGE_3_CSV}"
+${CSV2WIKI} --cat-sort=alpha -c ${CSV2WIKI_CONFIG}                    \
+            "${DATA_DIR}/${STAGE_FINAL_CSV}"
 echo "Done creating wiki."
 echo ""
 
