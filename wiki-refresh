@@ -243,7 +243,7 @@ csvcut -C Reason_For_Turndown                                         \
           "${DATA_DIR}"/"${STAGE_2_CSV}"                              \
         > "${DATA_DIR}"/tmp-"${STAGE_2_CSV}"
 # Put in the new Participant_Email and Reason_For_Turndown columns.
-csvjoin -c Review_Number                                              \
+csvjoin --snifflimit=0 -c Review_Number                               \
            "${DATA_DIR}"/tmp-"${STAGE_2_CSV}"                         \
            "${DATA_DIR}"/contact-and-turndown-tmp.csv                 \
          > "${DATA_DIR}"/"${STAGE_3_CSV}"
