@@ -234,16 +234,71 @@ csvcut -c Review_Number,Reason_For_Turndown                           \
           "${DATA_DIR}"/Reason-for-Turndown-join-2017-07-16-utf8.csv  \
         > "${DATA_DIR}"/reason-for-turndown-tmp.csv
 # Join those two into one new CSV, also keyed on Review_Number.
-csvjoin -c Review_Number                                              \
+#
+# The '--left' ensures that the temporary combined supplementary
+# spreadsheet, which contains both principal contact info and reasons
+# for turndown, is complete, that is, that it represents the union of
+# those two sets of review numbers.
+csvjoin --left -c Review_Number                                       \
            "${DATA_DIR}"/participant-email-tmp.csv                    \
            "${DATA_DIR}"/reason-for-turndown-tmp.csv                  \
          > "${DATA_DIR}"/contact-and-turndown-tmp.csv
+# Ah, but that leaves three missing Review_Numbers, ones that were in
+# Reason-for-Turndown-join-2017-07-16-utf8.csv but were not in
+# Principal-contact-join-20170716-utf8.csv.  That's okay.  Three's a
+# pretty low integer -- we can just handle them manually.  Note that
+# we *could* figure them out on the fly here, and if we ever get
+# updated supplemental data from MacFound, then we should probably
+# dynamicize this code.  But for now, we just know 8002, 8005, 8009.
+for num in 8002 8005 8009; do
+  grep -E "^${num}," "${DATA_DIR}"/reason-for-turndown-tmp.csv        \
+    | sed -e "s/,/,,/g"                                               \
+  >> "${DATA_DIR}"/contact-and-turndown-tmp.csv;                      \
+done
+# Now the last three rows of $DATA_DIR/contact-and-turndown-tmp.csv
+# look like this (with the actual reasons omitted of course):
+# 
+#   8002,,Real reason for turndown omitted from this public script
+#   8005,,Same here
+#   8009,,Likewise
+#
+# ...which is exactly what we needed: three rows that give a new
+# reason for turndown, but don't supply a principal contact (because
+# Principal-contact-join-20170716-utf8.csv didn't have any for them).
+#  
 # Cut the old Reason_For_Turndown column out of the original CSV.
 csvcut -C Reason_For_Turndown                                         \
           "${DATA_DIR}"/"${STAGE_2_CSV}"                              \
         > "${DATA_DIR}"/tmp-"${STAGE_2_CSV}"
 # Put in the new Participant_Email and Reason_For_Turndown columns.
+#
+# The '--left' here ensures that proposals whose review numbers do not
+# appear at all the combined supplementary spreadsheet (i.e.,
+# proposals for which there is neither a supplemental principal
+# contact nor a supplemental reason for turndown) are still included
+# in the final spreadsheet and thus in the wiki.
+# 
+# This works because:
+#
+#    - Principal Contact Info isn't a field in the original
+#      spreadsheet anyway, so we by definition can't drop it.
+#
+#    - We were told that the supplemental Reasons For Turndown are a
+#      strict superset of the Reasons For Turndown as given in the
+#      original spreadsheet, so the fact that we dropped the original
+#      column and replaced it with this data can't lose information.
+#      And by "can't happen" I mean "\"can't happen\"".
+#
+#    - As I wrote this comment, in the Starbucks at 55 Broad Street in
+#      lower Manhattan, the Jackson 5's "I Want You Back" came on
+#      their sound system and was filling the room with awesomeness,
+#      but then somehow whatever streaming company is supplying
+#      Starbucks with awesomeness decided to do a *fade out* on that
+#      song, even though if ever a song deserved to go out with its
+#      proper ending it's that one.  I just want to promise that we
+#      will never treat your data the way they treated that song.
 csvjoin --snifflimit=0 --delimiter=',' --quotechar='"'                \
+        --left                                                        \
         -c Review_Number                                              \
            "${DATA_DIR}"/tmp-"${STAGE_2_CSV}"                         \
            "${DATA_DIR}"/contact-and-turndown-tmp.csv                 \
