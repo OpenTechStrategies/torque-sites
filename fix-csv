@@ -258,6 +258,13 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False,
                 new_cell = string.capwords(new_cell)
                 new_cell = new_cell.replace(" And ", " and ")
                 new_cell = new_cell.replace(" And/or ", " and/or ")
+                # string.capwords() doesn't treat a word immediately
+                # following a hyphen as a separate word, so we need
+                # to special-case the two known instances of that.
+                new_cell = new_cell.replace("Well-being", 
+                                            "Well-Being")
+                new_cell = new_cell.replace("Non-communicable", 
+                                            "Non-Communicable")
                 if new_cell == "" or new_cell.lower() == "select":
                     # Cannot use special formatting here because this
                     # will be used as a category, not just as a value.
