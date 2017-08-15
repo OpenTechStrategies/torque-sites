@@ -265,6 +265,23 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False,
                                             "Well-Being")
                 new_cell = new_cell.replace("Non-communicable", 
                                             "Non-Communicable")
+                # Often a comma was used to delimit the common prefix
+                # "Health and Well-Being", but sometimes a colon was
+                # used.  The colon probably makes more sense, so let's
+                # just switch them all to that.
+                new_cell = new_cell.replace("Health and Well-Being,", 
+                                            "Health and Well-Being:")
+                # And a couple of judgement calls:
+                if re.match("^Resilience Against Climate Change$", new_cell):
+                    # The shorter name only had 18 members, compared
+                    # with 170 for the longer name.
+                    new_cell = "Resilience Against Climate Change and Environmental Damage"
+                if re.match("^Crime and Punishment$", new_cell):
+                    # The shorter name only had 9 members, compared
+                    # with 54 for the longer name.
+                    new_cell = "Crime, Punishment and Rehabilitation"
+                # Is it still a special case when the whole program is
+                # special cases?
                 if new_cell == "" or new_cell.lower() == "select":
                     # Cannot use special formatting here because this
                     # will be used as a category, not just as a value.
