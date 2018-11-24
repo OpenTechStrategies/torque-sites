@@ -11,7 +11,7 @@ serve as an example or a template for other similar efforts.
 
 * CSV->Wiki
 
-  Right now the things most likely to be useful in here is the
+  Right now the thing most likely to be useful in here is the
   CSV->wiki conversion system.
 
   Start from the [wiki-refresh](wiki-refresh) script and see how it
