@@ -1,147 +1,365 @@
 [default]
 wiki_url: https://macfound.opentechstrategies.com/mwiki/
 username: csv2wiki
-password: ### login password for user 'csv2wiki' here ###
-title_tmpl: {1} ({15})
-toc_name: 100Change_TOC
-cat_col: 12
-sec_map: . Organization
-           1
-         . Review Number
-           15
-         . Topic
-           12
-         . Executive Summary
-           16
-         . Problem Statement
-           39
-         . Proposed Solution
-           40
-         . Pitch Video Link
-           89
-         . Team Overview
-           2  # Location
-           3  # Legal Status
-           4  # Legal Status - Other
-           5  # Registration Location - Other
-           6  # City
-           7  # State / Province / Region
-           8  # Postal Code
-           9  # Country
-           10  # Phone Number
-           11  # Area of Org Expertise
-         .. Principal Contact
-           90  # Participant_Email
-         . Hear about 100 and Change Selection
-           13
-         . Hear about 100 and Change Notes
-           14
-         . Team Purpose
-           17
-         . Legal Entity Name
-           18
-         . Org Info 
-           19  # Principal Org Contact Name
-           20  # Principal Org Contact Title
-           21  # Principal Org Contact Phone
-           22  # Principal Org Contact Email
-           23  # Principal Org Registration Location
-           24  # Principal Org Legal Status
-           25  # Principal Org Legal Status - Other
-           26  # Principal Org Legal Status - Other - Notes
-           27  # Principal Org Jurisdiction
-           28  # Principal Org Jurisdiction - Other
-           29  # Principal Org City
-           30  # Principal Org State / Province
-           31  # Principal Org Postal Code
-           32  # Principal Org Country
-         .. Principal Org Primary Area of Expertise
-           33  # Principal Org Primary Area of Expertise - Dropdown
-           34  # Principal Org Primary Area of Expertise - Notes
-         .. Principal Org Primary Thematic Area of Proposed Solution
-           35  # Principal Org Primary Thematic Area of Proposed Solution - Dropdown
-           36  # Principal Org Primary Thematic Area of Proposed Solution - Notes
-         . Team Structure
-           37
-         . Why Collaboration is Effective
-           38
-         . Country / State Information
-           41  # Country/State 1
-           42  # Country/State 2
-           43  # Country/State 3
-         . Oceans/Space/Global
-           44
-         . Other Work Location
-           45
-         . Tactics and Technology
-           46
-         . Timeline and Key Milestones
-           47
-         . Evidence of Effectiveness
-           48
-         . Risk Assessment
-           49
-         . Plan Monitoring/Evaluation/Learning
-           50
-         . Previous Performance
-           51
-         . Resources Overview
-         ... Organizational Capacity
-           52
-         ... Budget Narrative
-           53
-         ... Resource Requirements and Sustainability
-           54
-         ... Other Considerations
-           55
-         ... Charitable Purpose
-           56
-         ... Private Benefit
-           57
-         ... Lobbying Activities
-           58
-         ... Human Subjects Research
-           59
-         . Team Story
-           60
-         . Total Score
-           61
-         . Evaluations
-         ... Meaningful?
-           62
-           66  # Meaningful? - Comment 1
-           67  # Meaningful? - Comment 2
-           68  # Meaningful? - Comment 3
-           69  # Meaningful? - Comment 4
-           70  # Meaningful? - Comment 5
-         ... Verifiable?
-           63
-           71  # Verifiable? - Comment 1
-           72  # Verifiable? - Comment 2
-           73  # Verifiable? - Comment 3
-           74  # Verifiable? - Comment 4
-           75  # Verifiable? - Comment 5
-         ... Feasible?
-           64
-           76  # Feasible? - Comment 1
-           77  # Feasible? - Comment 2
-           78  # Feasible? - Comment 3
-           79  # Feasible? - Comment 4
-           80  # Feasible? - Comment 5
-         ... Durable?
-           65
-           81  # Durable? - Comment 1
-           82  # Durable? - Comment 2
-           83  # Durable? - Comment 3
-           84  # Durable? - Comment 4
-           85  # Durable? - Comment 5
-         . Valid Submission
-           86
-         . Big Bet / Enduring Commitment Alignment
-           87
-         . Reason For Turndown
-           91
-         . Comments
-           88
+password: ***************
+title_tmpl: {28} ({4})
+toc_name: Draft_TOC
+# cat_col: 124
+sec_map: . {28}
+           28      # Project Title
+         . {29}
+           29      # Project Description
+         . {30}
+           30      # Executive Summary
+         . Problem and Solution
+           52      # Problem Statement
+           53      # Demand to Adress The Problem
+           54      # Solution Overview
+         . {31}
+           31      # Youtube Video
+         . {39}
+           39      # Why Your Team
+         . {35}
+           35      # Primary Area of Expertise
+         .. {36}
+           36      # Primary Area of Expertise ID
+         . {37}
+           37      # Team Collaboration
+         . {38}
+           38      # Case of Partnership
+         . {55}
+           55      # Technical Process Description
+         . {56}
+           56      # Priority Populations
+         .. {57}
+           57      # Priority Populations IDs
+         . {58}
+           58      # Diversity Equity and Inclusion
+         . {59}
+           59      # Opportunities and Accomodations
+         . {60}
+           60      # Theory of Change
+         . {61}
+           61      # Barrier Assessment and Risk Mitigation
+         . {62}
+           62      # Primary Subject Area
+         .. {63}
+           63      # Primary Subject Area ID
+         . {124}
+           124     # Sustainable Development Goals
+         . {125}
+           125     # Solution Stage
+         . {126}
+           126     # Key Words
+         . {127}
+           127     # Evidence of Effectiveness
+         . {128}
+           128     # Type of Evidence
+         . {129}
+           129     # Monitoring Evaluation and Learning
+         . {130}
+           130     # Planning for Scale and Amplifying Impact
+         . {131}
+           131     # Durability of Impact
+         . {132}
+           132     # Bibliography
+         . Project Phases
+         .. Phase 1
+         ... Name
+           133     # Project Phase #1: Name
+         ... Duration
+           134     # Project Phase #1: Duration
+         ... Description
+           135     # Project Phase #1: Description
+         ... Budget Sub-Total
+           156     # Phase #1: Budget Sub-Total
+         .. Phase 2
+         ... Name
+           136     # Project Phase #2: Name
+         ... Duration
+           137     # Project Phase #2: Duration
+         ... Description
+           138     # Project Phase #2: Description
+         ... Budget Sub-Total
+           157     # Phase #2: Budget Sub-Total
+         .. Phase 3
+         ... Name
+           139     # Project Phase #3: Name
+         ... Duration
+           140     # Project Phase #3: Duration
+         ... Description
+           141     # Project Phase #3: Description
+         ... Budget Sub-Total
+           158     # Phase #3: Budget Sub-Total
+         . Total Resource Requirements
+           142     # Total Resourse Requirementes [sic]
+         . Contact Info
+         .. Primary Contact
+         .. {15}
+            15     # Primary Contact First Name
+         .. {16}
+            16     # Primary Contact Last Name
+         .. {17}
+            17     # Primary Contact Title
+         .. {18}
+            18     # Primary Contact Phone
+         .. {19}
+            19     # Primary Contact Email
+         .. Secondary Contact
+         .. {20}
+            20     # Secondary Contact First Name
+         .. {21}
+            21     # Secondary Contact Last Name
+         .. {22}
+            22     # Secondary Contact Title
+         .. {23}
+            23     # Secondary Contact Phone
+         .. {24}
+            24     # Secondary Contact Email
+         . Organization Information
+         .. {32}
+           32      # Principal Organization
+         .. {33}
+           33      # Principal Organization Website or Social Media
+         .. {34}
+           34      # Project Website or Social Media Page
+         .. {5}
+           5       # Organization Legal Name
+         .. {6}
+           6       # Country
+         .. {7}
+           7       # Country ID
+         .. {8}
+           8       # State
+         .. {9}
+           9       # State ID
+         .. {10}
+           10      # Locality
+         .. {11}
+           11      # Locality ID
+         .. {12}
+           12      # Street Address
+         .. {13}
+           13      # City
+         .. {14}
+           14      # Zip Postal Code
+         .. {159}
+           159     # Financial Sustainability
+         .. {160}
+           160     # Other Resourse Requirements
+         .. {161}
+           161     # Charitable Purpose
+         .. {162}
+           162     # Private Benefit
+         .. {163}
+           163     # Lobbying Activities
+         .. {164}
+           164     # Human Subject Research
+         .. {165}
+           165     # Intellectual Property
+         .. {166}
+           166     # Identification Number of Principal Organization
+         .. EIN
+           167     # Identification Number of Principal Organization ein
+         .. {168}
+           168     # Annual Operating Budget
+         .. {169}
+           169     # Number of Employees
+         .. {25}
+           25      # Organization Legal Status
+         . Key Staff
+         .. Key Staff 1
+           40      # Key Staff #1: Firstname
+           41      # Key Staff #1: Lastname
+           42      # Key Staff #1: Association
+         ... Biography
+           43      # Key Staff #1: Biography
+         .. Key Staff 2
+           44      # Key Staff #2: Firstname
+           45      # Key Staff #2: Lastname
+           46      # Key Staff #2: Association
+         ... Biography
+           47      # Key Staff #2: Biography
+         .. Key Staff 3
+           48      # Key Staff #3: Firstname
+           49      # Key Staff #3: Lastname
+           50      # Key Staff #3: Association
+         ... Biography
+           51      # Key Staff #3: Biography
+         . Current Solution Countries
+         .. Current Solution Country 1
+         . {64}
+           64      # Location Of Current Solution Country
+         .. {65}
+           65      # Location Of Current Solution Country id
+         . {66}
+           66      # Location Of Current Solution State
+         .. {67}
+           67      # Location Of Current Solution State id
+         . {68}
+           68      # Location Of Current Solution Locality
+         .. {69}
+           69      # Location Of Current Solution Locality id
+         .. Current Solution Country 2
+         . {70}
+           70      # Location Of Current Solution2 Country
+         .. {71}
+           71      # Location Of Current Solution2 Country id
+         . {72}
+           72      # Location Of Current Solution2 State
+         .. {73}
+           73      # Location Of Current Solution2 State id
+         . {74}
+           74      # Location Of Current Solution2 Locality
+         .. {75}
+           75      # Location Of Current Solution2 Locality id
+         .. Current Solution Country 3
+         . {76}
+           76      # Location Of Current Solution3 Country
+         .. {77}
+           77      # Location Of Current Solution3 Country id
+         . {78}
+           78      # Location Of Current Solution3 State
+         .. {79}
+           79      # Location Of Current Solution3 State id
+         . {80}
+           80      # Location Of Current Solution3 Locality
+         .. {81}
+           81      # Location Of Current Solution3 Locality id
+         .. Current Solution Country 4
+         . {82}
+           82      # Location Of Current Solution4 Country
+         .. {83}
+           83      # Location Of Current Solution4 Country id
+         . {84}
+           84      # Location Of Current Solution4 State
+         .. {85}
+           85      # Location Of Current Solution4 State id
+         . {86}
+           86      # Location Of Current Solution4 Locality
+         .. {87}
+           87      # Location Of Current Solution4 Locality id
+         .. Current Solution Country 5
+         . {88}
+           88      # Location Of Current Solution5 Country
+         .. {89}
+           89      # Location Of Current Solution5 Country id
+         . {90}
+           90      # Location Of Current Solution5 State
+         .. {91}
+           91      # Location Of Current Solution5 State id
+         . {92}
+           92      # Location Of Current Solution5 Locality
+         .. {93}
+           93      # Location Of Current Solution5 Locality id
+         . Future Work Countries
+         .. Future Work Country 1
+         . {94}
+           94      # Location Of Future Work Country
+         .. {95}
+           95      # Location Of Future Work Country id
+         . {96}
+           96      # Location Of Future Work State
+         .. {97}
+           97      # Location Of Future Work State id
+         . {98}
+           98      # Location Of Future Work Locality
+         .. {99}
+           99      # Location Of Future Work Locality id
+         .. Future Work Country 2
+         . {100}
+           100     # Location Of Future Work2 Country
+         .. {101}
+           101     # Location Of Future Work2 Country id
+         . {102}
+           102     # Location Of Future Work2 State
+         .. {103}
+           103     # Location Of Future Work2 State id
+         . {104}
+           104     # Location Of Future Work2 Locality
+         .. {105}
+           105     # Location Of Future Work2 Locality id
+         .. Future Work Country 3
+         . {106}
+           106     # Location Of Future Work3 Country
+         .. {107}
+           107     # Location Of Future Work3 Country id
+         . {108}
+           108     # Location Of Future Work3 State
+         .. {109}
+           109     # Location Of Future Work3 State id
+         . {110}
+           110     # Location Of Future Work3 Locality
+         .. {111}
+           111     # Location Of Future Work3 Locality id
+         .. Future Work Country 4
+         . {112}
+           112     # Location Of Future Work4 Country
+         .. {113}
+           113     # Location Of Future Work4 Country id
+         . {114}
+           114     # Location Of Future Work4 State
+         .. {115}
+           115     # Location Of Future Work4 State id
+         . {116}
+           116     # Location Of Future Work4 Locality
+         .. {117}
+           117 Location Of Future Work4 Locality id
+         .. Future Work Country 5
+         . {118}
+           118     # Location Of Future Work5 Country
+         .. {119}
+           119     # Location Of Future Work5 Country id
+         . {120}
+           120     # Location Of Future Work5 State
+         .. {121}
+           121     # Location Of Future Work5 State id
+         . {122}
+           122     # Location Of Future Work5 Locality
+         .. {123}
+           123     # Location Of Future Work5 Locality id
+         . Funders
+         .. Funder 1
+         ... Name
+           143     # Funder #1: Name
+         ... First Year of Funding
+           144     # Funder #1: First Year of Funding
+         ... Last Year of Funding
+           145     # Funder #1: Last Year of Funding
+         ... Amount of Funding
+           146     # Funder #1: Amount of Funding
+         .. Funder 2
+         ... Name
+           147     # Funder #2: Name
+         ... First Year of Funding
+           148     # Funder #2: First Year of Funding
+         ... Last Year of Funding
+           149     # Funder #2: Last Year of Funding
+         ... Amount of Funding
+           150     # Funder #2: Amount of Funding
+         .. Funder 3
+         ... Name
+           151     # Funder #3: Name
+         ... First Year of Funding
+           152     # Funder #3: First Year of Funding
+         ... Last Year of Funding
+           153     # Funder #3: Last Year of Funding
+         ... Amount of Funding
+           154     # Funder #3: Amount of Funding
+         . {155}
+           155     # Budget Narrative
+         . Competition Bureaucracy
+         .. {1}
+           1       # Participant key
+         .. {2}
+           2       # Competition Domain
+         .. {3}
+           3       # Participant key and Domain
+         .. {4}
+           4       # Review Number
+         .. {26}
+           26      # Did Apply
+         .. {27}
+           27      # Hear About
 last_cat: No Primary Thematic Area Selected
 keep_empty: <span style="color: red; font-family: monospace;">[empty]</span>
