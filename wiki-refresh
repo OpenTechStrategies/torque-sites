@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Load all the 100&Change proposals into a wiki, and along the way
-# create a 'processed-100andchangeExport-all-judges.csv' file 
+# create a '2019-processed-100AndChange-all-judges.csv' file 
 # to give to MacFound.
 #
 # Copyright (C) 2017  Open Tech Strategies, LLC
@@ -41,7 +41,8 @@ function check_for_bin {
 
 
 if [ "${DATA_DIR}" = "" ]; then
-    [ -d "${OTSDIR}/clients/macfound/eval-system/data" ] && DATA_DIR="${OTSDIR}/clients/macfound/eval-system/data"
+    BIGDATA_PATH="clients/macfound/eval-system/data/bigdata"
+    [ -d "${OTSDIR}/${BIGDATA_PATH}" ] && DATA_DIR="${OTSDIR}/${BIGDATA_PATH}"
 fi
 
 if [ "${DATA_DIR}" = "" ]; then
@@ -110,8 +111,6 @@ if [ ! -f "${CSV2WIKI_CONFIG}" ]; then
   exit 1
 fi
 
-MASTER_CSV="${DATA_DIR}/100andchangeExport-all-judges.csv"
-
 # We've extracted the excluded Review Numbers from Exclusions.xlsx.
 # They're saved elsewhere, but for the record, here's how it was done,
 # using the 'in2csv' program from csvkit:
@@ -162,7 +161,7 @@ MASTER_CSV="${DATA_DIR}/100andchangeExport-all-judges.csv"
 # 
 #   $ 
 
-RAW_CSV="100andchangeExport-all-judges.csv"
+RAW_CSV="Export-reg-and-app-data-Submission-deadline-06082019.csv"
 
 SANITIZER="${MACFOUND_DIR}"/fix-csv
 
@@ -171,12 +170,14 @@ SANITIZER="${MACFOUND_DIR}"/fix-csv
 STAGE_1_PREFIX="sanitized-"
 STAGE_2_PREFIX="filtered-"
 STAGE_3_PREFIX="joined-"
-STAGE_FINAL_PREFIX="processed-"
 
 STAGE_1_CSV="${STAGE_1_PREFIX}${RAW_CSV}"
 STAGE_2_CSV="${STAGE_2_PREFIX}${RAW_CSV}"
 STAGE_3_CSV="${STAGE_3_PREFIX}${RAW_CSV}"
-STAGE_FINAL_CSV="${STAGE_FINAL_PREFIX}${RAW_CSV}"
+STAGE_FINAL_CSV="2019-processed-100AndChange-all-judges.csv"
+
+### TODO: Everything below this point needs to be updated to work
+###       with the new data as described in bigdata/README.
 
 ### Sanitize the updated spreadsheet.
 #
