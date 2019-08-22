@@ -101,12 +101,16 @@ else
 fi
 
 # csv2wiki needs a run-time config file.
-CSV2WIKI_CONFIG="${MACFOUND_DIR}"/csv2wiki-config
+CSV2WIKI_CONFIG="${MACFOUND_DIR}"/macfound-internal-csv2wiki-config
 if [ ! -f "${CSV2WIKI_CONFIG}" ]; then
-  echo "ERROR: No csv2wiki-config file found."
+  echo "ERROR: No macfound-internal-csv2wiki-config file found."
   echo ""
-  echo "Try doing 'cp csv2wiki-config.tmpl csv2wiki-config' and"
-  echo "then editing csv2wiki-config as needed."
+  echo "Try doing"
+  echo ""
+  echo '  $ cp macfound-internal-csv2wiki-config.tmpl \\'
+  echo "       macfound-internal-csv2wiki-config"
+  echo ""
+  echo "and then editing macfound-internal-csv2wiki-config as needed."
   echo ""
   exit 1
 fi
@@ -313,7 +317,8 @@ csvjoin --snifflimit=0 --delimiter=',' --quotechar='"'                \
 #  Participant_Email         N/A        90
 #  Reason_For_Turndown        88        91
 #
-# All the csv2wiki-config files have been adjusted accordingly.
+# (Note that the macfound-internal-csv2wiki-config file needs to
+# reflect the column numbers as they'll be in ${STAGE_FINAL_CSV}.)
 echo "Done with Stage 3 (joining CSVs to add supplemental data)."
 echo ""
 
