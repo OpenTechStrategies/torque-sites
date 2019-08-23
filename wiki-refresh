@@ -32,7 +32,7 @@ MACFOUND_DIR=`dirname "${0}"`
 DATA_DIR="${1}"
 
 if [ "${DATA_DIR}" = "" ]; then
-    BIGDATA_PATH="clients/macfound/eval-system/data/bigdata"
+    BIGDATA_PATH="clients/macfound/eval-system/lever-for-change/data/bigdata"
     [ -d "${OTSDIR}/${BIGDATA_PATH}" ] && DATA_DIR="${OTSDIR}/${BIGDATA_PATH}"
 fi
 
