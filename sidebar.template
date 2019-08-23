@@ -1,0 +1,39 @@
+<div style="float:right;border:1px solid black;width:300px;margin-left:10px;padding:10px">
+<div style="text-align: center">'''{{{title}}} ({{{number}}})'''</div>
+{{#evu:{{{video}}}|dimensions=300}}
+{|
+|-
+|style="vertical-align:top;width:100px" |'''Org'''
+|{{{org}}}
+{{{country}}}, {{{locality}}}
+{{{first_name}}} {{{last_name}}} ({{{contact_title}}})
+{{{email}}}
+|-
+|style="vertical-align:top;" | '''Org legal status:'''
+| {{{legal_status}}}
+|-
+|style="vertical-align:top;" | '''Priority populations:'''
+| {{{priority_population}}}
+|-
+|style="vertical-align:top;" | '''Primary subject area:'''
+| {{{primary_subject_area}}}
+|-
+|style="vertical-align:top;" | '''Current solution countries (1, 2, 3):'''
+| {{{current_solution_country_1}}}, {{{current_solution_country_2}}}, {{{current_solution_country_3}}}
+|-
+|style="vertical-align:top;" | '''Future work country:'''
+| {{{future_work_country}}}
+|-
+|style="vertical-align:top;" | '''SDG:'''
+| {{{sdg}}}
+|-
+|style="vertical-align:top;" | '''Key words:'''
+| {{{key_words}}}
+|-
+|style="vertical-align:top;" | '''Annual operating budget:'''
+| {{{annual_operating_budget}}}
+|-
+|style="vertical-align:top;" | '''Number of employees:'''
+| {{{num_employees}}}
+|}
+</div>
