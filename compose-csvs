@@ -1,0 +1,274 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Perform some one-time fixes to the MacArthur Foundation 100&Change CSV file
+#
+# This is necessary because not everything can be addressed with the
+# 'sanitize' script.  The 'sanitize' script isn't aware of CSV rows or
+# columns; it just treats the whole CSV file as a normal text file.
+# But for, e.g., fixing the YouTube links (see features.org for more),
+# we really need a one-time transformation that knows what cell it's
+# operating on.
+#
+# Copyright (C) 2017 Open Tech Strategies, LLC
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+##########################################################################
+#                                                                        #
+#   NOTE: This code is highly specific to the needs of the MacArthur     #
+#   Foundation and is unlikely to be correct for your CSV.  It is        #
+#   open source software, so please modify it to suit your needs.        #
+#                                                                        #
+##########################################################################
+
+__doc__ = """\
+Compose all of the MacArthur Foundation 2019 Proposal CSV files.
+
+Usage:
+
+  $ compose-csvs PROPOSALS_CSV ADMIN_REVIEW_CSV JUDGE_EVALUATION_CSV
+
+The only option is the --pare option to reduce the items to make quick
+for testing and development.
+"""
+
+import csv
+import getopt
+import re
+import io
+import sys
+import warnings
+import string
+from bs4 import BeautifulSoup
+
+# Convert "<foo>&nbsp;<bar>" and "</foo>&nbsp;<bar>" to
+# to "<foo> <bar>" and "</foo> <bar>" respectively.  This is
+# because those particular instances of "&nbsp;" in the data are
+# not very convincing, and they create noise when we're looking
+# for unnecessary escaping elsewhere.
+intertag_nbsp_re = re.compile('(?m)(</?[a-z]+>)&nbsp;(<[a-z]+>)')
+
+bullets_re = re.compile("^•", re.MULTILINE)
+"""Run fixes on the data in CELL"""
+
+def collapse_replace(string, old, new):
+    "Return STRING, with OLD repeatedly replaced by NEW until no more OLD."
+    while string.find(old) != -1: 
+        string = string.replace(old, new)
+    return string
+
+def weaken_the_strong(html):
+    """Strip any meaningless <strong>...</strong> tags from HTML.
+    HTML is a Unicode string; the return value is either HTML or a new
+    Unicode string based on HTML.
+
+    If <strong> tags cover everything in HTML, remove the tags.  But if
+    <strong> tags are used only sometimes, maybe they're meaningful, so
+    leave them.  Basically, we want to make strength great again."""
+    # If there's no strength here, move on.
+    if not "<strong>" in html:
+        return html
+    
+    # Remove the stuff inside strong tags
+    soup = BeautifulSoup(html, "html.parser")
+    while "<strong>" in str(soup):
+        soup.strong.extract()
+
+    # Check whether the non-bold stuff is more than just tags and
+    # punctuation.  If not, all the important stuff was bold, so strip
+    # bold and return.
+    if re.sub(r"\W", "", soup.get_text()) == "":
+        return re.sub("</?strong>", "", html)
+
+    # OTOH, if the non-bold stuff contained letters or numbers, maybe
+    # there's real content there, which means the html was a mix of
+    # bold and non-bold text.  Better to leave it alone.
+    return html
+
+def form_well(html):
+    """Return a well-formed version of HTML with dangling tags closed.
+    Some of the input includes tables that cut off without closing
+    tags; some entries leave <td> tags open too."""
+    # Parse html and suppress warnings about urls in the text
+    warnings.filterwarnings("ignore",
+                            category=UserWarning, module='bs4')
+    soup = BeautifulSoup(html, "html.parser")
+
+    # Return well-formed html as a soup object
+    return soup
+
+def fix_cell(cell):
+    """Return a cleaned up version of the CELL that will work well
+    with mediawiki, mainly through text subsitution."""
+    # A straight-up HTML-unescaping might be the right thing
+    # (i.e., cell = html_parser.unescape(cell) below)
+    # in the long run, but for now, let's do the same limited
+    # set of unescapings the original 'sanitize' script did:
+    cell = cell.replace('&amp;', '&')
+    cell = cell.replace('&lt;', '<')
+    cell = cell.replace('&gt;', '>')
+    # The rest should be recursively collapsing replacements:
+    cell = collapse_replace(cell, '\t', ' ')
+    cell = collapse_replace(cell, '&nbsp;&nbsp;', '&nbsp;')
+    cell = collapse_replace(cell, '&nbsp; ', ' ')
+    cell = collapse_replace(cell, ' &nbsp;', ' ')
+    cell = collapse_replace(cell, '&nbsp;</', '</')
+    cell = collapse_replace(cell, '\\"', '"')
+    cell = re.sub(intertag_nbsp_re, '\\1 \\2', cell)
+
+    soup = form_well(cell)
+    cell = weaken_the_strong(str(soup))
+
+    # The parsing for lists requires an asterisk at the start
+    # of the line, but some entries use bullets. This regex
+    # swaps the bullets for asterisks.
+    cell = bullets_re.sub("*", cell)
+
+    return cell
+
+def print_csv(header_row, rows):
+    """Print the HEADER_ROW and ROWS to stdout via csv"""
+
+    csv_writer = csv.writer(sys.stdout,
+                            delimiter=',', quotechar='"', lineterminator="\n")
+
+    csv_writer.writerow(header_row)
+    for row in rows:
+        csv_writer.writerow(row)
+
+def process_judge_data(csv_reader):
+    """Takes a CSV_READER representing judge data in a spreadsheet and
+    turns that into a dict of dicts in the following form:
+
+      JUDGE_DATA[app_id] = {
+        overall_score_rank: string,
+        overall_score_rank_normalized: string,
+        sum_of_scores: string,
+        sum_of_scores_normalized: string,
+        judge_data: concatenated string,
+      }
+
+    The judge data coming in has many judge comments in their own row to one
+    application.  In the case of the first four parts of the dictionary,
+    those are only taken from the first matching row, since all rows should
+    have identical data.
+
+    In the case of the last, the judge comments are all concatenated with their
+    information with newlines separating.
+    """
+
+    judge_data = {}
+
+    next(csv_reader)
+    for row in csv_reader:
+        application_id = row[3]
+        if not application_id in judge_data:
+            judge_data[application_id] = {
+                    "overall_score_rank": row[9],
+                    "overall_score_rank_normalized": row[10],
+                    "sum_of_scores": row[11],
+                    "sum_of_scores_normalized": row[12],
+                    "judge_data": "",
+                    }
+        judge_data[application_id]["judge_data"] += \
+                row[14] + "(" + row[15] + ", norm: " + row[16] + "): " + row[17] + "\n\n"
+
+    return judge_data
+
+def compose_csvs(proposals, admin_review, judge_eval, pare=None):
+    """Write a composed version of PROPOSALS (a CSV file), ADMIN_REVIEW
+    (a CSV file), and JUDGE_EVAL (a CSV file) to standard out.
+
+    PROPOSALS, ADMIN_REVIEW, and JUDGE_EVAL are all filenames.  They
+    represent a full list of proposals, a list of accepted proposals,
+    and evaluation on those proposals, respectively
+
+    If PARE is not None, it is a positive integer indicating that only
+    1 of every PARE entries should be processed, and the others skipped."""
+    try:
+        proposals_reader = csv.reader(open(proposals, encoding='utf-8'),
+                                      delimiter=',', quotechar='"')
+        admin_review_reader = csv.reader(open(admin_review, encoding='utf-8'),
+                                         delimiter=',', quotechar='"')
+        judge_eval_reader = csv.reader(open(judge_eval, encoding='utf-8'),
+                                       delimiter=',', quotechar='"')
+    except UnicodeDecodeError:
+        sys.stderr.write("fix-csv expects utf-8-encoded unicode, not whatever is in this csv file.\n")
+        sys.exit(-1)
+
+    header_row = next(proposals_reader)
+
+    # We only accept applications if they're one of the rows in the
+    # admin_review csv, which has an "Application #" column (3),
+    # which matches a "Review #" column in the proposals (3)
+    next(admin_review_reader) # Don't look at header
+    acceptable_application_numbers = [ row[3] for row in admin_review_reader ]
+
+    judge_data = process_judge_data(judge_eval_reader)
+
+    row_num = 0
+    new_rows = []
+    for row in proposals_reader:
+        if row[3] not in acceptable_application_numbers:
+            continue
+
+        row_num += 1  # first row here is row 1 (the header row was row 0) 
+        if pare is not None and row_num % pare != 0:
+            continue
+
+        new_row = []
+        for cell in row:
+            new_row.append(fix_cell(cell))
+        if row[3] in judge_data:
+            new_row.extend([
+                judge_data[row[3]]["overall_score_rank"],
+                judge_data[row[3]]["overall_score_rank_normalized"],
+                judge_data[row[3]]["sum_of_scores"],
+                judge_data[row[3]]["sum_of_scores_normalized"],
+                judge_data[row[3]]["judge_data"],
+                ])
+        else:
+            new_row.extend(["", "", "", "", ""])
+        print("Sanitized row %d (%d cols)." % (row_num, len(new_row)), file=sys.stderr)
+        new_rows.append(new_row)
+
+    print_csv(header_row, new_rows)
+
+def main():
+    """Compose the MacFound input and emit it as html-ized csv."""
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], '',
+                                   ["pare="])
+    except getopt.GetoptError as err:
+        sys.stderr.write("ERROR: '%s'\n" % err)
+        sys.exit(2)
+
+    pare = None
+    for o, a in opts:
+        if o == "--pare":
+            pare = int(a)
+        else:
+            sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
+            sys.exit(2)
+
+    if len(args) != 3:
+        sys.stderr.write(
+            "ERROR: need PROPOSALS_CSV, ADMIN_REVIEW_CSV, and JUDGE_EVALUATION_CSV arguments.\n\n")
+        sys.stderr.write(__doc__)
+        sys.exit(1)
+    compose_csvs(args[0], args[1], args[2], pare)
+
+if __name__ == '__main__':
+    main()
