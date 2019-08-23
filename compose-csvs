@@ -53,16 +53,6 @@ import warnings
 import string
 from bs4 import BeautifulSoup
 
-# Convert "<foo>&nbsp;<bar>" and "</foo>&nbsp;<bar>" to
-# to "<foo> <bar>" and "</foo> <bar>" respectively.  This is
-# because those particular instances of "&nbsp;" in the data are
-# not very convincing, and they create noise when we're looking
-# for unnecessary escaping elsewhere.
-intertag_nbsp_re = re.compile('(?m)(</?[a-z]+>)&nbsp;(<[a-z]+>)')
-
-bullets_re = re.compile("^•", re.MULTILINE)
-"""Run fixes on the data in CELL"""
-
 def collapse_replace(string, old, new):
     "Return STRING, with OLD repeatedly replaced by NEW until no more OLD."
     while string.find(old) != -1: 
@@ -108,6 +98,16 @@ def form_well(html):
 
     # Return well-formed html as a soup object
     return soup
+
+# Used in converting "<foo>&nbsp;<bar>" and "</foo>&nbsp;<bar>"
+# to "<foo> <bar>" and "</foo> <bar>" respectively.  (Those particular
+# instances of "&nbsp;" in the data are not very convincing, and they
+# create noise when we're looking for unnecessary escaping elsewhere.)
+intertag_nbsp_re = re.compile('(?m)(</?[a-z]+>)&nbsp;(<[a-z]+>)')
+
+# Matches Unicode 8226 (U+2022) at the beginning of a line,
+# which is something that applicants do in a lot of fields.
+bullets_re = re.compile("^•", re.MULTILINE)
 
 def fix_cell(cell):
     """Return a cleaned up version of the CELL that will work well
