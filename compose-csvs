@@ -38,9 +38,14 @@ Compose all of the MacArthur Foundation 2019 Proposal CSV files.
 
 Usage:
 
-  $ compose-csvs PROPOSALS_CSV ADMIN_REVIEW_CSV JUDGE_EVALUATION_CSV
+  $ compose-csvs \\
+       --proposals-csv=PROPOSALS_CSV \\
+       --admin-review-csv=ADMIN_REVIEW_CSV \\
+       --judge-evaluation-csv=JUDGE_EVALUATION_CSV
 
-The only option is the --pare option to reduce the items to make quick
+Options:
+
+The only other option is the --pare option to reduce the items to make quick
 for testing and development.
 """
 
@@ -250,25 +255,37 @@ def main():
     """Compose the MacFound input and emit it as html-ized csv."""
     try:
         opts, args = getopt.getopt(sys.argv[1:], '',
-                                   ["pare="])
+                                   ["pare=",
+                                    "proposals-csv=",
+                                    "admin-review-csv=",
+                                    "judge-evaluation-csv="])
     except getopt.GetoptError as err:
         sys.stderr.write("ERROR: '%s'\n" % err)
         sys.exit(2)
 
     pare = None
+    proposals_csv = None
+    admin_review_csv = None
+    judge_evaluation_csv = None
     for o, a in opts:
         if o == "--pare":
             pare = int(a)
+        elif o == "--proposals-csv":
+            proposals_csv = a
+        elif o == "--admin-review-csv":
+            admin_review_csv = a
+        elif o == "--judge-evaluation-csv":
+            judge_evaluation_csv = a
         else:
             sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
             sys.exit(2)
 
-    if len(args) != 3:
+    if proposals_csv is None or admin_review_csv is None or judge_evaluation_csv is None:
         sys.stderr.write(
-            "ERROR: need PROPOSALS_CSV, ADMIN_REVIEW_CSV, and JUDGE_EVALUATION_CSV arguments.\n\n")
+            "ERROR: need --proposals-csv, --admin-review-csv, and --judge-evaluation-csv arguments.\n\n")
         sys.stderr.write(__doc__)
         sys.exit(1)
-    compose_csvs(args[0], args[1], args[2], pare)
+    compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, pare)
 
 if __name__ == '__main__':
     main()
