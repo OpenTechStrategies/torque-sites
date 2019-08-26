@@ -234,7 +234,11 @@ def compose_csvs(proposals, admin_review, judge_eval, pare=None):
             continue
 
         new_row = []
+        num_fixed_cells = 0
         for cell in row:
+            fixed_cell = fix_cell(cell)
+            if fixed_cell != cell:
+                num_fixed_cells += 1
             new_row.append(fix_cell(cell))
         if row[3] in judge_data:
             new_row.extend([
@@ -246,7 +250,7 @@ def compose_csvs(proposals, admin_review, judge_eval, pare=None):
                 ])
         else:
             new_row.extend(["", "", "", "", ""])
-        print("Sanitized row %d (%d cols)." % (row_num, len(new_row)), file=sys.stderr)
+        print("Sanitized row %d (%d cols, %d fixed)." % (row_num, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
 
     print_csv(header_row, new_rows)
