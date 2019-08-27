@@ -12,6 +12,9 @@
 |style="vertical-align:top;" | '''Org legal status:'''
 | {{{legal_status}}}
 |-
+|style="vertical-align:top;" | '''Description:'''
+| {{{description}}}
+|-
 |style="vertical-align:top;" | '''Priority populations:'''
 | {{{priority_population}}}
 |-
