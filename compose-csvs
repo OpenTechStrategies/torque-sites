@@ -227,8 +227,9 @@ def compose_csvs(proposals, admin_review, judge_eval, pare=None):
     # We only accept applications if they're one of the rows in the
     # admin_review csv, which has an "Application #" column (3),
     # which matches a "Review #" column in the proposals (3)
+    # and for which the "Status" column (7) is valid
     next(admin_review_reader) # Don't look at header
-    acceptable_application_numbers = [ row[3] for row in admin_review_reader ]
+    acceptable_application_numbers = [ row[3] for row in admin_review_reader if row[7].lower() == "valid" ]
 
     judge_data = process_judge_data(judge_eval_reader)
 
