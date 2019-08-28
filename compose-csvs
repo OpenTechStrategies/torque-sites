@@ -41,7 +41,8 @@ Usage:
   $ compose-csvs \\
        --proposals-csv=PROPOSALS_CSV \\
        --admin-review-csv=ADMIN_REVIEW_CSV \\
-       --judge-evaluation-csv=JUDGE_EVALUATION_CSV
+       --judge-evaluation-csv=JUDGE_EVALUATION_CSV \\
+       --extra-category-file=EXTRA_CATEGORY_FILE
 
 Command-line options:
   --proposals-csv FILE          FILE is a csv FILE representing the bulk
@@ -152,6 +153,23 @@ def fix_cell(cell):
 
     return cell
 
+def categorize_sdg(cell, extra_cats):
+    """Change the CELL to have wiki markup for the comma separated categories
+    present.  Achieve this by adding in wiki markup to the output spreadsheet
+    so that csv2wiki passes them through."""
+
+    categories = cell.split(",")
+
+    new_cell = ''
+    for category in categories:
+        category = category.strip()
+        if category not in extra_cats:
+            extra_cats.append(category)
+        new_cell += '[[:Category:' + category + '|' + category + ']]\n'
+        new_cell += '* [[Category:' + category + ']]\n'
+
+    return new_cell
+
 def print_csv(header_row, rows):
     """Print the HEADER_ROW and ROWS to stdout via csv"""
 
@@ -201,7 +219,7 @@ def process_judge_data(csv_reader):
 
     return judge_data
 
-def compose_csvs(proposals, admin_review, judge_eval, pare=None):
+def compose_csvs(proposals, admin_review, judge_eval, extra_category_file, pare=None):
     """Write a composed version of PROPOSALS (a CSV file), ADMIN_REVIEW
     (a CSV file), and JUDGE_EVAL (a CSV file) to standard out.
 
@@ -235,6 +253,7 @@ def compose_csvs(proposals, admin_review, judge_eval, pare=None):
 
     row_num = 0
     new_rows = []
+    extra_cats = []
     for row in proposals_reader:
         if row[3] not in acceptable_application_numbers:
             continue
@@ -250,6 +269,12 @@ def compose_csvs(proposals, admin_review, judge_eval, pare=None):
             if fixed_cell != cell:
                 num_fixed_cells += 1
             new_row.append(fix_cell(cell))
+
+        # Mutate the row to add special wiki markup for categorization of pages.
+        # This is special to the 2019 run.  We need to save the extra_categories
+        # so that csv2wiki will make them
+        new_row[128] = categorize_sdg(row[128], extra_cats)
+
         if row[3] in judge_data:
             new_row.extend([
                 judge_data[row[3]]["overall_score_rank"],
@@ -263,6 +288,10 @@ def compose_csvs(proposals, admin_review, judge_eval, pare=None):
         print("Sanitized row %d (%d cols, %d fixed)." % (row_num, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
 
+    if extra_category_file is not None:
+        with open(extra_category_file, 'w') as f:
+            f.writelines("%s\n" % extra_cat for extra_cat in extra_cats)
+
     print_csv(header_row, new_rows)
 
 def main():
@@ -272,7 +301,8 @@ def main():
                                    ["pare=",
                                     "proposals-csv=",
                                     "admin-review-csv=",
-                                    "judge-evaluation-csv=",])
+                                    "judge-evaluation-csv=",
+                                    "extra-category-file=",])
     except getopt.GetoptError as err:
         sys.stderr.write("ERROR: '%s'\n" % err)
         sys.exit(2)
@@ -281,6 +311,7 @@ def main():
     proposals_csv = None
     admin_review_csv = None
     judge_evaluation_csv = None
+    extra_category_file = None
     for o, a in opts:
         if o == "--pare":
             pare = int(a)
@@ -290,6 +321,8 @@ def main():
             admin_review_csv = a
         elif o == "--judge-evaluation-csv":
             judge_evaluation_csv = a
+        elif o == "--extra-category-file":
+            extra_category_file = a
         else:
             sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
             sys.exit(2)
@@ -299,7 +332,7 @@ def main():
             "ERROR: need --proposals-csv, --admin-review-csv, and --judge-evaluation-csv options.\n\n")
         sys.stderr.write(__doc__)
         sys.exit(1)
-    compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, pare)
+    compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, extra_category_file, pare)
 
 if __name__ == '__main__':
     main()

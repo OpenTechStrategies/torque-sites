@@ -80,6 +80,7 @@ fi
 PROPOSALS_CSV="Export-reg-and-app-data-Submission-deadline-06082019.csv"
 ADMIN_REVIEW_CSV="AdminReviewP2P_mac2019_08192019.csv"
 JUDGE_EVALUATION_CSV="Export_Judging-EvaluationPanel-SAMPLE-2019-07-12.csv"
+EXTRA_CATEGORY_FILE="Generated_Extra_Categories.dat"
 
 OUTPUT_CSV="2019-processed.csv"
 
@@ -91,7 +92,8 @@ COMPOSER="${MACFOUND_DIR}"/compose-csvs
 echo "Stage 1: Composing..."
 ${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
             --admin-review-csv="${DATA_DIR}/${ADMIN_REVIEW_CSV}" \
-            --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" > \
+            --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
+            --extra-category-file="${DATA_DIR}/${EXTRA_CATEGORY_FILE}" > \
             "${DATA_DIR}/${OUTPUT_CSV}"
 if [ $? -ne 0 ]; then
 		echo Composition failure!
@@ -101,7 +103,8 @@ echo "Done with Stage 1 (Composing)."
 echo ""
 
 echo "Creating wiki..."
-python3 -m csv2wiki --cat-sort=alpha -c ${CSV2WIKI_CONFIG}                    \
+python3 -m csv2wiki --cat-sort=alpha -c ${CSV2WIKI_CONFIG}      \
+            --extra-cats="${DATA_DIR}/${EXTRA_CATEGORY_FILE}"   \
             "${DATA_DIR}/${OUTPUT_CSV}"
 echo "Done creating wiki."
 echo ""
