@@ -7,9 +7,9 @@ toc_name: 2019_100Change_TOC
 cat_col: 67
 default_cat: No Primary Subject Area Category Selected
 last_cat: No Primary Subject Area Category Selected
-sec_map: . Title
-         # Project Title:
-         | {31}
+sec_map: . Description
+         # Project Description:
+         | {32}
          # For this to work, you'll need to put sidebar.template in your mediawiki
          # at the location: <wiki>/index.php/Template:Sidebar
          | {{{{Sidebar|
@@ -34,10 +34,8 @@ sec_map: . Title
          | key_words={131}|
          | annual_operating_budget={173}|
          | num_employees={174}|
+         | description={32}
          | }}}}
-         . Description
-         # Project Description:
-         | {32}
          # Executive Summary:
          . {33}
          | {33}
@@ -58,10 +56,44 @@ sec_map: . Title
          # Why Your Team:
          . {42}
          | {42}
+         . Key Staff
+         .. Key Staff 1
+         # Key Staff #1: Firstname, Key Staff #1: Lastname::
+         | {43} {44}
+         # Key Staff #1: Association:
+         | {45}
+         ... Biography
+         # Key Staff #1: Biography:
+         | {46}
+         .. Key Staff 2
+         # Key Staff #2: Firstname, Key Staff #2: Lastname:
+         | {47} {48}
+         # Key Staff #2: Association:
+         | {49}
+         ... Biography
+         # Key Staff #2: Biography:
+         | {50}
+         .. Key Staff 3
+         # Key Staff #3: Firstname, Key Staff #3: Lastname:
+         | {51} {52}
+         # Key Staff #3: Association:
+         | {53}
+         ... Biography
+         # Key Staff #3: Biography:
+         | {54}
          # Primary Area of Expertise:
          . {38}
          | {38}
          | (Primary Area of Expertise ID: {39})
+         # Primary Subject Area:
+         . {65}
+         | {65}
+         # Sustainable Development Goals:
+         . {129}
+         | {129}
+         # Key Words:
+         . {131}
+         | {131}
          # Team Collaboration:
          . {40}
          | {40}
@@ -87,23 +119,12 @@ sec_map: . Title
          # Barrier Assessment and Risk Mitigation:
          . {64}
          | {64}
-         # Primary Subject Area:
-         . {65}
-         | {65}
-         | (Subject area ID: {66})
          # Primary Subject Area Category:
          . {67}
          | {67}
-         | (Category ID: {68})
-         # Sustainable Development Goals:
-         . {129}
-         | {129}
          # Solution Stage:
          . {130}
          | {130}
-         # Key Words:
-         . {131}
-         | {131}
          # Evidence of Effectiveness:
          . {132}
          | {132}
@@ -119,9 +140,6 @@ sec_map: . Title
          # Durability of Impact:
          . {136}
          | {136}
-         # Bibliography:
-         . {137}
-         | {137}
          . Project Phases
          .. Phase 1
          ... Name
@@ -166,14 +184,14 @@ sec_map: . Title
          # Total Resourse Requirementes [sic]:
          | {147}
          . Contact Info
-         .. Primary Contact
+         ... Primary Contact
          # Primary Contact Title, Primary Contact First Name, Primary Contact Last Name:
          | {18} {19} ({20})
          # Primary Contact Phone:
          | {21}
          # Primary Contact Email:
          | {22}
-         .. Secondary Contact
+         ... Secondary Contact
          # Secondary Contact Title, Secondary Contact First Name, Secondary Contact Last Name:
          | {23} {24} ({25})
          # Secondary Contact Phone:
@@ -223,31 +241,6 @@ sec_map: . Title
          # Organization Legal Status:
          .. {28}
          | {28}
-         . Key Staff
-         .. Key Staff 1
-         # Key Staff #1: Firstname, Key Staff #1: Lastname::
-         | {43} {44}
-         # Key Staff #1: Association:
-         | {45}
-         ... Biography
-         # Key Staff #1: Biography:
-         | {46}
-         .. Key Staff 2
-         # Key Staff #2: Firstname, Key Staff #2: Lastname:
-         | {47} {48}
-         # Key Staff #2: Association:
-         | {49}
-         ... Biography
-         # Key Staff #2: Biography:
-         | {50}
-         .. Key Staff 3
-         # Key Staff #3: Firstname, Key Staff #3: Lastname:
-         | {51} {52}
-         # Key Staff #3: Association:
-         | {53}
-         ... Biography
-         # Key Staff #3: Biography:
-         | {54}
          . Current Solution Countries
          .. Current Solution Country 1
          ... Location
@@ -397,4 +390,7 @@ sec_map: . Title
          | '''Sum of Scores Normalized:''' {178}
          .. Details
          | {179}
+         # Bibliography:
+         . {137}
+         | {137}
 keep_empty: <span style="color: red; font-family: monospace;">[empty]</span>
