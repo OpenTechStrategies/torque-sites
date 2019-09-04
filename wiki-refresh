@@ -78,7 +78,7 @@ if [ ! -f "${CSV2WIKI_CONFIG}" ]; then
 fi
 
 PROPOSALS_CSV="Export-reg-and-app-data-Submission-deadline-06082019.csv"
-ADMIN_REVIEW_CSV="AdminReviewP2P_mac2019_08192019.csv"
+ADMIN_REVIEW_CSV="AdminReviewP2P_mac2019_08272019.csv"
 JUDGE_EVALUATION_CSV="Export_Judging-EvaluationPanel-SAMPLE-2019-07-12.csv"
 EXTRA_CATEGORY_FILE="Generated_Extra_Categories.dat"
 ATTACHMENTS_FILE="Generated_Attachments.dat"
