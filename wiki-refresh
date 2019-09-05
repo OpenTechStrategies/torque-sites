@@ -110,6 +110,7 @@ echo "Creating wiki..."
 python3 -m csv2wiki --cat-sort=alpha -c ${CSV2WIKI_CONFIG}      \
             --extra-cats="${DATA_DIR}/${EXTRA_CATEGORY_FILE}"   \
             --attachments="${DATA_DIR}/${ATTACHMENTS_FILE}" \
+            --helper-page=sidebar.template \
             --csv="${DATA_DIR}/${OUTPUT_CSV}"
 echo "Done creating wiki."
 echo ""
