@@ -41,7 +41,8 @@ Usage:
   $ compose-csvs \\
        --proposals-csv=PROPOSALS_CSV \\
        --admin-review-csv=ADMIN_REVIEW_CSV \\
-       --judge-evaluation-csv=JUDGE_EVALUATION_CSV
+       --judge-evaluation-csv=JUDGE_EVALUATION_CSV \\
+       --extra-category-file=EXTRA_CATEGORY_FILE
 
 Command-line options:
   --proposals-csv FILE          FILE is a csv FILE representing the bulk
@@ -65,6 +66,7 @@ import io
 import sys
 import warnings
 import string
+import os
 from bs4 import BeautifulSoup
 
 def collapse_replace(string, old, new):
@@ -152,6 +154,23 @@ def fix_cell(cell):
 
     return cell
 
+def categorize_sdg(cell, extra_cats):
+    """Change the CELL to have wiki markup for the comma separated categories
+    present.  Achieve this by adding in wiki markup to the output spreadsheet
+    so that csv2wiki passes them through."""
+
+    categories = cell.split(",")
+
+    new_cell = ''
+    for category in categories:
+        category = category.strip()
+        if category not in extra_cats:
+            extra_cats.append(category)
+        new_cell += '[[:Category:' + category + '|' + category + ']]\n'
+        new_cell += '* [[Category:' + category + ']]\n'
+
+    return new_cell
+
 def print_csv(header_row, rows):
     """Print the HEADER_ROW and ROWS to stdout via csv"""
 
@@ -201,13 +220,29 @@ def process_judge_data(csv_reader):
 
     return judge_data
 
-def compose_csvs(proposals, admin_review, judge_eval, pare=None):
+def wiki_escape_page_title(s):
+    """Return a wiki-escaped version of STRING."""
+    for c in ["#", "<", ">", "[", "]", "{", "|", "}",]:
+        if s.find(c) != -1:
+            s = s.replace(c, "-")
+    while len(bytes(s, "UTF-8")) > 255:
+        s = s[:-1]
+    return s
+
+def compose_csvs(proposals, admin_review, judge_eval, extra_category_file,
+        attachments_file, attachments_dir, pare=None):
     """Write a composed version of PROPOSALS (a CSV file), ADMIN_REVIEW
     (a CSV file), and JUDGE_EVAL (a CSV file) to standard out.
 
     PROPOSALS, ADMIN_REVIEW, and JUDGE_EVAL are all filenames.  They
     represent a full list of proposals, a list of accepted proposals,
     and evaluation on those proposals, respectively
+
+    EXTRA_CATEGORY_FILE and ATTACHMENTS_FILE are locations that compose-csvs
+    will write to disk for csv2wiki to pick up later to add categories and
+    attachments to the wiki.
+
+    ATTACHMENTS_DIR is the directory to look in for attachments.
 
     If PARE is not None, it is a positive integer indicating that only
     1 of every PARE entries should be processed, and the others skipped."""
@@ -227,13 +262,16 @@ def compose_csvs(proposals, admin_review, judge_eval, pare=None):
     # We only accept applications if they're one of the rows in the
     # admin_review csv, which has an "Application #" column (3),
     # which matches a "Review #" column in the proposals (3)
+    # and for which the "Status" column (7) is valid
     next(admin_review_reader) # Don't look at header
-    acceptable_application_numbers = [ row[3] for row in admin_review_reader ]
+    acceptable_application_numbers = [ row[3] for row in admin_review_reader if row[7].lower() == "valid" ]
 
     judge_data = process_judge_data(judge_eval_reader)
 
     row_num = 0
     new_rows = []
+    extra_cats = []
+    attachments_to_add = []
     for row in proposals_reader:
         if row[3] not in acceptable_application_numbers:
             continue
@@ -249,6 +287,12 @@ def compose_csvs(proposals, admin_review, judge_eval, pare=None):
             if fixed_cell != cell:
                 num_fixed_cells += 1
             new_row.append(fix_cell(cell))
+
+        # Mutate the row to add special wiki markup for categorization of pages.
+        # This is special to the 2019 run.  We need to save the extra_categories
+        # so that csv2wiki will make them
+        new_row[128] = categorize_sdg(row[128], extra_cats)
+
         if row[3] in judge_data:
             new_row.extend([
                 judge_data[row[3]]["overall_score_rank"],
@@ -259,8 +303,28 @@ def compose_csvs(proposals, admin_review, judge_eval, pare=None):
                 ])
         else:
             new_row.extend(["", "", "", "", ""])
+
+        attachments_str = ""
+        if attachments_dir is not None:
+            application_attachment_dir = os.path.join(attachments_dir, row[3])
+            for attachment_file in os.listdir(application_attachment_dir):
+                esc_attachment_file = wiki_escape_page_title(attachment_file)
+                attachments_str += "[[Media:" + esc_attachment_file + "|" + attachment_file + "]]\n\n"
+                attachments_to_add.append("%s|%s" % (
+                    esc_attachment_file,
+                    os.path.join(application_attachment_dir, attachment_file)))
+        new_row.append(attachments_str)
+
         print("Sanitized row %d (%d cols, %d fixed)." % (row_num, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
+
+    if extra_category_file is not None:
+        with open(extra_category_file, 'w') as f:
+            f.writelines("%s\n" % extra_cat for extra_cat in extra_cats)
+
+    if attachments_file is not None:
+        with open(attachments_file, 'w') as f:
+            f.writelines("%s\n" % attachment_pair for attachment_pair in attachments_to_add)
 
     print_csv(header_row, new_rows)
 
@@ -271,7 +335,10 @@ def main():
                                    ["pare=",
                                     "proposals-csv=",
                                     "admin-review-csv=",
-                                    "judge-evaluation-csv=",])
+                                    "judge-evaluation-csv=",
+                                    "extra-category-file=",
+                                    "attachments-file=",
+                                    "attachments-dir=",])
     except getopt.GetoptError as err:
         sys.stderr.write("ERROR: '%s'\n" % err)
         sys.exit(2)
@@ -280,6 +347,9 @@ def main():
     proposals_csv = None
     admin_review_csv = None
     judge_evaluation_csv = None
+    extra_category_file = None
+    attachments_file = None
+    attachments_dir = None
     for o, a in opts:
         if o == "--pare":
             pare = int(a)
@@ -289,16 +359,29 @@ def main():
             admin_review_csv = a
         elif o == "--judge-evaluation-csv":
             judge_evaluation_csv = a
+        elif o == "--extra-category-file":
+            extra_category_file = a
+        elif o == "--attachments-file":
+            attachments_file = a
+        elif o == "--attachments-dir":
+            attachments_dir = a
         else:
             sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
             sys.exit(2)
+
+    if (attachments_dir is None) != (attachments_file is None):
+        sys.stderr.write(
+            "ERROR: need --attachments-dir and --attachments-file, or neither")
+        sys.stderr.write(__doc__)
+        sys.exit(1)
 
     if proposals_csv is None or admin_review_csv is None or judge_evaluation_csv is None:
         sys.stderr.write(
             "ERROR: need --proposals-csv, --admin-review-csv, and --judge-evaluation-csv options.\n\n")
         sys.stderr.write(__doc__)
         sys.exit(1)
-    compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, pare)
+    compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv,
+            extra_category_file, attachments_file, attachments_dir, pare)
 
 if __name__ == '__main__':
     main()
