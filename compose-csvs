@@ -152,6 +152,10 @@ def fix_cell(cell):
     # swaps the bullets for asterisks.
     cell = bullets_re.sub("*", cell)
 
+    # We don't want to have extra new lines added at the beginning or end
+    # because that could make the wiki formatting odd
+    cell = cell.strip()
+
     return cell
 
 def categorize_sdg(cell, extra_cats):
