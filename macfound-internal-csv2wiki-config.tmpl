@@ -7,12 +7,7 @@ toc_name: 2019_100Change_TOC
 cat_col: 67
 default_cat: No Primary Subject Area Category Selected
 last_cat: No Primary Subject Area Category Selected
-sec_map: . Description
-         # Project Description:
-         | {32}
-         # For this to work, you'll need to put sidebar.template in your mediawiki
-         # at the location: <wiki>/index.php/Template:Sidebar
-         | {{{{Sidebar|
+sec_map: | {{{{Sidebar|
          | title={31}|
          | number={4}|
          | org={8}|
@@ -34,8 +29,11 @@ sec_map: . Description
          | key_words={131}|
          | annual_operating_budget={173}|
          | num_employees={174}|
-         | description={32}
+         | description={32}|
+         | attachments={180}
          | }}}}
+         # Project Description:
+         | '''{32}'''
          # Executive Summary:
          . {33}
          | {33}
@@ -54,342 +52,228 @@ sec_map: . Description
          | {34}
          | <div class="noprint">{{{{#evu:{34}}}}}</div>
          # Why Your Team:
-         . {42}
-         | {42}
-         . Key Staff
-         .. Key Staff 1
-         # Key Staff #1: Firstname, Key Staff #1: Lastname::
-         | {43} {44}
-         # Key Staff #1: Association:
-         | {45}
-         ... Biography
+         . Team
+         .. About Your Team
+         | <p style="padding-left: 30px;">{42}</p>
+         # Case of Partnership:
+         .. {41}
+         | <p style="padding-left: 30px;">{41}</p>
+         . Key Staff Biographies
+         # Key Staff #1: Firstname, Key Staff #1: Lastname Key Staff #1: Association:
+         | '''{43} {44}, {45}'''
          # Key Staff #1: Biography:
          | {46}
-         .. Key Staff 2
-         # Key Staff #2: Firstname, Key Staff #2: Lastname:
-         | {47} {48}
-         # Key Staff #2: Association:
-         | {49}
-         ... Biography
+         # Key Staff #2: Firstname, Key Staff #2: Lastname:, Key Staff #2: Association:
+         | '''{47} {48}, {49}'''
          # Key Staff #2: Biography:
          | {50}
-         .. Key Staff 3
-         # Key Staff #3: Firstname, Key Staff #3: Lastname:
-         | {51} {52}
-         # Key Staff #3: Association:
-         | {53}
-         ... Biography
+         # Key Staff #3: Firstname, Key Staff #3: Lastname:, Key Staff #3: Association:
+         | '''{51} {52}, {53}'''
          # Key Staff #3: Biography:
          | {54}
-         # Primary Area of Expertise:
-         . {38}
-         | {38}
-         | (Primary Area of Expertise ID: {39})
-         # Primary Subject Area:
-         . {65}
-         | {65}
-         # Sustainable Development Goals:
-         . {129}
-         | {129}
-         # Key Words:
-         . {131}
-         | {131}
-         # Team Collaboration:
-         . {40}
-         | {40}
-         # Case of Partnership:
-         . {41}
-         | {41}
          # Technical Process Description:
          . {58}
-         | {58}
-         # Priority Populations:
-         . {59}
-         | {59}
-         | (Priority Populations IDs: {60})
+         | <p style="padding-left: 30px;">{58}</p>
          # Diversity Equity and Inclusion:
          . {61}
-         | {61}
+         | <p style="padding-left: 30px;">{61}</p>
          # Opportunities and Accomodations:
-         . {62}
-         | {62}
+         .. {62}
+         | <p style="padding-left: 30px;">{62}</p>
          # Theory of Change:
          . {63}
-         | {63}
+         | <p style="padding-left: 30px;">{63}</p>
          # Barrier Assessment and Risk Mitigation:
-         . {64}
-         | {64}
-         # Primary Subject Area Category:
-         . {67}
-         | {67}
-         # Solution Stage:
-         . {130}
-         | {130}
+         .. {64}
+         | <p style="padding-left: 30px;">{64}</p>
          # Evidence of Effectiveness:
          . {132}
-         | {132}
+         | <p style="padding-left: 30px;">{132}</p>
          # Type of Evidence:
-         . {133}
-         | {133}
+         .. {133}
+         | <p style="padding-left: 30px;">{133}</p>
+         # Solution Stage:
+         .. {130}
+         | <p style="padding-left: 30px;">{130}</p>
          # Monitoring Evaluation and Learning:
          . {134}
-         | {134}
+         | <p style="padding-left: 30px;">{134}</p>
          # Planning for Scale and Amplifying Impact:
-         . {135}
-         | {135}
+         . Scaling
+         | <p style="padding-left: 30px;">{135}</p>
          # Durability of Impact:
-         . {136}
-         | {136}
-         . Project Phases
+         . Durability
+         | <p style="padding-left: 30px;">{136}</p>
+         . Project Phases and Budget Summary
          .. Phase 1
-         ... Name
-         # Project Phase #1: Name:
-         | {138}
-         ... Duration
-         # Project Phase #1: Duration:
-         | {139}
-         ... Description
-         # Project Phase #1: Description:
-         | {140}
-         ... Budget Sub-Total
-         # Phase #1: Budget Sub-Total:
-         | {161}
+         | <p style="padding-left: 30px;">
+         | '''Name:''' {138}<br />
+         | '''Duration:''' {139}<br />
+         | '''Description:''' {140}<br />
+         | '''Budget Sub-Total:''' {161}
+         | </p>
          .. Phase 2
-         ... Name
-         # Project Phase #2: Name:
-         | {141}
-         ... Duration
-         # Project Phase #2: Duration:
-         | {142}
-         ... Description
-         # Project Phase #2: Description:
-         | {143}
-         ... Budget Sub-Total
-         # Phase #2: Budget Sub-Total:
-         | {162}
+         | <p style="padding-left: 30px;">
+         | '''Name:''' {141}<br />
+         | '''Duration:''' {142}<br />
+         | '''Description:''' {143}<br />
+         | '''Budget Sub-Total:''' {162}
+         | </p>
          .. Phase 3
-         ... Name
-         # Project Phase #3: Name:
-         | {144}
-         ... Duration
-         # Project Phase #3: Duration:
-         | {145}
-         ... Description
-         # Project Phase #3: Description:
-         | {146}
-         ... Budget Sub-Total
-         # Phase #3: Budget Sub-Total:
-         | {166}
-         . Total Resource Requirements
+         | <p style="padding-left: 30px;">
+         | '''Name:''' {144}<br />
+         | '''Duration:''' {145}<br />
+         | '''Description:''' {146}<br />
+         | '''Budget Sub-Total:''' {163}
+         | </p>
+         .. Other Resource Requirements
+         | <p style="padding-left: 30px;">{165}</p>
+         .. Total Resource Requirements
          # Total Resourse Requirementes [sic]:
-         | {147}
-         . Contact Info
-         ... Primary Contact
-         # Primary Contact Title, Primary Contact First Name, Primary Contact Last Name:
-         | {18} {19} ({20})
-         # Primary Contact Phone:
-         | {21}
-         # Primary Contact Email:
-         | {22}
-         ... Secondary Contact
-         # Secondary Contact Title, Secondary Contact First Name, Secondary Contact Last Name:
-         | {23} {24} ({25})
-         # Secondary Contact Phone:
-         | {23}
-         # Secondary Contact Email:
-         | {24}
-         . Organization Information
-         # Principal Organization:
-         | {35}
-         # Principal Organization Website or Social Media:
-         | {36}
-         # Project Website or Social Media Page:
-         | {37}
-         # Organization Legal Name:
-         | {8}
-         # Country, Country ID:
-         | {9} (Country ID: {10})
-         # State, State ID:
-         | {11} (State ID: {12})
-         # Locality, Locality ID:
-         | {13} (Locality ID: {14})
-         | 
-         # Street Address:
-         | {15}
-         # City:
-         | {16}
-         # Zip Postal Code:
-         | {17}
-         | 
-         | '''Financial Sustainability:''' {164}
-         | '''Other Resource Requirements:''' {165}
-         | '''Charitable Purpose:''' {166}
-         | '''Private Benefit:''' {167}
-         | 
-         .. Lobbying Activities
-         | {168}
-         .. Human Subject Research
-         | {169}
-         .. Intellectual Property
-         | {170}
-         | 
-         | '''Identification Number of Principal Organization:''' {171}
-         | '''Identification Number of Principal Organization ein:''' {172}
-         | '''Annual Operating Budget:''' {173}
-         | '''Number of Employees:''' {174}
-         | 
-         # Organization Legal Status:
-         .. {28}
-         | {28}
-         . Current Solution Countries
-         .. Current Solution Country 1
-         ... Location
-         # Location Of Current Solution Country (Location Of Current Solution Country id):
-         | {69} (Country ID: {70})
-         ... State/Province
-         # Location Of Current Solution State (Location Of Current Solution State id):
-         | {71} (State/Province ID: {72})
-         ... Locality
-         # Location Of Current Solution Locality (Location Of Current Solution Locality id):
-         | {73} (Locality ID: {74})
-         .. Current Solution Country 2
-         ... Location
-         # Location Of Current Solution2 Country (Location Of Current Solution2 Country id):
-         | {75} (Country ID: {76})
-         ... State/Province
-         # Location Of Current Solution2 State (Location Of Current Solution2 State id):
-         | {77} (State/Province ID: {78})
-         ... Locality
-         # Location Of Current Solution2 Locality (Location Of Current Solution2 Locality id):
-         | {79} (Locality ID: {80})
-         .. Current Solution Country 3
-         ... Location
-         # Location Of Current Solution3 Country (Location Of Current Solution3 Country id):
-         | {81} (Country ID: {82})
-         ... State/Province
-         # Location Of Current Solution3 State (Location Of Current Solution3 State id):
-         | {83} (State/Province ID: {84})
-         ... Locality
-         # Location Of Current Solution3 Locality (Location Of Current Solution3 Locality id):
-         | {85} (Locality ID: {86})
-         .. Current Solution Country 4
-         ... Location
-         # Location Of Current Solution4 Country (Location Of Current Solution4 Country id):
-         | {87} (Country ID: {88})
-         ... State/Province
-         # Location Of Current Solution4 State (Location Of Current Solution4 State id):
-         | {89} (State/Province ID: {90})
-         ... Locality
-         # Location Of Current Solution4 Locality (Location Of Current Solution4 Locality id):
-         | {91} (Locality ID: {92})
-         .. Current Solution Country 5
-         ... Location
-         # Location Of Current Solution5 Country (Location Of Current Solution5 Country id):
-         | {93} (Country ID: {94})
-         ... State/Province
-         # Location Of Current Solution5 State (Location Of Current Solution5 State id):
-         | {95} (State/Province ID: {96})
-         ... Locality
-         # Location Of Current Solution5 Locality (Location Of Current Solution5 Locality id):
-         | {97} (Locality ID: {98})
-         . Future Work Countries
-         .. Future Work Country 1
-         ... Country
-         # Location Of Future Work Country (Location Of Future Work Country id):
-         | {99} (Country ID: {100})
-         ... State/Province
-         # Location Of Future Work State (Location Of Future Work State id):
-         | {101} (State/Province ID: {102})
-         ... Locality
-         # Location Of Future Work Locality (Location Of Future Work Locality id):
-         | {103} (Locality ID: {104})
-         .. Future Work Country 2
-         ... Country
-         # Location Of Future Work2 Country (Location Of Future Work2 Country id):
-         | {105} (Country ID: {106})
-         ... State/Province
-         # Location Of Future Work2 State (Location Of Future Work2 State id):
-         | {107} (State/Province ID: {108})
-         ... Locality
-         # Location Of Future Work2 Locality (Location Of Future Work2 Locality id):
-         | {109} (Locality ID: {110})
-         .. Future Work Country 3
-         ... Country
-         # Location Of Future Work3 Country (Location Of Future Work3 Country id):
-         | {111} (Country ID: {112})
-         ... State/Province
-         # Location Of Future Work3 State (Location Of Future Work3 State id):
-         | {113} (State/Province ID: {114})
-         ... Locality
-         # Location Of Future Work3 Locality (Location Of Future Work3 Locality id):
-         | {115} (Locality ID: {116})
-         .. Future Work Country 4
-         ... Country
-         # Location Of Future Work4 Country (Location Of Future Work4 Country id):
-         | {117} (Country ID: {118})
-         ... State/Province
-         # Location Of Future Work4 State (Location Of Future Work4 State id):
-         | {119} (State/Province ID: {120})
-         ... Locality
-         # Location Of Future Work4 Locality (Location Of Future Work4 Locality id):
-         | {121} (Locality ID: {122})
-         .. Future Work Country 5
-         ... Country
-         # Location Of Future Work5 Country (Location Of Future Work5 Country id):
-         | {123} (Country ID: {124})
-         ... State/Province
-         # Location Of Future Work5 State (Location Of Future Work5 State id):
-         | {125} (State/Province ID: {126})
-         ... Locality
-         # Location Of Future Work5 Locality (Location Of Future Work5 Locality id):
-         | {127} (Locality ID: {128})
-         . Funders
-         .. Funder 1
+         | <p style="padding-left: 30px;">{147}</p>
+         . Budget Narrative, Financial Sustainability, and Funders
+         # Budget Narrative:
+         | <p style="padding-left: 30px;">{160}</p>
+         .. Financial Sustainability
+         | <p style="padding-left: 30px;">{164}</p>
+         .. Funders
+         | <p style="padding-left: 30px;">
          # Funder #1: Name:
-         | '''Name:''' {148}
+         | '''Funder 1:''' {148}<br />
          # Funder #1: First Year of Funding:
-         | '''First Year of Funding:''' {149}
+         | '''First Year of Funding:''' {149}<br />
          # Funder #1: Last Year of Funding:
-         | '''Last Year of Funding:''' {150}
+         | '''Last Year of Funding:''' {150}<br />
          # Funder #1: Amount of Funding:
          | '''Amount of Funding:''' {151}
-         .. Funder 2
+         | </p>
+         | <br />
+         | <p style="padding-left: 30px;">
          # Funder #2: Name:
-         | '''Name:''' {152}
+         | '''Funder 2:''' {152}<br />
          # Funder #2: First Year of Funding:
-         | '''First Year of Funding:''' {153}
+         | '''First Year of Funding:''' {153}<br />
          # Funder #2: Last Year of Funding:
-         | '''Last Year of Funding:''' {154}
+         | '''Last Year of Funding:''' {154}<br />
          # Funder #2: Amount of Funding:
          | '''Amount of Funding:''' {155}
-         .. Funder 3
+         | </p>
+         | <br />
+         | <p style="padding-left: 30px;">
          # Funder #3: Name:
-         | '''Name:''' {156}
+         | '''Funder 3:''' {156}<br />
          # Funder #3: First Year of Funding:
-         | '''First Year of Funding:''' {157}
+         | '''First Year of Funding:''' {157}<br />
          # Funder #3: Last Year of Funding:
-         | '''Last Year of Funding:''' {158}
+         | '''Last Year of Funding:''' {158}<br />
          # Funder #3: Amount of Funding:
          | '''Amount of Funding:''' {159}
-         # Budget Narrative:
-         . {160}
-         | {160}
-         . Competition Information
-         | '''Review Number:''' {4}
-         | '''Participant key:''' {1}
-         | '''Competition Domain:''' {2}
-         | '''Participant key and Domain:''' {3}
-         | '''Did Apply?''' {29}
-         ... How heard about?
+         | </p>
+         . Legal and Financial Data
+         | <p style="padding-left: 30px;">
+         | '''Organization Legal Status:''' {28}<br />
+         | '''Identifier:''' {171}<br />
+         | '''Identification Number of Principal Organization EIN:''' {172}<br />
+         | '''Lobbying Activities:''' {168}<br />
+         | '''Human Subject Research:''' {169}<br />
+         | '''Intellectual Property:''' {170}<br />
+         | '''Charitable Purpose:''' {166}<br />
+         | '''Private Benefit:''' {167}<br />
+         | '''Annual Operating Budget:''' {173}<br />
+         | '''Number of Employees:''' {174}
+         | </p>
+         . Organization Contact Info
+         .. Primary Contact
+         # Primary Contact Title, Primary Contact First Name, Primary Contact Last Name:
+         | <p style="padding-left: 30px;">
+         | {18} {19} ({20})<br />
+         # Primary Contact Phone:
+         | {21}<br />
+         # Primary Contact Email:
+         | {22}
+         | </p>
+         .. Organization Information
+         | <p style="padding-left: 30px;">
+         # Principal Organization:
+         | {36}<br />
+         # Project Website or Social Media Page:
+         | {37}<br />
+         # Organization Legal Name:
+         | {8}<br />
+         # Street Address:
+         | {15}<br />
+         # City, State Zip:
+         | {16}, {11} {17} <br />
+         # Country:
+         | {9}
+         | </p>
+         . Coding (subject, population, location)
+         | '''Organizational Area of Expertise:''' {38}
+         | '''Application Subject Area(s):''' {67}, {65}
+         | '''Key Words:''' {131}
+         | '''Priority Populations:''' {59}
+         | '''Sustainable Development Goals:'''
+         | <div style="padding-left: 30px;">{129}</div>
+         .. Current Solution Location(s)
+         .. Country 1
+         | <p style="padding-left: 30px;">
+         | '''Country:''' {69}<br />
+         | '''State/Province:''' {71}<br />
+         | '''Locality:''' {73}
+         | </p>
+         .. Country 2
+         | <p style="padding-left: 30px;">
+         | '''Country:''' {75}<br />
+         | '''State/Province:''' {77}<br />
+         | '''Locality:''' {79}
+         | </p>
+         .. Country 3
+         | <p style="padding-left: 30px;">
+         | '''Country:''' {81}<br />
+         | '''State/Province:''' {83}<br />
+         | '''Locality:''' {85}
+         | </p>
+         .. Future Work Location(s)
+         .. Country 1
+         | <p style="padding-left: 30px;">
+         | '''Country:''' {99}<br />
+         | '''State/Province:''' {101}<br />
+         | '''Locality:''' {103}
+         | </p>
+         .. Country 2
+         | <p style="padding-left: 30px;">
+         | '''Country:''' {105}<br />
+         | '''State/Province:''' {107}<br />
+         | '''Locality:''' {109}
+         | </p>
+         .. Country 3
+         | <p style="padding-left: 30px;">
+         | '''Country:''' {111}<br />
+         | '''State/Province:''' {113}<br />
+         | '''Locality:''' {115}
+         | </p>
+         .. Country 4
+         | <p style="padding-left: 30px;">
+         | '''Country:''' {117}<br />
+         | '''State/Province:''' {119}<br />
+         | '''Locality:''' {121}
+         | </p>
+         .. Country 5
+         | <p style="padding-left: 30px;">
+         | '''Country:''' {123}<br />
+         | '''State/Province:''' {125}<br />
+         | '''Locality:''' {127}
+         | </p>
+         ... Competition Information
+         | <p style="padding-left: 30px;">
+         | '''Review Number:''' {4}<br />
+         | '''Did you apply to the first 100&Change?''' {29}
+         | </p>
+         ... How did you hear about 100&Change?
          # Hear About:
+         | <p style="padding-left: 30px;">
          | {30}
-         . Judges Responses
-         | '''Overall Score:''' {175}
-         | '''Overall Score Normalized:''' {176}
-         | '''Sum of Scores:''' {177}
-         | '''Sum of Scores Normalized:''' {178}
-         .. Details
-         | {179}
+         | </p>
          # Bibliography:
          . {137}
          | {137}

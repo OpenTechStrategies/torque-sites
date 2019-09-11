@@ -1,34 +1,29 @@
 Template:Sidebar
-<div class="noprint" style="float:right;border:1px solid black;width:300px;margin-left:10px;padding:10px">
+<div class="noprint" style="float:right;border:1px solid black;width:400px;margin-left:10px;padding:10px">
 <div style="text-align: center">'''{{{title}}} ({{{number}}})'''</div>
-{{#evu:{{{video}}}|dimensions=300}}
+<div style="font-size:80%">
+{{#evu:{{{video}}}|dimensions=400}}
 {|
 |-
-|style="vertical-align:top;width:100px" |'''Org'''
+|style="vertical-align:top;width:150px" |'''Organization:'''
 |{{{org}}}
-{{{country}}}, {{{locality}}}
-{{{first_name}}} {{{last_name}}} ({{{contact_title}}})
-{{{email}}}
 |-
-|style="vertical-align:top;" | '''Org legal status:'''
-| {{{legal_status}}}
-|-
-|style="vertical-align:top;" | '''Description:'''
+|style="vertical-align:top;" | '''Project Description:'''
 | {{{description}}}
 |-
 |style="vertical-align:top;" | '''Priority populations:'''
 | {{{priority_population}}}
 |-
-|style="vertical-align:top;" | '''Primary subject area:'''
+|style="vertical-align:top;" | '''Application subject area:'''
 | {{{primary_subject_area}}}
 |-
-|style="vertical-align:top;" | '''Current solution countries:'''
-| {{{current_solution_country_1}}}, {{{current_solution_country_2}}}, {{{current_solution_country_3}}}
+|style="vertical-align:top;" | '''Current solution location(s):'''
+| {{{current_solution_country_1}}}
 |-
-|style="vertical-align:top;" | '''Future work country:'''
+|style="vertical-align:top;" | '''Future work location(s):'''
 | {{{future_work_country}}}
 |-
-|style="vertical-align:top;" | '''SDG:'''
+|style="vertical-align:top;" | '''SDG(s):'''
 | {{{sdg}}}
 |-
 |style="vertical-align:top;" | '''Key words:'''
@@ -39,5 +34,9 @@ Template:Sidebar
 |-
 |style="vertical-align:top;" | '''Number of employees:'''
 | {{{num_employees}}}
+|-
+|style="vertical-align:top;" | '''Attachments:'''
+| {{{attachments}}}
 |}
+</div>
 </div>
