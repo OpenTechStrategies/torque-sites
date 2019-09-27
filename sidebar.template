@@ -1,6 +1,9 @@
 Template:Sidebar
 <div class="noprint" style="float:right;border:1px solid black;width:400px;margin-left:10px;padding:10px">
-<div style="text-align: center">'''{{{title}}} ({{{number}}})'''</div>
+<div style="text-align: center">
+<h1 style="margin-top:0px">Snapshot</h1>
+'''{{{title}}} ({{{number}}})'''
+</div>
 <div style="font-size:80%">
 {{#evu:{{{video}}}|dimensions=400}}
 {|
