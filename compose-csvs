@@ -313,7 +313,19 @@ def compose_csvs(proposals, admin_review, judge_eval, extra_category_file,
             application_attachment_dir = os.path.join(attachments_dir, row[3])
             for attachment_file in os.listdir(application_attachment_dir):
                 esc_attachment_file = wiki_escape_page_title(attachment_file)
-                attachments_str += "[[Media:" + esc_attachment_file + "|" + attachment_file + "]]\n\n"
+                if re.search("^\\d*_Registration.pdf", attachment_file):
+                    continue
+                cleaned_attachment_file = esc_attachment_file
+
+                attachment_file_display = re.sub("^\\d*_", "", attachment_file)
+                attachment_file_display = re.sub("\.pdf$", "", attachment_file_display)
+                if len(attachment_file_display) > 33:
+                    attachment_file_display = \
+                            attachment_file_display[0:15] + \
+                            "..." + \
+                            attachment_file_display[(len(attachment_file_display)-15):]
+
+                attachments_str += "[[Media:" + cleaned_attachment_file + "|" + attachment_file_display + "]]\n\n"
                 attachments_to_add.append("%s|%s" % (
                     esc_attachment_file,
                     os.path.join(application_attachment_dir, attachment_file)))
