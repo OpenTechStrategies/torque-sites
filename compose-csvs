@@ -175,6 +175,27 @@ def categorize_sdg(cell, extra_cats):
 
     return new_cell
 
+def categorize_cell(cell, extra_cats):
+    """Change the CELL to have wiki markup for the category represented by
+    the data in the cell, if there's data in the cell.  Add the category
+    to the EXTRA_CATS"""
+
+    cell = cell.strip()
+
+    if cell == 'NULL':
+        return cell;
+
+    if cell == '':
+        return cell;
+
+    new_cell = ''
+    if cell not in extra_cats:
+        extra_cats.append(cell)
+    new_cell += '[[:Category:' + cell + '|' + cell + ']]'
+    new_cell += '[[Category:' + cell + ']]\n'
+
+    return new_cell
+
 def print_csv(header_row, rows):
     """Print the HEADER_ROW and ROWS to stdout via csv"""
 
@@ -292,10 +313,18 @@ def compose_csvs(proposals, admin_review, judge_eval, extra_category_file,
                 num_fixed_cells += 1
             new_row.append(fix_cell(cell))
 
-        # Mutate the row to add special wiki markup for categorization of pages.
+        # Mutate the rows to add special wiki markup for categorization of pages.
         # This is special to the 2019 run.  We need to save the extra_categories
         # so that csv2wiki will make them
         new_row[128] = categorize_sdg(row[128], extra_cats)
+        new_row[68] = categorize_cell(row[68], extra_cats)
+        new_row[74] = categorize_cell(row[74], extra_cats)
+        new_row[80] = categorize_cell(row[80], extra_cats)
+        new_row[98] = categorize_cell(row[98], extra_cats)
+        new_row[104] = categorize_cell(row[104], extra_cats)
+        new_row[110] = categorize_cell(row[110], extra_cats)
+        new_row[116] = categorize_cell(row[116], extra_cats)
+        new_row[122] = categorize_cell(row[122], extra_cats)
 
         if row[3] in judge_data:
             new_row.extend([
