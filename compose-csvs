@@ -211,20 +211,23 @@ def process_judge_data(csv_reader):
     turns that into a dict of dicts in the following form:
 
       JUDGE_DATA[app_id] = {
-        overall_score_rank: string,
         overall_score_rank_normalized: string,
-        sum_of_scores: string,
         sum_of_scores_normalized: string,
-        judge_data: concatenated string,
+        traits: array of TRAIT (below)
+      }
+
+      TRAIT = {
+        name: string,
+        score_normalized: string
+        judge_comments: concatenated string
       }
 
     The judge data coming in has many judge comments in their own row to one
-    application.  In the case of the first four parts of the dictionary,
-    those are only taken from the first matching row, since all rows should
-    have identical data.
+    application.  There are N traits, and M judges per trait, with things like
+    overall_score_rank_normalized being duplicated for all NxM rows.
 
-    In the case of the last, the judge comments are all concatenated with their
-    information with newlines separating.
+    The scores for the traits are added up based here rather than in the
+    spreasheet.  Then, judge comments are concatenated for that trait.
     """
 
     judge_data = {}
@@ -234,14 +237,27 @@ def process_judge_data(csv_reader):
         application_id = row[3]
         if not application_id in judge_data:
             judge_data[application_id] = {
-                    "overall_score_rank": row[9],
-                    "overall_score_rank_normalized": row[10],
-                    "sum_of_scores": row[11],
-                    "sum_of_scores_normalized": row[12],
-                    "judge_data": "",
+                    "overall_score_rank_normalized": row[9],
+                    "sum_of_scores_normalized": row[11],
+                    "traits": [],
                     }
-        judge_data[application_id]["judge_data"] += \
-                row[14] + "(" + row[15] + ", norm: " + row[16] + "): " + row[17] + "\n\n"
+
+        judge_datum = judge_data[application_id]
+
+        found = False
+
+        for trait in judge_datum["traits"]:
+            if trait["name"] == row[15]:
+                found = True
+                trait["score_normalized"] += float(row[13])
+                trait["judge_comments"] += "\n\n* " + row[14]
+
+        if not found:
+            judge_datum["traits"].append({
+                    "name": row[15],
+                    "score_normalized": float(row[13]),
+                    "judge_comments": "\n\n* " + row[14]
+                })
 
     return judge_data
 
@@ -328,14 +344,19 @@ def compose_csvs(proposals, admin_review, judge_eval, extra_category_file,
 
         if row[3] in judge_data:
             new_row.extend([
-                judge_data[row[3]]["overall_score_rank"],
                 judge_data[row[3]]["overall_score_rank_normalized"],
-                judge_data[row[3]]["sum_of_scores"],
-                judge_data[row[3]]["sum_of_scores_normalized"],
-                judge_data[row[3]]["judge_data"],
-                ])
+                judge_data[row[3]]["sum_of_scores_normalized"] ])
+
+            for trait in judge_data[row[3]]["traits"]:
+                new_row.append(trait["name"])
+                new_row.append("{0:.1f}".format(trait["score_normalized"]))
+                new_row.append(trait["judge_comments"])
         else:
-            new_row.extend(["", "", "", "", ""])
+            new_row.extend(["", ""])
+
+            # for now, we know that there are 4 traits
+            for _ in range(4):
+                new_row.extend(["", "", ""])
 
         attachments_str = ""
         if attachments_dir is not None:
