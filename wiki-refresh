@@ -83,6 +83,8 @@ JUDGE_EVALUATION_CSV="P2P-review-data-20190929-for-OTS-copy.csv"
 WISEHEAD_EVALUATION_CSV="100&Change_Wise_Head_Review_data_anon_judges.csv"
 EXTRA_CATEGORY_FILE="Generated_Extra_Categories.dat"
 ATTACHMENTS_FILE="Generated_Attachments.dat"
+TOP100_FILE="Generated_Top100"
+SECOND100_FILE="Generated_Second100"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments"
 
 OUTPUT_CSV="2019-processed.csv"
@@ -99,6 +101,8 @@ ${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
             --wisehead-evaluation-csv="${DATA_DIR}/${WISEHEAD_EVALUATION_CSV}" \
             --attachments-file="${DATA_DIR}/${ATTACHMENTS_FILE}" \
             --attachments-dir="${ATTACHMENTS_DIR}" \
+            --top100-file="${DATA_DIR}/${TOP100_FILE}" \
+            --second100-file="${DATA_DIR}/${SECOND100_FILE}" \
             --extra-category-file="${DATA_DIR}/${EXTRA_CATEGORY_FILE}" > \
             "${DATA_DIR}/${OUTPUT_CSV}"
 if [ $? -ne 0 ]; then
@@ -113,6 +117,8 @@ python3 -m csv2wiki --cat-sort=alpha -c ${CSV2WIKI_CONFIG}      \
             --extra-cats="${DATA_DIR}/${EXTRA_CATEGORY_FILE}"   \
             --attachments="${DATA_DIR}/${ATTACHMENTS_FILE}" \
             --helper-page=sidebar.template \
+            --helper-page="${DATA_DIR}/${TOP100_FILE}" \
+            --helper-page="${DATA_DIR}/${SECOND100_FILE}" \
             --csv="${DATA_DIR}/${OUTPUT_CSV}"
 echo "Done creating wiki."
 echo ""

@@ -271,16 +271,19 @@ def process_evaluation_data(*csv_reader, app_col, score_rank_col, sum_of_scores_
     return evaluation_data
 
 def wiki_escape_page_title(s):
+    import unidecode
     """Return a wiki-escaped version of STRING."""
     for c in ["#", "<", ">", "[", "]", "{", "|", "}",]:
         if s.find(c) != -1:
             s = s.replace(c, "-")
     while len(bytes(s, "UTF-8")) > 255:
         s = s[:-1]
-    return s
+
+    # Also convert non unicode because we do this with titles on the other side
+    return unidecode.unidecode_expect_nonascii(s)
 
 def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, extra_category_file,
-        attachments_file, attachments_dir, pare=None):
+        top100_file, second100_file, attachments_file, attachments_dir, pare=None):
     """Write a composed version of PROPOSALS (a CSV file), ADMIN_REVIEW
     (a CSV file), and JUDGE_EVAL (a CSV file) to standard out.
 
@@ -291,6 +294,9 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, extra_categ
     EXTRA_CATEGORY_FILE and ATTACHMENTS_FILE are locations that compose-csvs
     will write to disk for csv2wiki to pick up later to add categories and
     attachments to the wiki.
+
+    TOP100_FILE and SECOND100_FILE are locations that compose-csvs will write
+    a table of contents for the top 100, and second 100, proposals.
 
     ATTACHMENTS_DIR is the directory to look in for attachments.
 
@@ -409,6 +415,22 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, extra_categ
         print("Sanitized row %d (rank %d, %d cols, %d fixed)." % (row_num, rank, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
 
+    new_rows.sort(key=lambda row: int(row[188])) # Sort by wisehead rank
+
+    if top100_file is not None:
+        with open(top100_file, 'w') as f:
+            f.writelines("Top 100 Proposals\n")
+            for row in new_rows:
+                if int(row[188]) < 101:
+                    f.writelines("* %s - [[%s]]\n" % (row[188], wiki_escape_page_title("{30} ({3})".format(*row))))
+
+    if second100_file is not None:
+        with open(second100_file, 'w') as f:
+            f.writelines("Second 100 Proposals\n")
+            for row in new_rows:
+                if int(row[188]) > 100 and int(row[188]) < 201:
+                    f.writelines("* %s - [[%s]]\n" % (row[188], wiki_escape_page_title("{30} ({3})".format(*row))))
+
     if extra_category_file is not None:
         with open(extra_category_file, 'w') as f:
             f.writelines("%s\n" % extra_cat for extra_cat in extra_cats)
@@ -429,6 +451,8 @@ def main():
                                     "judge-evaluation-csv=",
                                     "wisehead-evaluation-csv=",
                                     "extra-category-file=",
+                                    "top100-file=",
+                                    "second100-file=",
                                     "attachments-file=",
                                     "attachments-dir=",])
     except getopt.GetoptError as err:
@@ -441,6 +465,8 @@ def main():
     judge_evaluation_csv = None
     wisehead_evaluation_csv = None
     extra_category_file = None
+    top100_file = None
+    second100_file = None
     attachments_file = None
     attachments_dir = None
     for o, a in opts:
@@ -456,6 +482,10 @@ def main():
             wisehead_evaluation_csv = a
         elif o == "--extra-category-file":
             extra_category_file = a
+        elif o == "--top100-file":
+            top100_file = a
+        elif o == "--second100-file":
+            second100_file = a
         elif o == "--attachments-file":
             attachments_file = a
         elif o == "--attachments-dir":
@@ -480,7 +510,7 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
     compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, wisehead_evaluation_csv,
-            extra_category_file, attachments_file, attachments_dir, pare)
+            extra_category_file, top100_file, second100_file, attachments_file, attachments_dir, pare)
 
 if __name__ == '__main__':
     main()
