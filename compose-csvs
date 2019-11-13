@@ -419,17 +419,19 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, extra_categ
 
     if top100_file is not None:
         with open(top100_file, 'w') as f:
-            f.writelines("Top 100 Proposals\n")
+            f.writelines("Top100\n")
+            f.writelines("Following are the top 100 proposals received, listed in rank order.\n")
             for row in new_rows:
                 if int(row[188]) < 101:
-                    f.writelines("* %s - [[%s]]\n" % (row[188], wiki_escape_page_title("{30} ({3})".format(*row))))
+                    f.writelines("%s. [[%s]]\n" % (row[188], wiki_escape_page_title("{30} ({3})".format(*row))))
 
     if second100_file is not None:
         with open(second100_file, 'w') as f:
-            f.writelines("Second 100 Proposals\n")
+            f.writelines("EligibleWildcards\n")
+            f.writelines("The following proposals are candidates for wildcard selection. They are listed in rank order.\n")
             for row in new_rows:
                 if int(row[188]) > 100 and int(row[188]) < 201:
-                    f.writelines("* %s - [[%s]]\n" % (row[188], wiki_escape_page_title("{30} ({3})".format(*row))))
+                    f.writelines("%s. [[%s]]\n" % (row[188], wiki_escape_page_title("{30} ({3})".format(*row))))
 
     if extra_category_file is not None:
         with open(extra_category_file, 'w') as f:
