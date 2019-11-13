@@ -80,6 +80,7 @@ fi
 PROPOSALS_CSV="Export-reg-and-app-data-Submission-deadline-06082019.csv"
 ADMIN_REVIEW_CSV="AdminReviewP2P_mac2019_08272019.csv"
 JUDGE_EVALUATION_CSV="P2P-review-data-20190929-for-OTS-copy.csv"
+WISEHEAD_EVALUATION_CSV="100&Change_Wise_Head_Review_data_anon_judges.csv"
 EXTRA_CATEGORY_FILE="Generated_Extra_Categories.dat"
 ATTACHMENTS_FILE="Generated_Attachments.dat"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments"
@@ -95,6 +96,7 @@ echo "Stage 1: Composing..."
 ${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
             --admin-review-csv="${DATA_DIR}/${ADMIN_REVIEW_CSV}" \
             --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
+            --wisehead-evaluation-csv="${DATA_DIR}/${WISEHEAD_EVALUATION_CSV}" \
             --attachments-file="${DATA_DIR}/${ATTACHMENTS_FILE}" \
             --attachments-dir="${ATTACHMENTS_DIR}" \
             --extra-category-file="${DATA_DIR}/${EXTRA_CATEGORY_FILE}" > \

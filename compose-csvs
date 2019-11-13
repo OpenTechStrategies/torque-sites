@@ -206,11 +206,12 @@ def print_csv(header_row, rows):
     for row in rows:
         csv_writer.writerow(row)
 
-def process_judge_data(csv_reader):
-    """Takes a CSV_READER representing judge data in a spreadsheet and
+def process_evaluation_data(*csv_reader, app_col, score_rank_col, sum_of_scores_col, trait_col,
+        score_normalized_col, comments_col):
+    """Takes a CSV_READER representing evaluation data in a spreadsheet and
     turns that into a dict of dicts in the following form:
 
-      JUDGE_DATA[app_id] = {
+      EVALUATION_DATA[app_id] = {
         overall_score_rank_normalized: string,
         sum_of_scores_normalized: string,
         traits: array of TRAIT (below)
@@ -219,47 +220,55 @@ def process_judge_data(csv_reader):
       TRAIT = {
         name: string,
         score_normalized: string
-        judge_comments: concatenated string
+        comments: concatenated string
       }
 
-    The judge data coming in has many judge comments in their own row to one
+    The columns that data is looked up are required named integer arguments as follows:
+      - APP_COL: column with application number
+      - SCORE_RANK_COL: column with normalized score rank
+      - SUM_OF_SCORES_COL: column with normalized scores
+      - TRAIL_COL: column with the trait name
+      - SCORE_NORMALIZED_COL: column with the normalized score
+      - COMMENTS_COL: column with the comments
+
+    The evaluation data coming in has many comments in their own row to one
     application.  There are N traits, and M judges per trait, with things like
     overall_score_rank_normalized being duplicated for all NxM rows.
 
     The scores for the traits are added up based here rather than in the
-    spreasheet.  Then, judge comments are concatenated for that trait.
+    spreasheet.  Then, comments are concatenated for that trait.
     """
 
-    judge_data = {}
+    evaluation_data = {}
 
-    next(csv_reader)
-    for row in csv_reader:
-        application_id = row[3]
-        if not application_id in judge_data:
-            judge_data[application_id] = {
-                    "overall_score_rank_normalized": row[9],
-                    "sum_of_scores_normalized": row[11],
+    next(csv_reader[0])
+    for row in csv_reader[0]:
+        application_id = row[app_col]
+        if not application_id in evaluation_data:
+            evaluation_data[application_id] = {
+                    "overall_score_rank_normalized": row[score_rank_col],
+                    "sum_of_scores_normalized": row[sum_of_scores_col],
                     "traits": [],
                     }
 
-        judge_datum = judge_data[application_id]
+        judge_datum = evaluation_data[application_id]
 
         found = False
 
         for trait in judge_datum["traits"]:
-            if trait["name"] == row[15]:
+            if trait["name"] == row[trait_col]:
                 found = True
-                trait["score_normalized"] += float(row[13])
-                trait["judge_comments"] += "\n\n* " + row[14]
+                trait["score_normalized"] += float(row[score_normalized_col])
+                trait["comments"] += "\n\n* " + row[comments_col]
 
         if not found:
             judge_datum["traits"].append({
-                    "name": row[15],
-                    "score_normalized": float(row[13]),
-                    "judge_comments": "\n\n* " + row[14]
+                    "name": row[trait_col],
+                    "score_normalized": float(row[score_normalized_col]),
+                    "comments": "\n\n* " + row[comments_col]
                 })
 
-    return judge_data
+    return evaluation_data
 
 def wiki_escape_page_title(s):
     """Return a wiki-escaped version of STRING."""
@@ -270,7 +279,7 @@ def wiki_escape_page_title(s):
         s = s[:-1]
     return s
 
-def compose_csvs(proposals, admin_review, judge_eval, extra_category_file,
+def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, extra_category_file,
         attachments_file, attachments_dir, pare=None):
     """Write a composed version of PROPOSALS (a CSV file), ADMIN_REVIEW
     (a CSV file), and JUDGE_EVAL (a CSV file) to standard out.
@@ -294,6 +303,8 @@ def compose_csvs(proposals, admin_review, judge_eval, extra_category_file,
                                          delimiter=',', quotechar='"')
         judge_eval_reader = csv.reader(open(judge_eval, encoding='utf-8'),
                                        delimiter=',', quotechar='"')
+        wisehead_eval_reader = csv.reader(open(wisehead_eval, encoding='utf-8'),
+                                       delimiter=',', quotechar='"')
     except UnicodeDecodeError:
         sys.stderr.write("fix-csv expects utf-8-encoded unicode, not whatever is in this csv file.\n")
         sys.exit(-1)
@@ -307,7 +318,12 @@ def compose_csvs(proposals, admin_review, judge_eval, extra_category_file,
     next(admin_review_reader) # Don't look at header
     acceptable_application_numbers = [ row[3] for row in admin_review_reader if row[7].lower() == "valid" ]
 
-    judge_data = process_judge_data(judge_eval_reader)
+    judge_data = process_evaluation_data(judge_eval_reader,
+            app_col=3, score_rank_col=9, sum_of_scores_col=11,
+            trait_col=15, score_normalized_col=13, comments_col=14)
+    wisehead_data = process_evaluation_data(wisehead_eval_reader,
+            app_col=3, score_rank_col=11, sum_of_scores_col=13,
+            trait_col=19, score_normalized_col=17, comments_col=18)
 
     row_num = 0
     new_rows = []
@@ -342,21 +358,22 @@ def compose_csvs(proposals, admin_review, judge_eval, extra_category_file,
         new_row[116] = categorize_cell(row[116], extra_cats)
         new_row[122] = categorize_cell(row[122], extra_cats)
 
-        if row[3] in judge_data:
-            new_row.extend([
-                judge_data[row[3]]["overall_score_rank_normalized"],
-                judge_data[row[3]]["sum_of_scores_normalized"] ])
-
-            for trait in judge_data[row[3]]["traits"]:
-                new_row.append(trait["name"])
-                new_row.append("{0:.1f}".format(trait["score_normalized"]))
-                new_row.append(trait["judge_comments"])
-        else:
-            new_row.extend(["", ""])
-
-            # for now, we know that there are 4 traits
-            for _ in range(4):
-                new_row.extend(["", "", ""])
+        for evaluation_data in [judge_data, wisehead_data]:
+            if row[3] in evaluation_data:
+                new_row.extend([
+                    evaluation_data[row[3]]["overall_score_rank_normalized"],
+                    evaluation_data[row[3]]["sum_of_scores_normalized"] ])
+    
+                for trait in evaluation_data[row[3]]["traits"]:
+                    new_row.append(trait["name"])
+                    new_row.append("{0:.1f}".format(trait["score_normalized"]))
+                    new_row.append(trait["comments"])
+            else:
+                new_row.extend(["", ""])
+    
+                # for now, we know that there are 4 traits
+                for _ in range(4):
+                    new_row.extend(["", "", ""])
 
         attachments_str = ""
         if attachments_dir is not None:
@@ -402,6 +419,7 @@ def main():
                                     "proposals-csv=",
                                     "admin-review-csv=",
                                     "judge-evaluation-csv=",
+                                    "wisehead-evaluation-csv=",
                                     "extra-category-file=",
                                     "attachments-file=",
                                     "attachments-dir=",])
@@ -413,6 +431,7 @@ def main():
     proposals_csv = None
     admin_review_csv = None
     judge_evaluation_csv = None
+    wisehead_evaluation_csv = None
     extra_category_file = None
     attachments_file = None
     attachments_dir = None
@@ -425,6 +444,8 @@ def main():
             admin_review_csv = a
         elif o == "--judge-evaluation-csv":
             judge_evaluation_csv = a
+        elif o == "--wisehead-evaluation-csv":
+            wisehead_evaluation_csv = a
         elif o == "--extra-category-file":
             extra_category_file = a
         elif o == "--attachments-file":
@@ -441,12 +462,16 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    if proposals_csv is None or admin_review_csv is None or judge_evaluation_csv is None:
+    if (proposals_csv is None or
+            admin_review_csv is None or
+            judge_evaluation_csv is None or
+            wisehead_evaluation_csv is None):
         sys.stderr.write(
-            "ERROR: need --proposals-csv, --admin-review-csv, and --judge-evaluation-csv options.\n\n")
+            "ERROR: need --proposals-csv, --admin-review-csv, " +
+            "--judge-evaluation-csv, and --wisehead_evaluation-csv options.\n\n")
         sys.stderr.write(__doc__)
         sys.exit(1)
-    compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv,
+    compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, wisehead_evaluation_csv,
             extra_category_file, attachments_file, attachments_dir, pare)
 
 if __name__ == '__main__':
