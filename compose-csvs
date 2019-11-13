@@ -337,6 +337,14 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, extra_categ
         if pare is not None and row_num % pare != 0:
             continue
 
+        if row[3] in wisehead_data:
+            rank = int(wisehead_data[row[3]]["overall_score_rank_normalized"])
+            if rank > 200:
+                continue
+        else:
+            # We skip any rows that we don't have a wisehead rank for
+            continue
+
         new_row = []
         num_fixed_cells = 0
         for cell in row:
@@ -398,7 +406,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, extra_categ
                     os.path.join(application_attachment_dir, attachment_file)))
         new_row.append(attachments_str)
 
-        print("Sanitized row %d (%d cols, %d fixed)." % (row_num, len(new_row), num_fixed_cells), file=sys.stderr)
+        print("Sanitized row %d (rank %d, %d cols, %d fixed)." % (row_num, rank, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
 
     if extra_category_file is not None:
