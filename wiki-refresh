@@ -80,7 +80,7 @@ fi
 PROPOSALS_CSV="Export-reg-and-app-data-Submission-deadline-06082019.csv"
 ADMIN_REVIEW_CSV="AdminReviewP2P_mac2019_09192019.csv"
 JUDGE_EVALUATION_CSV="P2P-review-data-20190929-for-OTS-copy.csv"
-WISEHEAD_EVALUATION_CSV="100&Change_Wise_Head_Review_data_anon_judges.csv"
+WISEHEAD_EVALUATION_CSV="100&Change_Wise_Head_Review_data_anon_judges_11162019.csv"
 EXTRA_CATEGORY_FILE="Generated_Extra_Categories.dat"
 ATTACHMENTS_FILE="Generated_Attachments.dat"
 TOP100_FILE="Generated_Top100"

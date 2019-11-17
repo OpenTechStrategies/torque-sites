@@ -345,7 +345,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, extra_categ
 
         if row[3] in wisehead_data:
             rank = int(wisehead_data[row[3]]["overall_score_rank_normalized"])
-            if rank > 200:
+            if rank > 201:
                 continue
         else:
             # We skip any rows that we don't have a wisehead rank for
@@ -430,7 +430,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, extra_categ
             f.writelines("EligibleWildcards\n")
             f.writelines("The following proposals are candidates for wildcard selection. They are listed in rank order.\n")
             for row in new_rows:
-                if int(row[188]) > 100 and int(row[188]) < 201:
+                if int(row[188]) > 100 and int(row[188]) < 202:
                     f.writelines("%s. [[%s]]\n" % (row[188], wiki_escape_page_title("{30} ({3})".format(*row))))
 
     if extra_category_file is not None:
