@@ -8,6 +8,12 @@ Template:Sidebar
 {{#evu:{{{video}}}|dimensions=400}}
 {|
 |-
+|style="vertical-align:top;width:150px" |'''Rank:'''
+|{{{rank}}}
+|-
+|style="vertical-align:top;width:150px" |'''Wisehead Score:'''
+|{{{wisehead_score}}}
+|-
 |style="vertical-align:top;width:150px" |'''Organization:'''
 |{{{org}}}
 |-
