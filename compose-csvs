@@ -158,6 +158,24 @@ def fix_cell(cell):
 
     return cell
 
+def categorize_cell(cell, extra_cats, toc_page):
+    """Change the CELL to have wiki markup for the data present, turned into
+    a category.  Achieve this by adding wiki markup to the output spreadsheet.
+
+    This is the general form of categorize_sdg and categorize_country."""
+
+    new_cell = ''
+    cell = cell.strip()
+    if cell not in extra_cats:
+        extra_cats.append(cell)
+    if toc_page is not None:
+        new_cell += '[[' + toc_page + '#' + cell + '|' + cell + ']]'
+    else:
+        new_cell += '[[:Category:' + cell + '|' + cell + ']]'
+    new_cell += '[[Category:' + cell + ']]'
+
+    return new_cell
+
 def categorize_sdg(cell, extra_cats, sdg_toc):
     """Change the CELL to have wiki markup for the comma separated categories
     present.  Achieve this by adding in wiki markup to the output spreadsheet
@@ -246,18 +264,19 @@ def process_regionconfig_data(csv_reader):
 
     return region_data_by_country
 
-def generate_sdg_toc(toc_dir, sdg_data):
-    """Generates a special TOC page in TOC_DIR for the SDG_DATA, which is
-    a dict where the proposals are all grouped by their sdg keywords"""
-    with open(toc_dir + "/SDG_TOC", 'w') as f:
-        f.writelines("SDG_TOC\n")
+def generate_generic_toc(toc_dir, data, toc_name):
+    """Generates a special TOC page in TOC_DIR for the given data, which is
+    a dict where the proposals are all grouped by some key.  Then put into
+    TOC_DIR/TOC_NAME."""
+    with open(toc_dir + "/" + toc_name, 'w') as f:
+        f.writelines(toc_name + "\n")
 
         f.writelines("__TOC__\n")
 
-        for sdg in sorted(sdg_data.keys()):
-            f.writelines("= %s =\n\n" % sdg)
+        for key in sorted(data.keys()):
+            f.writelines("= %s =\n\n" % key)
 
-            proposals = sdg_data[sdg]
+            proposals = data[key]
             proposals.sort(key=lambda proposal: int(proposal["rank"]))
 
             for proposal in proposals:
@@ -424,6 +443,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
     regionconfig_data_by_country = process_regionconfig_data(regionconfig_reader)
     regionconfig_data_by_region = {}
     sdg_data = {}
+    topic_data = {}
 
     row_num = 0
     new_rows = []
@@ -481,6 +501,11 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
             if category not in sdg_data:
                 sdg_data[category] = []
             sdg_data[category].append(proposal)
+
+        new_row[66] = categorize_cell(row[66], extra_cats, "Topic_TOC" if toc_dir != None else None)
+        if row[66] not in topic_data:
+            topic_data[row[66]] = []
+        topic_data[row[66]].append(proposal)
 
         for col in [68, 74, 80, 98, 104, 110, 116, 122]:
             if regionconfig_reader is not None:
@@ -556,7 +581,8 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
         if regionconfig_reader is not None:
             generate_geographic_toc(toc_dir, regionconfig_data_by_region)
 
-        generate_sdg_toc(toc_dir, sdg_data)
+        generate_generic_toc(toc_dir, sdg_data, "SDG_TOC")
+        generate_generic_toc(toc_dir, topic_data, "Topic_TOC")
 
     if extra_category_file is not None:
         with open(extra_category_file, 'w') as f:
