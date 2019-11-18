@@ -89,6 +89,11 @@ SECOND100_FILE="Generated_Second100"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments"
 TOC_DIR="${DATA_DIR}/tocs"
 
+# We want to make sure there's no lingering old TOCs if we change how
+# compose-csv creates them
+mkdir -p $TOC_DIR
+rm $TOC_DIR/*
+
 OUTPUT_CSV="2019-processed.csv"
 
 COMPOSER="${MACFOUND_DIR}"/compose-csvs
