@@ -81,11 +81,13 @@ PROPOSALS_CSV="Export-reg-and-app-data-Submission-deadline-06082019.csv"
 ADMIN_REVIEW_CSV="AdminReviewP2P_mac2019_09192019.csv"
 JUDGE_EVALUATION_CSV="P2P-review-data-20190929-for-OTS-copy.csv"
 WISEHEAD_EVALUATION_CSV="100&Change_Wise_Head_Review_data_anon_judges_11162019.csv"
+REGIONCONFIG_CSV="regionconfig.csv"
 EXTRA_CATEGORY_FILE="Generated_Extra_Categories.dat"
 ATTACHMENTS_FILE="Generated_Attachments.dat"
 TOP100_FILE="Generated_Top100"
 SECOND100_FILE="Generated_Second100"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments"
+TOC_DIR="${DATA_DIR}/tocs"
 
 OUTPUT_CSV="2019-processed.csv"
 
@@ -99,9 +101,11 @@ ${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
             --admin-review-csv="${DATA_DIR}/${ADMIN_REVIEW_CSV}" \
             --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
             --wisehead-evaluation-csv="${DATA_DIR}/${WISEHEAD_EVALUATION_CSV}" \
+            --regionconfig-csv="${DATA_DIR}/${REGIONCONFIG_CSV}" \
             --attachments-file="${DATA_DIR}/${ATTACHMENTS_FILE}" \
             --attachments-dir="${ATTACHMENTS_DIR}" \
             --top100-file="${DATA_DIR}/${TOP100_FILE}" \
+            --toc-dir="${TOC_DIR}" \
             --second100-file="${DATA_DIR}/${SECOND100_FILE}" \
             --extra-category-file="${DATA_DIR}/${EXTRA_CATEGORY_FILE}" > \
             "${DATA_DIR}/${OUTPUT_CSV}"
@@ -112,6 +116,11 @@ fi
 echo "Done with Stage 1 (Composing)."
 echo ""
 
+TOC_PAGES=""
+for file in $TOC_DIR/* ; do
+  TOC_PAGES="$TOC_PAGES --helper-page=$file"
+done
+
 echo "Creating wiki..."
 python3 -m csv2wiki --cat-sort=alpha -c ${CSV2WIKI_CONFIG}      \
             --extra-cats="${DATA_DIR}/${EXTRA_CATEGORY_FILE}"   \
@@ -119,6 +128,7 @@ python3 -m csv2wiki --cat-sort=alpha -c ${CSV2WIKI_CONFIG}      \
             --helper-page=sidebar.template \
             --helper-page="${DATA_DIR}/${TOP100_FILE}" \
             --helper-page="${DATA_DIR}/${SECOND100_FILE}" \
+            ${TOC_PAGES} \
             --csv="${DATA_DIR}/${OUTPUT_CSV}"
 echo "Done creating wiki."
 echo ""
