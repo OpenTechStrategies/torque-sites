@@ -176,13 +176,46 @@ def categorize_cell(cell, extra_cats, toc_page):
 
     return new_cell
 
-def categorize_sdg(cell, extra_cats, sdg_toc):
+def split_sdg(cell, sdg_data):
+    """Splits the CELL into an array of strings.  If SDG_DATA is available,
+    then it uses that data to split the array, otherwise just splits on comma.
+
+    If SDG_DATA is available, and it looks like the string doesn't have an
+    entry, then an error is raise."""
+
+    if sdg_data is None:
+        return [cat.strip() for cat in cell.split(",")]
+    else:
+        cats = []
+        cell = cell.strip()
+        while cell is not "":
+            found = False
+
+            for sdg in sdg_data.keys():
+                if cell.startswith(sdg):
+                    found = True;
+                    cats.append(sdg)
+                    cell = cell[len(sdg):]
+                if cell.startswith(","):
+                    cell = cell[1:]
+
+            if not found:
+                raise Exception("Could not find SDG in " + cell)
+
+            cell = cell.strip();
+
+        return cats
+
+def categorize_sdg(cell, extra_cats, sdg_data, sdg_toc):
     """Change the CELL to have wiki markup for the comma separated categories
     present.  Achieve this by adding in wiki markup to the output spreadsheet
-    so that csv2wiki passes them through."""
+    so that csv2wiki passes them through.
+
+    Calls through to SPLIT_SDG with SDG_DATA.
+    """
 
     new_cell = ''
-    for category in [cat.strip() for cat in cell.split(",")]:
+    for category in split_sdg(cell, sdg_data):
         category = category.strip()
         if category not in extra_cats:
             extra_cats.append(category)
@@ -254,7 +287,7 @@ def process_regionconfig_data(csv_reader):
     """
 
     if csv_reader is None:
-        return {}, []
+        return {}
 
     region_data_by_country = {}
 
@@ -263,6 +296,28 @@ def process_regionconfig_data(csv_reader):
         region_data_by_country[row[0]] = { "subregion": row[1], "region": row[2] }
 
     return region_data_by_country
+
+def process_sdgconfig_data(csv_reader):
+    """Takes a CSV_READER representing a valid sdgs, and their number
+    and converts it into a dict representing a lookup by sdg.
+    If no reader is provided, then None is returned.
+
+    The return object, when CSV_READER is present is of the form:
+      SDG_DATA[name] = {
+        number: integer
+      }
+    """
+
+    if csv_reader is None:
+        return None
+
+    sdg_data = {}
+
+    next(csv_reader)
+    for row in csv_reader:
+        sdg_data[row[1]] = { "number": int(row[0]) }
+
+    return sdg_data
 
 def generate_generic_toc(toc_dir, data, toc_name):
     """Generates a special TOC page in TOC_DIR for the given data, which is
@@ -277,6 +332,23 @@ def generate_generic_toc(toc_dir, data, toc_name):
             f.writelines("= %s =\n\n" % key)
 
             proposals = data[key]
+            proposals.sort(key=lambda proposal: int(proposal["rank"]))
+
+            for proposal in proposals:
+                f.writelines("* %s - [[%s]]\n" % (proposal["rank"], proposal["title"]))
+
+def generate_sdg_toc(toc_dir, sdgconfig_data, sdg_data):
+    """Generates a special TOC page in TOC_DIR for the SDG_DATA, which is
+    a dict where the proposals are all grouped by their sdg's"""
+    with open(toc_dir + "/SDG_TOC", 'w') as f:
+        f.writelines("SDG_TOC" + "\n")
+
+        f.writelines("__TOC__\n")
+
+        for key in sorted(sdg_data.keys(), key=lambda sdg: int(sdgconfig_data[sdg]["number"])):
+            f.writelines("= %s =\n\n" % key)
+
+            proposals = sdg_data[key]
             proposals.sort(key=lambda proposal: int(proposal["rank"]))
 
             for proposal in proposals:
@@ -381,7 +453,7 @@ def wiki_escape_page_title(s):
     # Also convert non unicode because we do this with titles on the other side
     return unidecode.unidecode_expect_nonascii(s)
 
-def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfig,
+def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfig, sdgconfig,
         toc_dir, extra_category_file, top100_file, second100_file, attachments_file, attachments_dir,
         pare=None):
     """Write a composed version of PROPOSALS (a CSV file), ADMIN_REVIEW
@@ -392,7 +464,8 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
     and evaluation on those proposals, respectively
 
     REGIONCONFIG is a filename of a simple mapping of countries to regions
-    they belong to based on the UN geoscheme.
+    they belong to based on the UN geoscheme.  SDGCONFIG is a similar mapping
+    for UN SDG codes.
 
     EXTRA_CATEGORY_FILE and ATTACHMENTS_FILE are locations that compose-csvs
     will write to disk for csv2wiki to pick up later to add categories and
@@ -420,6 +493,9 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
         if regionconfig is not None:
             regionconfig_reader = csv.reader(open(regionconfig, encoding='utf-8'),
                                            delimiter=',', quotechar='"')
+        if sdgconfig is not None:
+            sdgconfig_reader = csv.reader(open(sdgconfig, encoding='utf-8'),
+                                           delimiter=',', quotechar='"')
     except UnicodeDecodeError:
         sys.stderr.write("fix-csv expects utf-8-encoded unicode, not whatever is in this csv file.\n")
         sys.exit(-1)
@@ -442,6 +518,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
 
     regionconfig_data_by_country = process_regionconfig_data(regionconfig_reader)
     regionconfig_data_by_region = {}
+    sdgconfig_data = process_sdgconfig_data(sdgconfig_reader)
     sdg_data = {}
     topic_data = {}
 
@@ -496,8 +573,13 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
         #
         # We also collate all the data for tables of contents by category
         proposal = {"rank": new_row[188], "title": wiki_escape_page_title("{30} ({3})".format(*row)) }
-        new_row[128] = categorize_sdg(row[128], extra_cats, "SDG_TOC" if toc_dir != None else None)
-        for category in [cat.strip() for cat in row[128].split(",")]:
+        new_row[128] = categorize_sdg(
+                row[128],
+                extra_cats,
+                sdgconfig_data,
+                "SDG_TOC" if toc_dir != None else None
+                )
+        for category in split_sdg(row[128], sdgconfig_data):
             if category not in sdg_data:
                 sdg_data[category] = []
             sdg_data[category].append(proposal)
@@ -581,7 +663,9 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
         if regionconfig_reader is not None:
             generate_geographic_toc(toc_dir, regionconfig_data_by_region)
 
-        generate_generic_toc(toc_dir, sdg_data, "SDG_TOC")
+        if sdgconfig_reader is not None:
+            generate_sdg_toc(toc_dir, sdgconfig_data, sdg_data)
+
         generate_generic_toc(toc_dir, topic_data, "Topic_TOC")
 
     if extra_category_file is not None:
@@ -604,6 +688,7 @@ def main():
                                     "judge-evaluation-csv=",
                                     "wisehead-evaluation-csv=",
                                     "regionconfig-csv=",
+                                    "sdgconfig-csv=",
                                     "extra-category-file=",
                                     "top100-file=",
                                     "toc-dir=",
@@ -620,6 +705,7 @@ def main():
     judge_evaluation_csv = None
     wisehead_evaluation_csv = None
     regionconfig_csv = None
+    sdgconfig_csv = None
     extra_category_file = None
     top100_file = None
     second100_file = None
@@ -640,6 +726,8 @@ def main():
             wisehead_evaluation_csv = a
         elif o == "--regionconfig-csv":
             regionconfig_csv = a
+        elif o == "--sdgconfig-csv":
+            sdgconfig_csv = a
         elif o == "--extra-category-file":
             extra_category_file = a
         elif o == "--top100-file":
@@ -672,7 +760,7 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
     compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, wisehead_evaluation_csv, regionconfig_csv,
-            toc_dir, extra_category_file, top100_file, second100_file, attachments_file, attachments_dir, pare)
+            sdgconfig_csv, toc_dir, extra_category_file, top100_file, second100_file, attachments_file, attachments_dir, pare)
 
 if __name__ == '__main__':
     main()
