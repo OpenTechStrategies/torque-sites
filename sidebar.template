@@ -11,7 +11,7 @@ Template:Sidebar
 |style="vertical-align:top;width:150px" |'''Rank:'''
 |{{{rank}}}
 |-
-|style="vertical-align:top;width:150px" |'''Wisehead Score:'''
+|style="vertical-align:top;width:150px" |'''Wise Head Panel Score:'''
 |{{{wisehead_score}}}
 |-
 |style="vertical-align:top;width:150px" |'''Organization:'''
