@@ -345,7 +345,7 @@ def proposal_toc_line(proposal):
     proposal_str = "<span style='font-family:monospace;white-space:pre'>Rank %3s</span> - [[%s]]" % (proposal["rank"], proposal["title"])
 
     if rank > 100:
-        proposal_str += " - <span style='color:#306754;font-style: italic>Wildcard Eligible</span>"
+        proposal_str += " - <span style='color:#306754;font-style: italic>Wild Card Eligible</span>"
 
     return proposal_str
 
@@ -678,7 +678,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
                     os.path.join(application_attachment_dir, attachment_file)))
         new_row.append(attachments_str)
 
-        new_row.append("<span style='color:#306754;font-style: italic'> - Wildcard Eligible</span>" if int(new_row[188]) > 100 else "")
+        new_row.append("<span style='color:#306754;font-style: italic'> - Wild Card Eligible</span>" if int(new_row[188]) > 100 else "")
 
         print("Sanitized row %d (rank %d, %d cols, %d fixed)." % (row_num, rank, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
@@ -695,8 +695,8 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
 
     if second100_file is not None:
         with open(second100_file, 'w') as f:
-            f.writelines("EligibleWildcards\n")
-            f.writelines("The following proposals are candidates for wildcard selection. They are listed in rank order.\n")
+            f.writelines("Eligible Wild Cards\n")
+            f.writelines("The following proposals are candidates for Wild Card selection. They are listed in rank order.\n")
             for row in new_rows:
                 if int(row[188]) > 100 and int(row[188]) < 202:
                     f.writelines("%s. [[%s]]\n" % (row[188], wiki_escape_page_title("{30} ({3})".format(*row))))
