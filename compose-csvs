@@ -227,6 +227,25 @@ def categorize_sdg(cell, extra_cats, sdg_data, sdg_toc):
 
     return new_cell
 
+def categorize_population(cell, extra_cats, population_toc):
+    """Change the CELL to have wiki markup for the comma separated population
+    types present.  Achieve this by adding in wiki markup to the output spreadsheet
+    so that csv2wiki passes them through.
+    """
+
+    new_cell = ''
+    for category in cell.split(","):
+        category = category.strip()
+        if category not in extra_cats:
+            extra_cats.append(category)
+        if population_toc is not None:
+            new_cell += '[[' + population_toc + '#' + category + '|' + category + ']]\n'
+        else:
+            new_cell += '[[:Category:' + category + '|' + category + ']]\n'
+        new_cell += '* [[Category:' + category + ']]\n'
+
+    return new_cell
+
 def categorize_country(country_cell, extra_cats, regionconfig_data, error_on_no_region, geo_toc):
     """Change the CELL to have wiki markup for the category represented by
     the country, and optionally region in the cell, if there's data in the cell.
@@ -319,6 +338,17 @@ def process_sdgconfig_data(csv_reader):
 
     return sdg_data
 
+def proposal_toc_line(proposal):
+    """Generates a line of text to be places on toc pages representing a PROPOSAL"""
+
+    rank = int(proposal["rank"])
+    proposal_str = "<span style='font-family:monospace;white-space:pre'>Rank %3s</span> - [[%s]]" % (proposal["rank"], proposal["title"])
+
+    if rank > 100:
+        proposal_str += " - <span style='color:#306754;font-style: italic>Wildcard Eligible</span>"
+
+    return proposal_str
+
 def generate_generic_toc(toc_dir, data, toc_name):
     """Generates a special TOC page in TOC_DIR for the given data, which is
     a dict where the proposals are all grouped by some key.  Then put into
@@ -335,7 +365,7 @@ def generate_generic_toc(toc_dir, data, toc_name):
             f.writelines("= %s (%s) =\n\n" % (key, len(proposals)))
 
             for proposal in proposals:
-                f.writelines("* %s - [[%s]]\n" % (proposal["rank"], proposal["title"]))
+                f.writelines("* %s\n" % proposal_toc_line(proposal))
 
 def generate_sdg_toc(toc_dir, sdgconfig_data, sdg_data):
     """Generates a special TOC page in TOC_DIR for the SDG_DATA, which is
@@ -352,7 +382,7 @@ def generate_sdg_toc(toc_dir, sdgconfig_data, sdg_data):
             f.writelines("= %s (%s) =\n\n" % (key, len(proposals)))
 
             for proposal in proposals:
-                f.writelines("* %s - [[%s]]\n" % (proposal["rank"], proposal["title"]))
+                f.writelines("* %s\n" % proposal_toc_line(proposal))
 
 def generate_geographic_toc(toc_dir, region_data):
     """Generates a special TOC page in TOC_DIR for the REGION_DATA, which is
@@ -375,7 +405,7 @@ def generate_geographic_toc(toc_dir, region_data):
                     proposals.sort(key=lambda proposal: int(proposal["rank"]))
 
                     for proposal in proposals:
-                        f.writelines("* %s - [[%s]]\n" % (proposal["rank"], proposal["title"]))
+                        f.writelines("* %s\n" % proposal_toc_line(proposal))
 
 def process_evaluation_data(*csv_reader, app_col, score_rank_col, sum_of_scores_col, trait_col,
         score_normalized_col, comments_col):
@@ -451,7 +481,7 @@ def wiki_escape_page_title(s):
         s = s[:-1]
 
     # Also convert non unicode because we do this with titles on the other side
-    return unidecode.unidecode_expect_nonascii(s)
+    return unidecode.unidecode_expect_nonascii(s).strip()
 
 def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfig, sdgconfig,
         toc_dir, extra_category_file, top100_file, second100_file, attachments_file, attachments_dir,
@@ -521,6 +551,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
     sdgconfig_data = process_sdgconfig_data(sdgconfig_reader)
     sdg_data = {}
     topic_data = {}
+    population_data = {}
 
     row_num = 0
     new_rows = []
@@ -549,6 +580,9 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
             if fixed_cell != cell:
                 num_fixed_cells += 1
             new_row.append(fix_cell(cell))
+
+        # Add <br /> to bibliography lines
+        new_row[136] = "<br />\n".join(row[136].split("\n"))
 
         for evaluation_data in [judge_data, wisehead_data]:
             if row[3] in evaluation_data:
@@ -583,6 +617,12 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
             if category not in sdg_data:
                 sdg_data[category] = []
             sdg_data[category].append(proposal)
+
+        new_row[58] = categorize_population(row[58], extra_cats, "Population_TOC")
+        for cat in row[58].split(","):
+            if cat not in population_data:
+                population_data[cat] = []
+            population_data[cat].append(proposal)
 
         new_row[66] = categorize_cell(row[66], extra_cats, "Topic_TOC" if toc_dir != None else None)
         if row[66] not in topic_data:
@@ -638,6 +678,8 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
                     os.path.join(application_attachment_dir, attachment_file)))
         new_row.append(attachments_str)
 
+        new_row.append("<span style='color:#306754;font-style: italic'> - Wildcard Eligible</span>" if int(new_row[188]) > 100 else "")
+
         print("Sanitized row %d (rank %d, %d cols, %d fixed)." % (row_num, rank, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
 
@@ -666,6 +708,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
         if sdgconfig_reader is not None:
             generate_sdg_toc(toc_dir, sdgconfig_data, sdg_data)
 
+        generate_generic_toc(toc_dir, population_data, "Population_TOC")
         generate_generic_toc(toc_dir, topic_data, "Topic_TOC")
 
     if extra_category_file is not None:
