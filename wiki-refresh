@@ -135,6 +135,7 @@ python3 -m csv2wiki --cat-sort=alpha -c ${CSV2WIKI_CONFIG}      \
             --helper-page=sidebar.template \
             --helper-page="${DATA_DIR}/${TOP100_FILE}" \
             --helper-page="${DATA_DIR}/${SECOND100_FILE}" \
+            --make-non-editable \
             ${TOC_PAGES} \
             --csv="${DATA_DIR}/${OUTPUT_CSV}"
 echo "Done creating wiki."
