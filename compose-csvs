@@ -283,10 +283,10 @@ def categorize_country(country_cell, extra_cats, regionconfig_data, error_on_no_
 
     return new_cell
 
-def print_csv(header_row, rows):
-    """Print the HEADER_ROW and ROWS to stdout via csv"""
+def print_csv(header_row, rows, output):
+    """Print the HEADER_ROW and ROWS to OUTPUT via csv"""
 
-    csv_writer = csv.writer(sys.stdout,
+    csv_writer = csv.writer(output,
                             delimiter=',', quotechar='"', lineterminator="\n")
 
     csv_writer.writerow(header_row)
@@ -485,7 +485,7 @@ def wiki_escape_page_title(s):
 
 def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfig, sdgconfig,
         toc_dir, extra_category_file, top100_file, second100_file, attachments_file, attachments_dir,
-        pare=None):
+        extra_output_csv, pare=None):
     """Write a composed version of PROPOSALS (a CSV file), ADMIN_REVIEW
     (a CSV file), and JUDGE_EVAL (a CSV file) to standard out.
 
@@ -508,6 +508,9 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
     to it that are various tables of contents that are of interest to macfound.
 
     ATTACHMENTS_DIR is the directory to look in for attachments.
+
+    EXTRA_OUTPUT_CSV is a file that will be optionally written to with
+    a trimmed down version of the top 200 proposals.
 
     If PARE is not None, it is a positive integer indicating that only
     1 of every PARE entries should be processed, and the others skipped."""
@@ -555,6 +558,16 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
 
     row_num = 0
     new_rows = []
+
+    # We want a different version of the output for a different third party,
+    # so we create this along side the wiki based rows we have, but with
+    # different specifications inline.
+    #
+    # We do it this way instead of refactoring the whole program to be able
+    # to dump out various context specific spreadsheets because this is how
+    # it's grown organically, not because of any top level design decision.
+    extra_output_rows = []
+
     extra_cats = []
     attachments_to_add = []
     for row in proposals_reader:
@@ -574,12 +587,14 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
             continue
 
         new_row = []
+        extra_output_row = []
         num_fixed_cells = 0
         for cell in row:
             fixed_cell = fix_cell(cell)
             if fixed_cell != cell:
                 num_fixed_cells += 1
-            new_row.append(fix_cell(cell))
+            new_row.append(fixed_cell)
+            extra_output_row.append(fixed_cell)
 
         # Add <br /> to bibliography lines
         new_row[136] = "<br />\n".join(row[136].split("\n"))
@@ -682,6 +697,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
 
         print("Sanitized row %d (rank %d, %d cols, %d fixed)." % (row_num, rank, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
+        extra_output_rows.append(extra_output_row)
 
     new_rows.sort(key=lambda row: int(row[188])) # Sort by wisehead rank
 
@@ -719,7 +735,11 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
         with open(attachments_file, 'w') as f:
             f.writelines("%s\n" % attachment_pair for attachment_pair in attachments_to_add)
 
-    print_csv(header_row, new_rows)
+    print_csv(header_row, new_rows, sys.stdout)
+
+    if extra_output_csv is not None:
+        with open(extra_output_csv, 'w') as f:
+            print_csv(header_row, extra_output_rows, f)
 
 def main():
     """Compose the MacFound input and emit it as html-ized csv."""
@@ -735,6 +755,7 @@ def main():
                                     "extra-category-file=",
                                     "top100-file=",
                                     "toc-dir=",
+                                    "extra-output-csv=",
                                     "second100-file=",
                                     "attachments-file=",
                                     "attachments-dir=",])
@@ -753,6 +774,7 @@ def main():
     top100_file = None
     second100_file = None
     toc_dir = None
+    extra_output_csv = None
     attachments_file = None
     attachments_dir = None
     for o, a in opts:
@@ -776,6 +798,8 @@ def main():
             top100_file = a
         elif o == "--toc-dir":
             toc_dir = a
+        elif o == "--extra-output-csv":
+            extra_output_csv = a
         elif o == "--second100-file":
             second100_file = a
         elif o == "--attachments-file":
@@ -802,7 +826,8 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
     compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, wisehead_evaluation_csv, regionconfig_csv,
-            sdgconfig_csv, toc_dir, extra_category_file, top100_file, second100_file, attachments_file, attachments_dir, pare)
+            sdgconfig_csv, toc_dir, extra_category_file, top100_file, second100_file, attachments_file, attachments_dir,
+            extra_output_csv, pare)
 
 if __name__ == '__main__':
     main()

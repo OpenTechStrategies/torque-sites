@@ -88,6 +88,7 @@ ATTACHMENTS_FILE="Generated_Attachments.dat"
 TOP100_FILE="Generated_Top100"
 SECOND100_FILE="Generated_Second100"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments"
+GENERATED_THIRD_PARTY_CSV="Generated_Top200.csv"
 TOC_DIR="${DATA_DIR}/tocs"
 
 if ! echo "bad31bbabd6b03ec5be834d3d87ec70361e8efa0  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
@@ -134,6 +135,7 @@ ${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
             --top100-file="${DATA_DIR}/${TOP100_FILE}" \
             --toc-dir="${TOC_DIR}" \
             --second100-file="${DATA_DIR}/${SECOND100_FILE}" \
+            --extra-output-csv="${DATA_DIR}/${GENERATED_THIRD_PARTY_CSV}" \
             --extra-category-file="${DATA_DIR}/${EXTRA_CATEGORY_FILE}" > \
             "${DATA_DIR}/${OUTPUT_CSV}"
 if [ $? -ne 0 ]; then
