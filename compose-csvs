@@ -755,7 +755,6 @@ def main():
     toc_dir = None
     attachments_file = None
     attachments_dir = None
-    tables_of_contes_dir = None
     for o, a in opts:
         if o == "--pare":
             pare = int(a)
