@@ -77,9 +77,9 @@ if [ ! -f "${CSV2WIKI_CONFIG}" ]; then
   exit 1
 fi
 
-PROPOSALS_CSV="Export-reg-and-app-data-Submission-deadline-06082019.csv"
+PROPOSALS_CSV="Export-reg-and-app-data-Submission-deadline-06082019-fixed-by-OTS.csv"
 ADMIN_REVIEW_CSV="AdminReviewP2P_mac2019_09192019.csv"
-JUDGE_EVALUATION_CSV="P2P-review-data-20190929-for-OTS-copy.csv"
+JUDGE_EVALUATION_CSV="P2P-review-data-20190929-for-OTS-copy-fixed-by-OTS.csv"
 WISEHEAD_EVALUATION_CSV="100&Change_Wise_Head_Review_data_anon_judges_11162019.csv"
 REGIONCONFIG_CSV="regionconfig.csv"
 SDGCONFIG_CSV="sdgconfig.csv"
@@ -89,6 +89,26 @@ TOP100_FILE="Generated_Top100"
 SECOND100_FILE="Generated_Second100"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments"
 TOC_DIR="${DATA_DIR}/tocs"
+
+if ! echo "bad31bbabd6b03ec5be834d3d87ec70361e8efa0  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
+  echo "ERROR: SHA of PROPOSALS_CSV did not match expectation!"
+  echo "This means that we most likely got a new file, which may have the old"
+  echo "errors in it (specifically the organization proposal 829)."
+  echo "If we got a new file and there are no further errors, you"
+  echo "can remove this check from wiki-refresh!  If not, please"
+  echo "make adjustments in a new file and update the sha."
+  exit 1
+fi
+
+if ! echo "5b1ad76d329a47f0a7b62a76abdbfc4f98a87c59  $DATA_DIR/$JUDGE_EVALUATION_CSV" | sha1sum -c &> /dev/null ; then
+  echo "ERROR: SHA of JUDGE_EVALUATION_CSV did not match expectation!"
+  echo "This means that we most likely got a new file, which may have the old"
+  echo "errors in it (specifically some comments for proposal 5539)."
+  echo "If we got a new file and there are no further errors, you"
+  echo "can remove this check from wiki-refresh!  If not, please"
+  echo "make adjustments in a new file and update the sha."
+  exit 1
+fi
 
 # We want to make sure there's no lingering old TOCs if we change how
 # compose-csv creates them
