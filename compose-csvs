@@ -42,21 +42,75 @@ Usage:
        --proposals-csv=PROPOSALS_CSV \\
        --admin-review-csv=ADMIN_REVIEW_CSV \\
        --judge-evaluation-csv=JUDGE_EVALUATION_CSV \\
-       --extra-category-file=EXTRA_CATEGORY_FILE
+       --extra-category-file=EXTRA_CATEGORY_FILE \\
+       --wisehead-evaluation-csv=WISEHEAD_CSV \\
+       --regionconfig-csv=REGIONCONFIG_CSV \\
+       --sdgconfig-csv=SDGCONFIG_CSV \\
+       --extra-category-file=EXTRACATEGORY_CSV \\
+       --top100-file=TOP100 \\
+       --second100-file=SECOND100 \\
+       --toc-dir=TOC_DIR \\
+       --extra-output-csv=EXTRA_OUTPUT_CSV \\
+       --attachments-file=ATTACHMENTS_FILE \\
+       --attachments-dir=ATTACHMENTS_DIR
 
 Command-line options:
-  --proposals-csv FILE          FILE is a csv FILE representing the bulk
-                                of the proposal information
+  --proposals-csv FILE            FILE is a csv FILE representing the bulk
+                                  of the proposal information
 
-  --admin-review-csv FILE       FILE is a csv FILE representing which applications
-                                in PROPOSALS_CSV should be included
+  --admin-review-csv FILE         FILE is a csv FILE representing which applications
+                                  in PROPOSALS_CSV should be included
 
-  --judge-evaluation-csv FILE   FILE is a csv FILE with a many to one relationshp
-                                between judges and the proposals they evaluated,
-                                with the extra data being their evaluation
+  --judge-evaluation-csv FILE     FILE is a csv FILE with a many to one relationshp
+                                  between judges and the proposals they evaluated,
+                                  with the extra data being their evaluation
 
-  --pare N                      Reduce the nuber of tiems to 1/N rows, for quick
-                                testing and development
+  --pare N                        Reduce the nuber of tiems to 1/N rows, for quick
+                                  testing and development
+
+  --wisehead-evaluation-csv FILE  FILE is a csv FILE with a many to one relationship
+                                  between wisehead judges and the proposals they
+                                  evaluated, like the judge-evaluation-csv
+
+  --regionconfig-csv FILE         FILE is a csv of country/subregion/region
+                                  configurations, that when provided, allows extra
+                                  geographic categories to be created
+
+  --sdgconfig-csv FILE            FILE is a csv of sdg configurations, that when provided
+                                  will be checked against in the SDG column for validation
+                                  and grouping.  After which, if the toc-dir is provided, a
+                                  toc page will be created.
+
+  --extra-category-file FILE      FILE is the location where extra categories should be put.
+                                  This can be passed to csv2wiki for extra categories to be
+                                  created on the wiki so red links don't happen.  If not used,
+                                  nothing will be output
+
+  --top100-file FILE              FILE is the location where the top100 wiki page will be written.
+                                  The first line will be Top100, meaning that the wiki page
+                                  when created will be named that.  Nothing is output if option
+                                  is not included.
+
+  --second100-file FILE           Like top100, FILE is the location where the second 100 proposals
+                                  will be written.  This page will be named "Eligible Wild Cards"
+                                  when loaded up to mediawiki.  Nothing is output if option is not
+                                  included.
+
+  --toc-dir DIR                   DIR is the directory where extra TOCs will be placed for loading
+                                  up to the wiki with csv2wiki.  If not included, TOCs won't be
+                                  generated.
+
+  --extra-output-csv FILE         FILE is an extra file, that when included, will contain all the
+                                  prorposal date in a non-wikified form for external use.
+
+  --attachments-file FILE         FILE is a place where attachment inforamtion is written for
+                                  csv2wiki to use to uplaod attachments to the wiki.  This option
+                                  goes hand in hand with attacments-dir, since that's the directory
+                                  compose-csvs looks to create the list of attachments.
+
+  --attachments-dir DIR           As a companion to attachments-file option, DIR is a directory for
+                                  compose-csvs to look in for what attachments need to be uploaded
+                                  to the wiki.  It needs to have subdirectories by proposal number.
 """
 
 import csv
