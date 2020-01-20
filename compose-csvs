@@ -46,6 +46,7 @@ Usage:
        --wisehead-evaluation-csv=WISEHEAD_CSV \\
        --regionconfig-csv=REGIONCONFIG_CSV \\
        --sdgconfig-csv=SDGCONFIG_CSV \\
+       --correction-file=COORECTION_FILE \\
        --extra-category-file=EXTRACATEGORY_CSV \\
        --top100-file=TOP100 \\
        --second100-file=SECOND100 \\
@@ -81,6 +82,13 @@ Command-line options:
                                   and grouping.  After which, if the toc-dir is provided, a
                                   toc page will be created.
 
+  --correction-file FILE          FILE is a csv of corrections to the main data.  The header
+                                  must match the header of the original proposals file, and any
+                                  one of the columns must contain the review number.  Then
+                                  the data from the correction file will override the
+                                  source data for output.  There can be multiple correction
+                                  files, and each one overwrites the previous.
+
   --extra-category-file FILE      FILE is the location where extra categories should be put.
                                   This can be passed to csv2wiki for extra categories to be
                                   created on the wiki so red links don't happen.  If not used,
@@ -101,7 +109,7 @@ Command-line options:
                                   generated.
 
   --extra-output-csv FILE         FILE is an extra file, that when included, will contain all the
-                                  prorposal date in a non-wikified form for external use.
+                                  prorposal data in a non-wikified form for external use.
 
   --attachments-file FILE         FILE is a place where attachment inforamtion is written for
                                   csv2wiki to use to uplaod attachments to the wiki.  This option
@@ -537,7 +545,37 @@ def wiki_escape_page_title(s):
     # Also convert non unicode because we do this with titles on the other side
     return unidecode.unidecode_expect_nonascii(s).strip()
 
-def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfig, sdgconfig,
+def create_correction_data(correction_files):
+    """Turns CORRECTION_FILES into a dictionary of dictionaries of the form:
+
+    correction_data = {
+      REVIEW_NUMBER_1 = {
+        'CORRECTION_HEADER_1' = ...,
+        'CORRECTION_HEADER_2' = ...,
+        ...
+      },
+      REVIEW_NUMBER_1 = { ... },
+      ...
+    }"""
+
+    correction_data = {}
+
+    for correction_file in correction_files:
+        correction_reader = csv.reader(open(correction_file, encoding='utf-8'),
+                                       delimiter=',', quotechar='"')
+        header = next(correction_reader)
+        review_number_idx = header.index("Review Number")
+
+        for correction_row in correction_reader:
+            review_number = correction_row[review_number_idx]
+            if review_number not in correction_data:
+                correction_data[review_number] = {}
+            for col_name, datum in zip(header, correction_row):
+                correction_data[review_number][col_name] = datum
+
+    return correction_data
+
+def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfig, sdgconfig, correction_files,
         toc_dir, extra_category_file, top100_file, second100_file, attachments_file, attachments_dir,
         extra_output_csv, pare=None):
     """Write a composed version of PROPOSALS (a CSV file), ADMIN_REVIEW
@@ -550,6 +588,10 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
     REGIONCONFIG is a filename of a simple mapping of countries to regions
     they belong to based on the UN geoscheme.  SDGCONFIG is a similar mapping
     for UN SDG codes.
+
+    CORRECTION_FILES is a list of files that contain data to overwrite the
+    source data with blessed corrections.  Each one overwrites the previous
+    if there are overlapping corrections.
 
     EXTRA_CATEGORY_FILE and ATTACHMENTS_FILE are locations that compose-csvs
     will write to disk for csv2wiki to pick up later to add categories and
@@ -610,6 +652,8 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
     topic_data = {}
     population_data = {}
 
+    correction_data = create_correction_data(correction_files)
+
     row_num = 0
     new_rows = []
 
@@ -639,6 +683,11 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
         else:
             # We skip any rows that we don't have a wisehead rank for
             continue
+
+        if row[3] in correction_data:
+            for col_header, correction_value in correction_data[row[3]].items():
+                col_for_correction = header_row.index(col_header)
+                row[col_for_correction] = correction_value
 
         new_row = []
         extra_output_row = []
@@ -810,6 +859,7 @@ def main():
                                     "top100-file=",
                                     "toc-dir=",
                                     "extra-output-csv=",
+                                    "correction-file=",
                                     "second100-file=",
                                     "attachments-file=",
                                     "attachments-dir=",])
@@ -831,6 +881,7 @@ def main():
     extra_output_csv = None
     attachments_file = None
     attachments_dir = None
+    correction_files = []
     for o, a in opts:
         if o == "--pare":
             pare = int(a)
@@ -850,6 +901,8 @@ def main():
             extra_category_file = a
         elif o == "--top100-file":
             top100_file = a
+        elif o == "--correction-file":
+            correction_files.append(a)
         elif o == "--toc-dir":
             toc_dir = a
         elif o == "--extra-output-csv":
@@ -880,8 +933,8 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
     compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, wisehead_evaluation_csv, regionconfig_csv,
-            sdgconfig_csv, toc_dir, extra_category_file, top100_file, second100_file, attachments_file, attachments_dir,
-            extra_output_csv, pare)
+            sdgconfig_csv, correction_files, toc_dir, extra_category_file, top100_file, second100_file,
+            attachments_file, attachments_dir, extra_output_csv, pare)
 
 if __name__ == '__main__':
     main()
