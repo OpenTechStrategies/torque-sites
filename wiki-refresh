@@ -75,23 +75,40 @@ if ! echo "5b1ad76d329a47f0a7b62a76abdbfc4f98a87c59  $DATA_DIR/$JUDGE_EVALUATION
   exit 1
 fi
 
+CSV2WIKI_CONFIG="${MACFOUND_DIR}"/macfound-internal-csv2wiki-config
 OUTPUT_CSV="2019-processed.csv"
 
 COMPOSER="${MACFOUND_DIR}"/compose-csvs
+UPLOADER="${MACFOUND_DIR}"/upload-csv
 
 ### Compose the spreadsheets into one cohesive whole.
 #
 # Use --pare to convert only 1% of the entries, to save time while testing. 
 echo "Stage 1: Composing..."
-${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
-            --admin-review-csv="${DATA_DIR}/${ADMIN_REVIEW_CSV}" \
-            --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
-            --wisehead-evaluation-csv="${DATA_DIR}/${WISEHEAD_EVALUATION_CSV}" \
-            --correction-file="${DATA_DIR}/${CANDID_CORRECTION_FILE}" > \
-            "${DATA_DIR}/${OUTPUT_CSV}"
+#${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
+#            --admin-review-csv="${DATA_DIR}/${ADMIN_REVIEW_CSV}" \
+#            --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
+#            --wisehead-evaluation-csv="${DATA_DIR}/${WISEHEAD_EVALUATION_CSV}" \
+#            --correction-file="${DATA_DIR}/${CANDID_CORRECTION_FILE}" > \
+#            "${DATA_DIR}/${OUTPUT_CSV}"
 if [ $? -ne 0 ]; then
 		echo Composition failure!
 		exit 1
 fi
 echo "Done with Stage 1 (Composing)."
+echo ""
+
+### Upload the spreadsheet to a running instance of torquedata
+#
+# There's a dependency on a running version of mediawiki
+# with a torquedata service running behind it, and a version of
+# the TorqueDataConnect running on the mediawiki
+echo "Stage 2: Uploading csv..."
+${UPLOADER} --csv="${DATA_DIR}/${OUTPUT_CSV}" \
+            --config="${CSV2WIKI_CONFIG}"
+if [ $? -ne 0 ]; then
+		echo Upload failure!
+		exit 1
+fi
+echo "Done with Stage 2 (Uploading csv)."
 echo ""

@@ -1,0 +1,117 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Upload a spreadsheet to a configured version of torquedata.
+#
+# Copyright (C) 2020 Open Tech Strategies, LLC
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+__doc__ = """\
+Upload a proposals spreadsheet to a running version of torquedata.
+
+Usage:
+
+  $ upload-csv \\
+       --config=CONFIG_FILE \\
+       --csv=CSV_TO_UPLOAD
+
+Command-line options:
+  --csv FILE                      FILE is a csv FILE representing the proposals after
+                                  compose-csv has been run
+
+  --config CONFIG_FILE            CONFIG_FILE is a python config FILE that has the login
+                                  information required to call into the mediawiki api.
+                                  See below for needed variables.
+
+CONFIG_FILE Format
+
+THe CONFIG_FILE contains the wiki_url and credentials in the same format
+that csv2wiki expects for ease of use.
+"""
+
+import configparser
+import mwclient
+import getopt
+import sys
+
+def usage(errout=False):
+    """Print a message explaining how to use this script.
+    Print to stdout, unless ERROUT, in which case print to stderr."""
+    out = sys.stderr if errout else sys.stdout
+    out.write(__doc__)
+
+def main():
+    try:
+        opts, args = getopt.getopt(sys.argv[1:],
+                                   'h?',
+                                   ["help",
+                                    "csv=",
+                                    "config=",
+                                    ])
+    except getopt.GetoptError as err:
+        sys.stderr.write("ERROR: '%s'\n" % err)
+        usage(errout=True)
+        sys.exit(2)
+
+    csv_file = None
+    config_file = None
+    for o, a in opts:
+        if o in ("-h", "-?", "--help",):
+            usage()
+            sys.exit(0)
+        elif o in ("--csv",):
+            csv_file = a
+        elif o in ("--config",):
+            config_file = a
+
+    if csv_file is None:
+        sys.stderr.write('Error: --csv-file missing')
+        usage(errout=True)
+        sys.exit(2)
+
+    if config_file is None:
+        sys.stderr.write('Error: --config missing')
+        usage(errout=True)
+        sys.exit(2)
+
+    config = configparser.ConfigParser()
+    parsed_files = config.read(config_file)
+
+    if len(parsed_files) == 0:
+        raise IOError("Failed to read config file %s" % config_file)
+
+
+    wiki_url = config["default"]["wiki_url"]
+    username = config["default"]["username"]
+    password = config["default"]["password"]
+
+    (scheme, host) = wiki_url.split("://")
+    site = mwclient.Site(host, path="/", scheme=scheme)
+    site.login(username, password)
+    with open(csv_file) as f:
+        site.raw_call(
+        'api',
+        {
+            "action": "torquedataconnectupload",
+            "format": 'json',
+            "singular": 'proposal',
+            "plural": 'proposals',
+            "key_column": 'Review Number'
+        },
+        { "data_file": f.read() }
+        )
+
+if __name__ == '__main__':
+    main()
