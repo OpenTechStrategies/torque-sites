@@ -42,18 +42,8 @@ Usage:
        --proposals-csv=PROPOSALS_CSV \\
        --admin-review-csv=ADMIN_REVIEW_CSV \\
        --judge-evaluation-csv=JUDGE_EVALUATION_CSV \\
-       --extra-category-file=EXTRA_CATEGORY_FILE \\
        --wisehead-evaluation-csv=WISEHEAD_CSV \\
-       --regionconfig-csv=REGIONCONFIG_CSV \\
-       --sdgconfig-csv=SDGCONFIG_CSV \\
-       --correction-file=COORECTION_FILE \\
-       --extra-category-file=EXTRACATEGORY_CSV \\
-       --top100-file=TOP100 \\
-       --second100-file=SECOND100 \\
-       --toc-dir=TOC_DIR \\
-       --extra-output-csv=EXTRA_OUTPUT_CSV \\
-       --attachments-file=ATTACHMENTS_FILE \\
-       --attachments-dir=ATTACHMENTS_DIR
+       --correction-file=COORECTION_FILE
 
 Command-line options:
   --proposals-csv FILE            FILE is a csv FILE representing the bulk
@@ -73,52 +63,12 @@ Command-line options:
                                   between wisehead judges and the proposals they
                                   evaluated, like the judge-evaluation-csv
 
-  --regionconfig-csv FILE         FILE is a csv of country/subregion/region
-                                  configurations, that when provided, allows extra
-                                  geographic categories to be created
-
-  --sdgconfig-csv FILE            FILE is a csv of sdg configurations, that when provided
-                                  will be checked against in the SDG column for validation
-                                  and grouping.  After which, if the toc-dir is provided, a
-                                  toc page will be created.
-
   --correction-file FILE          FILE is a csv of corrections to the main data.  The header
                                   must match the header of the original proposals file, and any
                                   one of the columns must contain the review number.  Then
                                   the data from the correction file will override the
                                   source data for output.  There can be multiple correction
                                   files, and each one overwrites the previous.
-
-  --extra-category-file FILE      FILE is the location where extra categories should be put.
-                                  This can be passed to csv2wiki for extra categories to be
-                                  created on the wiki so red links don't happen.  If not used,
-                                  nothing will be output
-
-  --top100-file FILE              FILE is the location where the top100 wiki page will be written.
-                                  The first line will be Top100, meaning that the wiki page
-                                  when created will be named that.  Nothing is output if option
-                                  is not included.
-
-  --second100-file FILE           Like top100, FILE is the location where the second 100 proposals
-                                  will be written.  This page will be named "Eligible Wild Cards"
-                                  when loaded up to mediawiki.  Nothing is output if option is not
-                                  included.
-
-  --toc-dir DIR                   DIR is the directory where extra TOCs will be placed for loading
-                                  up to the wiki with csv2wiki.  If not included, TOCs won't be
-                                  generated.
-
-  --extra-output-csv FILE         FILE is an extra file, that when included, will contain all the
-                                  prorposal data in a non-wikified form for external use.
-
-  --attachments-file FILE         FILE is a place where attachment inforamtion is written for
-                                  csv2wiki to use to uplaod attachments to the wiki.  This option
-                                  goes hand in hand with attacments-dir, since that's the directory
-                                  compose-csvs looks to create the list of attachments.
-
-  --attachments-dir DIR           As a companion to attachments-file option, DIR is a directory for
-                                  compose-csvs to look in for what attachments need to be uploaded
-                                  to the wiki.  It needs to have subdirectories by proposal number.
 """
 
 import csv
@@ -220,131 +170,6 @@ def fix_cell(cell):
 
     return cell
 
-def categorize_cell(cell, extra_cats, toc_page):
-    """Change the CELL to have wiki markup for the data present, turned into
-    a category.  Achieve this by adding wiki markup to the output spreadsheet.
-
-    This is the general form of categorize_sdg and categorize_country."""
-
-    new_cell = ''
-    cell = cell.strip()
-    if cell not in extra_cats:
-        extra_cats.append(cell)
-    if toc_page is not None:
-        new_cell += '[[' + toc_page + '#' + cell + '|' + cell + ']]'
-    else:
-        new_cell += '[[:Category:' + cell + '|' + cell + ']]'
-    new_cell += '[[Category:' + cell + ']]'
-
-    return new_cell
-
-def split_sdg(cell, sdg_data):
-    """Splits the CELL into an array of strings.  If SDG_DATA is available,
-    then it uses that data to split the array, otherwise just splits on comma.
-
-    If SDG_DATA is available, and it looks like the string doesn't have an
-    entry, then an error is raise."""
-
-    if sdg_data is None:
-        return [cat.strip() for cat in cell.split(",")]
-    else:
-        cats = []
-        cell = cell.strip()
-        while cell is not "":
-            found = False
-
-            for sdg in sdg_data.keys():
-                if cell.startswith(sdg):
-                    found = True;
-                    cats.append(sdg)
-                    cell = cell[len(sdg):]
-                if cell.startswith(","):
-                    cell = cell[1:]
-
-            if not found:
-                raise Exception("Could not find SDG in " + cell)
-
-            cell = cell.strip();
-
-        return cats
-
-def categorize_sdg(cell, extra_cats, sdg_data, sdg_toc):
-    """Change the CELL to have wiki markup for the comma separated categories
-    present.  Achieve this by adding in wiki markup to the output spreadsheet
-    so that csv2wiki passes them through.
-
-    Calls through to SPLIT_SDG with SDG_DATA.
-    """
-
-    new_cell = ''
-    for category in split_sdg(cell, sdg_data):
-        category = category.strip()
-        if category not in extra_cats:
-            extra_cats.append(category)
-        if sdg_toc is not None:
-            new_cell += '[[' + sdg_toc + '#' + category + '|' + category + ']]\n'
-        else:
-            new_cell += '[[:Category:' + category + '|' + category + ']]\n'
-        new_cell += '* [[Category:' + category + ']]\n'
-
-    return new_cell
-
-def categorize_population(cell, extra_cats, population_toc):
-    """Change the CELL to have wiki markup for the comma separated population
-    types present.  Achieve this by adding in wiki markup to the output spreadsheet
-    so that csv2wiki passes them through.
-    """
-
-    new_cell = ''
-    for category in cell.split(","):
-        category = category.strip()
-        if category not in extra_cats:
-            extra_cats.append(category)
-        if population_toc is not None:
-            new_cell += '[[' + population_toc + '#' + category + '|' + category + ']]\n'
-        else:
-            new_cell += '[[:Category:' + category + '|' + category + ']]\n'
-        new_cell += '* [[Category:' + category + ']]\n'
-
-    return new_cell
-
-def categorize_country(country_cell, extra_cats, regionconfig_data, error_on_no_region, geo_toc):
-    """Change the CELL to have wiki markup for the category represented by
-    the country, and optionally region in the cell, if there's data in the cell.
-    Add the country, and region if available in REGIONCONFIG_DATA, to
-    the EXTRA_CATS.  If ERROR_ON_NO_REGION is True, then will error if a country
-    lookup cannot be performed.  If GEO_TOC is True, the text will
-    link there, instead of to the Category Page."""
-
-    country_cell = country_cell.strip()
-
-    if country_cell == 'NULL':
-        return country_cell;
-
-    if country_cell == '':
-        return country_cell;
-
-    region = False
-    if country_cell in regionconfig_data:
-        region = regionconfig_data[country_cell]["region"]
-    elif error_on_no_region:
-        raise Exception("No region configuration for %s" % country_cell)
-
-    new_cell = ''
-    if country_cell not in extra_cats:
-        extra_cats.append(country_cell)
-    if geo_toc is not None:
-        new_cell += '[[' + geo_toc + '#' + country_cell + '|' + country_cell + ']]'
-    else:
-        new_cell += '[[:Category:' + country_cell + '|' + country_cell + ']]'
-    if region:
-        if region not in extra_cats:
-            extra_cats.append(region)
-        new_cell +=  '[[Category:' + region + '|' + region + ']]'
-    new_cell += '[[Category:' + country_cell + ']]\n'
-
-    return new_cell
-
 def print_csv(header_row, rows, output):
     """Print the HEADER_ROW and ROWS to OUTPUT via csv"""
 
@@ -355,119 +180,7 @@ def print_csv(header_row, rows, output):
     for row in rows:
         csv_writer.writerow(row)
 
-def process_regionconfig_data(csv_reader):
-    """Takes a CSV_READER representing a country ot region mapping in a
-    spreadsheet and converts it into a dict representing a lookup by
-    country.  If no reader is provided, then {} is returned.
-
-    The return object, when CSV_READER is present is of the form:
-      REGION_DATA_BY_COUNTRY[country] = {
-        subregion: SUBREGION,
-        region: REGION
-      }
-    """
-
-    if csv_reader is None:
-        return {}
-
-    region_data_by_country = {}
-
-    next(csv_reader)
-    for row in csv_reader:
-        region_data_by_country[row[0]] = { "subregion": row[1], "region": row[2] }
-
-    return region_data_by_country
-
-def process_sdgconfig_data(csv_reader):
-    """Takes a CSV_READER representing a valid sdgs, and their number
-    and converts it into a dict representing a lookup by sdg.
-    If no reader is provided, then None is returned.
-
-    The return object, when CSV_READER is present is of the form:
-      SDG_DATA[name] = {
-        number: integer
-      }
-    """
-
-    if csv_reader is None:
-        return None
-
-    sdg_data = {}
-
-    next(csv_reader)
-    for row in csv_reader:
-        sdg_data[row[1]] = { "number": int(row[0]) }
-
-    return sdg_data
-
-def proposal_toc_line(proposal):
-    """Generates a line of text to be places on toc pages representing a PROPOSAL"""
-
-    rank = int(proposal["rank"])
-    proposal_str = "<span style='font-family:monospace;white-space:pre'>Rank %3s</span> - [[%s]]" % (proposal["rank"], proposal["title"])
-
-    if rank > 100:
-        proposal_str += " - <span style='color:#306754;font-style: italic>Wild Card Eligible</span>"
-
-    return proposal_str
-
-def generate_generic_toc(toc_dir, data, toc_name):
-    """Generates a special TOC page in TOC_DIR for the given data, which is
-    a dict where the proposals are all grouped by some key.  Then put into
-    TOC_DIR/TOC_NAME."""
-    with open(toc_dir + "/" + toc_name, 'w') as f:
-        f.writelines(toc_name + "\n")
-
-        f.writelines("__TOC__\n")
-
-        for key in sorted(data.keys()):
-            proposals = data[key]
-            proposals.sort(key=lambda proposal: int(proposal["rank"]))
-
-            f.writelines("= %s (%s) =\n\n" % (key, len(proposals)))
-
-            for proposal in proposals:
-                f.writelines("* %s\n" % proposal_toc_line(proposal))
-
-def generate_sdg_toc(toc_dir, sdgconfig_data, sdg_data):
-    """Generates a special TOC page in TOC_DIR for the SDG_DATA, which is
-    a dict where the proposals are all grouped by their sdg's"""
-    with open(toc_dir + "/SDG_TOC", 'w') as f:
-        f.writelines("SDG_TOC" + "\n")
-
-        f.writelines("__TOC__\n")
-
-        for key in sorted(sdg_data.keys(), key=lambda sdg: int(sdgconfig_data[sdg]["number"])):
-            proposals = sdg_data[key]
-            proposals.sort(key=lambda proposal: int(proposal["rank"]))
-
-            f.writelines("= %s (%s) =\n\n" % (key, len(proposals)))
-
-            for proposal in proposals:
-                f.writelines("* %s\n" % proposal_toc_line(proposal))
-
-def generate_geographic_toc(toc_dir, region_data):
-    """Generates a special TOC page in TOC_DIR for the REGION_DATA, which is
-    a dict where the proposals are all grouped by their region and subregion"""
-
-    with open(toc_dir + "/Geographic_TOC", 'w') as f:
-        f.writelines("Geographic_TOC\n")
-
-        f.writelines("__TOC__\n")
-        for region in sorted(region_data.keys()):
-            f.writelines("= %s =\n\n" % region)
-
-            for subregion in sorted(region_data[region].keys()):
-                f.writelines("== %s ==\n\n" % subregion)
-
-                for country in sorted(region_data[region][subregion].keys()):
-                    f.writelines("=== %s ===\n\n" % country)
-
-                    proposals = region_data[region][subregion][country]
-                    proposals.sort(key=lambda proposal: int(proposal["rank"]))
-
-                    for proposal in proposals:
-                        f.writelines("* %s\n" % proposal_toc_line(proposal))
+valid_traits = [ "IMPACTFUL", "EVIDENCE-BASED", "FEASIBLE", "DURABLE" ]
 
 def process_evaluation_data(*csv_reader, app_col, score_rank_col, sum_of_scores_col, trait_col,
         score_normalized_col, comments_col):
@@ -498,6 +211,16 @@ def process_evaluation_data(*csv_reader, app_col, score_rank_col, sum_of_scores_
     application.  There are N traits, and M judges per trait, with things like
     overall_score_rank_normalized being duplicated for all NxM rows.
 
+    The name of the trait has to be one of:
+      - IMPACTFUL
+      - EVIDENCE-BASED
+      - FEASIBLE
+      - DURABLE
+
+    The reason we don't dynamically load this is that for the purposes of
+    the json export, as well as the spreadsheet headers, we need to know
+    the names of the traits.
+
     The scores for the traits are added up based here rather than in the
     spreasheet.  Then, comments are concatenated for that trait.
     """
@@ -511,25 +234,20 @@ def process_evaluation_data(*csv_reader, app_col, score_rank_col, sum_of_scores_
             evaluation_data[application_id] = {
                     "overall_score_rank_normalized": row[score_rank_col],
                     "sum_of_scores_normalized": row[sum_of_scores_col],
-                    "traits": [],
+                    "traits": [{ "name": trait, "score_normalized": 0, "comments": "" } for trait in valid_traits],
                     }
 
         judge_datum = evaluation_data[application_id]
 
         found = False
 
+        if row[trait_col] not in valid_traits:
+            raise Exception("Trait is not a valid trait: " + row[trait_col])
+
         for trait in judge_datum["traits"]:
             if trait["name"] == row[trait_col]:
-                found = True
                 trait["score_normalized"] += float(row[score_normalized_col])
                 trait["comments"] += "\n\n* " + row[comments_col]
-
-        if not found:
-            judge_datum["traits"].append({
-                    "name": row[trait_col],
-                    "score_normalized": float(row[score_normalized_col]),
-                    "comments": "\n\n* " + row[comments_col]
-                })
 
     return evaluation_data
 
@@ -575,9 +293,7 @@ def create_correction_data(correction_files):
 
     return correction_data
 
-def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfig, sdgconfig, correction_files,
-        toc_dir, extra_category_file, top100_file, second100_file, attachments_file, attachments_dir,
-        extra_output_csv, pare=None):
+def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_files, pare=None):
     """Write a composed version of PROPOSALS (a CSV file), ADMIN_REVIEW
     (a CSV file), and JUDGE_EVAL (a CSV file) to standard out.
 
@@ -585,28 +301,9 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
     represent a full list of proposals, a list of accepted proposals,
     and evaluation on those proposals, respectively
 
-    REGIONCONFIG is a filename of a simple mapping of countries to regions
-    they belong to based on the UN geoscheme.  SDGCONFIG is a similar mapping
-    for UN SDG codes.
-
     CORRECTION_FILES is a list of files that contain data to overwrite the
     source data with blessed corrections.  Each one overwrites the previous
     if there are overlapping corrections.
-
-    EXTRA_CATEGORY_FILE and ATTACHMENTS_FILE are locations that compose-csvs
-    will write to disk for csv2wiki to pick up later to add categories and
-    attachments to the wiki.
-
-    TOP100_FILE and SECOND100_FILE are locations that compose-csvs will write
-    a table of contents for the top 100, and second 100, proposals.
-
-    TOC_DIR is the directory that, when not None, will have files written
-    to it that are various tables of contents that are of interest to macfound.
-
-    ATTACHMENTS_DIR is the directory to look in for attachments.
-
-    EXTRA_OUTPUT_CSV is a file that will be optionally written to with
-    a trimmed down version of the top 200 proposals.
 
     If PARE is not None, it is a positive integer indicating that only
     1 of every PARE entries should be processed, and the others skipped."""
@@ -619,24 +316,26 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
                                        delimiter=',', quotechar='"')
         wisehead_eval_reader = csv.reader(open(wisehead_eval, encoding='utf-8'),
                                        delimiter=',', quotechar='"')
-        if regionconfig is not None:
-            regionconfig_reader = csv.reader(open(regionconfig, encoding='utf-8'),
-                                           delimiter=',', quotechar='"')
-        if sdgconfig is not None:
-            sdgconfig_reader = csv.reader(open(sdgconfig, encoding='utf-8'),
-                                           delimiter=',', quotechar='"')
     except UnicodeDecodeError:
         sys.stderr.write("fix-csv expects utf-8-encoded unicode, not whatever is in this csv file.\n")
         sys.exit(-1)
 
     header_row = next(proposals_reader)
+    for data_type in ["Judge", "Wise Head"]:
+        header_row.append(data_type + " Overall Score Rank Normalized")
+        header_row.append(data_type + " Sum of Scores Normalized")
+        for trait in valid_traits:
+            header_row.append(data_type + " " + trait)
+            header_row.append(data_type + " " + trait + " Score Normalized")
+            header_row.append(data_type + " " + trait + " Comments")
+    header_row.append("Application Level")
 
     # We only accept applications if they're one of the rows in the
     # admin_review csv, which has an "Application #" column (3),
     # which matches a "Review #" column in the proposals (3)
     # and for which the "Status" column (7) is valid
     next(admin_review_reader) # Don't look at header
-    acceptable_application_numbers = [ row[3] for row in admin_review_reader if row[7].lower() == "valid" ]
+    acceptable_application_numbers = { row[3]: row[7] for row in admin_review_reader }
 
     judge_data = process_evaluation_data(judge_eval_reader,
             app_col=3, score_rank_col=9, sum_of_scores_col=11,
@@ -645,31 +344,14 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
             app_col=3, score_rank_col=11, sum_of_scores_col=13,
             trait_col=19, score_normalized_col=17, comments_col=18)
 
-    regionconfig_data_by_country = process_regionconfig_data(regionconfig_reader)
-    regionconfig_data_by_region = {}
-    sdgconfig_data = process_sdgconfig_data(sdgconfig_reader)
-    sdg_data = {}
-    topic_data = {}
-    population_data = {}
-
     correction_data = create_correction_data(correction_files)
 
     row_num = 0
     new_rows = []
 
-    # We want a different version of the output for a different third party,
-    # so we create this along side the wiki based rows we have, but with
-    # different specifications inline.
-    #
-    # We do it this way instead of refactoring the whole program to be able
-    # to dump out various context specific spreadsheets because this is how
-    # it's grown organically, not because of any top level design decision.
-    extra_output_rows = []
-
     extra_cats = []
-    attachments_to_add = []
     for row in proposals_reader:
-        if row[3] not in acceptable_application_numbers:
+        if row[3] not in acceptable_application_numbers.keys():
             continue
 
         row_num += 1  # first row here is row 1 (the header row was row 0) 
@@ -678,11 +360,9 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
 
         if row[3] in wisehead_data:
             rank = int(wisehead_data[row[3]]["overall_score_rank_normalized"])
-            if rank > 201:
-                continue
         else:
-            # We skip any rows that we don't have a wisehead rank for
-            continue
+            # Marker value for invalid proposals that didn't get scored
+            rank = 9999
 
         if row[3] in correction_data:
             for col_header, correction_value in correction_data[row[3]].items():
@@ -699,150 +379,34 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, regionconfi
             new_row.append(fixed_cell)
             extra_output_row.append(fixed_cell)
 
-        # Add <br /> to bibliography lines
-        new_row[136] = "<br />\n".join(row[136].split("\n"))
-
         for evaluation_data in [judge_data, wisehead_data]:
             if row[3] in evaluation_data:
                 new_row.extend([
                     evaluation_data[row[3]]["overall_score_rank_normalized"],
                     evaluation_data[row[3]]["sum_of_scores_normalized"] ])
     
-                for trait in evaluation_data[row[3]]["traits"]:
-                    new_row.append(trait["name"])
-                    new_row.append("{0:.1f}".format(trait["score_normalized"]))
-                    new_row.append(trait["comments"])
+                for valid_trait in valid_traits:
+                    for trait in evaluation_data[row[3]]["traits"]:
+                        if trait["name"] == valid_trait:
+                            new_row.append(trait["name"])
+                            new_row.append("{0:.1f}".format(trait["score_normalized"]))
+                            new_row.append(trait["comments"])
+
             else:
-                new_row.extend(["", ""])
+                new_row.extend([9999, ""])
     
                 # for now, we know that there are 4 traits
                 for _ in range(4):
                     new_row.extend(["", "", ""])
 
-        # Mutate the rows to add special wiki markup for categorization of pages.
-        # This is special to the 2019 run.  We need to save the extra_categories
-        # so that csv2wiki will make them
-        #
-        # We also collate all the data for tables of contents by category
-        proposal = {"rank": new_row[188], "title": wiki_escape_page_title("{30} ({3})".format(*row)) }
-        new_row[128] = categorize_sdg(
-                row[128],
-                extra_cats,
-                sdgconfig_data,
-                "SDG_TOC" if toc_dir != None else None
-                )
-        for category in split_sdg(row[128], sdgconfig_data):
-            if category not in sdg_data:
-                sdg_data[category] = []
-            sdg_data[category].append(proposal)
-
-        new_row[58] = categorize_population(row[58], extra_cats, "Population_TOC")
-        for cat in row[58].split(","):
-            if cat not in population_data:
-                population_data[cat] = []
-            population_data[cat].append(proposal)
-
-        new_row[66] = categorize_cell(row[66], extra_cats, "Topic_TOC" if toc_dir != None else None)
-        if row[66] not in topic_data:
-            topic_data[row[66]] = []
-        topic_data[row[66]].append(proposal)
-
-        for col in [68, 74, 80, 98, 104, 110, 116, 122]:
-            if regionconfig_reader is not None:
-                if row[col] == 'NULL':
-                    continue
-                if row[col] == '':
-                    continue
-
-                region = regionconfig_data_by_country[row[col]]["region"]
-                subregion = regionconfig_data_by_country[row[col]]["subregion"]
-                if region not in regionconfig_data_by_region:
-                    regionconfig_data_by_region[region] = {}
-                if subregion not in regionconfig_data_by_region[region]:
-                    regionconfig_data_by_region[region][subregion] = {}
-                if row[col] not in regionconfig_data_by_region[region][subregion]:
-                    regionconfig_data_by_region[region][subregion][row[col]] = []
-                if proposal not in regionconfig_data_by_region[region][subregion][row[col]]:
-                    regionconfig_data_by_region[region][subregion][row[col]].append(proposal)
-
-            new_row[col] = categorize_country(
-                    row[col],
-                    extra_cats,
-                    regionconfig_data_by_country,
-                    regionconfig_reader != None,
-                    "Geographic_TOC" if toc_dir != None else None
-                    )
-
-        attachments_str = ""
-        if attachments_dir is not None:
-            application_attachment_dir = os.path.join(attachments_dir, row[3])
-            for attachment_file in os.listdir(application_attachment_dir):
-                esc_attachment_file = wiki_escape_page_title(attachment_file)
-                if re.search("^\\d*_Registration.pdf", attachment_file):
-                    continue
-                cleaned_attachment_file = esc_attachment_file
-
-                attachment_file_display = re.sub("^\\d*_", "", attachment_file)
-                attachment_file_display = re.sub("\.pdf$", "", attachment_file_display)
-                if len(attachment_file_display) > 33:
-                    attachment_file_display = \
-                            attachment_file_display[0:15] + \
-                            "..." + \
-                            attachment_file_display[(len(attachment_file_display)-15):]
-
-                attachments_str += "[[Media:" + cleaned_attachment_file + "|" + attachment_file_display + "]]\n\n"
-                attachments_to_add.append("%s|%s" % (
-                    esc_attachment_file,
-                    os.path.join(application_attachment_dir, attachment_file)))
-        new_row.append(attachments_str)
-
-        new_row.append("<span style='color:#306754;font-style: italic'> - Wild Card Eligible</span>" if int(new_row[188]) > 100 else "")
+        new_row.append(acceptable_application_numbers[row[3]])
 
         print("Sanitized row %d (rank %d, %d cols, %d fixed)." % (row_num, rank, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
-        extra_output_rows.append(extra_output_row)
 
-    new_rows.sort(key=lambda row: int(row[188])) # Sort by wisehead rank
-
-    if top100_file is not None:
-        with open(top100_file, 'w') as f:
-            f.writelines("Top100\n")
-            f.writelines("Following are the top 100 proposals received, listed in rank order.\n")
-            for row in new_rows:
-                if int(row[188]) < 101:
-                    f.writelines("%s. [[%s]]\n" % (row[188], wiki_escape_page_title("{30} ({3})".format(*row))))
-
-    if second100_file is not None:
-        with open(second100_file, 'w') as f:
-            f.writelines("Eligible Wild Cards\n")
-            f.writelines("The following proposals are candidates for Wild Card selection. They are listed in rank order.\n")
-            for row in new_rows:
-                if int(row[188]) > 100 and int(row[188]) < 202:
-                    f.writelines("%s. [[%s]]\n" % (row[188], wiki_escape_page_title("{30} ({3})".format(*row))))
-
-    if toc_dir is not None:
-        if regionconfig_reader is not None:
-            generate_geographic_toc(toc_dir, regionconfig_data_by_region)
-
-        if sdgconfig_reader is not None:
-            generate_sdg_toc(toc_dir, sdgconfig_data, sdg_data)
-
-        generate_generic_toc(toc_dir, population_data, "Population_TOC")
-        generate_generic_toc(toc_dir, topic_data, "Topic_TOC")
-
-    if extra_category_file is not None:
-        with open(extra_category_file, 'w') as f:
-            f.writelines("%s\n" % extra_cat for extra_cat in extra_cats)
-
-    if attachments_file is not None:
-        with open(attachments_file, 'w') as f:
-            f.writelines("%s\n" % attachment_pair for attachment_pair in attachments_to_add)
+    new_rows.sort(key=lambda row: int(row[174])) # Sort by wisehead rank
 
     print_csv(header_row, new_rows, sys.stdout)
-
-    if extra_output_csv is not None:
-        with open(extra_output_csv, 'w') as f:
-            print_csv(header_row, extra_output_rows, f)
 
 def main():
     """Compose the MacFound input and emit it as html-ized csv."""
@@ -853,16 +417,7 @@ def main():
                                     "admin-review-csv=",
                                     "judge-evaluation-csv=",
                                     "wisehead-evaluation-csv=",
-                                    "regionconfig-csv=",
-                                    "sdgconfig-csv=",
-                                    "extra-category-file=",
-                                    "top100-file=",
-                                    "toc-dir=",
-                                    "extra-output-csv=",
-                                    "correction-file=",
-                                    "second100-file=",
-                                    "attachments-file=",
-                                    "attachments-dir=",])
+                                    "correction-file=",])
     except getopt.GetoptError as err:
         sys.stderr.write("ERROR: '%s'\n" % err)
         sys.exit(2)
@@ -872,15 +427,6 @@ def main():
     admin_review_csv = None
     judge_evaluation_csv = None
     wisehead_evaluation_csv = None
-    regionconfig_csv = None
-    sdgconfig_csv = None
-    extra_category_file = None
-    top100_file = None
-    second100_file = None
-    toc_dir = None
-    extra_output_csv = None
-    attachments_file = None
-    attachments_dir = None
     correction_files = []
     for o, a in opts:
         if o == "--pare":
@@ -893,35 +439,11 @@ def main():
             judge_evaluation_csv = a
         elif o == "--wisehead-evaluation-csv":
             wisehead_evaluation_csv = a
-        elif o == "--regionconfig-csv":
-            regionconfig_csv = a
-        elif o == "--sdgconfig-csv":
-            sdgconfig_csv = a
-        elif o == "--extra-category-file":
-            extra_category_file = a
-        elif o == "--top100-file":
-            top100_file = a
         elif o == "--correction-file":
             correction_files.append(a)
-        elif o == "--toc-dir":
-            toc_dir = a
-        elif o == "--extra-output-csv":
-            extra_output_csv = a
-        elif o == "--second100-file":
-            second100_file = a
-        elif o == "--attachments-file":
-            attachments_file = a
-        elif o == "--attachments-dir":
-            attachments_dir = a
         else:
             sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
             sys.exit(2)
-
-    if (attachments_dir is None) != (attachments_file is None):
-        sys.stderr.write(
-            "ERROR: need --attachments-dir and --attachments-file, or neither")
-        sys.stderr.write(__doc__)
-        sys.exit(1)
 
     if (proposals_csv is None or
             admin_review_csv is None or
@@ -932,9 +454,7 @@ def main():
             "--judge-evaluation-csv, and --wisehead_evaluation-csv options.\n\n")
         sys.stderr.write(__doc__)
         sys.exit(1)
-    compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, wisehead_evaluation_csv, regionconfig_csv,
-            sdgconfig_csv, correction_files, toc_dir, extra_category_file, top100_file, second100_file,
-            attachments_file, attachments_dir, extra_output_csv, pare)
+    compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, wisehead_evaluation_csv, correction_files, pare)
 
 if __name__ == '__main__':
     main()

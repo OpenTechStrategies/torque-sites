@@ -49,48 +49,11 @@ fi
 # Make sure we have python3
 python3 -V > /dev/null 2>&1 || { echo "python3 required, aborting" ; exit 1; }
 
-python3 -m csv2wiki --version >/dev/null 2>&1 || { echo "csv2wiki not installed, make sure 'python3 -m csv2wiki' works required, aborting" ; exit 1; }
-
-if python3 -m csv2wiki --help > /dev/null; then
-  echo "Great, it works." > /dev/null
-else
-  echo "ERROR: Problem running python3 -m csv2wiki."
-  echo ""
-  echo "Most likely you need to install the 'mwclient' and 'unidecode'"
-  echo "Python modules.  Do 'pip install mwclient', and same for"
-  echo "'bs4' and 'unidecode', and try running this script again."
-  exit 1
-fi
-
-# csv2wiki needs a run-time config file.
-CSV2WIKI_CONFIG="${MACFOUND_DIR}"/macfound-internal-csv2wiki-config
-if [ ! -f "${CSV2WIKI_CONFIG}" ]; then
-  echo "ERROR: No macfound-internal-csv2wiki-config file found."
-  echo ""
-  echo "Try doing"
-  echo ""
-  echo '  $ cp macfound-internal-csv2wiki-config.tmpl \\'
-  echo "       macfound-internal-csv2wiki-config"
-  echo ""
-  echo "and then editing macfound-internal-csv2wiki-config as needed."
-  echo ""
-  exit 1
-fi
-
 PROPOSALS_CSV="Export-reg-and-app-data-Submission-deadline-06082019-fixed-by-OTS.csv"
 ADMIN_REVIEW_CSV="AdminReviewP2P_mac2019_09192019.csv"
 JUDGE_EVALUATION_CSV="P2P-review-data-20190929-for-OTS-copy-fixed-by-OTS.csv"
 WISEHEAD_EVALUATION_CSV="100&Change_Wise_Head_Review_data_anon_judges_11162019.csv"
-REGIONCONFIG_CSV="regionconfig.csv"
-SDGCONFIG_CSV="sdgconfig.csv"
 CANDID_CORRECTION_FILE="Candid_Application_Data_Clean_for_OTS_2020_01_13_01.csv"
-EXTRA_CATEGORY_FILE="Generated_Extra_Categories.dat"
-ATTACHMENTS_FILE="Generated_Attachments.dat"
-TOP100_FILE="Generated_Top100"
-SECOND100_FILE="Generated_Second100"
-ATTACHMENTS_DIR="${DATA_DIR}/attachments"
-GENERATED_THIRD_PARTY_CSV="Generated_Top200.csv"
-TOC_DIR="${DATA_DIR}/tocs"
 
 if ! echo "bad31bbabd6b03ec5be834d3d87ec70361e8efa0  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
   echo "ERROR: SHA of PROPOSALS_CSV did not match expectation!"
@@ -112,11 +75,6 @@ if ! echo "5b1ad76d329a47f0a7b62a76abdbfc4f98a87c59  $DATA_DIR/$JUDGE_EVALUATION
   exit 1
 fi
 
-# We want to make sure there's no lingering old TOCs if we change how
-# compose-csv creates them
-mkdir -p $TOC_DIR
-rm $TOC_DIR/*
-
 OUTPUT_CSV="2019-processed.csv"
 
 COMPOSER="${MACFOUND_DIR}"/compose-csvs
@@ -129,38 +87,11 @@ ${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
             --admin-review-csv="${DATA_DIR}/${ADMIN_REVIEW_CSV}" \
             --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
             --wisehead-evaluation-csv="${DATA_DIR}/${WISEHEAD_EVALUATION_CSV}" \
-            --regionconfig-csv="${MACFOUND_DIR}/${REGIONCONFIG_CSV}" \
-            --sdgconfig-csv="${MACFOUND_DIR}/${SDGCONFIG_CSV}" \
-            --attachments-file="${DATA_DIR}/${ATTACHMENTS_FILE}" \
-            --attachments-dir="${ATTACHMENTS_DIR}" \
-            --top100-file="${DATA_DIR}/${TOP100_FILE}" \
-            --correction-file="${DATA_DIR}/${CANDID_CORRECTION_FILE}" \
-            --toc-dir="${TOC_DIR}" \
-            --second100-file="${DATA_DIR}/${SECOND100_FILE}" \
-            --extra-output-csv="${DATA_DIR}/${GENERATED_THIRD_PARTY_CSV}" \
-            --extra-category-file="${DATA_DIR}/${EXTRA_CATEGORY_FILE}" > \
+            --correction-file="${DATA_DIR}/${CANDID_CORRECTION_FILE}" > \
             "${DATA_DIR}/${OUTPUT_CSV}"
 if [ $? -ne 0 ]; then
 		echo Composition failure!
 		exit 1
 fi
 echo "Done with Stage 1 (Composing)."
-echo ""
-
-TOC_PAGES=""
-for file in $TOC_DIR/* ; do
-  TOC_PAGES="$TOC_PAGES --helper-page=$file"
-done
-
-echo "Creating wiki..."
-python3 -m csv2wiki --cat-sort=alpha -c ${CSV2WIKI_CONFIG}      \
-            --extra-cats="${DATA_DIR}/${EXTRA_CATEGORY_FILE}"   \
-            --attachments="${DATA_DIR}/${ATTACHMENTS_FILE}" \
-            --helper-page=sidebar.template \
-            --helper-page="${DATA_DIR}/${TOP100_FILE}" \
-            --helper-page="${DATA_DIR}/${SECOND100_FILE}" \
-            --make-non-editable \
-            ${TOC_PAGES} \
-            --csv="${DATA_DIR}/${OUTPUT_CSV}"
-echo "Done creating wiki."
 echo ""
