@@ -85,12 +85,12 @@ UPLOADER="${MACFOUND_DIR}"/upload-csv
 #
 # Use --pare to convert only 1% of the entries, to save time while testing. 
 echo "Stage 1: Composing..."
-#${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
-#            --admin-review-csv="${DATA_DIR}/${ADMIN_REVIEW_CSV}" \
-#            --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
-#            --wisehead-evaluation-csv="${DATA_DIR}/${WISEHEAD_EVALUATION_CSV}" \
-#            --correction-file="${DATA_DIR}/${CANDID_CORRECTION_FILE}" > \
-#            "${DATA_DIR}/${OUTPUT_CSV}"
+${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
+            --admin-review-csv="${DATA_DIR}/${ADMIN_REVIEW_CSV}" \
+            --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
+            --wisehead-evaluation-csv="${DATA_DIR}/${WISEHEAD_EVALUATION_CSV}" \
+            --correction-file="${DATA_DIR}/${CANDID_CORRECTION_FILE}" > \
+            "${DATA_DIR}/${OUTPUT_CSV}"
 if [ $? -ne 0 ]; then
 		echo Composition failure!
 		exit 1
@@ -104,8 +104,8 @@ echo ""
 # with a torquedata service running behind it, and a version of
 # the TorqueDataConnect running on the mediawiki
 echo "Stage 2: Uploading csv..."
-#${UPLOADER} --csv="${DATA_DIR}/${OUTPUT_CSV}" \
-#            --config="${CSV2WIKI_CONFIG}"
+${UPLOADER} --csv="${DATA_DIR}/${OUTPUT_CSV}" \
+            --config="${CSV2WIKI_CONFIG}"
 if [ $? -ne 0 ]; then
 		echo Upload failure!
 		exit 1
@@ -113,14 +113,8 @@ fi
 echo "Done with Stage 2 (Uploading csv)."
 echo ""
 
-TOC_PAGES=""
-for file in $TOC_DIR/* ; do
-  TOC_PAGES="$TOC_PAGES --helper-page=$file"
-done
-
 echo "Stage 3: Creating wiki..."
 python3 -m csv2wiki -c ${CSV2WIKI_CONFIG}      \
             --make-non-editable \
             --csv="${DATA_DIR}/${OUTPUT_CSV}"
 echo "Done creating wiki."
-
