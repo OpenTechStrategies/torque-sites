@@ -168,6 +168,9 @@ def fix_cell(cell):
     # because that could make the wiki formatting odd
     cell = cell.strip()
 
+    if cell.lower() == "null":
+        cell = ""
+
     return cell
 
 def print_csv(header_row, rows, output):
