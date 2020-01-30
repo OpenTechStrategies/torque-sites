@@ -43,6 +43,7 @@ Usage:
        --admin-review-csv=ADMIN_REVIEW_CSV \\
        --judge-evaluation-csv=JUDGE_EVALUATION_CSV \\
        --wisehead-evaluation-csv=WISEHEAD_CSV \\
+       --sdgconfig-csv=SDGCONFIG_CSV \\
        --attachments-dir=ATTACHMENTS_DIR \\
        --correction-file=COORECTION_FILE
 
@@ -70,6 +71,10 @@ Command-line options:
                                   the data from the correction file will override the
                                   source data for output.  There can be multiple correction
                                   files, and each one overwrites the previous.
+
+  --sdgconfig-csv FILE            FILE is a csv of sdg configurations, that when provided
+                                  will be checked against in the SDG column for validation
+                                  and separation into a list.
 
   --attachments-dir DIR           DIR is a directory for compose-csvs to look in for what attachments
                                   will be uploaded to the wiki.  It needs to have subdirectories by
@@ -179,6 +184,35 @@ def fix_cell(cell):
 
     return cell
 
+def split_sdg(cell, sdg_data):
+    """Turns an sdg cell into a new line separated cell for us with torquedata.
+    It uses SDG_DATA to split the array.  If it looks like the string doesn't
+    have an entry, then an error is raised."""
+
+    if sdg_data is None:
+        raise Exception("Need SDG data")
+
+    new_cell = ""
+    cell = cell.strip()
+    while cell is not "":
+        found = False
+
+        for sdg in sdg_data.keys():
+            if cell.startswith(sdg):
+                found = True;
+                new_cell += sdg + "\n"
+                cell = cell[len(sdg):]
+            if cell.startswith(","):
+                cell = cell[1:]
+
+        if not found:
+            raise Exception("Could not find SDG in " + cell)
+
+        cell = cell.strip();
+
+    new_cell.strip()
+    return new_cell
+
 def print_csv(header_row, rows, output):
     """Print the HEADER_ROW and ROWS to OUTPUT via csv"""
 
@@ -190,6 +224,28 @@ def print_csv(header_row, rows, output):
         csv_writer.writerow(row)
 
 valid_traits = [ "IMPACTFUL", "EVIDENCE-BASED", "FEASIBLE", "DURABLE" ]
+
+def process_sdgconfig_data(csv_reader):
+    """Takes a CSV_READER representing a valid sdgs, and their number
+    and converts it into a dict representing a lookup by sdg.
+    If no reader is provided, then None is returned.
+
+    The return object, when CSV_READER is present is of the form:
+      SDG_DATA[name] = {
+        number: integer
+      }
+    """
+
+    if csv_reader is None:
+        return None
+
+    sdg_data = {}
+
+    next(csv_reader)
+    for row in csv_reader:
+        sdg_data[row[1]] = { "number": int(row[0]) }
+
+    return sdg_data
 
 def process_evaluation_data(*csv_reader, app_col, score_rank_col, sum_of_scores_col, trait_col,
         score_normalized_col, comments_col):
@@ -302,8 +358,8 @@ def create_correction_data(correction_files):
 
     return correction_data
 
-def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_files, attachments_dir,
-        pare=None):
+def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_files, sdgconfig,
+        attachments_dir, pare=None):
     """Write a composed version of PROPOSALS (a CSV file), ADMIN_REVIEW
     (a CSV file), and JUDGE_EVAL (a CSV file) to standard out.
 
@@ -314,6 +370,8 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
     CORRECTION_FILES is a list of files that contain data to overwrite the
     source data with blessed corrections.  Each one overwrites the previous
     if there are overlapping corrections.
+
+    SDGCONFIG is a mapping for UN SDG codes.
 
     ATTACHMENTS_DIR is the directory to look in for attachments.
 
@@ -327,6 +385,8 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
         judge_eval_reader = csv.reader(open(judge_eval, encoding='utf-8'),
                                        delimiter=',', quotechar='"')
         wisehead_eval_reader = csv.reader(open(wisehead_eval, encoding='utf-8'),
+                                       delimiter=',', quotechar='"')
+        sdgconfig_reader = csv.reader(open(sdgconfig, encoding='utf-8'),
                                        delimiter=',', quotechar='"')
     except UnicodeDecodeError:
         sys.stderr.write("fix-csv expects utf-8-encoded unicode, not whatever is in this csv file.\n")
@@ -358,6 +418,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
             trait_col=19, score_normalized_col=17, comments_col=18)
 
     correction_data = create_correction_data(correction_files)
+    sdgconfig_data = process_sdgconfig_data(sdgconfig_reader)
 
     row_num = 0
     new_rows = []
@@ -412,6 +473,13 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
                 for _ in range(4):
                     new_row.extend(["", "", ""])
 
+        # Mutate the rows to add special wiki markup for categorization of pages.
+        # This is special to the 2019 run.  We need to save the extra_categories
+        # so that csv2wiki will make them
+        #
+        # We also collate all the data for tables of contents by category
+        new_row[128] = split_sdg( row[128], sdgconfig_data)
+
         new_row.append(acceptable_application_numbers[row[3]])
 
         attachments_str = ""
@@ -439,6 +507,7 @@ def main():
                                     "admin-review-csv=",
                                     "judge-evaluation-csv=",
                                     "wisehead-evaluation-csv=",
+                                    "sdgconfig-csv=",
                                     "attachments-dir=",
                                     "correction-file=",])
     except getopt.GetoptError as err:
@@ -450,6 +519,7 @@ def main():
     admin_review_csv = None
     judge_evaluation_csv = None
     wisehead_evaluation_csv = None
+    sdgconfig_csv = None
     attachments_dir = None
     correction_files = []
     for o, a in opts:
@@ -463,6 +533,8 @@ def main():
             judge_evaluation_csv = a
         elif o == "--wisehead-evaluation-csv":
             wisehead_evaluation_csv = a
+        elif o == "--sdgconfig-csv":
+            sdgconfig_csv = a
         elif o == "--correction-file":
             correction_files.append(a)
         elif o == "--attachments-dir":
@@ -481,7 +553,7 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
     compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, wisehead_evaluation_csv, correction_files,
-            attachments_dir, pare)
+            sdgconfig_csv, attachments_dir, pare)
 
 if __name__ == '__main__':
     main()
