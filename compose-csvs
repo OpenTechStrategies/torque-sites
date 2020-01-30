@@ -402,6 +402,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
             header_row.append(data_type + " " + trait + " Comments")
     header_row.append("Application Level")
     header_row.append("Attachments")
+    header_row.append("Wild Card Eligible")
 
     # We only accept applications if they're one of the rows in the
     # admin_review csv, which has an "Application #" column (3),
@@ -493,6 +494,11 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
                     continue
                 attachments_str += wiki_escape_page_title(attachment_file) + "\n"
         new_row.append(attachments_str)
+
+        if rank > 100 and rank <= 101:
+            new_row.append("Wild Card Eligible")
+        else:
+            new_row.append("")
 
         print("Sanitized row %d (rank %d, %d cols, %d fixed)." % (row_num, rank, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
