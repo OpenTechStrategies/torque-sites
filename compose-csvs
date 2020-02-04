@@ -254,30 +254,9 @@ def process_sdgconfig_data(csv_reader):
     return sdg_data
 
 def generate_generic_toc(toc_dir, grouped_review_numbers, toc_name):
-    """Generates a special TOC template and TOC data file in TOC_DIR
-    for the given data, which is a dict where the proposals are all
-    grouped by some key.  Then put into TOC_DIR/TOC_NAME{.j2,.json}."""
-    with open(toc_dir + "/" + toc_name + ".j2", 'w') as f:
-        f.writelines('''
-__TOC__
-{% for group_name, proposal_ids in groups.items() %}
-    {%- set proposals_in_group = [] %}
-    {%- for proposal_id in proposal_ids %}
-        {%- if proposal_id in proposals.keys() %}
-            {{- "" if proposals_in_group.append(proposals[proposal_id]) }}
-        {%- endif %}
-    {%- endfor %}
-    {%- if proposals_in_group|length > 0 %}
-= {{ group_name }} ({{ proposals_in_group|length }}) =
-        {%- for proposal in proposals_in_group %}
-* Rank {{ proposal['Wise Head Overall Score Rank Normalized'] }} - [[{{ proposal["MediaWiki Title"] -}}]]
-            {%- if (proposal['Wise Head Overall Score Rank Normalized'] | int) > 100 -%}
-                - <span style='color:#306754;font-style: italic>Wild Card Eligible</span>
-            {%- endif %}
-        {%- endfor %}
-    {%- endif %}
-{%- endfor %}''')
-
+    """Generates a and TOC data file in TOC_DIR for the given data,
+    which is a dict where the proposals are all grouped by some key.
+    Then put into TOC_DIR/TOC_NAME.json."""
     with open(toc_dir + "/" + toc_name + ".json", 'w') as f:
         f.writelines(json.dumps({"groups": grouped_review_numbers}))
 
@@ -536,7 +515,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
                 attachments_str += wiki_escape_page_title(attachment_file) + "\n"
         new_row.append(attachments_str)
 
-        if rank > 100 and rank <= 101:
+        if rank > 100 and rank <= 201:
             new_row.append("Wild Card Eligible")
         else:
             new_row.append("")

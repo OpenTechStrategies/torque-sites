@@ -82,6 +82,9 @@ fi
 # compose-csv creates them
 mkdir -p $TOC_DIR
 rm $TOC_DIR/*
+cp tocs/generic.j2 $TOC_DIR/Population_TOC.j2
+cp tocs/All.j2 $TOC_DIR/
+cp tocs/All.json $TOC_DIR/
 
 CSV2WIKI_CONFIG="${MACFOUND_DIR}"/macfound-torquedata-csv2wiki-config
 OUTPUT_CSV="2019-processed.csv"
