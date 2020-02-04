@@ -56,6 +56,7 @@ WISEHEAD_EVALUATION_CSV="100&Change_Wise_Head_Review_data_anon_judges_11162019.c
 ATTACHMENTS_DIR="${DATA_DIR}/attachments"
 SDGCONFIG_CSV="sdgconfig.csv"
 CANDID_CORRECTION_FILE="Candid_Application_Data_Clean_for_OTS_2020_01_13_01.csv"
+TOC_DIR="${DATA_DIR}/tocs"
 
 if ! echo "bad31bbabd6b03ec5be834d3d87ec70361e8efa0  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
   echo "ERROR: SHA of PROPOSALS_CSV did not match expectation!"
@@ -77,6 +78,11 @@ if ! echo "5b1ad76d329a47f0a7b62a76abdbfc4f98a87c59  $DATA_DIR/$JUDGE_EVALUATION
   exit 1
 fi
 
+# We want to make sure there's no lingering old TOCs if we change how
+# compose-csv creates them
+mkdir -p $TOC_DIR
+rm $TOC_DIR/*
+
 CSV2WIKI_CONFIG="${MACFOUND_DIR}"/macfound-torquedata-csv2wiki-config
 OUTPUT_CSV="2019-processed.csv"
 
@@ -93,6 +99,7 @@ ${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
             --wisehead-evaluation-csv="${DATA_DIR}/${WISEHEAD_EVALUATION_CSV}" \
             --sdgconfig-csv="${MACFOUND_DIR}/${SDGCONFIG_CSV}" \
             --attachments-dir=${ATTACHMENTS_DIR} \
+            --toc-dir="${TOC_DIR}" \
             --correction-file="${DATA_DIR}/${CANDID_CORRECTION_FILE}" > \
             "${DATA_DIR}/${OUTPUT_CSV}"
 if [ $? -ne 0 ]; then
@@ -102,13 +109,14 @@ fi
 echo "Done with Stage 1 (Composing)."
 echo ""
 
-### Upload the spreadsheet to a running instance of torquedata
+### Upload the spreadsheet and TOCs to a running instance of torquedata
 #
 # There's a dependency on a running version of mediawiki
 # with a torquedata service running behind it, and a version of
 # the TorqueDataConnect running on the mediawiki
 echo "Stage 2: Uploading csv..."
 ${UPLOADER} --csv="${DATA_DIR}/${OUTPUT_CSV}" \
+            --toc-dir="${TOC_DIR}" \
             --config="${CSV2WIKI_CONFIG}"
 if [ $? -ne 0 ]; then
 		echo Upload failure!

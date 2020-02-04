@@ -45,6 +45,7 @@ import configparser
 import mwclient
 import getopt
 import sys
+import os
 
 def usage(errout=False):
     """Print a message explaining how to use this script.
@@ -58,6 +59,7 @@ def main():
                                    'h?',
                                    ["help",
                                     "csv=",
+                                    "toc-dir=",
                                     "config=",
                                     ])
     except getopt.GetoptError as err:
@@ -67,12 +69,15 @@ def main():
 
     csv_file = None
     config_file = None
+    toc_dir = None
     for o, a in opts:
         if o in ("-h", "-?", "--help",):
             usage()
             sys.exit(0)
         elif o in ("--csv",):
             csv_file = a
+        elif o in ("--toc-dir",):
+            toc_dir = a
         elif o in ("--config",):
             config_file = a
 
@@ -92,7 +97,6 @@ def main():
     if len(parsed_files) == 0:
         raise IOError("Failed to read config file %s" % config_file)
 
-
     wiki_url = config["default"]["wiki_url"]
     username = config["default"]["username"]
     password = config["default"]["password"]
@@ -104,14 +108,34 @@ def main():
         site.raw_call(
         'api',
         {
-            "action": "torquedataconnectupload",
+            "action": "torquedataconnectuploadsheet",
             "format": 'json',
-            "singular": 'proposal',
-            "plural": 'proposals',
+            "object_name": 'proposal',
+            "sheet_name": 'proposals',
             "key_column": 'Review Number'
         },
         { "data_file": f.read() }
         )
+
+    toc_names = [ os.path.splitext(f)[0] for f in os.listdir(toc_dir) if f.endswith(".j2") ]
+    for toc_name in toc_names:
+        template_file_name = toc_name + ".j2"
+        json_file_name = toc_name + ".json"
+        with open(os.path.join(toc_dir, template_file_name)) as template_file, \
+            open(os.path.join(toc_dir, json_file_name)) as json_file:
+                site.raw_call(
+                'api',
+                {
+                    "action": "torquedataconnectuploadtoc",
+                    "format": 'json',
+                    "sheet_name": 'proposals',
+                    "toc_name": toc_name
+                },
+                {
+                    "template": template_file.read(),
+                    "json": json_file.read()
+                }
+                )
 
 if __name__ == '__main__':
     main()

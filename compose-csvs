@@ -43,6 +43,7 @@ Usage:
        --admin-review-csv=ADMIN_REVIEW_CSV \\
        --judge-evaluation-csv=JUDGE_EVALUATION_CSV \\
        --wisehead-evaluation-csv=WISEHEAD_CSV \\
+       --toc-dir=TOC_DIR \\
        --sdgconfig-csv=SDGCONFIG_CSV \\
        --attachments-dir=ATTACHMENTS_DIR \\
        --correction-file=COORECTION_FILE
@@ -72,6 +73,10 @@ Command-line options:
                                   source data for output.  There can be multiple correction
                                   files, and each one overwrites the previous.
 
+  --toc-dir DIR                   DIR is the directory where extra TOCs will be placed for loading
+                                  up to the wiki with csv2wiki.  If not included, TOCs won't be
+                                  generated.
+
   --sdgconfig-csv FILE            FILE is a csv of sdg configurations, that when provided
                                   will be checked against in the SDG column for validation
                                   and separation into a list.
@@ -90,6 +95,7 @@ import sys
 import warnings
 import string
 import os
+import json
 from bs4 import BeautifulSoup
 
 def collapse_replace(string, old, new):
@@ -247,6 +253,34 @@ def process_sdgconfig_data(csv_reader):
 
     return sdg_data
 
+def generate_generic_toc(toc_dir, grouped_review_numbers, toc_name):
+    """Generates a special TOC template and TOC data file in TOC_DIR
+    for the given data, which is a dict where the proposals are all
+    grouped by some key.  Then put into TOC_DIR/TOC_NAME{.j2,.json}."""
+    with open(toc_dir + "/" + toc_name + ".j2", 'w') as f:
+        f.writelines('''
+__TOC__
+{% for group_name, proposal_ids in groups.items() %}
+    {%- set proposals_in_group = [] %}
+    {%- for proposal_id in proposal_ids %}
+        {%- if proposal_id in proposals.keys() %}
+            {{- "" if proposals_in_group.append(proposals[proposal_id]) }}
+        {%- endif %}
+    {%- endfor %}
+    {%- if proposals_in_group|length > 0 %}
+= {{ group_name }} ({{ proposals_in_group|length }}) =
+        {%- for proposal in proposals_in_group %}
+* Rank {{ proposal['Wise Head Overall Score Rank Normalized'] }} - [[{{ proposal["MediaWiki Title"] -}}]]
+            {%- if (proposal['Wise Head Overall Score Rank Normalized'] | int) > 100 -%}
+                - <span style='color:#306754;font-style: italic>Wild Card Eligible</span>
+            {%- endif %}
+        {%- endfor %}
+    {%- endif %}
+{%- endfor %}''')
+
+    with open(toc_dir + "/" + toc_name + ".json", 'w') as f:
+        f.writelines(json.dumps({"groups": grouped_review_numbers}))
+
 def process_evaluation_data(*csv_reader, app_col, score_rank_col, sum_of_scores_col, trait_col,
         score_normalized_col, comments_col):
     """Takes a CSV_READER representing evaluation data in a spreadsheet and
@@ -359,7 +393,7 @@ def create_correction_data(correction_files):
     return correction_data
 
 def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_files, sdgconfig,
-        attachments_dir, pare=None):
+        attachments_dir, toc_dir, pare=None):
     """Write a composed version of PROPOSALS (a CSV file), ADMIN_REVIEW
     (a CSV file), and JUDGE_EVAL (a CSV file) to standard out.
 
@@ -374,6 +408,9 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
     SDGCONFIG is a mapping for UN SDG codes.
 
     ATTACHMENTS_DIR is the directory to look in for attachments.
+
+    TOC_DIR is the directory that, when not None, will have files written
+    to it that are various tables of contents that are of interest to macfound.
 
     If PARE is not None, it is a positive integer indicating that only
     1 of every PARE entries should be processed, and the others skipped."""
@@ -403,6 +440,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
     header_row.append("Application Level")
     header_row.append("Attachments")
     header_row.append("Wild Card Eligible")
+    header_row.append("MediaWiki Title")
 
     # We only accept applications if they're one of the rows in the
     # admin_review csv, which has an "Application #" column (3),
@@ -438,6 +476,9 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
         else:
             # Marker value for invalid proposals that didn't get scored
             rank = 9999
+
+        # This is required to be before the corrections because of legacy issues
+        mwiki_title = wiki_escape_page_title("{30} ({3})".format(*row))
 
         if row[3] in correction_data:
             for col_header, correction_value in correction_data[row[3]].items():
@@ -500,10 +541,24 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
         else:
             new_row.append("")
 
+        new_row.append(mwiki_title)
+
         print("Sanitized row %d (rank %d, %d cols, %d fixed)." % (row_num, rank, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
 
-    new_rows.sort(key=lambda row: int(row[174])) # Sort by wisehead rank
+    new_rows.sort(key=lambda row: int(row[188])) # Sort by wisehead rank
+
+    # Build TOCs after sorted proposals
+
+    # Population
+    if toc_dir is not None:
+        population_data = {}
+        for new_row in new_rows:
+            for population in new_row[58].split("\n"):
+                if population not in population_data:
+                    population_data[population] = []
+                population_data[population].append(new_row[3])
+        generate_generic_toc(toc_dir, population_data, "Population_TOC")
 
     print_csv(header_row, new_rows, sys.stdout)
 
@@ -517,6 +572,7 @@ def main():
                                     "judge-evaluation-csv=",
                                     "wisehead-evaluation-csv=",
                                     "sdgconfig-csv=",
+                                    "toc-dir=",
                                     "attachments-dir=",
                                     "correction-file=",])
     except getopt.GetoptError as err:
@@ -530,6 +586,7 @@ def main():
     wisehead_evaluation_csv = None
     sdgconfig_csv = None
     attachments_dir = None
+    toc_dir = None
     correction_files = []
     for o, a in opts:
         if o == "--pare":
@@ -546,6 +603,8 @@ def main():
             sdgconfig_csv = a
         elif o == "--correction-file":
             correction_files.append(a)
+        elif o == "--toc-dir":
+            toc_dir = a
         elif o == "--attachments-dir":
             attachments_dir = a
         else:
@@ -562,7 +621,7 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
     compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, wisehead_evaluation_csv, correction_files,
-            sdgconfig_csv, attachments_dir, pare)
+            sdgconfig_csv, attachments_dir, toc_dir, pare)
 
 if __name__ == '__main__':
     main()
