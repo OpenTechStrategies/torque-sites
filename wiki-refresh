@@ -133,8 +133,16 @@ fi
 echo "Done with Stage 2 (Uploading csv)."
 echo ""
 
+# This pages are the template callers hosted on the wiki, as opposed to
+# the data/jinja files that are processed by torquedata
+TOC_PAGES=""
+for file in $TOC_DIR/*.mwiki ; do
+  TOC_PAGES="$TOC_PAGES --helper-page=$file"
+done
+
 echo "Stage 3: Creating wiki..."
 python3 -m csv2wiki -c ${CSV2WIKI_CONFIG}      \
             --make-non-editable \
+            ${TOC_PAGES} \
             --csv="${DATA_DIR}/${OUTPUT_CSV}"
 echo "Done creating wiki."

@@ -280,18 +280,32 @@ def process_sdgconfig_data(csv_reader):
     return sdg_data
 
 def generate_generic_toc(toc_dir, grouped_review_numbers, toc_name):
-    """Generates a and TOC data file in TOC_DIR for the given data,
+    """Generates a TOC mwiki and TOC data file in TOC_DIR for the given data,
     which is a dict where the proposals are all grouped by some key.
-    Then put into TOC_DIR/TOC_NAME.json."""
-    with open(toc_dir + "/" + toc_name + ".json", 'w') as f:
+    Then put into TOC_DIR/TOC_NAME.json.
+
+    Notably, this doesn't create the jinja template file, as that doesn't
+    need to be dynamically generated."""
+    with open(os.path.join(toc_dir, toc_name + ".json"), 'w') as f:
         f.writelines(json.dumps({"groups": grouped_review_numbers}))
+
+    with open(os.path.join(toc_dir, toc_name + ".mwiki"), 'w') as f:
+        f.writelines(toc_name + "\n")
+        f.writelines("{{ #tdcrender:proposals/toc/" + toc_name + ".mwiki }}")
 
 def generate_geographic_toc(toc_dir, grouped_review_numbers):
     """Generates a special TOC page in TOC_DIR for the REGION_DATA, which is
-    a dict where the proposals are all grouped by their region and subregion"""
+    a dict where the proposals are all grouped by their region and subregion.
 
-    with open(toc_dir + "/Geographic_TOC.json", 'w') as f:
+    Like GENERATE_GENERIC_TOC, this generates a mwiki for the page on the wiki,
+    but not the template file."""
+
+    with open(os.path.join(toc_dir, "/Geographic_TOC.json"), 'w') as f:
         f.writelines(json.dumps({"regions": grouped_review_numbers}))
+
+    with open(os.path.join(toc_dir, "/Geographic_TOC.mwiki"), 'w') as f:
+        f.writelines("Geographic_TOC" + "\n")
+        f.writelines("{{ #tdcrender:proposals/toc/Geographic_TOC.mwiki }}")
 
 valid_traits = [ "IMPACTFUL", "EVIDENCE-BASED", "FEASIBLE", "DURABLE" ]
 
