@@ -53,6 +53,7 @@ PROPOSALS_CSV="Export-reg-and-app-data-Submission-deadline-06082019-fixed-by-OTS
 ADMIN_REVIEW_CSV="AdminReviewP2P_mac2019_09192019.csv"
 JUDGE_EVALUATION_CSV="P2P-review-data-20190929-for-OTS-copy-fixed-by-OTS.csv"
 WISEHEAD_EVALUATION_CSV="100&Change_Wise_Head_Review_data_anon_judges_11162019.csv"
+REGIONCONFIG_CSV="regionconfig.csv"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments"
 SDGCONFIG_CSV="sdgconfig.csv"
 CANDID_CORRECTION_FILE="Candid_Application_Data_Clean_for_OTS_2020_01_13_01.csv"
@@ -83,6 +84,9 @@ fi
 mkdir -p $TOC_DIR
 rm $TOC_DIR/*
 cp tocs/generic.j2 $TOC_DIR/Population_TOC.j2
+cp tocs/generic.j2 $TOC_DIR/SDG_TOC.j2
+cp tocs/generic.j2 $TOC_DIR/Topic_TOC.j2
+cp tocs/Geographic_TOC.j2 $TOC_DIR/
 cp tocs/All.j2 $TOC_DIR/
 cp tocs/All.json $TOC_DIR/
 
@@ -100,6 +104,7 @@ ${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
             --admin-review-csv="${DATA_DIR}/${ADMIN_REVIEW_CSV}" \
             --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
             --wisehead-evaluation-csv="${DATA_DIR}/${WISEHEAD_EVALUATION_CSV}" \
+            --regionconfig-csv="${MACFOUND_DIR}/${REGIONCONFIG_CSV}" \
             --sdgconfig-csv="${MACFOUND_DIR}/${SDGCONFIG_CSV}" \
             --attachments-dir=${ATTACHMENTS_DIR} \
             --toc-dir="${TOC_DIR}" \

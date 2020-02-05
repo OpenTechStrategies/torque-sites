@@ -43,6 +43,7 @@ Usage:
        --admin-review-csv=ADMIN_REVIEW_CSV \\
        --judge-evaluation-csv=JUDGE_EVALUATION_CSV \\
        --wisehead-evaluation-csv=WISEHEAD_CSV \\
+       --regionconfig-csv=REGIONCONFIG_CSV \\
        --toc-dir=TOC_DIR \\
        --sdgconfig-csv=SDGCONFIG_CSV \\
        --attachments-dir=ATTACHMENTS_DIR \\
@@ -65,6 +66,10 @@ Command-line options:
   --wisehead-evaluation-csv FILE  FILE is a csv FILE with a many to one relationship
                                   between wisehead judges and the proposals they
                                   evaluated, like the judge-evaluation-csv
+
+  --regionconfig-csv FILE         FILE is a csv of country/subregion/region
+                                  configurations, that when provided, allows a detailed
+                                  geographic TOC to be created
 
   --correction-file FILE          FILE is a csv of corrections to the main data.  The header
                                   must match the header of the original proposals file, and any
@@ -229,7 +234,28 @@ def print_csv(header_row, rows, output):
     for row in rows:
         csv_writer.writerow(row)
 
-valid_traits = [ "IMPACTFUL", "EVIDENCE-BASED", "FEASIBLE", "DURABLE" ]
+def process_regionconfig_data(csv_reader):
+    """Takes a CSV_READER representing a country ot region mapping in a
+    spreadsheet and converts it into a dict representing a lookup by
+    country.  If no reader is provided, then {} is returned.
+
+    The return object, when CSV_READER is present is of the form:
+      REGION_DATA_BY_COUNTRY[country] = {
+        subregion: SUBREGION,
+        region: REGION
+      }
+    """
+
+    if csv_reader is None:
+        return {}
+
+    region_data_by_country = {}
+
+    next(csv_reader)
+    for row in csv_reader:
+        region_data_by_country[row[0]] = { "subregion": row[1], "region": row[2] }
+
+    return region_data_by_country
 
 def process_sdgconfig_data(csv_reader):
     """Takes a CSV_READER representing a valid sdgs, and their number
@@ -259,6 +285,15 @@ def generate_generic_toc(toc_dir, grouped_review_numbers, toc_name):
     Then put into TOC_DIR/TOC_NAME.json."""
     with open(toc_dir + "/" + toc_name + ".json", 'w') as f:
         f.writelines(json.dumps({"groups": grouped_review_numbers}))
+
+def generate_geographic_toc(toc_dir, grouped_review_numbers):
+    """Generates a special TOC page in TOC_DIR for the REGION_DATA, which is
+    a dict where the proposals are all grouped by their region and subregion"""
+
+    with open(toc_dir + "/Geographic_TOC.json", 'w') as f:
+        f.writelines(json.dumps({"regions": grouped_review_numbers}))
+
+valid_traits = [ "IMPACTFUL", "EVIDENCE-BASED", "FEASIBLE", "DURABLE" ]
 
 def process_evaluation_data(*csv_reader, app_col, score_rank_col, sum_of_scores_col, trait_col,
         score_normalized_col, comments_col):
@@ -371,7 +406,7 @@ def create_correction_data(correction_files):
 
     return correction_data
 
-def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_files, sdgconfig,
+def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_files, regionconfig, sdgconfig,
         attachments_dir, toc_dir, pare=None):
     """Write a composed version of PROPOSALS (a CSV file), ADMIN_REVIEW
     (a CSV file), and JUDGE_EVAL (a CSV file) to standard out.
@@ -383,6 +418,10 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
     CORRECTION_FILES is a list of files that contain data to overwrite the
     source data with blessed corrections.  Each one overwrites the previous
     if there are overlapping corrections.
+
+    REGIONCONFIG is a filename of a simple mapping of countries to regions
+    they belong to based on the UN geoscheme.  SDGCONFIG is a similar mapping
+    for UN SDG codes.
 
     SDGCONFIG is a mapping for UN SDG codes.
 
@@ -401,6 +440,8 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
         judge_eval_reader = csv.reader(open(judge_eval, encoding='utf-8'),
                                        delimiter=',', quotechar='"')
         wisehead_eval_reader = csv.reader(open(wisehead_eval, encoding='utf-8'),
+                                       delimiter=',', quotechar='"')
+        regionconfig_reader = csv.reader(open(regionconfig, encoding='utf-8'),
                                        delimiter=',', quotechar='"')
         sdgconfig_reader = csv.reader(open(sdgconfig, encoding='utf-8'),
                                        delimiter=',', quotechar='"')
@@ -529,8 +570,8 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
 
     # Build TOCs after sorted proposals
 
-    # Population
     if toc_dir is not None:
+        # Population
         population_data = {}
         for new_row in new_rows:
             for population in new_row[58].split("\n"):
@@ -538,6 +579,47 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
                     population_data[population] = []
                 population_data[population].append(new_row[3])
         generate_generic_toc(toc_dir, population_data, "Population_TOC")
+
+        # SDG
+        sdg_data = {}
+        for new_row in new_rows:
+            for sdg in new_row[58].split("\n"):
+                if sdg not in sdg_data:
+                    sdg_data[sdg] = []
+                sdg_data[sdg].append(new_row[3])
+        generate_generic_toc(toc_dir, sdg_data, "SDG_TOC")
+
+        # Topic
+        topic_data = {}
+        for new_row in new_rows:
+            if new_row[66] not in topic_data:
+                topic_data[new_row[66]] = []
+            topic_data[new_row[66]].append(new_row[3])
+        generate_generic_toc(toc_dir, topic_data, "Topic_TOC")
+
+        # Geographic.  There's a "shown" flag for working with the template file
+        # to know when to show headers, depending on whether proposals are valid.
+        geographic_data = {}
+        regionconfig_data_by_country = process_regionconfig_data(regionconfig_reader)
+        country_errors = []
+        for new_row in new_rows:
+            for col in [68, 74, 80, 98, 104, 110, 116, 122]:
+                try:
+                    region = regionconfig_data_by_country[new_row[col]]["region"]
+                    subregion = regionconfig_data_by_country[new_row[col]]["subregion"]
+                    if region not in geographic_data:
+                        geographic_data[region] = {"shown": False, "subregions": {}}
+                    if subregion not in geographic_data[region]["subregions"]:
+                        geographic_data[region]["subregions"][subregion] = {"shown": False, "countries": {}}
+                    if new_row[col] not in geographic_data[region]["subregions"][subregion]["countries"]:
+                        geographic_data[region]["subregions"][subregion]["countries"][new_row[col]] = {"shown": False, "proposals": []}
+                    if new_row[3] not in geographic_data[region]["subregions"][subregion]["countries"][new_row[col]]["proposals"]:
+                        geographic_data[region]["subregions"][subregion]["countries"][new_row[col]]["proposals"].append(new_row[3])
+                except KeyError:
+                    if new_row[col] not in country_errors:
+                        print("Country %s not in region config file, skipping" % new_row[col], file=sys.stderr)
+                        country_errors.append(new_row[col])
+        generate_generic_toc(toc_dir, geographic_data, "Geographic_TOC")
 
     print_csv(header_row, new_rows, sys.stdout)
 
@@ -549,6 +631,7 @@ def main():
                                     "proposals-csv=",
                                     "admin-review-csv=",
                                     "judge-evaluation-csv=",
+                                    "regionconfig-csv=",
                                     "wisehead-evaluation-csv=",
                                     "sdgconfig-csv=",
                                     "toc-dir=",
@@ -563,6 +646,7 @@ def main():
     admin_review_csv = None
     judge_evaluation_csv = None
     wisehead_evaluation_csv = None
+    regionconfig_csv = None
     sdgconfig_csv = None
     attachments_dir = None
     toc_dir = None
@@ -576,6 +660,8 @@ def main():
             admin_review_csv = a
         elif o == "--judge-evaluation-csv":
             judge_evaluation_csv = a
+        elif o == "--regionconfig-csv":
+            regionconfig_csv = a
         elif o == "--wisehead-evaluation-csv":
             wisehead_evaluation_csv = a
         elif o == "--sdgconfig-csv":
@@ -600,7 +686,7 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
     compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, wisehead_evaluation_csv, correction_files,
-            sdgconfig_csv, attachments_dir, toc_dir, pare)
+            regionconfig_csv, sdgconfig_csv, attachments_dir, toc_dir, pare)
 
 if __name__ == '__main__':
     main()

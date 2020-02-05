@@ -1,0 +1,28 @@
+__TOC__
+{%- for region_name, region_data in groups.items() %}
+    {%- for subregion_name, subregion_data in region_data["subregions"].items() %}
+        {%- for country_name, country_data in subregion_data["countries"].items() %}
+            {%- for proposal_id in country_data["proposals"] -%}
+                {% if proposal_id in proposals.keys() %}
+                    {%- if not region_data["shown"] -%}
+                        {%- set _ = region_data.update({"shown": True }) %}
+= {{ region_name }} =
+                    {%- endif -%}
+                    {%- if not subregion_data["shown"] -%}
+                        {%- set _ = subregion_data.update({"shown": True }) %}
+== {{ subregion_name }} ==
+                    {%- endif -%}
+                    {%- if not country_data["shown"] -%}
+                        {%- set _ = country_data.update({"shown": True }) %}
+=== {{ country_name }} ===
+                    {%- endif -%}
+                    {% set proposal = proposals[proposal_id] %}
+* Rank {{ proposal['Wise Head Overall Score Rank Normalized'] }} - [[{{ proposal["MediaWiki Title"] -}}]]
+                    {%- if proposal['Wild Card Eligible'] -%}
+                        - <span style='color:#306754;font-style: italic>Wild Card Eligible</span>
+                    {%- endif %}
+                {%- endif %}
+            {%- endfor %}
+        {%- endfor %}
+    {%- endfor %}
+{%- endfor %}
