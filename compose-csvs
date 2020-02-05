@@ -545,7 +545,9 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
         # Population
         new_row[58] = "\n".join(new_row[58].split(","))
 
-        new_row.append(acceptable_application_numbers[row[3]])
+        # This is application status.  Right now everything is NULL, but this will
+        # get replaced as the process continues
+        new_row.append("NULL")
 
         attachments_str = ""
         if attachments_dir is not None:
