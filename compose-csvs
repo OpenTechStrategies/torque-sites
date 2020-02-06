@@ -599,7 +599,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
         # SDG
         sdg_data = {}
         for new_row in new_rows:
-            for sdg in new_row[58].split("\n"):
+            for sdg in new_row[128].split("\n"):
                 if sdg not in sdg_data:
                     sdg_data[sdg] = []
                 sdg_data[sdg].append(new_row[3])
