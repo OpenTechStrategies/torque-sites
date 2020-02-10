@@ -47,7 +47,8 @@ Usage:
        --toc-dir=TOC_DIR \\
        --sdgconfig-csv=SDGCONFIG_CSV \\
        --attachments-dir=ATTACHMENTS_DIR \\
-       --correction-file=COORECTION_FILE
+       --correction-file=COORECTION_FILE \\
+       --tdc-config-dir=TDC_CONFIG_DIR
 
 Command-line options:
   --proposals-csv FILE            FILE is a csv FILE representing the bulk
@@ -90,6 +91,10 @@ Command-line options:
                                   will be uploaded to the wiki.  It needs to have subdirectories by
                                   proposal number.
 
+  --tdc-config-dir DIR            DIR is the location for files that are the base configuration files
+                                  needed by TorqueDataConnect, and can be optionally, manually, put on
+                                  the wiki.  We don't autmoatically do that because we want to overwrite
+                                  the configuration out there.
 """
 
 import csv
@@ -420,8 +425,40 @@ def create_correction_data(correction_files):
 
     return correction_data
 
+def create_tdc_config(tdc_config_dir, header_row, new_rows):
+    """Helper method to write out base config files to TDC_CONFIG_DIR.
+
+    Needs HEADER_ROW and NEW_ROWS to generate the column and proposal
+    data.  Generates the following:
+
+      - AllProposals - All the proposals generated
+      - Top100 - The top 100 proposals
+      - Top200 - The top 200 proposals
+      - PassedReview - The ~455 proposals that passed wisehead review
+      - AllColumns - All the available columns"""
+
+    def row_to_title_line(row):
+        return "* {3}: ".format(*row) + "[[" + wiki_escape_page_title("{30} ({3})".format(*row)) + "]]\n"
+
+    with open(os.path.join(tdc_config_dir, "AllProposals"), 'w') as f:
+        f.writelines([row_to_title_line(row) for row in new_rows])
+
+    with open(os.path.join(tdc_config_dir, "Top100"), 'w') as f:
+        f.writelines([row_to_title_line(row) for row in new_rows if int(row[188]) < 101])
+
+    with open(os.path.join(tdc_config_dir, "Top200"), 'w') as f:
+        # 202 here because there was a duplicate removed before
+        f.writelines([row_to_title_line(row) for row in new_rows if int(row[188]) < 202])
+
+    with open(os.path.join(tdc_config_dir, "PassedReview"), 'w') as f:
+        f.writelines([row_to_title_line(row) for row in new_rows if int(row[188]) != 9999])
+
+    with open(os.path.join(tdc_config_dir, "AllColumns"), 'w') as f:
+        for column in header_row:
+            f.writelines("* %s\n" % column)
+
 def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_files, regionconfig, sdgconfig,
-        attachments_dir, toc_dir, pare=None):
+        attachments_dir, toc_dir, tdc_config_dir, pare=None):
     """Write a composed version of PROPOSALS (a CSV file), ADMIN_REVIEW
     (a CSV file), and JUDGE_EVAL (a CSV file) to standard out.
 
@@ -443,6 +480,10 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
 
     TOC_DIR is the directory that, when not None, will have files written
     to it that are various tables of contents that are of interest to macfound.
+
+    TDC_CONFIG_DIR is the directory that, when not None, will have files
+    written to it that have the base configuration of columns, proposals, etc
+    that we launched the LFC wiki with.
 
     If PARE is not None, it is a positive integer indicating that only
     1 of every PARE entries should be processed, and the others skipped."""
@@ -639,6 +680,9 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
 
     print_csv(header_row, new_rows, sys.stdout)
 
+    if tdc_config_dir is not None:
+        create_tdc_config(tdc_config_dir, header_row, new_rows)
+
 def main():
     """Compose the MacFound input and emit it as html-ized csv."""
     try:
@@ -651,6 +695,7 @@ def main():
                                     "wisehead-evaluation-csv=",
                                     "sdgconfig-csv=",
                                     "toc-dir=",
+                                    "tdc-config-dir=",
                                     "attachments-dir=",
                                     "correction-file=",])
     except getopt.GetoptError as err:
@@ -666,6 +711,7 @@ def main():
     sdgconfig_csv = None
     attachments_dir = None
     toc_dir = None
+    tdc_config_dir = None
     correction_files = []
     for o, a in opts:
         if o == "--pare":
@@ -686,6 +732,8 @@ def main():
             correction_files.append(a)
         elif o == "--toc-dir":
             toc_dir = a
+        elif o == "--tdc-config-dir":
+            tdc_config_dir = a
         elif o == "--attachments-dir":
             attachments_dir = a
         else:
@@ -702,7 +750,7 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
     compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, wisehead_evaluation_csv, correction_files,
-            regionconfig_csv, sdgconfig_csv, attachments_dir, toc_dir, pare)
+            regionconfig_csv, sdgconfig_csv, attachments_dir, toc_dir, tdc_config_dir, pare)
 
 if __name__ == '__main__':
     main()

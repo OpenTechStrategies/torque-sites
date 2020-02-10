@@ -58,6 +58,7 @@ ATTACHMENTS_DIR="${DATA_DIR}/attachments"
 SDGCONFIG_CSV="sdgconfig.csv"
 CANDID_CORRECTION_FILE="Candid_Application_Data_Clean_for_OTS_2020_01_13_01.csv"
 TOC_DIR="${DATA_DIR}/tocs"
+TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
 
 if ! echo "bad31bbabd6b03ec5be834d3d87ec70361e8efa0  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
   echo "ERROR: SHA of PROPOSALS_CSV did not match expectation!"
@@ -90,6 +91,8 @@ cp tocs/Geographic_TOC.j2 $TOC_DIR/
 cp tocs/All.j2 $TOC_DIR/
 cp tocs/All.json $TOC_DIR/
 
+mkdir -p $TDC_CONFIG_DIR
+
 CSV2WIKI_CONFIG="${MACFOUND_DIR}"/macfound-torquedata-csv2wiki-config
 OUTPUT_CSV="2019-processed.csv"
 
@@ -107,6 +110,7 @@ ${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
             --regionconfig-csv="${MACFOUND_DIR}/${REGIONCONFIG_CSV}" \
             --sdgconfig-csv="${MACFOUND_DIR}/${SDGCONFIG_CSV}" \
             --attachments-dir=${ATTACHMENTS_DIR} \
+            --tdc-config-dir="${TDC_CONFIG_DIR}" \
             --toc-dir="${TOC_DIR}" \
             --correction-file="${DATA_DIR}/${CANDID_CORRECTION_FILE}" > \
             "${DATA_DIR}/${OUTPUT_CSV}"
@@ -146,3 +150,19 @@ python3 -m csv2wiki -c ${CSV2WIKI_CONFIG}      \
             ${TOC_PAGES} \
             --csv="${DATA_DIR}/${OUTPUT_CSV}"
 echo "Done creating wiki."
+
+echo "Stage 4: Creating config (optional)..."
+echo ""
+echo "We do not automatically upload the config because it's a living document."
+echo "However, the following v1 files were placed in $TDC_CONFIG_DIR for you to"
+echo "upload:"
+echo " - AllProposals - All the proposals generated"
+echo " - Top100 - The top 100 proposals"
+echo " - Top200 - The top 200 proposals"
+echo " - PassedReview - The 455 proposals that passed wisehead review"
+echo " - AllColumns - All the available columns"
+echo ""
+echo "There's also an mwiki.j2 file in this directory that was the first version"
+echo "of the proposal template used."
+echo ""
+echo "Done creating config."
