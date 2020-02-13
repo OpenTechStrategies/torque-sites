@@ -229,6 +229,18 @@ def split_sdg(cell, sdg_data):
     new_cell.strip()
     return new_cell
 
+def create_column_types_row(header_row):
+    """Declaration of the types different columns in the spreadsheet have,
+    expressed as a row of strings that torque understands."""
+
+    column_types = {
+            "Attachments": "list",
+            "Sustainable Development Goals": "list",
+            "Priority Populations": "list",
+            }
+
+    return [ (column_types[col] if col in column_types else "") for col in header_row ]
+
 def print_csv(header_row, rows, output):
     """Print the HEADER_ROW and ROWS to OUTPUT via csv"""
 
@@ -236,6 +248,7 @@ def print_csv(header_row, rows, output):
                             delimiter=',', quotechar='"', lineterminator="\n")
 
     csv_writer.writerow(header_row)
+    csv_writer.writerow(create_column_types_row(header_row))
     for row in rows:
         csv_writer.writerow(row)
 
