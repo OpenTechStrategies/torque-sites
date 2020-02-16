@@ -59,6 +59,10 @@ SDGCONFIG_CSV="sdgconfig.csv"
 CANDID_CORRECTION_FILE="Candid_Application_Data_Clean_for_OTS_2020_01_13_01.csv"
 TOC_DIR="${DATA_DIR}/tocs"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
+CSV2WIKI_CONFIG="${MACFOUND_DIR}"/macfound-torquedata-csv2wiki-config
+OUTPUT_CSV="2019-processed.csv"
+COMPOSER="${MACFOUND_DIR}"/compose-csvs
+UPLOADER="${MACFOUND_DIR}"/upload-csv
 
 if ! echo "bad31bbabd6b03ec5be834d3d87ec70361e8efa0  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
   echo "ERROR: SHA of PROPOSALS_CSV did not match expectation!"
@@ -93,12 +97,6 @@ cp tocs/All.json $TOC_DIR/
 
 mkdir -p $TDC_CONFIG_DIR
 
-CSV2WIKI_CONFIG="${MACFOUND_DIR}"/macfound-torquedata-csv2wiki-config
-OUTPUT_CSV="2019-processed.csv"
-
-COMPOSER="${MACFOUND_DIR}"/compose-csvs
-UPLOADER="${MACFOUND_DIR}"/upload-csv
-
 ### Compose the spreadsheets into one cohesive whole.
 #
 # Use --pare to convert only 1% of the entries, to save time while testing. 
@@ -126,9 +124,20 @@ echo ""
 # There's a dependency on a running version of mediawiki
 # with a torquedata service running behind it, and a version of
 # the TorqueDataConnect running on the mediawiki
-echo "Stage 2: Uploading csv..."
+#
+# Because attachments take a bit of time to upload, and we have no current
+# method to see if they have been uploaded, we just use a simple environment
+# variable to test if someone wants to.
+echo "Stage 2: Uploading csv and attachments..."
+echo "  If you want to skip attachments, set SKIP_ATTACHMENTS in your environment"
+if [ -z "${SKIP_ATTACHMENTS}" ] ; then
+  ATTACHMENT_ARG="--attachments-dir=${ATTACHMENTS_DIR}"
+else
+  ATTACHMENT_ARG=""
+fi
 ${UPLOADER} --csv="${DATA_DIR}/${OUTPUT_CSV}" \
             --toc-dir="${TOC_DIR}" \
+            $ATTACHMENT_ARG \
             --config="${CSV2WIKI_CONFIG}"
 if [ $? -ne 0 ]; then
 		echo Upload failure!
@@ -161,6 +170,8 @@ echo " - Top100 - The top 100 proposals"
 echo " - Top200 - The top 200 proposals"
 echo " - PassedReview - The 455 proposals that passed wisehead review"
 echo " - AllColumns - All the available columns"
+echo " - NonReviewColumns - All the available columns except the ones having to do with technical reviews"
+echo " - ApiColumns - Columns set up for initial API"
 echo ""
 echo "There's also an mwiki.j2 file in this directory that was the first version"
 echo "of the proposal template used."

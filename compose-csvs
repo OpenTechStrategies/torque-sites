@@ -106,6 +106,7 @@ import warnings
 import string
 import os
 import json
+import pickle
 from bs4 import BeautifulSoup
 
 def collapse_replace(string, old, new):
@@ -235,6 +236,7 @@ def create_column_types_row(header_row):
 
     column_types = {
             "Attachments": "list",
+            "Attachment Display Names": "list",
             "Sustainable Development Goals": "list",
             "Priority Populations": "list",
             }
@@ -448,10 +450,13 @@ def create_tdc_config(tdc_config_dir, header_row, new_rows):
       - Top100 - The top 100 proposals
       - Top200 - The top 200 proposals
       - PassedReview - The ~455 proposals that passed wisehead review
-      - AllColumns - All the available columns"""
+      - AllColumns - All the available columns
+      - ApiColumns - The columns used in v1 of the API
+      - NonReviewColumns - The columns excepting ones relating to reviews
+      """
 
     def row_to_title_line(row):
-        return "* {3}: ".format(*row) + "[[" + wiki_escape_page_title("{30} ({3})".format(*row)) + "]]\n"
+        return "* {3}: ".format(*row) + "[[" + row[206] + "]]\n"
 
     with open(os.path.join(tdc_config_dir, "AllProposals"), 'w') as f:
         f.writelines([row_to_title_line(row) for row in new_rows])
@@ -469,6 +474,79 @@ def create_tdc_config(tdc_config_dir, header_row, new_rows):
     with open(os.path.join(tdc_config_dir, "AllColumns"), 'w') as f:
         for column in header_row:
             f.writelines("* %s\n" % column)
+
+    # These are hardcoded here, because where else?  We want this output
+    # to go with the other tdc_config outputs, so here is the best place
+    # to get into the project and update later.
+    with open(os.path.join(tdc_config_dir, "ApiColumns"), 'w') as f:
+        f.writelines([
+             "* Organization Legal Name\n",
+             "* City\n",
+             "* State\n",
+             "* Country\n",
+             "* Principal Organization Website or Social Media\n",
+             "* Identification Number of Principal Organization\n",
+             "* Identification Number of Principal Organization ein\n",
+             "* Primary Contact First Name\n",
+             "* Primary Contact Last Name\n",
+             "* Primary Contact Title\n",
+             "* Primary Contact Email\n",
+             "* Review Number\n",
+             "* Project Title\n",
+             "* Project Description\n",
+             "* Executive Summary\n",
+             "* Problem Statement\n",
+             "* Solution Overview\n",
+             "* Youtube Video\n",
+             "* Location Of Future Work Country\n",
+             "* Location Of Future Work2 Country\n",
+             "* Location Of Future Work3 Country\n",
+             "* Location Of Future Work4 Country\n",
+             "* Location Of Future Work5 Country\n",
+             "* Location Of Current Solution Country\n",
+             "* Location Of Current Solution2 Country\n",
+             "* Location Of Current Solution3 Country\n",
+             "* Location Of Current Solution4 Country\n",
+             "* Location Of Current Solution5 Country\n",
+             "* Project Website or Social Media Page\n",
+             "* Application Level\n",
+             "* Competition Domain\n",
+             ])
+
+    review_columns = [
+        "Judge Overall Score Rank Normalized",
+        "Judge Sum of Scores Normalized",
+        "Judge IMPACTFUL",
+        "Judge IMPACTFUL Score Normalized",
+        "Judge IMPACTFUL Comments",
+        "Judge EVIDENCE-BASED",
+        "Judge EVIDENCE-BASED Score Normalized",
+        "Judge EVIDENCE-BASED Comments",
+        "Judge FEASIBLE",
+        "Judge FEASIBLE Score Normalized",
+        "Judge FEASIBLE Comments",
+        "Judge DURABLE",
+        "Judge DURABLE Score Normalized",
+        "Judge DURABLE Comments",
+        "Wise Head Sum of Scores Normalized",
+        "Wise Head IMPACTFUL",
+        "Wise Head IMPACTFUL Score Normalized",
+        "Wise Head IMPACTFUL Comments",
+        "Wise Head EVIDENCE-BASED",
+        "Wise Head EVIDENCE-BASED Score Normalized",
+        "Wise Head EVIDENCE-BASED Comments",
+        "Wise Head FEASIBLE",
+        "Wise Head FEASIBLE Score Normalized",
+        "Wise Head FEASIBLE Comments",
+        "Wise Head DURABLE",
+        "Wise Head DURABLE Score Normalized",
+        "Wise Head DURABLE Comments",
+    ]
+
+    with open(os.path.join(tdc_config_dir, "NonReviewColumns"), 'w') as f:
+        for column in header_row:
+            if column not in review_columns:
+                f.writelines("* %s\n" % column)
 
 def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_files, regionconfig, sdgconfig,
         attachments_dir, toc_dir, tdc_config_dir, pare=None):
@@ -526,6 +604,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
             header_row.append(data_type + " " + trait + " Score Normalized")
             header_row.append(data_type + " " + trait + " Comments")
     header_row.append("Application Level")
+    header_row.append("Attachment Display Names")
     header_row.append("Attachments")
     header_row.append("Wild Card Eligible")
     header_row.append("MediaWiki Title")
@@ -546,6 +625,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
 
     correction_data = create_correction_data(correction_files)
     sdgconfig_data = process_sdgconfig_data(sdgconfig_reader)
+    attachments_to_upload = {}
 
     row_num = 0
     new_rows = []
@@ -618,12 +698,26 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
         new_row.append("NULL")
 
         attachments_str = ""
+        attachment_display_names = ""
         if attachments_dir is not None:
+            attachments_to_upload[row[3]] = []
             application_attachment_dir = os.path.join(attachments_dir, row[3])
             for attachment_file in os.listdir(application_attachment_dir):
                 if re.search("^\\d*_Registration.pdf", attachment_file):
                     continue
-                attachments_str += wiki_escape_page_title(attachment_file) + "\n"
+
+                attachment_display_name = re.sub("^\\d*_", "", attachment_file)
+                attachment_display_name = re.sub("\.pdf$", "", attachment_display_name)
+                if len(attachment_display_name) > 33:
+                    attachment_display_name = \
+                        attachment_display_name[0:15] + \
+                        "..." + \
+                        attachment_display_name[(len(attachment_display_name)-15):]
+
+                attachments_str += attachment_file + "\n"
+                attachment_display_names += attachment_display_name + "\n"
+                attachments_to_upload[row[3]].append(attachment_file)
+        new_row.append(attachment_display_names)
         new_row.append(attachments_str)
 
         if rank > 100 and rank <= 201:
@@ -690,6 +784,10 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
                         print("Country %s not in region config file, skipping" % new_row[col], file=sys.stderr)
                         country_errors.append(new_row[col])
         generate_generic_toc(toc_dir, geographic_data, "Geographic_TOC")
+
+    if attachments_dir is not None:
+        with open(os.path.join(attachments_dir, "attachments_to_upload"), 'wb') as f:
+            pickle.dump(attachments_to_upload, f)
 
     print_csv(header_row, new_rows, sys.stdout)
 

@@ -53,7 +53,8 @@
 |style="vertical-align:top;" | '''Attachments:'''
 
 | {% for attachment in proposal['Attachments'] %}
-{{ attachment }} {% endfor %}
+<span class="plainlinks">[{{ "{{" }}fullurl:Special:TorqueDataConnectAttachment|sheet_name=proposals&id={{proposal['Review Number']}}&attachment={{ attachment | replace(" ", "+") }}{{ "}}" }} {{ proposal['Attachment Display Names'][loop.index0] }}]</span>
+{% endfor %}
 |
 {% endif %}
 |}

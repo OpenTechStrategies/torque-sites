@@ -31,6 +31,10 @@ Command-line options:
   --csv FILE                      FILE is a csv FILE representing the proposals after
                                   compose-csv has been run
 
+  --toc-dir DIR                   DIR is the directory tocs live in for uploading
+
+  --attachments-dir DIR           DIR is the directory attachments live in for uploading
+
   --config CONFIG_FILE            CONFIG_FILE is a python config FILE that has the login
                                   information required to call into the mediawiki api.
                                   See below for needed variables.
@@ -46,6 +50,8 @@ import mwclient
 import getopt
 import sys
 import os
+import re
+import pickle
 
 def usage(errout=False):
     """Print a message explaining how to use this script.
@@ -60,6 +66,7 @@ def main():
                                    ["help",
                                     "csv=",
                                     "toc-dir=",
+                                    "attachments-dir=",
                                     "config=",
                                     ])
     except getopt.GetoptError as err:
@@ -70,6 +77,7 @@ def main():
     csv_file = None
     config_file = None
     toc_dir = None
+    attachments_dir = None
     for o, a in opts:
         if o in ("-h", "-?", "--help",):
             usage()
@@ -78,6 +86,8 @@ def main():
             csv_file = a
         elif o in ("--toc-dir",):
             toc_dir = a
+        elif o in ("--attachments-dir",):
+            attachments_dir = a
         elif o in ("--config",):
             config_file = a
 
@@ -88,6 +98,11 @@ def main():
 
     if config_file is None:
         sys.stderr.write('Error: --config missing')
+        usage(errout=True)
+        sys.exit(2)
+
+    if toc_dir is None:
+        sys.stderr.write('Error: --toc-dir missing')
         usage(errout=True)
         sys.exit(2)
 
@@ -116,6 +131,30 @@ def main():
         },
         { "data_file": f.read() }
         )
+
+    if attachments_dir is not None:
+        with open(os.path.join(attachments_dir, "attachments_to_upload"), 'rb') as f:
+            attachments_to_upload = pickle.load(f)
+
+        for (attachment_proposal_id,attachment_files) in attachments_to_upload.items():
+            for attachment_file in attachment_files:
+
+                print("Uploading " + attachment_file, file=sys.stderr)
+                with open(os.path.join(attachments_dir, attachment_proposal_id, attachment_file), "rb") as attachment:
+                    site.raw_call(
+                    'api',
+                    {
+                        "action": "torquedataconnectuploadattachment",
+                        "format": 'json',
+                        "sheet_name": 'proposals',
+                        "object_id": attachment_proposal_id,
+                        "permissions_column": "Attachments",
+                        "attachment_name": attachment_file
+                    },
+                    {
+                        "attachment": attachment.read()
+                    }
+                    )
 
     toc_names = [ os.path.splitext(f)[0] for f in os.listdir(toc_dir) if f.endswith(".j2") ]
     for toc_name in toc_names:
