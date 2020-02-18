@@ -5,27 +5,25 @@ internal projects.
 
 The code here is unlikely to be of general use, because it is highly
 specific to the needs and datasets of the [MacArthur
-Foundation](https://www.MacFound.org).  We release it as open source
-anyway, because that's our usual practice and because some of it could
-serve as an example or a template for other similar efforts, primarily
-for anyone deploying a
-[torque](https://github.com/OpenTechStrategies/torque) enabled
-MediaWiki installation.
+Foundation](https://www.MacFound.org) and [Lever for Change](https://www.leverforchange.org/).  
+We release it as open source anyway, because that's our usual practice
+and because some of it could serve as an example or as a template for
+other similar efforts, primarily for anyone deploying
+a [Torque](https://github.com/OpenTechStrategies/torque)-based
+service.
 
 ## Dependencies
 
-[compose-csvs](compose-csvs) requires:
+You will need Python 3 and the following tools:
 
 * [Beautiful Soup 4](https://www.crummy.com/software/BeautifulSoup/)
 * [MWClient](https://github.com/mwclient/mwclient)
 * [Unidecode](https://pypi.python.org/pypi/Unidecode)
+* [csv2wiki](https://github.com/OpenTechStrategies/csv2wiki/)
 
-To install all of these, do `pip install bs4 mwclient unidecode`.
-
-### csv2wiki
-
-`wiki-refresh` requires csv2wiki, which can be gotten from github,
-and then installed as a package on your system.
+The first three can be installed with `pip3 install bs4 mwclient
+unidecode`.  For `csv2wiki`, fetch the sources and install it on your
+system:
 
 ```
 $ get clone https://github.com/OpenTechStrategies/csv2wiki
@@ -33,28 +31,34 @@ $ cd csv2wiki
 $ pip3 install -e . # From csv2wiki README
 ```
 
+This code is designed to work with a properly-configured
+[Torque](https://github.com/OpenTechStrategies/torque) instance.
+See the Torque documentation for details.
+
 ### Configuration
 
-To run `wiki-refresh`, you should first copy
-`macfound-torquedata-csv2wiki-config.tmpl` to
-`macfound-torquedata-csv2wiki-config` and edit the latter
-in the obvious ways.  The credentials will come from however
-you configured ansible when installing the torque system.
+Copy `macfound-torquedata-csv2wiki-config.tmpl` to
+`macfound-torquedata-csv2wiki-config` then edit the latter in the
+obvious ways.  The wiki credentials should match those specified in
+the [ansible](https://www.ansible.com/) configuration for
+the [Torque](https://github.com/OpenTechStrategies/torque) server.
 
 ## Running
 
-After the encryped data is unencryped in a data directory somewhere,
-simply run:
+The entry point is the `torque-refresh` script.  Run it like this:
 
 ```
-$ ./wiki-refresh /path/to/unencrypted/data
+$ ./torque-refresh /path/to/data
 ```
+
+(If you typically store your data encrypted, as we do, then unencrypt
+it first.)
 
 ## Components
 
-* wiki-refresh
+* torque-refresh
 
-  Start from the [wiki-refresh](wiki-refresh) script and see how it
+  Start from the [torque-refresh](torque-refresh) script and see how it
   drives first [compose-csvs](compose-csvs), which performs some one-time
   transformations to specific CSVa file from the MacArthur Foundation,
   as well as joining them with some supplemental data, and then uploads
@@ -66,19 +70,19 @@ $ ./wiki-refresh /path/to/unencrypted/data
 * torque
 
   This system depends on a running
-  [torque](https://github.com/OpenTechStrategies/torque) system, with
-  mediawiki installed.  It uses the TorqueDataConnect extensionsion
-  to upload the spreadsheet and tocs after generating them.
+  [Torque](https://github.com/OpenTechStrategies/torque) system.
+  It uses the TorqueDataConnect extensionsion to upload the
+  spreadsheet and TOCs after generating them.
 
 * compose-csvs
 
-  This is a script that wiki-refresh uses to sanitize and combine csvs
+  This is a script that torque-refresh uses to sanitize and combine csvs
   for use.  You need to have access to the files listed in it to create
   the final proposal csv, as well as all the TOC json data to upload
   to the torque server.
 
   Look at the file for more information, especially the usage section
-  and how wiki-refresh uses it.
+  and how torque-refresh uses it.
 
 * upload-csvs
 
