@@ -1,3 +1,0 @@
-#!/bin/sh
-
-pytest --ignore=lib --ignore=local $@
