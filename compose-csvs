@@ -214,7 +214,7 @@ def split_sdg(cell, sdg_data):
     while cell is not "":
         found = False
 
-        for sdg in sdg_data.keys():
+        for sdg in [sdg_config["name"] for sdg_config in sdg_data]:
             if cell.startswith(sdg):
                 found = True;
                 new_cell += sdg + "\n"
@@ -291,11 +291,11 @@ def process_sdgconfig_data(csv_reader):
     if csv_reader is None:
         return None
 
-    sdg_data = {}
+    sdg_data = []
 
     next(csv_reader)
     for row in csv_reader:
-        sdg_data[row[1]] = { "number": int(row[0]) }
+        sdg_data.append({"name": row[1], 'number': row[0], })
 
     return sdg_data
 
@@ -312,6 +312,27 @@ def generate_generic_toc(toc_dir, grouped_review_numbers, toc_name):
     with open(os.path.join(toc_dir, toc_name + ".mwiki"), 'w') as f:
         f.writelines(toc_name + "\n")
         f.writelines("{{ #tdcrender:proposals/toc/" + toc_name + ".mwiki }}")
+
+def generate_sdg_toc(toc_dir, sdg_data, sdgconfig_data):
+    """Generates a TOC mwiki and TOC data file in TOC_DIR for the given data,
+    which is a dict where the proposals are all grouped by some key.
+    Then put into TOC_DIR/TOC_NAME.json.
+
+    Notably, this doesn't create the jinja template file, as that doesn't
+    need to be dynamically generated."""
+    grouped_data = []
+    for sdgconfig in sdgconfig_data:
+        grouped_data.append({
+            'heading': sdgconfig['name'],
+            'proposal_ids': sdg_data[sdgconfig['name']]
+        })
+
+    with open(os.path.join(toc_dir, "SDG_TOC.json"), 'w') as f:
+        f.writelines(json.dumps({"sdgs": grouped_data}))
+
+    with open(os.path.join(toc_dir, "SDG_TOC.mwiki"), 'w') as f:
+        f.writelines("SDG_TOC\n")
+        f.writelines("{{ #tdcrender:proposals/toc/SDG_TOC.mwiki }}")
 
 def generate_geographic_toc(toc_dir, grouped_review_numbers):
     """Generates a special TOC page in TOC_DIR for the REGION_DATA, which is
@@ -688,7 +709,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
         # so that csv2wiki will make them
         #
         # We also collate all the data for tables of contents by category
-        new_row[128] = split_sdg( row[128], sdgconfig_data)
+        new_row[128] = split_sdg(row[128], sdgconfig_data)
 
         # Population
         new_row[58] = "\n".join(new_row[58].split(","))
@@ -747,11 +768,11 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
         # SDG
         sdg_data = {}
         for new_row in new_rows:
-            for sdg in new_row[128].split("\n"):
+            for sdg in new_row[128].strip().split("\n"):
                 if sdg not in sdg_data:
                     sdg_data[sdg] = []
                 sdg_data[sdg].append(new_row[3])
-        generate_generic_toc(toc_dir, sdg_data, "SDG_TOC")
+        generate_sdg_toc(toc_dir, sdg_data, sdgconfig_data)
 
         # Topic
         topic_data = {}
