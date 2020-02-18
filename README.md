@@ -7,43 +7,52 @@ The code here is unlikely to be of general use, because it is highly
 specific to the needs and datasets of the [MacArthur
 Foundation](https://www.MacFound.org).  We release it as open source
 anyway, because that's our usual practice and because some of it could
-serve as an example or a template for other similar efforts.
+serve as an example or a template for other similar efforts, primarily
+for anyone deploying a
+[torque](https://github.com/OpenTechStrategies/torque) enabled
+MediaWiki installation.
 
-* CSV->Wiki
+* torque
 
-  Right now the thing most likely to be useful in here is the
-  CSV->wiki conversion system.
+  This system depends on a running 
+  [torque](https://github.com/OpenTechStrategies/torque) system, with
+  mediawiki installed.  It uses the TorqueDataConnect extensionsion
+  to upload the spreadsheet and tocs after generating them.
+
+* wiki-refresh
 
   Start from the [wiki-refresh](wiki-refresh) script and see how it
   drives first [compose-csvs](compose-csvs), which performs some one-time
-  transformations to a specific CSV file from the MacArthur Foundation,
-  as well as joining them with some supplemental data, and then runs
-  the final CSV through the general-purpose script
-  [csv2wiki](https://github.com/OpenTechStrategies/csv2wiki)
-  to create pages in a [MediaWiki](https://www.mediawiki.org/)
-  instance.
-  
-  To run `wiki-refresh`, you should first copy one of the
-  `macfound-internal-csv2wiki-config.tmpl` files to
-  `macfound-internal-csv2wiki-config` and edit the latter
-  in the obvious ways.
+  transformations to specific CSVa file from the MacArthur Foundation,
+  as well as joining them with some supplemental data, and then uploads
+  the final CSV to a running torque server.  After which is creates
+  proposal pages using
+  [csv2wiki](https://github.com/OpenTechStrategies/csv2wiki), that
+  each have a single line that calls into the torque server.
 
-  This system has been tested with MediaWiki 1.33.  There are a few
-  notes in
-  [csv2wiki](https://github.com/OpenTechStrategies/csv2wiki)'s
-  documentation about things to watch out for with MediaWiki, e.g.,
-  you might have to run MediaWiki's `rebuildall.php` script to get the
-  categories feature working, some MediaWiki instances may have
-  spam-prevention features enabled that prevent csv2wiki from creating
-  pages containing URLs, etc.
+  To run `wiki-refresh`, you should first copy one of the
+  `macfound-torquedata-csv2wiki-config.tmpl` files to
+  `macfound-torquedata-csv2wiki-config` and edit the latter
+  in the obvious ways.
 
 * compose-csvs
 
-  This is a script that wiki-refresh uses to sanitize the csv for
-  csv2wiki.  It takes the data we received from MacArthur and cleans
-  up the HTML.  Then, wiki-refresh runs csv2wiki on the proper html to
-  produce mediawiki input.  The compose-csvs script should not emit
-  markdown-formatted text.
+  This is a script that wiki-refresh uses to sanitize and combine csvs
+  for use.  You need to have access to the files listed in it to create
+  the final proposal csv, as well as all the TOC json data to upload
+  to the torque server.
+
+  Look at the file for more information, especially the usage section
+  and how wiki-refresh uses it.
+
+* upload-csvs
+
+  After compose-csvs has generated all the files, upload-csvs is
+  responsible for taking the generated files and sending them to
+  the running torque/mediawiki server.
+
+  This also uploads all the attachments specific to the MacArthur
+  foundation.
 
 ## Dependencies
 
