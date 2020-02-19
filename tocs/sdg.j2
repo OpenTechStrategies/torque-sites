@@ -10,8 +10,10 @@ __TOC__
 = {{ sdg['heading'] }} ({{ proposals_in_group|length }}) =
         {%- for proposal in proposals_in_group %}
 * Rank {{ proposal['Wise Head Overall Score Rank Normalized'] }} - [[{{ proposal["MediaWiki Title"] -}}]]
-            {%- if proposal['Wild Card Eligible'] -%}
-                - <span style='color:#306754;font-style: italic>Wild Card Eligible</span>
+            {%- if proposal['Wild Card'] -%}
+                - <span style='color:#306754;font-style: italic>Wild Card</span>
+            {%- endif %}{%- if proposal['TR Disqualified'] -%}
+                - <span style='color:#ff4a4a;font-style: italic>TR Disqualified</span>
             {%- endif %}
         {%- endfor %}
     {%- endif %}

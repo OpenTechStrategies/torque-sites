@@ -57,6 +57,7 @@ REGIONCONFIG_CSV="regionconfig.csv"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments"
 SDGCONFIG_CSV="sdgconfig.csv"
 CANDID_CORRECTION_FILE="Candid_Application_Data_Clean_for_OTS_2020_01_13_01.csv"
+OTS_METADATA="OTS_Metadata.csv"
 TOC_DIR="${DATA_DIR}/tocs"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
 CSV2WIKI_CONFIG="${MACFOUND_DIR}"/macfound-torquedata-csv2wiki-config
@@ -109,6 +110,7 @@ ${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
             --sdgconfig-csv="${MACFOUND_DIR}/${SDGCONFIG_CSV}" \
             --attachments-dir=${ATTACHMENTS_DIR} \
             --tdc-config-dir="${TDC_CONFIG_DIR}" \
+            --ots-metadata="${DATA_DIR}/${OTS_METADATA}" \
             --toc-dir="${TOC_DIR}" \
             --correction-file="${DATA_DIR}/${CANDID_CORRECTION_FILE}" > \
             "${DATA_DIR}/${OUTPUT_CSV}"
@@ -167,6 +169,7 @@ echo "However, the following v1 files were placed in $TDC_CONFIG_DIR for you to"
 echo "upload:"
 echo " - AllProposals - All the proposals generated"
 echo " - Top100 - The top 100 proposals"
+echo " - Top100AndWildCards - The top 100 proposals with the 13 Wild Cards"
 echo " - Top200 - The top 200 proposals"
 echo " - PassedReview - The 455 proposals that passed wisehead review"
 echo " - AllColumns - All the available columns"

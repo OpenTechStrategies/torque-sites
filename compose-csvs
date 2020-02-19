@@ -79,6 +79,11 @@ Command-line options:
                                   source data for output.  There can be multiple correction
                                   files, and each one overwrites the previous.
 
+  --ots-metadata FILE             FILE is a csv of MetaData created by OTS to use when creating
+                                  the final spreadsheet.  Each row defines a given override attribute
+                                  for a given review number, and what value should go there.
+                                  This spreadsheet grows as the ETL pipeline one-off needs grow.
+
   --toc-dir DIR                   DIR is the directory where extra TOCs will be placed for loading
                                   up to the torque wiki with csv2wiki.  If not included, TOCs won't
                                   be generated.
@@ -419,6 +424,38 @@ def process_evaluation_data(*csv_reader, app_col, score_rank_col, sum_of_scores_
 
     return evaluation_data
 
+def process_ots_metadata(reader):
+    """Process READER into a dictionary that's contextual based
+    on what metadata ots needs to process the ETL pipeline.  This
+    changes as special cases are brought up.  It returns an object
+    where the attribute (column 1), maps to the value (column 2)
+    for the given review number (column 0). The top level object is
+    keyed on the review number.
+
+    For instance:
+
+    Review Number,Attribute,Value
+    1,Wild Card,yes
+
+    maps to
+
+    { "1": { "Wild Card": "yes" } }
+    """
+    header = next(reader)
+
+    metadata = {}
+    for row in reader:
+        review_number = row[0]
+        attribute_name = row[1]
+        value = row[2]
+
+        if review_number not in metadata:
+            metadata[review_number] = {}
+
+        metadata[review_number][attribute_name] = value
+
+    return metadata
+
 def wiki_escape_page_title(s):
     import unidecode
     """Return a wiki-escaped version of STRING."""
@@ -469,6 +506,8 @@ def create_tdc_config(tdc_config_dir, header_row, new_rows):
 
       - AllProposals - All the proposals generated
       - Top100 - The top 100 proposals
+      - Top100AndWildCards - the above but with the 113 declared wildcards
+      - FinalistCandidates - the top 100, with wild cards, but omitting TR Disqualified
       - Top200 - The top 200 proposals
       - PassedReview - The ~455 proposals that passed wisehead review
       - AllColumns - All the available columns
@@ -484,6 +523,18 @@ def create_tdc_config(tdc_config_dir, header_row, new_rows):
 
     with open(os.path.join(tdc_config_dir, "Top100"), 'w') as f:
         f.writelines([row_to_title_line(row) for row in new_rows if int(row[188]) < 101])
+
+    with open(os.path.join(tdc_config_dir, "Top100AndWildcards"), 'w') as f:
+        f.writelines([
+            row_to_title_line(row)
+            for row in new_rows
+            if (int(row[188]) < 101 or row[207] == "Wild Card")])
+
+    with open(os.path.join(tdc_config_dir, "FinalistCandidates"), 'w') as f:
+        f.writelines([
+            row_to_title_line(row)
+            for row in new_rows
+            if (int(row[188]) < 101 or row[207] == "Wild Card") and row[208] != "TR Disqualified" ])
 
     with open(os.path.join(tdc_config_dir, "Top200"), 'w') as f:
         # 202 here because there was a duplicate removed before
@@ -569,8 +620,8 @@ def create_tdc_config(tdc_config_dir, header_row, new_rows):
             if column not in review_columns:
                 f.writelines("* %s\n" % column)
 
-def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_files, regionconfig, sdgconfig,
-        attachments_dir, toc_dir, tdc_config_dir, pare=None):
+def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, ots_metadata_file, correction_files,
+        regionconfig, sdgconfig, attachments_dir, toc_dir, tdc_config_dir, pare=None):
     """Write a composed version of PROPOSALS (a CSV file), ADMIN_REVIEW
     (a CSV file), and JUDGE_EVAL (a CSV file) to standard out.
 
@@ -612,6 +663,8 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
                                        delimiter=',', quotechar='"')
         sdgconfig_reader = csv.reader(open(sdgconfig, encoding='utf-8'),
                                        delimiter=',', quotechar='"')
+        ots_metadata_reader = csv.reader(open(ots_metadata_file, encoding='utf-8'),
+                                       delimiter=',', quotechar='"')
     except UnicodeDecodeError:
         sys.stderr.write("fix-csv expects utf-8-encoded unicode, not whatever is in this csv file.\n")
         sys.exit(-1)
@@ -629,6 +682,8 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
     header_row.append("Attachments")
     header_row.append("Wild Card Eligible")
     header_row.append("MediaWiki Title")
+    header_row.append("Wild Card")
+    header_row.append("TR Disqualified")
 
     # We only accept applications if they're one of the rows in the
     # admin_review csv, which has an "Application #" column (3),
@@ -646,6 +701,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
 
     correction_data = create_correction_data(correction_files)
     sdgconfig_data = process_sdgconfig_data(sdgconfig_reader)
+    ots_metadata = process_ots_metadata(ots_metadata_reader)
     attachments_to_upload = {}
 
     row_num = 0
@@ -748,6 +804,9 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
 
         new_row.append(mwiki_title)
 
+        new_row.append(ots_metadata.get(row[3], {}).get("Wild Card", ""))
+        new_row.append(ots_metadata.get(row[3], {}).get("TR Disqualified", ""))
+
         print("Sanitized row %d (rank %d, %d cols, %d fixed)." % (row_num, rank, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
 
@@ -825,6 +884,7 @@ def main():
                                     "judge-evaluation-csv=",
                                     "regionconfig-csv=",
                                     "wisehead-evaluation-csv=",
+                                    "ots-metadata=",
                                     "sdgconfig-csv=",
                                     "toc-dir=",
                                     "tdc-config-dir=",
@@ -843,6 +903,7 @@ def main():
     sdgconfig_csv = None
     attachments_dir = None
     toc_dir = None
+    ots_metadata = None
     tdc_config_dir = None
     correction_files = []
     for o, a in opts:
@@ -858,6 +919,8 @@ def main():
             regionconfig_csv = a
         elif o == "--wisehead-evaluation-csv":
             wisehead_evaluation_csv = a
+        elif o == "--ots-metadata":
+            ots_metadata = a
         elif o == "--sdgconfig-csv":
             sdgconfig_csv = a
         elif o == "--correction-file":
@@ -881,8 +944,8 @@ def main():
             "--judge-evaluation-csv, and --wisehead_evaluation-csv options.\n\n")
         sys.stderr.write(__doc__)
         sys.exit(1)
-    compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, wisehead_evaluation_csv, correction_files,
-            regionconfig_csv, sdgconfig_csv, attachments_dir, toc_dir, tdc_config_dir, pare)
+    compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, wisehead_evaluation_csv, ots_metadata,
+            correction_files, regionconfig_csv, sdgconfig_csv, attachments_dir, toc_dir, tdc_config_dir, pare)
 
 if __name__ == '__main__':
     main()

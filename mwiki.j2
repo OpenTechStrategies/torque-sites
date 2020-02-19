@@ -8,7 +8,7 @@
 {|
 |-
 |style="vertical-align:top;width:150px" |'''Rank:'''
-|{{ proposal['Wise Head Overall Score Rank Normalized'] }}'''{% if proposal['Wild Card Eligible'] %}<span style='color:#306754;font-style: italic'> - Wild Card Eligible</span>{% endif %}
+|{{ proposal['Wise Head Overall Score Rank Normalized'] }}'''{% if proposal['Wild Card'] %}<span style='color:#306754;font-style: italic'> - Wild Card</span>{% endif %}{% if proposal['TR Disqualified'] %}<span style='color:#ff4a4a;font-style: italic'> - TR Disqualified</span>{% endif %}
 {% if 'Wise Head Sum of Scores Normalized' in proposal.keys() %}
 |-
 |style="vertical-align:top;width:150px" |'''Wise Head Panel Score:'''
