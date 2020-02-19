@@ -69,7 +69,7 @@ if ! echo "bad31bbabd6b03ec5be834d3d87ec70361e8efa0  $DATA_DIR/$PROPOSALS_CSV" |
   echo "This means that we most likely got a new file, which may have the old"
   echo "errors in it (specifically the organization proposal 829)."
   echo "If we got a new file and there are no further errors, you"
-  echo "can remove this check from wiki-refresh!  If not, please"
+  echo "can remove this check from torque-refresh!  If not, please"
   echo "make adjustments in a new file and update the sha."
   exit 1
 fi
@@ -79,7 +79,7 @@ if ! echo "5b1ad76d329a47f0a7b62a76abdbfc4f98a87c59  $DATA_DIR/$JUDGE_EVALUATION
   echo "This means that we most likely got a new file, which may have the old"
   echo "errors in it (specifically some comments for proposal 5539)."
   echo "If we got a new file and there are no further errors, you"
-  echo "can remove this check from wiki-refresh!  If not, please"
+  echo "can remove this check from torque-refresh!  If not, please"
   echo "make adjustments in a new file and update the sha."
   exit 1
 fi

@@ -80,21 +80,21 @@ Command-line options:
                                   files, and each one overwrites the previous.
 
   --toc-dir DIR                   DIR is the directory where extra TOCs will be placed for loading
-                                  up to the wiki with csv2wiki.  If not included, TOCs won't be
-                                  generated.
+                                  up to the torque wiki with csv2wiki.  If not included, TOCs won't
+                                  be generated.
 
   --sdgconfig-csv FILE            FILE is a csv of sdg configurations, that when provided
                                   will be checked against in the SDG column for validation
                                   and separation into a list.
 
   --attachments-dir DIR           DIR is a directory for compose-csvs to look in for what attachments
-                                  will be uploaded to the wiki.  It needs to have subdirectories by
-                                  proposal number.
+                                  will be uploaded to the torque wiki.  It needs to have subdirectories
+                                  by proposal number.
 
   --tdc-config-dir DIR            DIR is the location for files that are the base configuration files
                                   needed by TorqueDataConnect, and can be optionally, manually, put on
-                                  the wiki.  We don't autmoatically do that because we want to overwrite
-                                  the configuration out there.
+                                  the torque wiki.  We don't autmoatically do that because we want to
+                                  overwrite the configuration out there.
 """
 
 import csv
@@ -595,7 +595,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, correction_
 
     TDC_CONFIG_DIR is the directory that, when not None, will have files
     written to it that have the base configuration of columns, proposals, etc
-    that we launched the LFC wiki with.
+    that we launched the LFC torque instance with.
 
     If PARE is not None, it is a positive integer indicating that only
     1 of every PARE entries should be processed, and the others skipped."""
