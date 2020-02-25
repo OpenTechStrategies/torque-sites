@@ -11,9 +11,9 @@ __TOC__
         {%- for proposal in proposals_in_group %}
 * Rank {{ proposal['Wise Head Overall Score Rank Normalized'] }} - [[{{ proposal["MediaWiki Title"] -}}]]
             {%- if proposal['Wild Card'] -%}
-                - <span style='color:#306754;font-style: italic>Wild Card</span>
+                - <span style='color:#1b08c7;font-style: italic>Wild Card</span>
             {%- endif %}{%- if proposal['TR Disqualified'] -%}
-                - <span style='color:#ff4a4a;font-style: italic>TR Disqualified</span>
+                - <span style='color:#ff4a4a;font-style: italic>Disqualified in Tech Review</span>
             {%- endif %}
         {%- endfor %}
     {%- endif %}

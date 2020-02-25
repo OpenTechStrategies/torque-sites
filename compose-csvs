@@ -318,6 +318,20 @@ def generate_generic_toc(toc_dir, grouped_review_numbers, toc_name):
         f.writelines(toc_name + "\n")
         f.writelines("{{ #tdcrender:proposals/toc/" + toc_name + ".mwiki }}")
 
+def generate_list_toc(toc_dir, review_numbers, toc_name):
+    """Generates a TOC mwiki and TOC data file in TOC_DIR for the given data,
+    which is a list of review numbers we want to be in the list.  Then put
+    into TOC_DIR/TOC_NAME.json.
+
+    Notably, this doesn't create the jinja template file, as that doesn't
+    need to be dynamically generated."""
+    with open(os.path.join(toc_dir, toc_name + ".json"), 'w') as f:
+        f.writelines(json.dumps({"proposal_ids": review_numbers}))
+
+    with open(os.path.join(toc_dir, toc_name + ".mwiki"), 'w') as f:
+        f.writelines(toc_name + "\n")
+        f.writelines("{{ #tdcrender:proposals/toc/" + toc_name + ".mwiki }}")
+
 def generate_sdg_toc(toc_dir, sdg_data, sdgconfig_data):
     """Generates a TOC mwiki and TOC data file in TOC_DIR for the given data,
     which is a dict where the proposals are all grouped by some key.
@@ -783,13 +797,22 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, ots_metadat
                 if re.search("^\\d*_Registration.pdf", attachment_file):
                     continue
 
-                attachment_display_name = re.sub("^\\d*_", "", attachment_file)
-                attachment_display_name = re.sub("\.pdf$", "", attachment_display_name)
-                if len(attachment_display_name) > 33:
-                    attachment_display_name = \
-                        attachment_display_name[0:15] + \
-                        "..." + \
-                        attachment_display_name[(len(attachment_display_name)-15):]
+                if ots_metadata.get(row[3], {}).get("Financial Attachment", "") == attachment_file:
+                    attachment_display_name = "Financials"
+                elif ots_metadata.get(row[3], {}).get("MOU Attachment", "") == attachment_file:
+                    attachment_display_name = "MOU"
+                elif ots_metadata.get(row[3], {}).get("Tech Review Attachment", "") == attachment_file:
+                    attachment_display_name = "Tech Review"
+                elif ots_metadata.get(row[3], {}).get("Application", "") == attachment_file:
+                    attachment_display_name = "Application"
+                else:
+                    attachment_display_name = re.sub("^\\d*_", "", attachment_file)
+                    attachment_display_name = re.sub("\.pdf$", "", attachment_display_name)
+                    if len(attachment_display_name) > 33:
+                        attachment_display_name = \
+                            attachment_display_name[0:15] + \
+                            "..." + \
+                            attachment_display_name[(len(attachment_display_name)-15):]
 
                 attachments_str += attachment_file + "\n"
                 attachment_display_names += attachment_display_name + "\n"
@@ -864,6 +887,14 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, ots_metadat
                         print("Country %s not in region config file, skipping" % new_row[col], file=sys.stderr)
                         country_errors.append(new_row[col])
         generate_generic_toc(toc_dir, geographic_data, "Geographic_TOC")
+
+
+        finalist_candidate_numbers = [
+                row[3]
+                for row in new_rows
+                if (int(row[188]) < 101 or row[207] == "Wild Card") and row[208] != "TR Disqualified"
+            ]
+        generate_list_toc(toc_dir, finalist_candidate_numbers, "Finalist_Candidates")
 
     if attachments_dir is not None:
         with open(os.path.join(attachments_dir, "attachments_to_upload"), 'wb') as f:

@@ -92,6 +92,7 @@ rm $TOC_DIR/*
 cp tocs/generic.j2 $TOC_DIR/Population_TOC.j2
 cp tocs/sdg.j2 $TOC_DIR/SDG_TOC.j2
 cp tocs/generic.j2 $TOC_DIR/Topic_TOC.j2
+cp tocs/list.j2 $TOC_DIR/Finalist_Candidates.j2
 cp tocs/Geographic_TOC.j2 $TOC_DIR/
 cp tocs/All.j2 $TOC_DIR/
 cp tocs/All.json $TOC_DIR/

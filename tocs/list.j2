@@ -1,0 +1,11 @@
+{%- for proposal_id in proposal_ids %}
+    {%- if proposal_id in proposals.keys() -%}
+        {%- set proposal = proposals[proposal_id] -%}
+* Rank {{ proposal['Wise Head Overall Score Rank Normalized'] }} - [[{{ proposal["MediaWiki Title"] -}}]]
+        {%- if proposal['Wild Card'] -%}
+            - <span style='color:#1b08c7;font-style: italic>Wild Card</span>
+        {%- endif %}{%- if proposal['TR Disqualified'] -%}
+            - <span style='color:#ff4a4a;font-style: italic>Disqualified in Tech Review</span>
+        {%- endif %}
+    {%- endif %}
+{% endfor %}
