@@ -117,7 +117,8 @@ def main():
     password = config["default"]["password"]
 
     (scheme, host) = wiki_url.split("://")
-    site = mwclient.Site(host, path="/", scheme=scheme)
+    # We need a very large timeout because uploading reindexes everything!
+    site = mwclient.Site(host, path="/", scheme=scheme, reqs={'timeout': 300})
     site.login(username, password)
     with open(csv_file) as f:
         site.raw_call(
