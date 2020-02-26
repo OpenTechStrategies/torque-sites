@@ -15,16 +15,10 @@ __TOC__
                     {%- if not country_data["shown"] -%}
                         {%- set _ = country_data.update({"shown": True }) %}
 === {{ country_name }} ===
-                    {%- endif -%}
-                    {% set proposal = proposals[proposal_id] %}
-* Rank {{ proposal['Wise Head Overall Score Rank Normalized'] }} - [[{{ proposal["MediaWiki Title"] -}}]]
-                    {%- if proposal['Wild Card'] -%}
-                        - <span style='color:#1b08c7;font-style: italic>Wild Card</span>
-                    {%- endif %}{%- if proposal['TR Disqualified'] -%}
-                        - <span style='color:#ff4a4a;font-style: italic>Disqualified in Tech Review</span>
-                    {%- endif %}
+{% endif -%}
+* {{ toc_lines[proposal_id] }}
                 {%- endif %}
-            {%- endfor %}
+{% endfor %}
         {%- endfor %}
     {%- endfor %}
 {%- endfor %}

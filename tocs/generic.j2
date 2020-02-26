@@ -3,18 +3,13 @@ __TOC__
     {%- set proposals_in_group = [] %}
     {%- for proposal_id in proposal_ids %}
         {%- if proposal_id in proposals.keys() %}
-            {{- "" if proposals_in_group.append(proposals[proposal_id]) }}
+            {{- "" if proposals_in_group.append(proposal_id) }}
         {%- endif %}
     {%- endfor %}
     {%- if proposals_in_group|length > 0 %}
 = {{ group_name }} ({{ proposals_in_group|length }}) =
-        {%- for proposal in proposals_in_group %}
-* Rank {{ proposal['Wise Head Overall Score Rank Normalized'] }} - [[{{ proposal["MediaWiki Title"] -}}]]
-            {%- if proposal['Wild Card'] -%}
-                - <span style='color:#1b08c7;font-style: italic>Wild Card</span>
-            {%- endif %}{%- if proposal['TR Disqualified'] -%}
-                - <span style='color:#ff4a4a;font-style: italic>Disqualified in Tech Review</span>
-            {%- endif %}
+        {%- for proposal_id in proposals_in_group %}
+* {{ toc_lines[proposal_id] }}
         {%- endfor %}
     {%- endif %}
 {%- endfor %}
