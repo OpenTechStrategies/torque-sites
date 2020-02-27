@@ -788,10 +788,8 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, ots_metadat
         # get replaced as the process continues
         new_row.append("NULL")
 
-        attachments_str = ""
-        attachment_display_names = ""
+        attachment_data = []
         if attachments_dir is not None:
-            attachments_to_upload[row[3]] = []
             application_attachment_dir = os.path.join(attachments_dir, row[3])
             for attachment_file in os.listdir(application_attachment_dir):
                 if re.search("^\\d*_Registration.pdf", attachment_file):
@@ -814,11 +812,13 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, ots_metadat
                             "..." + \
                             attachment_display_name[(len(attachment_display_name)-15):]
 
-                attachments_str += attachment_file + "\n"
-                attachment_display_names += attachment_display_name + "\n"
-                attachments_to_upload[row[3]].append(attachment_file)
-        new_row.append(attachment_display_names)
-        new_row.append(attachments_str)
+                attachment_data.append({"name": attachment_display_name, "file": attachment_file})
+
+            attachment_data.sort(key=lambda a: a["name"])
+
+        attachments_to_upload[row[3]] = [a["file"] for a in attachment_data]
+        new_row.append("\n".join([a["name"] for a in attachment_data])) # The names
+        new_row.append("\n".join(attachments_to_upload[row[3]])) # The files
 
         if rank > 100 and rank <= 201:
             new_row.append("Wild Card Eligible")
