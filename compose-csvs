@@ -801,6 +801,8 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, ots_metadat
                     attachment_display_name = "MOU"
                 elif ots_metadata.get(row[3], {}).get("Tech Review Attachment", "") == attachment_file:
                     attachment_display_name = "Tech Review"
+                elif ots_metadata.get(row[3], {}).get("Two Page Fact Sheet", "") == attachment_file:
+                    attachment_display_name = "Fact Sheet"
                 elif ots_metadata.get(row[3], {}).get("Application", "") == attachment_file:
                     attachment_display_name = "Application"
                 else:
