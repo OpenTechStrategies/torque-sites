@@ -35,6 +35,14 @@ This code is designed to work with a properly-configured
 [Torque](https://github.com/OpenTechStrategies/torque) instance.
 See the Torque documentation for details.
 
+### Note about csv2wiki
+
+`csv2wiki` is a substantial program that macfound started out using
+to populate the whole wiki.  After moving to torque, nearly all of
+the `csv2wiki` features having to do with converting a csv to a wiki
+are ignored in favor of ones that just make adding pages to a wiki
+convenient.
+
 ### Configuration
 
 Copy `macfound-torquedata-csv2wiki-config.tmpl` to

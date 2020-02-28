@@ -156,6 +156,8 @@ for file in $TOC_DIR/*.mwiki ; do
   TOC_PAGES="$TOC_PAGES --helper-page=$file"
 done
 
+# See note in README about how we're not really using csv2wiki as it's
+# intended to be used...
 echo "Stage 3: Creating wiki..."
 python3 -m csv2wiki -c ${CSV2WIKI_CONFIG}      \
             --make-non-editable \
