@@ -57,6 +57,7 @@ REGIONCONFIG_CSV="regionconfig.csv"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments"
 SDGCONFIG_CSV="sdgconfig.csv"
 CANDID_CORRECTION_FILE="Candid_Application_Data_Clean_for_OTS_2020_01_13_01.csv"
+OTS_CORRECTION_FILE="OTS_Corrections.csv"
 OTS_METADATA="OTS_Metadata.csv"
 TOC_DIR="${DATA_DIR}/tocs"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
@@ -113,7 +114,8 @@ ${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
             --tdc-config-dir="${TDC_CONFIG_DIR}" \
             --ots-metadata="${DATA_DIR}/${OTS_METADATA}" \
             --toc-dir="${TOC_DIR}" \
-            --correction-file="${DATA_DIR}/${CANDID_CORRECTION_FILE}" > \
+            --correction-file="${DATA_DIR}/${CANDID_CORRECTION_FILE}" \
+            --correction-file="${DATA_DIR}/${OTS_CORRECTION_FILE}" > \
             "${DATA_DIR}/${OUTPUT_CSV}"
 if [ $? -ne 0 ]; then
 		echo Composition failure!

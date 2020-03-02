@@ -79,6 +79,8 @@ Command-line options:
                                   source data for output.  There can be multiple correction
                                   files, and each one overwrites the previous.
 
+                                  If the data cells have the empty string, no correction is applied.
+
   --ots-metadata FILE             FILE is a csv of MetaData created by OTS to use when creating
                                   the final spreadsheet.  Each row defines a given override attribute
                                   for a given review number, and what value should go there.
@@ -508,7 +510,13 @@ def create_correction_data(correction_files):
             if review_number not in correction_data:
                 correction_data[review_number] = {}
             for col_name, datum in zip(header, correction_row):
-                correction_data[review_number][col_name] = datum
+                # There is a fork in the road here.  Do empty cells overwrite to
+                # nothingness, or use as a marker to ignore the correction.
+                # We choose the latter because it's less work than attempting
+                # duplicate corrected data into all columns when there's
+                # spare corrections.
+                if datum:
+                    correction_data[review_number][col_name] = datum
 
     return correction_data
 
