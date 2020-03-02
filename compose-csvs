@@ -738,6 +738,8 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, ots_metadat
 
         # This is required to be before the corrections because of legacy issues
         mwiki_title = wiki_escape_page_title("{30} ({3})".format(*row))
+        wildcard = ots_metadata.get(row[3], {}).get("Wild Card", "")
+        trdqed = ots_metadata.get(row[3], {}).get("TR Disqualified", "")
 
         if row[3] in correction_data:
             for col_header, correction_value in correction_data[row[3]].items():
@@ -784,9 +786,11 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, ots_metadat
         # Population
         new_row[58] = "\n".join(new_row[58].split(","))
 
-        # This is application status.  Right now everything is NULL, but this will
-        # get replaced as the process continues
-        new_row.append("NULL")
+        # This is application level
+        if (int(new_row[188]) < 101 or wildcard == "Wild Card") and trdqed != "TR Disqualified":
+            new_row.append("Highly Ranked")
+        else:
+            new_row.append("NULL")
 
         attachment_data = []
         if attachments_dir is not None:
@@ -829,8 +833,8 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, ots_metadat
 
         new_row.append(mwiki_title)
 
-        new_row.append(ots_metadata.get(row[3], {}).get("Wild Card", ""))
-        new_row.append(ots_metadata.get(row[3], {}).get("TR Disqualified", ""))
+        new_row.append(wildcard)
+        new_row.append(trdqed)
 
         print("Sanitized row %d (rank %d, %d cols, %d fixed)." % (row_num, rank, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
@@ -889,7 +893,6 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, ots_metadat
                         print("Country %s not in region config file, skipping" % new_row[col], file=sys.stderr)
                         country_errors.append(new_row[col])
         generate_generic_toc(toc_dir, geographic_data, "Geographic_TOC")
-
 
         finalist_candidate_numbers = [
                 row[3]
