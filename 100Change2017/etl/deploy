@@ -1,0 +1,344 @@
+#!/bin/bash
+
+# Load all the 100&Change proposals into a wiki, and along the way
+# create a 'processed-100andchangeExport-all-judges.csv' file 
+# to give to MacFound.
+#
+# Copyright (C) 2017  Open Tech Strategies, LLC
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+##########################################################################
+#                                                                        #
+#   NOTE: This code is highly specific to the particular filenames and   #
+#   working environment used by Open Tech Strategies on a project for    #
+#   the MacArthur Foundation.  For our own convenience, we have left     #
+#   those assumptions in place.  That means this script won't work if    #
+#   someone else tries to run it; we publish it just as an example.      #
+#   It is open source software, so please modify it to suit your needs.  #
+#                                                                        #
+##########################################################################
+
+MACFOUND_DIR=`dirname "${0}"`
+SOURCES_ROOT="${MACFOUND_DIR}/.."
+DATA_DIR="${1}"
+
+
+function check_for_bin {
+	command -v $1 >/dev/null 2>&1 || { echo >&2 "$1 required but it's not available.  Aborting."; exit 1; }
+}
+
+
+if [ "${DATA_DIR}" = "" ]; then
+    [ -d "${OTSDIR}/clients/macfound/eval-system/data" ] && DATA_DIR="${OTSDIR}/clients/macfound/eval-system/data"
+fi
+
+if [ "${DATA_DIR}" = "" ]; then
+  echo "ERROR: DATA_DIRECTORY argument required."
+  echo ""
+  echo "Usage: '${0} DATA_DIRECTORY'"
+  echo ""
+  echo "(DATA_DIRECTORY is where all the .csv files are.)"
+  echo ""
+  exit 1
+fi
+
+# Make sure we have csvkit by checking version on csvgrep.
+# If we don't have it, one way to get it would be:
+#
+#   $ git clone https://github.com/wireservice/csvkit.git
+#   $ cd csvkit
+#   $ sudo python3 setup.py install --prefix=/usr/local
+check_for_bin csvgrep
+csvgrep --version 2&>/dev/null || { echo "csvkit needs to be a recent version. Please upgrade to version 1.0.2+"; exit 1; }
+
+# Make sure we have csv2wiki.
+CSV2WIKI="python3 -m csv2wiki"
+UPLOADER="${MACFOUND_DIR}"/upload-csv
+
+# csv2wiki needs a run-time config file.
+CSV2WIKI_CONFIG="${MACFOUND_DIR}"/csv2wiki-config
+if [ ! -f "${CSV2WIKI_CONFIG}" ]; then
+  echo "ERROR: No csv2wiki-config file found."
+  echo ""
+  echo "Try doing 'cp csv2wiki-config.tmpl csv2wiki-config' and"
+  echo "then editing csv2wiki-config as needed."
+  echo ""
+  exit 1
+fi
+
+MASTER_CSV="${DATA_DIR}/100andchangeExport-all-judges.csv"
+TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
+
+# We've extracted the excluded Review Numbers from Exclusions.xlsx.
+# They're saved elsewhere, but for the record, here's how it was done,
+# using the 'in2csv' program from csvkit:
+# 
+#   $ in2csv ${DATA_DIR}/Exclusions.xlsx > ${DATA_DIR}/Exclusions.csv
+#   .../lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 0 has no name. Using "a".
+#   .../lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 1 has no name. Using "b".
+#   .../lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 2 has no name. Using "c".
+#   .../lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 3 has no name. Using "d".
+#   .../lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 4 has no name. Using "e".
+#   .../lib/python2.7/site-packages/agate/utils.py:275: UnnamedColumnWarning: Column 5 has no name. Using "f".
+# 
+#   $ csvcut -n ${DATA_DIR}/Exclusions.csv
+#   1: a
+#   2: b
+#   3: c
+#   4: d
+#   5: e
+#   6: f
+# 
+#   $ csvlook ~/private/work/ots/clients/macfound/eval-system/data/Exclusions.csv
+#   ...see from output that column "a" has the Review Numbers we want...
+# 
+#   $ csvcut -c a ~/private/work/ots/clients/macfound/eval-system/data/Exclusions.csv \
+#           | grep -E "[0-9]+" > ${DATA_DIR}/excluded-review-numbers.txt
+# 
+#   $ cat ${DATA_DIR}/excluded-review-numbers.txt
+#   6587
+#   6226
+#   72
+#   671
+#   1095
+#   1723
+#   2681
+#   4046
+#   5861
+#   6381
+#   6728
+#   6882
+#   5653
+#   3030
+#   5073
+# 
+#   $ svn add ${DATA_DIR}/excluded-review-numbers.txt
+# 
+#   $ svn ci -m "Save excluded Review Numbers (based on Exclusions.xlsx)." \
+#                     ${DATA_DIR}/excluded-review-numbers.txt
+# 
+#   $ 
+
+RAW_CSV="100andchangeExport-all-judges.csv"
+TOC_DIR="${DATA_DIR}/tocs"
+ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
+
+# We want to make sure there's no lingering old TOCs if we change how
+# compose-csv creates them
+mkdir -p $TOC_DIR
+rm $TOC_DIR/*
+cp tocs/generic.j2 $TOC_DIR/Topic_TOC.j2
+
+SANITIZER="${MACFOUND_DIR}"/fix-csv
+
+# First we sanitize, then we filter, then we join.  We leave all the
+# intermediate stages in place, in case we need to debug them later.
+STAGE_1_PREFIX="sanitized-"
+STAGE_2_PREFIX="filtered-"
+STAGE_3_PREFIX="joined-"
+STAGE_FINAL_PREFIX="processed-"
+
+STAGE_1_CSV="${STAGE_1_PREFIX}${RAW_CSV}"
+STAGE_2_CSV="${STAGE_2_PREFIX}${RAW_CSV}"
+STAGE_3_CSV="${STAGE_3_PREFIX}${RAW_CSV}"
+STAGE_FINAL_CSV="${STAGE_FINAL_PREFIX}${RAW_CSV}"
+
+mkdir -p $TDC_CONFIG_DIR
+
+### Sanitize the updated spreadsheet.
+#
+# Use --pare to convert only 1% of the entries, to save time while testing. 
+echo "Stage 1: Sanitizing..."
+${SANITIZER} --reclassifications="${DATA_DIR}/geo-and-topic-revisions-Reclassify-themes-ALL-complete-(merged-assignment-docs).csv" \
+             --tdc-config-dir="${TDC_CONFIG_DIR}" \
+             --toc-dir="${TOC_DIR}" \
+             --attachments-dir=${ATTACHMENTS_DIR} \
+             "${DATA_DIR}/${RAW_CSV}" \
+             "${DATA_DIR}/${STAGE_1_CSV}"
+if [ $? -ne 0 ]; then
+		echo Sanitization failure!
+		exit 1
+fi
+echo "Done with Stage 1 (sanitizing)."
+echo ""
+
+### Filter out excluded Review Numbers.
+echo "Stage 2: Filtering excluded Review Numbers..."
+csvgrep -c 15 -f "${DATA_DIR}"/excluded-review-numbers.txt -i \
+        "${DATA_DIR}"/${STAGE_1_CSV} > "${DATA_DIR}"/"${STAGE_2_CSV}"
+echo "Done with Stage 2 (filtering excluded Review Numbers)."
+echo ""
+
+
+### Splice (join) in two columns from supplemental CSVs supplied by MacFound.
+#
+# We're going to add a "Participant_Email" column and supplant the old
+# "Reason_For_Turndown" column with the new Reason_For_Turndown.
+#
+# In the latter case, the new column will be at a slightly different
+# position than the original.  The col_map section in run-time config
+# file for csv2wiki has been adjusted accordingly.
+
+echo "Stage 3: Adding some supplemental data..."
+# First, gather the two new columns into a single CSV, keyed
+# by Review_Number (that's our 'join' key).
+#
+# Start by isolating the participant contact email into a CSV that has
+# just the Review_Number and the contact email.
+csvcut -c Review_Number,Participant_Email                             \
+          "${DATA_DIR}"/Principal-contact-join-20170716-utf8.csv      \
+        > "${DATA_DIR}"/participant-email-tmp.csv
+# Side cleanup: fix the email addresses to use entities instead of
+# literal angle brackets, because with literal angle brackets, writing
+# them to MediaWiki via mwclient causes surprious HTML-style closing:
+# "Foo Bar <foobar@example.com>" would be turned into
+# "Foo Bar <foobar@example.com></foobar@example.com>".
+sed -E "s/ <([^ <>]+)>/ \\&lt;\\1\\&gt;/g"                            \
+       "${DATA_DIR}"/participant-email-tmp.csv                        \
+    > "${DATA_DIR}"/participant-email-tmp.csv.tmp
+mv "${DATA_DIR}"/participant-email-tmp.csv.tmp                        \
+   "${DATA_DIR}"/participant-email-tmp.csv
+# Next, isolate reason for turndown in the same way we did participant
+# contact email.
+csvcut -c Review_Number,Reason_For_Turndown                           \
+          "${DATA_DIR}"/Reason-for-Turndown-join-2017-07-16-utf8.csv  \
+        > "${DATA_DIR}"/reason-for-turndown-tmp.csv
+# Join those two into one new CSV, also keyed on Review_Number.
+#
+# The '--left' ensures that the temporary combined supplementary
+# spreadsheet, which contains both principal contact info and reasons
+# for turndown, is complete, that is, that it represents the union of
+# those two sets of review numbers.
+csvjoin --left -c Review_Number                                       \
+           "${DATA_DIR}"/participant-email-tmp.csv                    \
+           "${DATA_DIR}"/reason-for-turndown-tmp.csv                  \
+         > "${DATA_DIR}"/contact-and-turndown-tmp.csv
+# Ah, but that leaves three missing Review_Numbers, ones that were in
+# Reason-for-Turndown-join-2017-07-16-utf8.csv but were not in
+# Principal-contact-join-20170716-utf8.csv.  That's okay.  Three's a
+# pretty low integer -- we can just handle them manually.  Note that
+# we *could* figure them out on the fly here, and if we ever get
+# updated supplemental data from MacFound, then we should probably
+# dynamicize this code.  But for now, we just know 8002, 8005, 8009.
+for num in 8002 8005 8009; do
+  grep -E "^${num}," "${DATA_DIR}"/reason-for-turndown-tmp.csv        \
+    | sed -e "s/,/,,/g"                                               \
+  >> "${DATA_DIR}"/contact-and-turndown-tmp.csv;                      \
+done
+# Now the last three rows of $DATA_DIR/contact-and-turndown-tmp.csv
+# look like this (with the actual reasons omitted of course):
+# 
+#   8002,,Real reason for turndown omitted from this public script
+#   8005,,Same here
+#   8009,,Likewise
+#
+# ...which is exactly what we needed: three rows that give a new
+# reason for turndown, but don't supply a principal contact (because
+# Principal-contact-join-20170716-utf8.csv didn't have any for them).
+#  
+# Cut the old Reason_For_Turndown column out of the original CSV.
+csvcut -C Reason_For_Turndown                                         \
+          "${DATA_DIR}"/"${STAGE_2_CSV}"                              \
+        > "${DATA_DIR}"/tmp-"${STAGE_2_CSV}"
+# Put in the new Participant_Email and Reason_For_Turndown columns.
+#
+# The '--left' here ensures that proposals whose review numbers do not
+# appear at all the combined supplementary spreadsheet (i.e.,
+# proposals for which there is neither a supplemental principal
+# contact nor a supplemental reason for turndown) are still included
+# in the final spreadsheet and thus in the wiki.
+# 
+# This works because:
+#
+#    - Principal Contact Info isn't a field in the original
+#      spreadsheet anyway, so we by definition can't drop it.
+#
+#    - We were told that the supplemental Reasons For Turndown are a
+#      strict superset of the Reasons For Turndown as given in the
+#      original spreadsheet, so the fact that we dropped the original
+#      column and replaced it with this data can't lose information.
+#      And by "can't happen" I mean "\"can't happen\"".
+#
+#    - As I wrote this comment, in the Starbucks at 55 Broad Street in
+#      lower Manhattan, the Jackson 5's "I Want You Back" came on
+#      their sound system and was filling the room with awesomeness,
+#      but then somehow whatever streaming company is supplying
+#      Starbucks with awesomeness decided to do a *fade out* on that
+#      song, even though if ever a song deserved to go out with its
+#      proper ending it's that one.  I just want to promise that we
+#      will never treat your data the way they treated that song.
+csvjoin --snifflimit=0 --delimiter=',' --quotechar='"'                \
+        --left                                                        \
+        -c Review_Number                                              \
+           "${DATA_DIR}"/tmp-"${STAGE_2_CSV}"                         \
+           "${DATA_DIR}"/contact-and-turndown-tmp.csv                 \
+         > "${DATA_DIR}"/"${STAGE_3_CSV}"
+# Note that the last step above changed some column numbers:
+#
+#                            OLD       NEW
+#                            ---       ---
+#  Comments                   89        88
+#  Pitch Video Link           90        89
+#  Participant_Email         N/A        90
+#  Reason_For_Turndown        88        91
+#
+# All the csv2wiki-config files have been adjusted accordingly.
+echo "Done with Stage 3 (joining CSVs to add supplemental data)."
+echo ""
+
+# Give the processed CSV its final name, for delivery to MacFound.
+cp "${DATA_DIR}"/"${STAGE_3_CSV}" "${DATA_DIR}"/"${STAGE_FINAL_CSV}"
+
+### Upload the spreadsheet and TOCs to a running instance of torquedata
+#
+# There's a dependency on a running version of mediawiki
+# with a torquedata service running behind it, and a version of
+# the TorqueDataConnect running on the mediawiki
+#
+# Because attachments take a bit of time to upload, and we have no current
+# method to see if they have been uploaded, we just use a simple environment
+# variable to test if someone wants to.
+echo "Stage 4: Uploading csv and attachments..."
+echo "  If you want to skip attachments, set SKIP_ATTACHMENTS in your environment"
+if [ -z "${SKIP_ATTACHMENTS}" ] ; then
+  ATTACHMENT_ARG="--attachments-dir=${ATTACHMENTS_DIR}"
+else
+  ATTACHMENT_ARG=""
+fi
+${UPLOADER} --csv="${DATA_DIR}/${STAGE_FINAL_CSV}" \
+            --toc-dir="${TOC_DIR}" \
+            $ATTACHMENT_ARG \
+            --config="${CSV2WIKI_CONFIG}"
+if [ $? -ne 0 ]; then
+		echo Upload failure!
+		exit 1
+fi
+echo "Done with Stage 4 (Uploading csv)."
+echo ""
+
+# This pages are the template callers hosted on the wiki, as opposed to
+# the data/jinja files that are processed by torquedata
+TOC_PAGES=""
+for file in $TOC_DIR/*.mwiki ; do
+  TOC_PAGES="$TOC_PAGES --helper-page=$file"
+done
+
+echo "Creating wiki..."
+${CSV2WIKI} -c ${CSV2WIKI_CONFIG}                    \
+            --make-non-editable \
+            ${TOC_PAGES} \
+            --csv "${DATA_DIR}/${STAGE_FINAL_CSV}"
+echo "Done creating wiki."
+echo ""

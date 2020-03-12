@@ -1,0 +1,26 @@
+- name: install prerequisites
+  become_user: root
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+    state: present
+  loop:
+    - postgresql
+    - python-psycopg2
+
+- name: Create database user
+  become: true
+  become_user: postgres
+  postgresql_user:
+    login_password: "{{ postgres_root_password }}"
+    name: wikiuser
+    password: "{{ db_password }}"
+    state: present
+
+- name: create postgresql db
+  become: true
+  become_user: postgres
+  postgresql_db:
+    name: 100Change2017Partners
+    state: present
+    owner: wikiuser
