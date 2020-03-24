@@ -138,6 +138,8 @@
     marker: "## {mark} ANSIBLE GROUP PERMISSIONS CONFIG"
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     block: |
+      $wgGroupPermissions['*']['read'] = false;
+
       foreach($wgGroupPermissions['sysop'] as $key => $value) {
         $wgGroupPermissions['LFCTorque'][$key] = $value;
       }

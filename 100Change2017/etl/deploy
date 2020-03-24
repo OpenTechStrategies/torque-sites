@@ -93,7 +93,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   if [ "${OTSDIR}" = "" ] ; then
     echo "ERROR: \$OTSDIR is not set up"
     echo ""
-    echo "See beaurocracy/onboarding about setting the OTSDIR environment variable up"
+    echo "See bureaucracy/onboarding about setting the OTSDIR environment variable up"
     exit 1
   fi
 
