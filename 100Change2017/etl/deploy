@@ -30,29 +30,25 @@
 #                                                                        #
 ##########################################################################
 
+COMPETITION="100Change2017"
 MACFOUND_DIR=`dirname "${0}"`
-SOURCES_ROOT="${MACFOUND_DIR}/.."
-DATA_DIR="${1}"
-
+BASE_DATA_DIR="${1}"
 
 function check_for_bin {
 	command -v $1 >/dev/null 2>&1 || { echo >&2 "$1 required but it's not available.  Aborting."; exit 1; }
 }
 
-
-if [ "${DATA_DIR}" = "" ]; then
-    [ -d "${OTSDIR}/clients/macfound/eval-system/data" ] && DATA_DIR="${OTSDIR}/clients/macfound/eval-system/data"
-fi
-
-if [ "${DATA_DIR}" = "" ]; then
-  echo "ERROR: DATA_DIRECTORY argument required."
+if [ "${BASE_DATA_DIR}" = "" ]; then
+  echo "ERROR: BASE_DATA_DIRECTORY argument required."
   echo ""
-  echo "Usage: '${0} DATA_DIRECTORY'"
+  echo "Usage: '${0} BASE_DATA_DIRECTORY'"
   echo ""
-  echo "(DATA_DIRECTORY is where all the .csv files are.)"
+  echo "BASE_DATA_DIRECTORY/100Change2017 is where all the work is done."
   echo ""
   exit 1
 fi
+
+DATA_DIR="${BASE_DATA_DIR}/${COMPETITION}"
 
 # Make sure we have csvkit by checking version on csvgrep.
 # If we don't have it, one way to get it would be:
@@ -61,10 +57,11 @@ fi
 #   $ cd csvkit
 #   $ sudo python3 setup.py install --prefix=/usr/local
 check_for_bin csvgrep
+check_for_bin gunzip
 csvgrep --version 2&>/dev/null || { echo "csvkit needs to be a recent version. Please upgrade to version 1.0.2+"; exit 1; }
 
-# Make sure we have csv2wiki.
 CSV2WIKI="python3 -m csv2wiki"
+SANITIZER="${MACFOUND_DIR}"/fix-csv
 UPLOADER="${MACFOUND_DIR}"/upload-csv
 
 # csv2wiki needs a run-time config file.
@@ -78,8 +75,62 @@ if [ ! -f "${CSV2WIKI_CONFIG}" ]; then
   exit 1
 fi
 
-MASTER_CSV="${DATA_DIR}/100andchangeExport-all-judges.csv"
-TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
+MASTER_CSV="100andchangeExport-all-judges.csv"
+PRINCIPAL_CONTACT_CSV="Principal-contact-join-20170716-utf8.csv"
+REASON_FOR_TURNDOWN_CSV="Reason-for-Turndown-join-2017-07-16-utf8.csv"
+RECLASSIFICATION_XLSX="geo-and-topic-revisions-Reclassify-themes-ALL-complete-(merged-assignment-docs).xlsx"
+RECLASSIFICATION_CSV="geo-and-topic-revisions-Reclassify-themes-ALL-complete-(merged-assignment-docs).csv"
+EXCLUDED_REVIEW_NUMBERS_TXT="excluded-review-numbers.txt"
+ATTACHMENT_ZIP="Generated-Attachments-From-Mediawiki.zip"
+
+TOC_DIR="${DATA_DIR}/tocs/"
+ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
+TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig/"
+
+if [ ! -d "${DATA_DIR}" ] ; then
+  echo "Stage 0: Setting up data directory..."
+
+  if [ "${OTSDIR}" = "" ] ; then
+    echo "ERROR: \$OTSDIR is not set up"
+    echo ""
+    echo "See beaurocracy/onboarding about setting the OTSDIR environment variable up"
+    exit 1
+  fi
+
+  ENCRYPTED_DIR="${OTSDIR}/clients/macfound/torque-sites/${COMPETITION}/data/bigdata"
+  if [ ! -d "${ENCRYPTED_DIR}" ] ; then
+    echo "ERROR: it looks like your encrypted dir isn't checked out"
+    echo ""
+    echo "It was expected to be in:"
+    echo "  $ENCRYPTED_DIR"
+    echo ""
+    echo "You will need to check out the subversion torque-sites data, and then"
+    echo "run get-bigdata from ${OTSDIR}/clients/macfound/torque-sites/${COMPETITION}/data/"
+    exit 1
+  fi
+
+  mkdir -p $DATA_DIR
+
+  echo "Decrypting..."
+  gpg -o ${DATA_DIR}/${MASTER_CSV}.gz --decrypt ${ENCRYPTED_DIR}/${MASTER_CSV}.gz.asc || exit 1
+  gunzip ${DATA_DIR}/${MASTER_CSV}.gz
+  cp ${ENCRYPTED_DIR}/${PRINCIPAL_CONTACT_CSV} ${DATA_DIR}/${PRINCIPAL_CONTACT_CSV}
+  cp ${ENCRYPTED_DIR}/${REASON_FOR_TURNDOWN_CSV} ${DATA_DIR}/${REASON_FOR_TURNDOWN_CSV}
+  cp ${ENCRYPTED_DIR}/${EXCLUDED_REVIEW_NUMBERS_TXT} ${DATA_DIR}/${EXCLUDED_REVIEW_NUMBERS_TXT}
+  gpg -o ${DATA_DIR}/${RECLASSIFICATION_XLSX} --decrypt ${ENCRYPTED_DIR}/${RECLASSIFICATION_XLSX}.asc || exit 1
+  gpg -o ${DATA_DIR}/${ATTACHMENT_ZIP} --decrypt ${ENCRYPTED_DIR}/${ATTACHMENT_ZIP}.asc || exit 1
+
+  mkdir -p ${TOC_DIR}
+  mkdir -p ${ATTACHMENTS_DIR}
+  mkdir -p ${TDC_CONFIG_DIR}
+
+  unzip -d ${ATTACHMENTS_DIR} ${DATA_DIR}/${ATTACHMENT_ZIP}
+
+  # To save harddisk space, we remove the zip
+  rm ${DATA_DIR}/${ATTACHMENT_ZIP}
+
+  in2csv ${DATA_DIR}/${RECLASSIFICATION_XLSX} > ${DATA_DIR}/${RECLASSIFICATION_CSV} 
+fi
 
 # We've extracted the excluded Review Numbers from Exclusions.xlsx.
 # They're saved elsewhere, but for the record, here's how it was done,
@@ -131,17 +182,10 @@ TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
 # 
 #   $ 
 
-RAW_CSV="100andchangeExport-all-judges.csv"
-TOC_DIR="${DATA_DIR}/tocs"
-ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
-
 # We want to make sure there's no lingering old TOCs if we change how
-# compose-csv creates them
-mkdir -p $TOC_DIR
-rm $TOC_DIR/*
+# fix-csv creates them
+rm -f $TOC_DIR/*
 cp tocs/generic.j2 $TOC_DIR/Topic_TOC.j2
-
-SANITIZER="${MACFOUND_DIR}"/fix-csv
 
 # First we sanitize, then we filter, then we join.  We leave all the
 # intermediate stages in place, in case we need to debug them later.
@@ -150,22 +194,20 @@ STAGE_2_PREFIX="filtered-"
 STAGE_3_PREFIX="joined-"
 STAGE_FINAL_PREFIX="processed-"
 
-STAGE_1_CSV="${STAGE_1_PREFIX}${RAW_CSV}"
-STAGE_2_CSV="${STAGE_2_PREFIX}${RAW_CSV}"
-STAGE_3_CSV="${STAGE_3_PREFIX}${RAW_CSV}"
-STAGE_FINAL_CSV="${STAGE_FINAL_PREFIX}${RAW_CSV}"
-
-mkdir -p $TDC_CONFIG_DIR
+STAGE_1_CSV="${STAGE_1_PREFIX}${MASTER_CSV}"
+STAGE_2_CSV="${STAGE_2_PREFIX}${MASTER_CSV}"
+STAGE_3_CSV="${STAGE_3_PREFIX}${MASTER_CSV}"
+STAGE_FINAL_CSV="${STAGE_FINAL_PREFIX}${MASTER_CSV}"
 
 ### Sanitize the updated spreadsheet.
 #
 # Use --pare to convert only 1% of the entries, to save time while testing. 
 echo "Stage 1: Sanitizing..."
-${SANITIZER} --reclassifications="${DATA_DIR}/geo-and-topic-revisions-Reclassify-themes-ALL-complete-(merged-assignment-docs).csv" \
+${SANITIZER} --reclassifications="${DATA_DIR}/${RECLASSIFICATION_CSV}" \
              --tdc-config-dir="${TDC_CONFIG_DIR}" \
              --toc-dir="${TOC_DIR}" \
              --attachments-dir=${ATTACHMENTS_DIR} \
-             "${DATA_DIR}/${RAW_CSV}" \
+             "${DATA_DIR}/${MASTER_CSV}" \
              "${DATA_DIR}/${STAGE_1_CSV}"
 if [ $? -ne 0 ]; then
 		echo Sanitization failure!
@@ -176,7 +218,7 @@ echo ""
 
 ### Filter out excluded Review Numbers.
 echo "Stage 2: Filtering excluded Review Numbers..."
-csvgrep -c 15 -f "${DATA_DIR}"/excluded-review-numbers.txt -i \
+csvgrep -c 15 -f "${DATA_DIR}/${EXCLUDED_REVIEW_NUMBERS_TXT}" -i \
         "${DATA_DIR}"/${STAGE_1_CSV} > "${DATA_DIR}"/"${STAGE_2_CSV}"
 echo "Done with Stage 2 (filtering excluded Review Numbers)."
 echo ""
@@ -198,7 +240,7 @@ echo "Stage 3: Adding some supplemental data..."
 # Start by isolating the participant contact email into a CSV that has
 # just the Review_Number and the contact email.
 csvcut -c Review_Number,Participant_Email                             \
-          "${DATA_DIR}"/Principal-contact-join-20170716-utf8.csv      \
+          "${DATA_DIR}/${PRINCIPAL_CONTACT_CSV}"                      \
         > "${DATA_DIR}"/participant-email-tmp.csv
 # Side cleanup: fix the email addresses to use entities instead of
 # literal angle brackets, because with literal angle brackets, writing
@@ -213,7 +255,7 @@ mv "${DATA_DIR}"/participant-email-tmp.csv.tmp                        \
 # Next, isolate reason for turndown in the same way we did participant
 # contact email.
 csvcut -c Review_Number,Reason_For_Turndown                           \
-          "${DATA_DIR}"/Reason-for-Turndown-join-2017-07-16-utf8.csv  \
+          "${DATA_DIR}/${REASON_FOR_TURNDOWN_CSV}"  \
         > "${DATA_DIR}"/reason-for-turndown-tmp.csv
 # Join those two into one new CSV, also keyed on Review_Number.
 #
@@ -336,7 +378,7 @@ for file in $TOC_DIR/*.mwiki ; do
 done
 
 echo "Creating wiki..."
-${CSV2WIKI} -c ${CSV2WIKI_CONFIG}                    \
+${CSV2WIKI} -c ${CSV2WIKI_CONFIG} \
             --make-non-editable \
             ${TOC_PAGES} \
             --csv "${DATA_DIR}/${STAGE_FINAL_CSV}"
