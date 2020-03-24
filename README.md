@@ -1,16 +1,17 @@
-# MacFound
+# Torque Sites
 
-Repository of open source code specific to MacArthur Foundation
-internal projects.
+Repository of open source code for
+[Torque](https://github.com/opentechstrategies/torque/) sites managed
+by [Open Tech Strategies, LLC](https://OpenTechStrategies.com/).
 
 The code here is unlikely to be of general use, because it is highly
-specific to the needs and datasets of the [MacArthur
-Foundation](https://www.MacFound.org) and [Lever for Change](https://www.leverforchange.org/).  
-We release it as open source anyway, because that's our usual practice
-and because some of it could serve as an example or as a template for
-other similar efforts, primarily for anyone deploying
-a [Torque](https://github.com/OpenTechStrategies/torque)-based
-service.
+specific to the needs and datasets of OTS clients (e.g., the
+[MacArthur Foundation](https://www.MacFound.org) and [Lever for
+Change](https://www.leverforchange.org/)).  We release the code as
+open source software anyway, because that's our usual practice and
+because some of it could serve as an example or as a template for
+other similar efforts, primarily for anyone deploying a
+[Torque](https://github.com/OpenTechStrategies/torque)-based service.
 
 ## Dependencies
 
@@ -37,11 +38,11 @@ See the Torque documentation for details.
 
 ### Note about csv2wiki
 
-`csv2wiki` is a substantial program that macfound started out using
-to populate the whole wiki.  After moving to torque, nearly all of
-the `csv2wiki` features having to do with converting a csv to a wiki
-are ignored in favor of ones that just make adding pages to a wiki
-convenient.
+`csv2wiki` is a substantial program that we started out using to
+populate the whole wiki.  After moving to Torque, we no longer needed
+most of the `csv2wiki` features having to do with converting CSV rows
+to wiki pages, and we use just the features that make adding pages to
+a wiki convenient.
 
 ### Configuration
 
