@@ -83,7 +83,7 @@
 
 - name: Install EmbedVideo
   unarchive:
-    src: thirdparty/extensions/EmbedVideo-v2.8.0.zip
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/EmbedVideo-v2.8.0.zip"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
 - name: Patch EmbedVideo
@@ -93,22 +93,22 @@
 
 - name: Install RSS
   unarchive:
-    src: thirdparty/extensions/RSS-REL1_34-0e63926.tar.gz
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/RSS-REL1_34-0e63926.tar.gz"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
 - name: Install PluggableAuth
   unarchive:
-    src: thirdparty/extensions/PluggableAuth-REL1_33-a69f626.tar.gz
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/PluggableAuth-REL1_33-a69f626.tar.gz"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
 - name: Install SimpleSAML extension
   unarchive:
-    src: thirdparty/extensions/SimpleSAMLphp-REL1_33-7d91f27.tar.gz
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/SimpleSAMLphp-REL1_33-7d91f27.tar.gz"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
 - name: Install Collection
   unarchive:
-    src: thirdparty/extensions/Collection-REL1_33-8566dd1.tar.gz
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/Collection-REL1_33-8566dd1.tar.gz"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
 - name: Install PickSome

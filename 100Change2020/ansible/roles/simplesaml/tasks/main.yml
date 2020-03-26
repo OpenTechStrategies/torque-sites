@@ -18,7 +18,7 @@
 
 - name: Extract SimpleSAML tarball
   unarchive:
-    src: thirdparty/simplesaml/simplesamlphp-1.18.4.tar.gz
+    src: "{{ playbook_dir }}/../../thirdparty/simplesaml/simplesamlphp-1.18.4.tar.gz"
     dest: "{{ simplesaml_install_directory }}/"
     creates: "{{ simplesaml_install_directory }}/simplesamlphp-1.18.4/"
 

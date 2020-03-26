@@ -82,7 +82,7 @@
 
 - name: Install EmbedVideo
   unarchive:
-    src: "{{ torque_dir }}/ansible/thirdparty/extensions/EmbedVideo-v2.8.0.zip"
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/EmbedVideo-v2.8.0.zip"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
 - name: Install TorqueDataConnect

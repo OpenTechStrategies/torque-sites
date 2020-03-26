@@ -82,12 +82,12 @@
 
 - name: Install Collection
   unarchive:
-    src: "{{ torque_dir }}/ansible/thirdparty/extensions/Collection-REL1_33-8566dd1.tar.gz"
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/Collection-REL1_33-8566dd1.tar.gz"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
 - name: Install EmbedVideo
   unarchive:
-    src: "{{ torque_dir }}/ansible/thirdparty/extensions/EmbedVideo-v2.8.0.zip"
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/EmbedVideo-v2.8.0.zip"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
 - name: Install TorqueDataConnect
