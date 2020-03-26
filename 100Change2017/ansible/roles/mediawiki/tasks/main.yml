@@ -192,6 +192,7 @@
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     block: |
       $wgGroupPermissions['*']['read'] = false;
+      $wgGroupPermissions['Staff']['read'] = true;
 
       foreach($wgGroupPermissions['sysop'] as $key => $value) {
         $wgGroupPermissions['LFCTorque'][$key] = $value;
