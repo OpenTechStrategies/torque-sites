@@ -1,0 +1,29 @@
+[program:nserve]
+directory={{ mwlib_install_directory }}
+command={{ mwlib_install_directory }}bin/nserve
+autostart=true
+autorestart=false
+redirect_stderr=true
+redirect_stdout=true
+environment=PATH={{ mwlib_install_directory }}bin/:%(ENV_PATH)s
+
+[program:mwqserve]
+directory={{ mwlib_install_directory }}
+command={{ mwlib_install_directory }}bin/mw-qserve
+autostart=true
+autorestart=false
+redirect_stderr=true
+redirect_stdout=true
+environment=PATH={{ mwlib_install_directory }}bin/:%(ENV_PATH)s
+
+[program:nslave]
+directory={{ mwlib_install_directory }}
+command={{ mwlib_install_directory }}bin/nslave --cachedir={{ mwlib_install_directory }}cache
+autostart=true
+autorestart=false
+redirect_stderr=true
+redirect_stdout=true
+environment=PATH={{ mwlib_install_directory }}bin/:%(ENV_PATH)s
+
+[group:mwlib]
+programs=nserve,mwqserve,nslave

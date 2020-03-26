@@ -1,0 +1,52 @@
+---
+
+- name: install prerequisites
+  become_user: root
+  # See https://www.mediawiki.org/wiki/Manual:Installation_requirements
+  apt:
+    name: "{{ item }}"
+    #update_cache: yes # commented out for dev purposes
+    state: present
+  loop:
+    - pipenv
+
+- name: Setup installation directory
+  file:
+    path: "{{ torquedata_install_directory }}"
+    state: directory
+
+- name: Install TorqueData
+  copy:
+    src: "{{ playbook_dir }}/../torquedata/{{ item }}"
+    dest: "{{ torquedata_install_directory }}"
+  loop:
+    - Pipfile
+    - Pipfile.lock
+    - torquedata
+
+- name: Install torquedata supervisor
+  become_user: root
+  template:
+    src: supervisor-torquedata.conf.j2
+    dest: /etc/supervisor/conf.d/torquedata.conf
+
+- name: Run pipenv install
+  command: "pipenv install"
+  args:
+    chdir: "{{ torquedata_install_directory }}"
+
+- name: Install torquedata configuration
+  template:
+    src: config.py.j2
+    dest: "{{ torquedata_install_directory }}/config.py"
+
+- name: Create Spreadsheet Directory
+  file:
+    state: directory
+    path: "{{ torquedata_spreadsheet_location }}"
+
+- name: Restart supervisor for torquedata
+  become_user: root
+  supervisorctl:
+    name: 'torquedata'
+    state: restarted

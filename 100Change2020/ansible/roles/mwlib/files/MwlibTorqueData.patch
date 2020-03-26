@@ -1,0 +1,71 @@
+diff -ruN mwlib/lib/python2.7/site-packages/mwlib/apps/make_nuwiki.py mwlib.modified/lib/python2.7/site-packages/mwlib/apps/make_nuwiki.py
+--- mwlib/lib/python2.7/site-packages/mwlib/apps/make_nuwiki.py	2020-02-13 18:08:16.504608000 +0000
++++ mwlib.modified/lib/python2.7/site-packages/mwlib/apps/make_nuwiki.py	2020-02-12 23:33:45.639319943 +0000
+@@ -23,7 +23,7 @@
+ 
+     def get_api(self):
+         if self.username:
+-            api = mwapi.mwapi(self.api_url, self.username, self.password)
++            api = mwapi.mwapi(self.api_url, self.torqueinfo, self.username, self.password)
+         else:
+             api = mwapi.mwapi(self.api_url)
+         api.set_limit()
+@@ -71,6 +71,7 @@
+ 
+         self.username = options.username
+         self.password = options.password
++        self.torqueinfo = options.torqueinfo
+         self.domain = options.domain
+ 
+         self.fsout = fetch.fsoutput(self.fsdir)
+diff -ruN mwlib/lib/python2.7/site-packages/mwlib/net/sapi.py mwlib.modified/lib/python2.7/site-packages/mwlib/net/sapi.py
+--- mwlib/lib/python2.7/site-packages/mwlib/net/sapi.py	2020-02-13 18:08:16.508608000 +0000
++++ mwlib.modified/lib/python2.7/site-packages/mwlib/net/sapi.py	2020-02-13 18:14:15.228942530 +0000
+@@ -48,9 +48,10 @@
+ 
+ 
+ class mwapi(object):
+-    def __init__(self, apiurl, username=None, password=None):
++    def __init__(self, apiurl, torqueinfo=None, username=None, password=None):
+         self.apiurl = apiurl
+         self.baseurl = apiurl  # XXX
++        self.torqueinfo = torqueinfo
+ 
+         if username:
+             passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
+@@ -127,6 +128,9 @@
+         if sem is not None:
+             sem.acquire()
+ 
++        if self.torqueinfo:
++            kwargs["tdcinfo"] = self.torqueinfo
++
+         try:
+             if use_post:
+                 return self._post(**kwargs)
+diff -ruN mwlib/lib/python2.7/site-packages/mwlib/nslave.py mwlib.modified/lib/python2.7/site-packages/mwlib/nslave.py
+--- mwlib/lib/python2.7/site-packages/mwlib/nslave.py	2020-02-13 18:08:16.500608000 +0000
++++ mwlib.modified/lib/python2.7/site-packages/mwlib/nslave.py	2020-02-12 23:29:24.855200162 +0000
+@@ -79,9 +79,9 @@
+     args = []
+ 
+     if login_credentials:
+-        username, password, domain = (login_credentials.split(":", 3) + [None] * 3)[:3]
++        username, torqueinfo, password, domain = (login_credentials.split(":", 4) + [None] * 4)[:4]
+         assert username and password, "bad login_credentials"
+-        args.extend(["--username", username, "--password", password])
++        args.extend(["--username", username, "--password", password, "--torqueinfo", torqueinfo])
+         if domain:
+             args.extend(["--domain", domain])
+ 
+diff -ruN mwlib/lib/python2.7/site-packages/mwlib/options.py mwlib.modified/lib/python2.7/site-packages/mwlib/options.py
+--- mwlib/lib/python2.7/site-packages/mwlib/options.py	2020-02-13 18:08:16.504608000 +0000
++++ mwlib.modified/lib/python2.7/site-packages/mwlib/options.py	2020-02-12 23:30:46.979237879 +0000
+@@ -37,6 +37,7 @@
+         a("-l", "--logfile", help="log to logfile")
+ 
+         a("--username", help="username for login")
++        a("--torqueinfo", help="info for torque")
+         a("--password", help="password for login")
+         a("--domain", help="domain for login")
+ 
