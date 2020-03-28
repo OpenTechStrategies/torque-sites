@@ -1,0 +1,43 @@
+---
+# We need to know what user we're deploying as, but the reason
+# here is complex.  At the base level, we need to know what
+# user torquedata should be running as.  But more than that,
+# we need to know who to 'become' in the ansible sense when
+# we're not becoming root.  The reason we have to specify
+# in a different variable than 'ansible_become_user', is
+# because that variable overrides task level declarations,
+# thereby overriding becoming root for tasks we need to.
+# So we store in a different variable and use at the top level
+# in main.yml.
+deployment_user: __USERNAME__
+
+# The root password needed to install mysql users
+mysql_root_password: __PASSWORD__
+
+# The DB password for the wikiuser that the mediawiki instance users.
+db_password: __YOUR_DB_PW_HERE__
+
+# Directory to install all of the mediawiki needs
+# This must be an absolute path because of weirdness with unarchive
+mediawiki_install_directory: __ABSOLUTE_INSTALLATION_DIRECTORY__
+
+# The password for the mediawiki user admin to run automated
+# commands against wikis (such as csv2wiki, setup, etc)
+mediawiki_admin_password: __MEDIAWIKI_ADMIN_PASSWORD__
+
+# The user and password for the mwlib pdf printing process
+#
+# The password must not have spaces.
+mediawiki_mwlib_username: mwlib
+mediawiki_mwlib_password: __MEDIAWIKI_MWLIB_PASSWORD__
+
+# The user and password for loading the wiki externally
+# using csv2wiki in coordination with the macfound repository
+mediawiki_csv2wiki_username: csv2wiki
+mediawiki_csv2wiki_password: __MEDIAWIKI_CSV2WIKI_PASSWORD__
+
+# TECH DEBT: This needs to be abstracted out
+torque_dir: /home/admin/torque/
+
+# Directory to install simplesaml
+simplesaml_install_directory: /home/deploy/simplesaml/

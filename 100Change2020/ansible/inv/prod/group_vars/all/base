@@ -1,0 +1,12 @@
+---
+mediawiki_install_directory: /home/deploy/lfc/
+mediawiki_mwlib_username: mwlib
+mwlib_install_directory: /home/deploy/mwlib/
+mediawiki_csv2wiki_username: csv2wiki
+
+simplesaml_install_directory: /home/deploy/simplesaml/
+
+torquedata_install_directory: /home/deploy/torquedata/
+torquedata_spreadsheet_location: /home/deploy/spreadsheets/
+
+deployment_user: deploy
