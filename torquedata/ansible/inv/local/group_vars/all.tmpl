@@ -1,0 +1,24 @@
+---
+# We need to know what user we're deploying as, but the reason
+# here is complex.  At the base level, we need to know what
+# user torquedata should be running as.  But more than that,
+# we need to know who to 'become' in the ansible sense when
+# we're not becoming root.  The reason we have to specify
+# in a different variable than 'ansible_become_user', is
+# because that variable overrides task level declarations,
+# thereby overriding becoming root for tasks we need to.
+# So we store in a different variable and use at the top level
+# in main.yml.
+depoloyment_user: __USERNAME__
+
+# torquedata configuration follows
+torquedata_install_directory: __INSTALLATION_DIRECTORY__
+
+# The location for the proposals spreadsheet.  This will go away
+# after torquedata becomes more configured as it runs, but for now
+# the fact that this spreadsheet exists and looks like it does
+# is logic in the code.
+#
+# Also note that ansible won't be installing the spreadsheet, just
+# the configuration torquedata needs.
+torquedata_spreadsheet_location: __SPREADSHEET_LOCATION__

@@ -1,0 +1,7 @@
+---
+
+- hosts: torquedata
+  become: true
+  become_user: "{{ deployment_user }}"
+  roles:
+  - torquedata

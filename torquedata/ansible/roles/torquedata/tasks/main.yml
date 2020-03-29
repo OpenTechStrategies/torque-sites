@@ -15,14 +15,17 @@
     path: "{{ torquedata_install_directory }}"
     state: directory
 
-- name: Install TorqueData
-  copy:
-    src: "{{ playbook_dir }}/../torquedata/{{ item }}"
-    dest: "{{ torquedata_install_directory }}"
-  loop:
-    - Pipfile
-    - Pipfile.lock
-    - torquedata
+- name: Checkout Torque
+  git:
+    repo: https://github.com/OpenTechStrategies/torque
+    dest: "{{ torquedata_install_directory }}/torque/"
+    version: ad834b4
+
+- name: Link TorqueDataConnect
+  file:
+    src: "{{ torquedata_install_directory }}/torque/torquedata/"
+    dest: "{{ torquedata_install_directory }}/server"
+    state: link
 
 - name: Install torquedata supervisor
   become_user: root
@@ -33,17 +36,17 @@
 - name: Run pipenv install
   command: "pipenv install"
   args:
-    chdir: "{{ torquedata_install_directory }}"
+    chdir: "{{ torquedata_install_directory }}/server"
 
 - name: Install torquedata configuration
   template:
     src: config.py.j2
-    dest: "{{ torquedata_install_directory }}/config.py"
+    dest: "{{ torquedata_install_directory }}/server/config.py"
 
 - name: Create Spreadsheet Directory
   file:
     state: directory
-    path: "{{ torquedata_spreadsheet_location }}"
+    path: "{{ torquedata_install_directory }}/spreadsheets"
 
 - name: Restart supervisor for torquedata
   become_user: root

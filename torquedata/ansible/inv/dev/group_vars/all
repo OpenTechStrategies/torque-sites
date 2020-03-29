@@ -1,0 +1,5 @@
+---
+torquedata_install_directory: /home/deploy/torquedata/
+torquedata_spreadsheet_location: /home/deploy/spreadsheets/
+
+deployment_user: admin
