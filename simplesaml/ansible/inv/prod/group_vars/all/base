@@ -1,0 +1,3 @@
+---
+simplesaml_install_directory: /home/deploy/simplesaml/
+deployment_user: deploy

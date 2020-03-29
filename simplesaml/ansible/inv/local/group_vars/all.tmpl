@@ -1,0 +1,19 @@
+---
+# We need to know what user we're deploying as, but the reason
+# here is complex.  At the base level, we need to know what
+# user torquedata should be running as.  But more than that,
+# we need to know who to 'become' in the ansible sense when
+# we're not becoming root.  The reason we have to specify
+# in a different variable than 'ansible_become_user', is
+# because that variable overrides task level declarations,
+# thereby overriding becoming root for tasks we need to.
+# So we store in a different variable and use at the top level
+# in main.yml.
+depoloyment_user: __USERNAME__
+
+# Directory to install simplesaml
+simplesaml_install_directory: __INSTALLATION_DIRECTORY__
+
+# Salt for simplesaml, you can create easily via:
+# LC_CTYPE=C tr -c -d '0123456789abcdefghijklmnopqrstuvwxyz' </dev/urandom | dd bs=32 count=1 2>/dev/null;echo
+simplesaml_salt: __SALT__
