@@ -107,7 +107,7 @@
     block: |
       wfLoadExtension( 'SimpleSAMLphp' );
       $wgSimpleSAMLphp_InstallDir = '{{ simplesaml_install_directory }}/simplesamlphp-1.18.4';
-      $wgSimpleSAMLphp_AuthSourceId = 'EO2020';
+      $wgSimpleSAMLphp_AuthSourceId = '{{ simplesaml_okta_metadata_name }}';
       $wgSimpleSAMLphp_RealNameAttribute = ['firstName', 'lastName'];
       $wgSimpleSAMLphp_EmailAttribute = 'email';
       $wgSimpleSAMLphp_UsernameAttribute = 'email';

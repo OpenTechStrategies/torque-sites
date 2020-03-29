@@ -38,3 +38,14 @@ mediawiki_csv2wiki_password: __MEDIAWIKI_CSV2WIKI_PASSWORD__
 
 # Directory to install simplesaml
 simplesaml_install_directory: /home/deploy/simplesaml/
+
+# The metadata declaration, in the form of key => location.  The METADATA_NAME should
+# correspond to the single sign on url you have set up in okta, which will be of the form
+# http://<installationbox>/simplesaml/module.php/saml/sp/saml2-acs.php/__METADATA_NAME__
+#
+# Then the URL here should be the metadata url you receive from okta when looking at
+# your application settings for "Identity Provider metadata"
+#
+# See https://developer.okta.com/code/php/simplesamlphp/ for more information
+simplesaml_okta_metadata_name: __METADATA_NAME__
+simplesaml_okta_metadata_url: __METADATA_URL__

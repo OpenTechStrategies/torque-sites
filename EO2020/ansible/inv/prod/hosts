@@ -1,2 +1,5 @@
 [mediawiki]
 torque.leverforchange.org ansible_ssh_user="{{ lookup('env','OTSUSER') }}"
+
+[simplesaml]
+torque.leverforchange.org ansible_ssh_user="{{ lookup('env','OTSUSER') }}"
