@@ -343,10 +343,11 @@ def generate_sdg_toc(toc_dir, sdg_data, sdgconfig_data):
     need to be dynamically generated."""
     grouped_data = []
     for sdgconfig in sdgconfig_data:
-        grouped_data.append({
-            'heading': sdgconfig['name'],
-            'proposal_ids': sdg_data[sdgconfig['name']]
-        })
+        if sdgconfig['name'] in sdg_data:
+            grouped_data.append({
+                'heading': sdgconfig['name'],
+                'proposal_ids': sdg_data[sdgconfig['name']]
+            })
 
     with open(os.path.join(toc_dir, "SDG_TOC.json"), 'w') as f:
         f.writelines(json.dumps({"sdgs": grouped_data}))
