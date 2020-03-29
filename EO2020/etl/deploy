@@ -184,7 +184,7 @@ done
 echo "Stage 3: Creating wiki..."
 python3 -m csv2wiki -c ${CSV2WIKI_CONFIG}      \
             --make-non-editable \
-            --skip-lines=1 \
+            --skip-rows=1 \
             ${TOC_PAGES} \
             --csv="${DATA_DIR}/${OUTPUT_CSV}"
 echo "Done creating wiki."
