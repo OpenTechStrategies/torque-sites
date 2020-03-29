@@ -1,0 +1,2 @@
+[mwlib]
+macfound.opentechstrategies.com ansible_ssh_user="{{ lookup('env','OTSUSER') }}"

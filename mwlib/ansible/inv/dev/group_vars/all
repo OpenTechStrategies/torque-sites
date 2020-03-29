@@ -1,0 +1,3 @@
+---
+mwlib_install_directory: /home/deploy/mwlib/
+deployment_user: deploy

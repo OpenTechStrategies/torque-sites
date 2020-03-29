@@ -1,0 +1,7 @@
+---
+
+- hosts: mwlib
+  become: true
+  become_user: "{{ deployment_user }}"
+  roles:
+  - mwlib
