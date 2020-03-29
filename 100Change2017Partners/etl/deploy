@@ -68,5 +68,6 @@ fi
 echo "Stage 1: Creating wiki..."
 python3 -m csv2wiki -c ${CSV2WIKI_CONFIG}      \
             --make-non-editable \
+            --skip-lines=1 \
             --csv="${OUTPUT_CSV}"
 echo "Done creating wiki."

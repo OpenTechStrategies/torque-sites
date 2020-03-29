@@ -239,6 +239,7 @@ done
 # intended to be used...
 echo "Stage 3: Creating wiki..."
 python3 -m csv2wiki -c ${CSV2WIKI_CONFIG}      \
+            --skip-lines=1 \
             --make-non-editable \
             ${TOC_PAGES} \
             --csv="${DATA_DIR}/${OUTPUT_CSV}"

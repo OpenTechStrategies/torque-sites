@@ -380,6 +380,7 @@ done
 echo "Creating wiki..."
 ${CSV2WIKI} -c ${CSV2WIKI_CONFIG} \
             --make-non-editable \
+            --skip-lines=1 \
             ${TOC_PAGES} \
             --csv "${DATA_DIR}/${STAGE_FINAL_CSV}"
 echo "Done creating wiki."
