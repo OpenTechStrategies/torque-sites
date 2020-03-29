@@ -111,31 +111,41 @@
     src: "{{ playbook_dir }}/../../thirdparty/extensions/Collection-REL1_33-8566dd1.tar.gz"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
-- name: Install PickSome
-  copy:
-    src: "{{ playbook_dir }}/../extensions/PickSome"
-    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+- name: Checkout PickSome
+  git:
+    repo: https://github.com/OpenTechStrategies/PickSome
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/PickSome/"
+    version: d48deca
 
-- name: Install ActivityLog
-  copy:
-    src: "{{ playbook_dir }}/../extensions/ActivityLog"
-    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+- name: Checkout ActivityLog
+  git:
+    repo: https://github.com/OpenTechStrategies/ActivityLog
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/ActivityLog/"
+    version: db4d6aa
 
-- name: Install TorqueDataConnect
-  become_user: root
-  copy:
-    src: "{{ playbook_dir }}/../extensions/TorqueDataConnect"
-    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+- name: Checkout SimpleFavorites
+  git:
+    repo: https://github.com/OpenTechStrategies/SimpleFavorites
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/SimpleFavorites/"
+    version: 5b5a2a8
 
-- name: Install SimpleFavorites
-  copy:
-    src: "{{ playbook_dir }}/../extensions/SimpleFavorites"
-    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+- name: Checkout TeamComments
+  git:
+    repo: https://github.com/OpenTechStrategies/TeamComments
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/TeamComments/"
+    version: bd0fd77
 
-- name: Install TeamComments
-  copy:
-    src: "{{ playbook_dir }}/../extensions/TeamComments"
-    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+- name: Checkout Torque
+  git:
+    repo: https://github.com/OpenTechStrategies/torque
+    dest: "{{ mediawiki_install_directory }}/torque/"
+    version: ad834b4
+
+- name: Link TorqueDataConnect
+  file:
+    src: "{{ mediawiki_install_directory }}/torque/TorqueDataConnect/"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/TorqueDataConnect"
+    state: link
 
 - name: Create Wiki
   command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/install.php --dbtype=mysql --dbserver=localhost --dbuser=wikiuser --dbpass=\"{{ db_password }}\" --dbname=lfc --scriptpath=\"/lfc\" --lang=en --pass=\"{{ mediawiki_admin_password }}\" \"lfc\" \"admin\""

@@ -3,3 +3,4 @@ csv2wiki-config
 .\#*
 csv2wiki
 macfound-*-csv2wiki-config
+*.retry

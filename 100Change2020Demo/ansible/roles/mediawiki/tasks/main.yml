@@ -37,11 +37,17 @@
     path: "{{ mediawiki_install_directory }}/bin"
     state: directory
 
-- name: Install TorqueDataConnect
-  become_user: root
-  copy:
-    src: "{{ torque_dir }}/extensions/TorqueDataConnect"
-    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+- name: Checkout Torque
+  git:
+    repo: https://github.com/OpenTechStrategies/torque
+    dest: "{{ mediawiki_install_directory }}/torque/"
+    version: ad834b4
+
+- name: Link TorqueDataConnect
+  file:
+    src: "{{ mediawiki_install_directory }}/torque/TorqueDataConnect/"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/TorqueDataConnect"
+    state: link
 
 - name: Create Wiki
   command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/install.php --dbtype=mysql --dbserver=localhost --dbuser=wikiuser --dbpass=\"{{ db_password }}\" --dbname=100Change2020Demo --scriptpath=\"/100Change2020Demo\" --lang=en --pass=\"{{ mediawiki_admin_password }}\" \"100Change2020Demo\" \"admin\""

@@ -90,11 +90,17 @@
     src: "{{ playbook_dir }}/../../thirdparty/extensions/EmbedVideo-v2.8.0.zip"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
-- name: Install TorqueDataConnect
-  become_user: root
-  copy:
-    src: "{{ torque_dir }}/extensions/TorqueDataConnect"
-    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+- name: Checkout Torque
+  git:
+    repo: https://github.com/OpenTechStrategies/torque
+    dest: "{{ mediawiki_install_directory }}/torque/"
+    version: ad834b4
+
+- name: Link TorqueDataConnect
+  file:
+    src: "{{ mediawiki_install_directory }}/torque/TorqueDataConnect/"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/TorqueDataConnect"
+    state: link
 
 - name: Create Wiki
   command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/install.php --dbtype=postgres --dbserver=localhost --dbuser=wikiuser --dbpass=\"{{ db_password }}\" --dbname=100Change2017 --scriptpath=\"/100Change2017\" --lang=en --pass=\"{{ mediawiki_admin_password }}\" \"100Change2017\" \"admin\""

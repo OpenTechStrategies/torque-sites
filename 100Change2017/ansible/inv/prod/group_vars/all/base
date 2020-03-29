@@ -2,8 +2,4 @@
 mediawiki_install_directory: /home/deploy/100Change2017/
 mediawiki_mwlib_username: mwlib
 mediawiki_csv2wiki_username: csv2wiki
-
-# TECH DEBT: This needs to be abstracted out
-torque_dir: /home/admin/torque/
-
 deployment_user: deploy

@@ -1,6 +1,5 @@
 ---
 mediawiki_install_directory: /home/deploy/EO2020/
-torque_dir: /home/admin/torque/
 mediawiki_mwlib_username: mwlib
 mediawiki_csv2wiki_username: csv2wiki
 

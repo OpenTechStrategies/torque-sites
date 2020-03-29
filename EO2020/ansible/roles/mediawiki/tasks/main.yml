@@ -25,7 +25,7 @@
 
 - name: Install EmbedVideo
   unarchive:
-    src: "{{ torque_dir }}/ansible/thirdparty/extensions/EmbedVideo-v2.8.0.zip"
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/EmbedVideo-v2.8.0.zip"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
 - name: Patch EmbedVideo
@@ -34,42 +34,49 @@
     basedir: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/EmbedVideo-v2.8.0/"
 
 - name: Install PluggableAuth
-  tags: DEPLOY
   unarchive:
-    src: "{{ torque_dir }}/ansible/thirdparty/extensions/PluggableAuth-REL1_33-a69f626.tar.gz"
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/PluggableAuth-REL1_33-a69f626.tar.gz"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
 - name: Install SimpleSAML extension
-  tags: DEPLOY
   unarchive:
-    src: "{{ torque_dir }}/ansible/thirdparty/extensions/SimpleSAMLphp-REL1_33-7d91f27.tar.gz"
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/SimpleSAMLphp-REL1_33-7d91f27.tar.gz"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
 - name: Install Collection
   unarchive:
-    src: "{{ torque_dir }}/ansible/thirdparty/extensions/Collection-REL1_33-8566dd1.tar.gz"
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/Collection-REL1_33-8566dd1.tar.gz"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
-- name: Install ActivityLog
-  copy:
-    src: "{{ torque_dir }}/extensions/ActivityLog"
-    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+- name: Checkout ActivityLog
+  git:
+    repo: https://github.com/OpenTechStrategies/ActivityLog
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/ActivityLog/"
+    version: db4d6aa
 
-- name: Install SimpleFavorites
-  copy:
-    src: "{{ torque_dir }}/extensions/SimpleFavorites"
-    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+- name: Checkout SimpleFavorites
+  git:
+    repo: https://github.com/OpenTechStrategies/SimpleFavorites
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/SimpleFavorites/"
+    version: 5b5a2a8
 
-- name: Install TeamComments
-  copy:
-    src: "{{ torque_dir }}/extensions/TeamComments"
-    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+- name: Checkout TeamComments
+  git:
+    repo: https://github.com/OpenTechStrategies/TeamComments
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/TeamComments/"
+    version: bd0fd77
 
-- name: Install TorqueDataConnect
-  become_user: root
-  copy:
-    src: "{{ torque_dir }}/extensions/TorqueDataConnect"
-    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+- name: Checkout Torque
+  git:
+    repo: https://github.com/OpenTechStrategies/torque
+    dest: "{{ mediawiki_install_directory }}/torque/"
+    version: ad834b4
+
+- name: Link TorqueDataConnect
+  file:
+    src: "{{ mediawiki_install_directory }}/torque/TorqueDataConnect/"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/TorqueDataConnect"
+    state: link
 
 - name: Create Wiki
   command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/install.php --dbtype=mysql --dbserver=localhost --dbuser=wikiuser --dbpass=\"{{ db_password }}\" --dbname=EO2020 --scriptpath=\"/EO2020\" --lang=en --pass=\"{{ mediawiki_admin_password }}\" \"EO2020\" \"admin\""
@@ -82,7 +89,6 @@
     line: "wfLoadExtension('EmbedVideo-v2.8.0');"
 
 - name: Enable PluggableAuth
-  tags: DEPLOY
   blockinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     marker: "## {mark} ANSIBLE PLUGABLE AUTH CONFIG"
@@ -95,7 +101,6 @@
       $wgInvalidUsernameCharacters = "";
 
 - name: Enable SimpleSAMLphp extension
-  tags: DEPLOY
   blockinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     marker: "## {mark} ANSIBLE SIMPLE SAML PHP CONFIG"

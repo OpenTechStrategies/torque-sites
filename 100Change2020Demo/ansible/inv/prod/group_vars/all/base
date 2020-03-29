@@ -1,5 +1,4 @@
 ---
 mediawiki_install_directory: /home/deploy/100Change2020demo/
 mediawiki_csv2wiki_username: csv2wiki
-torque_dir: /home/admin/torque/
 deployment_user: deploy
