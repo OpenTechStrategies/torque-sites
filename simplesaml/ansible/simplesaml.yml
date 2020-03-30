@@ -1,0 +1,7 @@
+---
+
+- hosts: simplesaml
+  become: true
+  become_user: "{{ deployment_user }}"
+  roles:
+  - simplesaml
