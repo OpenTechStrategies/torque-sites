@@ -10,5 +10,5 @@ specific to the needs and datasets of OTS clients (e.g., the
 Change](https://www.leverforchange.org/)).  We release the code as
 open source software anyway, because that's our usual practice and
 because some of it could serve as an example or as a template for
-other similar efforts, primarily for anyone deploying a
-[Torque](https://github.com/OpenTechStrategies/torque)-based service.
+other similar efforts, primarily for anyone deploying a Torque-based
+service.
