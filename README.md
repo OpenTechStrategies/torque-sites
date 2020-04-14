@@ -24,8 +24,9 @@ Each subdirectory falls into one of three categories:
 3. A site (competition) 
 
 Because each adheres to the standards set out in these top level
-documents, README's aren't necessary in the subdirectories. However,
-some may include one to add information specific to their use.
+documents, most of the information needed is here.  However, each
+competition includes a README that notes information about the
+competition as well as other installation reqruirements if applicable.
 
 ### Support Systems
 
@@ -78,5 +79,5 @@ can be run after the competition is deployed to install the data.
 
 As noted in [INSTALL.md](INSTALL.md) and above, a lot of the files
 necessary to understand and complete the data deployment are confidential,
-and so reside on a private server.  The ansible scripts, however,
+h
 should be usable by anyone.
