@@ -227,6 +227,23 @@ def process_regionconfig_data(csv_reader):
 
     return region_data_by_country
 
+def process_thematic_areas(csv_reader):
+    """Takes a CSV_READER representing a csv with the first column being
+    a review number, and the fourth being the area.
+
+    Returns a dictionary mapping the former to the latter."""
+
+    if csv_reader is None:
+        return {}
+
+    data = {}
+
+    next(csv_reader)
+    for row in csv_reader:
+        data[row[0]] = row[3]
+
+    return data
+
 def generate_generic_toc(toc_dir, grouped_review_numbers, toc_name):
     """Generates a TOC mwiki and TOC data file in TOC_DIR for the given data,
     which is a dict where the proposals are all grouped by some key.
@@ -291,7 +308,7 @@ def create_tdc_config(tdc_config_dir, header_row, new_rows):
         for column in header_row:
             f.writelines("* %s\n" % column)
 
-def compose_csvs(proposals, admin_review, regionconfig, attachments_dir, toc_dir, tdc_config_dir, pare=None):
+def compose_csvs(proposals, admin_review, thematic_areas_csv, regionconfig, attachments_dir, toc_dir, tdc_config_dir, pare=None):
     """Write a composed version of PROPOSALS (a CSV file), ADMIN_REVIEW
     (a CSV file) standard out.
 
@@ -299,9 +316,11 @@ def compose_csvs(proposals, admin_review, regionconfig, attachments_dir, toc_dir
     represent a full list of proposals and a list of accepted proposals,
     respectively.
 
+    THEMATIC_AREAS_CSV is a csv containing thematic areas which are
+    added to the spreadsheet by proposal.
+
     REGIONCONFIG is a filename of a simple mapping of countries to regions
     they belong to based on the UN geoscheme.
-
 
     ATTACHMENTS_DIR is the directory to look in for attachments.
 
@@ -321,15 +340,21 @@ def compose_csvs(proposals, admin_review, regionconfig, attachments_dir, toc_dir
                                          delimiter=',', quotechar='"')
         regionconfig_reader = csv.reader(open(regionconfig, encoding='utf-8'),
                                        delimiter=',', quotechar='"')
+        if thematic_areas_csv is not None:
+            thematic_areas_reader = csv.reader(open(thematic_areas_csv, encoding='utf-8'),
+                                       delimiter=',', quotechar='"')
     except UnicodeDecodeError:
         sys.stderr.write("fix-csv expects utf-8-encoded unicode, not whatever is in this csv file.\n")
         sys.exit(-1)
+
+    thematic_areas = process_thematic_areas(thematic_areas_reader)
 
     header_row = next(proposals_reader)
     header_row.append("Valid")
     header_row.append("Attachment Display Names")
     header_row.append("Attachments")
     header_row.append("MediaWiki Title")
+    header_row.append("Thematic Area")
 
     # We only accept applications if they're one of the rows in the
     # admin_review csv, which has an "Application #" column (3),
@@ -390,8 +415,8 @@ def compose_csvs(proposals, admin_review, regionconfig, attachments_dir, toc_dir
 
         mwiki_title = wiki_escape_page_title("{30} ({3})".format(*new_row))
 
-        # Attachments placeholder
         new_row.append(mwiki_title)
+        new_row.append(thematic_areas[row[3]] if row[3] in thematic_areas else "")
 
         print("Sanitized row %d (%d cols, %d fixed)." % (row_num, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
@@ -413,9 +438,9 @@ def compose_csvs(proposals, admin_review, regionconfig, attachments_dir, toc_dir
         # Topic
         topic_data = {}
         for new_row in new_rows:
-            if new_row[57] not in topic_data:
-                topic_data[new_row[57]] = []
-            topic_data[new_row[57]].append(new_row[3])
+            if new_row[135] not in topic_data:
+                topic_data[new_row[135]] = []
+            topic_data[new_row[135]].append(new_row[3])
         generate_generic_toc(toc_dir, topic_data, "Topic_TOC")
 
         # Geographic.  There's a "shown" flag for working with the template file
@@ -464,6 +489,7 @@ def main():
                                    ["pare=",
                                     "proposals-csv=",
                                     "admin-review-csv=",
+                                    "thematic-areas-csv=",
                                     "regionconfig-csv=",
                                     "toc-dir=",
                                     "tdc-config-dir=",
@@ -476,6 +502,7 @@ def main():
     pare = None
     proposals_csv = None
     admin_review_csv = None
+    thematic_areas_csv = None
     regionconfig_csv = None
     attachments_dir = None
     toc_dir = None
@@ -487,6 +514,8 @@ def main():
             proposals_csv = a
         elif o == "--admin-review-csv":
             admin_review_csv = a
+        elif o == "--thematic-areas-csv":
+            thematic_areas_csv = a
         elif o == "--regionconfig-csv":
             regionconfig_csv = a
         elif o == "--toc-dir":
@@ -505,7 +534,8 @@ def main():
             "ERROR: need --proposals-csv, and --admin-review-csv options.\n\n")
         sys.stderr.write(__doc__)
         sys.exit(1)
-    compose_csvs(proposals_csv, admin_review_csv, regionconfig_csv, attachments_dir, toc_dir, tdc_config_dir, pare)
+    compose_csvs(proposals_csv, admin_review_csv, thematic_areas_csv, regionconfig_csv,
+            attachments_dir, toc_dir, tdc_config_dir, pare)
 
 if __name__ == '__main__':
     main()
