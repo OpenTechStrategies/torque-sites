@@ -50,7 +50,7 @@ python3 -V > /dev/null 2>&1 || { echo "python3 required, aborting" ; exit 1; }
 PROPOSALS_CSV="EOC_registration_and_application_data.csv"
 ADMIN_REVIEW_CSV="AdminReviewEP_eoc2019_03102020.csv"
 REGIONCONFIG_CSV="regionconfig.csv"
-THEMATIC_AREAS_CSV="EOC Applications Thematic Areas.csv"
+THEMATIC_AREAS_CSV="EOC_Applications_Thematic_Areas.csv"
 BASE_ATTACHMENTS="Registration\&Application_data_exports_EOC.zip"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
 TOC_DIR="${DATA_DIR}/tocs"
