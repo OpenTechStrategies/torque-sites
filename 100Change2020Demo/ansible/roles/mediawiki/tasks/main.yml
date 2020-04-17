@@ -41,7 +41,7 @@
   git:
     repo: https://github.com/OpenTechStrategies/torque
     dest: "{{ mediawiki_install_directory }}/torque/"
-    version: ad834b4
+    version: b3afba9
 
 - name: Link TorqueDataConnect
   file:
@@ -95,6 +95,7 @@
       $wgGroupPermissions['bot']['generated'] = true;
       $wgGroupPermissions['bot']['edit'] = true;
       $wgGroupPermissions['bot']['upload'] = true;
+      $wgGroupPermissions['bot']['torquedataconnect-admin'] = true;
 
 - name: Transfer LFC Logo
   copy:

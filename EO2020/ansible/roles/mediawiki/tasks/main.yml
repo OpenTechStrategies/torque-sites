@@ -70,7 +70,7 @@
   git:
     repo: https://github.com/OpenTechStrategies/torque
     dest: "{{ mediawiki_install_directory }}/torque/"
-    version: ad834b4
+    version: b3afba9
 
 - name: Link TorqueDataConnect
   file:
@@ -195,6 +195,7 @@
       $wgCheckFileExtensions = false;
       $wgGroupPermissions['bot']['edit'] = true;
       $wgGroupPermissions['bot']['upload'] = true;
+      $wgGroupPermissions['bot']['torquedataconnect-admin'] = true;
       $wgGroupPermissions['autoconfirmed']['reupload'] = true;
 
 - name: Set TOC depth

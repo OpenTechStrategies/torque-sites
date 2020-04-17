@@ -89,7 +89,7 @@
   git:
     repo: https://github.com/OpenTechStrategies/torque
     dest: "{{ mediawiki_install_directory }}/torque/"
-    version: ad834b4
+    version: b3afba9
 
 - name: Link TorqueDataConnect
   file:
@@ -154,6 +154,7 @@
       $wgGroupPermissions['bot']['protect'] = true;
       $wgRestrictionLevels[] = 'generated';
       $wgGroupPermissions['bot']['generated'] = true;
+      $wgGroupPermissions['bot']['torquedataconnect-admin'] = true;
 
       # Permissions that we want sysops/admins to have that
       # but not for staff go here
