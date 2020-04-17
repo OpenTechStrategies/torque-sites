@@ -165,3 +165,26 @@ $ $EDITOR simplesaml/inv/<environment>/group_vars/all/secret
 
 For the competition you're working with, run the instructions from
 "Installing via Ansible" and "Running the ETL pipeline" above.
+
+## Post-installation checklist for new competition instances
+
+(Note: Many of the items in this checklist come from looking over
+`<competition>/ansible/roles/mediawiki/tasks/main.yml`, as 
+[suggested by Frank](https://chat.opentechstrategies.com/#narrow/stream/45-Lever-for.20Change/topic/data/near/82255).)
+
+1. Replace the default Mediawiki logo block ("`$wg_logo`" etc) with the right logo(s):
+   - Put the competition-specific logo in place for logged-in users.
+   - If the competition is not confidential, the same logo can be displayed to non-logged in users;
+     else the Lever for Change logo should be used.
+2. Create a `TorqueConfig:MainConfig` page in the competition's wiki.
+   (TODO: This item needs more detail.)
+3. Does login work?  Often it's via some third-party SSO provider like Okta.
+4. Is TOC depth adjusted right?
+5. Do you need book-printing to work?  Does it?  You may need to
+   fiddle with the template.  (TODO: Say where that template is.)
+6. Does the `PickSome` feature need to be configured?
+7. Does the `ActivityLog` feature need to be configured?
+8. Does the `TeamComments` feature need to be configured?
+9. Does the `SimpleFavorites` feature need to be configured?
+
+Please add items to this list as needed.
