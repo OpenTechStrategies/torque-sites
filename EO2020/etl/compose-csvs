@@ -267,7 +267,7 @@ def generate_generic_toc(toc_dir, grouped_review_numbers, toc_name, json_only=Fa
 valid_traits = [ "Likelihood of Success", "Magnitude of Impact", "Potential for Scale", "Strength of Evidence" ]
 
 def process_evaluation_data(*csv_reader, app_col, score_rank_normalized_col, sum_of_scores_normalized_col, trait_col,
-        score_normalized_col, comments_col):
+        score_normalized_col, comments_col, comments_score_normalized_col):
     """Takes a CSV_READER representing evaluation data in a spreadsheet and
     turns that into a dict of dicts in the following form:
 
@@ -290,6 +290,7 @@ def process_evaluation_data(*csv_reader, app_col, score_rank_normalized_col, sum
       - TRAIL_COL: column with the trait name
       - SCORE_NORMALIZED_COL: column with the normalized score
       - COMMENTS_COL: column with the comments
+      - COMMENTS_SCORE_NORMALIZED_COL: the normalized score of the commeng
 
     The evaluation data coming in has many comments in their own row to one
     application.  There are N traits, and M judges per trait, with things like
@@ -327,7 +328,7 @@ def process_evaluation_data(*csv_reader, app_col, score_rank_normalized_col, sum
         for trait in judge_datum["traits"]:
             if trait["name"] == row[trait_col]:
                 trait["score_normalized"] += float(row[score_normalized_col])
-                trait["comments"] += "\n\n* " + row[comments_col]
+                trait["comments"] += "\n\n* " + row[comments_col] + " (" + row[comments_score_normalized_col] + ")"
 
     return evaluation_data
 
@@ -448,7 +449,7 @@ def compose_csvs(proposals, admin_review, judge_eval, thematic_areas_csv, region
 
     judge_data = process_evaluation_data(judge_eval_reader,
         app_col=3, score_rank_normalized_col=9, sum_of_scores_normalized_col=11,
-        trait_col=16, score_normalized_col=14, comments_col=15)
+        trait_col=16, score_normalized_col=14, comments_col=15, comments_score_normalized_col=14)
 
     attachments_to_upload = {}
 
