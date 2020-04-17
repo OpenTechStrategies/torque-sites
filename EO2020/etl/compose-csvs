@@ -41,6 +41,7 @@ Usage:
   $ compose-csvs \\
        --proposals-csv=PROPOSALS_CSV \\
        --admin-review-csv=ADMIN_REVIEW_CSV \\
+       --judge-evaluation-csv=JUDGE_EVALUATION_CSV \\
        --regionconfig-csv=REGIONCONFIG_CSV \\
        --toc-dir=TOC_DIR \\
        --attachments-dir=ATTACHMENTS_DIR \\
@@ -52,6 +53,10 @@ Command-line options:
 
   --admin-review-csv FILE         FILE is a csv FILE representing which applications
                                   in PROPOSALS_CSV should be included
+
+  --judge-evaluation-csv FILE     FILE is a csv FILE with a many to one relationshp
+                                  between judges and the proposals they evaluated,
+                                  with the extra data being their evaluation
 
   --pare N                        Reduce the nuber of tiems to 1/N rows, for quick
                                   testing and development
@@ -258,6 +263,73 @@ def generate_generic_toc(toc_dir, grouped_review_numbers, toc_name):
         f.writelines(toc_name + "\n")
         f.writelines("{{ #tdcrender:EO2020/toc/" + toc_name + ".mwiki }}")
 
+valid_traits = [ "Likelihood of Success", "Magnitude of Impact", "Potential for Scale", "Strength of Evidence" ]
+
+def process_evaluation_data(*csv_reader, app_col, score_rank_normalized_col, sum_of_scores_normalized_col, trait_col,
+        score_normalized_col, comments_col):
+    """Takes a CSV_READER representing evaluation data in a spreadsheet and
+    turns that into a dict of dicts in the following form:
+
+      EVALUATION_DATA[app_id] = {
+        overall_score_rank_normalized: string,
+        sum_of_scores_normalized: string,
+        traits: array of TRAIT (below)
+      }
+
+      TRAIT = {
+        name: string,
+        score_normalized: string
+        comments: concatenated string
+      }
+
+    The columns that data is looked up are required named integer arguments as follows:
+      - APP_COL: column with application number
+      - SCORE_RANK_COL: column with normalized score rank
+      - SUM_OF_SCORES_COL: column with normalized scores
+      - TRAIL_COL: column with the trait name
+      - SCORE_NORMALIZED_COL: column with the normalized score
+      - COMMENTS_COL: column with the comments
+
+    The evaluation data coming in has many comments in their own row to one
+    application.  There are N traits, and M judges per trait, with things like
+    overall_score_rank_normalized being duplicated for all NxM rows.
+
+    The name of the trait has to be one of the valid_traits defined globally.
+
+    The reason we don't dynamically load this is that for the purposes of
+    the json export, as well as the spreadsheet headers, we need to know
+    the names of the traits.
+
+    The scores for the traits are added up based here rather than in the
+    spreasheet.  Then, comments are concatenated for that trait.
+    """
+
+    evaluation_data = {}
+
+    next(csv_reader[0])
+    for row in csv_reader[0]:
+        application_id = row[app_col]
+        if not application_id in evaluation_data:
+            evaluation_data[application_id] = {
+                    "overall_score_rank_normalized": row[score_rank_normalized_col],
+                    "sum_of_scores_normalized": row[sum_of_scores_normalized_col],
+                    "traits": [{ "name": trait, "score_normalized": 0, "comments": "" } for trait in valid_traits],
+                    }
+
+        judge_datum = evaluation_data[application_id]
+
+        found = False
+
+        if row[trait_col] not in valid_traits:
+            raise Exception("Trait is not a valid trait: " + row[trait_col])
+
+        for trait in judge_datum["traits"]:
+            if trait["name"] == row[trait_col]:
+                trait["score_normalized"] += float(row[score_normalized_col])
+                trait["comments"] += "\n\n* " + row[comments_col]
+
+    return evaluation_data
+
 def generate_list_toc(toc_dir, review_numbers, toc_name):
     """Generates a TOC mwiki and TOC data file in TOC_DIR for the given data,
     which is a list of review numbers we want to be in the list.  Then put
@@ -308,13 +380,14 @@ def create_tdc_config(tdc_config_dir, header_row, new_rows):
         for column in header_row:
             f.writelines("* %s\n" % column)
 
-def compose_csvs(proposals, admin_review, thematic_areas_csv, regionconfig, attachments_dir, toc_dir, tdc_config_dir, pare=None):
+def compose_csvs(proposals, admin_review, judge_eval, thematic_areas_csv, regionconfig,
+        attachments_dir, toc_dir, tdc_config_dir, pare=None):
     """Write a composed version of PROPOSALS (a CSV file), ADMIN_REVIEW
     (a CSV file) standard out.
 
-    PROPOSALS and ADMIN_REVIEW all filenames.  They
+    PROPOSALS, ADMIN_REVIEW, and JUDGE_EVAL all filenames.  They
     represent a full list of proposals and a list of accepted proposals,
-    respectively.
+    and evaluation on those proposals, respectively.
 
     THEMATIC_AREAS_CSV is a csv containing thematic areas which are
     added to the spreadsheet by proposal.
@@ -338,6 +411,8 @@ def compose_csvs(proposals, admin_review, thematic_areas_csv, regionconfig, atta
                                       delimiter=',', quotechar='"')
         admin_review_reader = csv.reader(open(admin_review, encoding='utf-8'),
                                          delimiter=',', quotechar='"')
+        judge_eval_reader = csv.reader(open(judge_eval, encoding='utf-8'),
+                                       delimiter=',', quotechar='"')
         regionconfig_reader = csv.reader(open(regionconfig, encoding='utf-8'),
                                        delimiter=',', quotechar='"')
         if thematic_areas_csv is not None:
@@ -355,6 +430,12 @@ def compose_csvs(proposals, admin_review, thematic_areas_csv, regionconfig, atta
     header_row.append("Attachments")
     header_row.append("MediaWiki Title")
     header_row.append("Thematic Area")
+    header_row.append("Judge Overall Score Rank Normalized")
+    header_row.append("Judge Sum of Scores Normalized")
+    for trait in valid_traits:
+        header_row.append("Judge " + trait)
+        header_row.append("Judge " + trait + " Score Normalized")
+        header_row.append("Judge " + trait + " Comments")
 
     # We only accept applications if they're one of the rows in the
     # admin_review csv, which has an "Application #" column (3),
@@ -362,6 +443,10 @@ def compose_csvs(proposals, admin_review, thematic_areas_csv, regionconfig, atta
     # and for which the "Status" column (7) is valid
     next(admin_review_reader) # Don't look at header
     acceptable_application_numbers = { row[3]: row[7] for row in admin_review_reader }
+
+    judge_data = process_evaluation_data(judge_eval_reader,
+        app_col=3, score_rank_normalized_col=9, sum_of_scores_normalized_col=11,
+        trait_col=16, score_normalized_col=14, comments_col=15)
 
     attachments_to_upload = {}
 
@@ -418,10 +503,28 @@ def compose_csvs(proposals, admin_review, thematic_areas_csv, regionconfig, atta
         new_row.append(mwiki_title)
         new_row.append(thematic_areas[row[3]] if row[3] in thematic_areas else "")
 
+        if row[3] in judge_data:
+            new_row.extend([
+                judge_data[row[3]]["overall_score_rank_normalized"],
+                judge_data[row[3]]["sum_of_scores_normalized"] ])
+
+            for valid_trait in valid_traits:
+                for trait in judge_data[row[3]]["traits"]:
+                    if trait["name"] == valid_trait:
+                        new_row.append(trait["name"])
+                        new_row.append("{0:.1f}".format(trait["score_normalized"]))
+                        new_row.append(trait["comments"])
+
+        else:
+            new_row.extend([9999, ""])
+
+            for _ in range(len(valid_traits)):
+                new_row.extend(["", "", ""])
+
         print("Sanitized row %d (%d cols, %d fixed)." % (row_num, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
 
-    new_rows.sort(key=lambda row: row[134]) # Sort by title
+    new_rows.sort(key=lambda row: int(row[136])) # Sort by judge rank
 
     # Build TOCs after sorted proposals
 
@@ -489,6 +592,7 @@ def main():
                                    ["pare=",
                                     "proposals-csv=",
                                     "admin-review-csv=",
+                                    "judge-evaluation-csv=",
                                     "thematic-areas-csv=",
                                     "regionconfig-csv=",
                                     "toc-dir=",
@@ -514,6 +618,8 @@ def main():
             proposals_csv = a
         elif o == "--admin-review-csv":
             admin_review_csv = a
+        elif o == "--judge-evaluation-csv":
+            judge_evaluation_csv = a
         elif o == "--thematic-areas-csv":
             thematic_areas_csv = a
         elif o == "--regionconfig-csv":
@@ -534,7 +640,7 @@ def main():
             "ERROR: need --proposals-csv, and --admin-review-csv options.\n\n")
         sys.stderr.write(__doc__)
         sys.exit(1)
-    compose_csvs(proposals_csv, admin_review_csv, thematic_areas_csv, regionconfig_csv,
+    compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, thematic_areas_csv, regionconfig_csv,
             attachments_dir, toc_dir, tdc_config_dir, pare)
 
 if __name__ == '__main__':

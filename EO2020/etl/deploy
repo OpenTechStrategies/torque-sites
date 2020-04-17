@@ -49,6 +49,7 @@ python3 -V > /dev/null 2>&1 || { echo "python3 required, aborting" ; exit 1; }
 
 PROPOSALS_CSV="EOC_registration_and_application_data.csv"
 ADMIN_REVIEW_CSV="AdminReviewEP_eoc2019_03102020.csv"
+JUDGE_EVALUATION_CSV="EconomicOpportunityChallenge_Evaluation_Panel_Data_anon_judge.csv"
 REGIONCONFIG_CSV="regionconfig.csv"
 THEMATIC_AREAS_CSV="EOC_Applications_Thematic_Areas.csv"
 BASE_ATTACHMENTS="Registration\&Application_data_exports_EOC.zip"
@@ -96,6 +97,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
 
   gpg -o ${DATA_DIR}/${ADMIN_REVIEW_CSV} --decrypt ${ENCRYPTED_DIR}/${ADMIN_REVIEW_CSV}.asc || exit 1
   gpg -o ${DATA_DIR}/${THEMATIC_AREAS_CSV} --decrypt ${ENCRYPTED_DIR}/${THEMATIC_AREAS_CSV}.asc || exit 1
+  gpg -o ${DATA_DIR}/${JUDGE_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${JUDGE_EVALUATION_CSV}.asc || exit 1
   gpg -o ${DATA_DIR}/${BASE_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.asc || exit 1
 
   mkdir -p ${TOC_DIR}
@@ -135,6 +137,7 @@ mkdir -p $TDC_CONFIG_DIR
 echo "Stage 1: Composing..."
 ${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
             --admin-review-csv="${DATA_DIR}/${ADMIN_REVIEW_CSV}" \
+            --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
             --thematic-areas-csv="${DATA_DIR}/${THEMATIC_AREAS_CSV}" \
             --regionconfig-csv="${MACFOUND_DIR}/${REGIONCONFIG_CSV}" \
             --attachments-dir=${ATTACHMENTS_DIR} \
