@@ -249,7 +249,7 @@ def process_thematic_areas(csv_reader):
 
     return data
 
-def generate_generic_toc(toc_dir, grouped_review_numbers, toc_name):
+def generate_generic_toc(toc_dir, grouped_review_numbers, toc_name, json_only=False):
     """Generates a TOC mwiki and TOC data file in TOC_DIR for the given data,
     which is a dict where the proposals are all grouped by some key.
     Then put into TOC_DIR/TOC_NAME.json.
@@ -259,9 +259,10 @@ def generate_generic_toc(toc_dir, grouped_review_numbers, toc_name):
     with open(os.path.join(toc_dir, toc_name + ".json"), 'w') as f:
         f.writelines(json.dumps({"groups": grouped_review_numbers}))
 
-    with open(os.path.join(toc_dir, toc_name + ".mwiki"), 'w') as f:
-        f.writelines(toc_name + "\n")
-        f.writelines("{{ #tdcrender:EO2020/toc/" + toc_name + ".mwiki }}")
+    if not json_only:
+        with open(os.path.join(toc_dir, toc_name + ".mwiki"), 'w') as f:
+            f.writelines(toc_name + "\n")
+            f.writelines("{{ #tdcrender:EO2020/toc/" + toc_name + ".mwiki }}")
 
 valid_traits = [ "Likelihood of Success", "Magnitude of Impact", "Potential for Scale", "Strength of Evidence" ]
 
@@ -330,7 +331,7 @@ def process_evaluation_data(*csv_reader, app_col, score_rank_normalized_col, sum
 
     return evaluation_data
 
-def generate_list_toc(toc_dir, review_numbers, toc_name):
+def generate_list_toc(toc_dir, review_numbers, toc_name, json_only=False):
     """Generates a TOC mwiki and TOC data file in TOC_DIR for the given data,
     which is a list of review numbers we want to be in the list.  Then put
     into TOC_DIR/TOC_NAME.json.
@@ -340,9 +341,10 @@ def generate_list_toc(toc_dir, review_numbers, toc_name):
     with open(os.path.join(toc_dir, toc_name + ".json"), 'w') as f:
         f.writelines(json.dumps({"proposal_ids": review_numbers}))
 
-    with open(os.path.join(toc_dir, toc_name + ".mwiki"), 'w') as f:
-        f.writelines(toc_name + "\n")
-        f.writelines("{{ #tdcrender:EO2020/toc/" + toc_name + ".mwiki }}")
+    if not json_only:
+        with open(os.path.join(toc_dir, toc_name + ".mwiki"), 'w') as f:
+            f.writelines(toc_name + "\n")
+            f.writelines("{{ #tdcrender:EO2020/toc/" + toc_name + ".mwiki }}")
 
 def wiki_escape_page_title(s):
     import unidecode
@@ -575,6 +577,14 @@ def compose_csvs(proposals, admin_review, judge_eval, thematic_areas_csv, region
         generate_generic_toc(toc_dir, geographic_data, "Geographic_TOC")
 
         generate_list_toc(toc_dir, [new_row[3] for new_row in new_rows], "AllProposals")
+        generate_list_toc(toc_dir, [new_row[3] for new_row in new_rows[0:25]], "Top25", True)
+
+        top25_topic_data = {}
+        for new_row in new_rows[0:25]:
+            if new_row[135] not in top25_topic_data:
+                top25_topic_data[new_row[135]] = []
+            top25_topic_data[new_row[135]].append(new_row[3])
+        generate_generic_toc(toc_dir, top25_topic_data, "Top25_Topic_TOC", True)
 
     if attachments_dir is not None:
         with open(os.path.join(attachments_dir, "attachments_to_upload"), 'wb') as f:
