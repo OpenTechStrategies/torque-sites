@@ -186,6 +186,8 @@ def fix_cell(cell):
 
     return cell
 
+valid_traits = [ "Likelihood of Success", "Magnitude of Impact", "Potential for Scale", "Strength of Evidence" ]
+
 def create_column_types_row(header_row):
     """Declaration of the types different columns in the spreadsheet have,
     expressed as a row of strings that torque understands."""
@@ -195,6 +197,9 @@ def create_column_types_row(header_row):
             "Attachment Display Names": "list",
             "Priority Populations": "list",
             }
+
+    column_types.update({ "Judge " + trait + " Comments": "list" for trait in valid_traits})
+    column_types.update({ "Judge " + trait + " Comment Scores Normalized": "list" for trait in valid_traits})
 
     return [ (column_types[col] if col in column_types else "") for col in header_row ]
 
@@ -264,8 +269,6 @@ def generate_generic_toc(toc_dir, grouped_review_numbers, toc_name, json_only=Fa
             f.writelines(toc_name + "\n")
             f.writelines("{{ #tdcrender:EO2020/toc/" + toc_name + ".mwiki }}")
 
-valid_traits = [ "Likelihood of Success", "Magnitude of Impact", "Potential for Scale", "Strength of Evidence" ]
-
 def process_evaluation_data(*csv_reader, app_col, score_rank_normalized_col, sum_of_scores_normalized_col, trait_col,
         score_normalized_col, comments_col, comments_score_normalized_col):
     """Takes a CSV_READER representing evaluation data in a spreadsheet and
@@ -280,7 +283,8 @@ def process_evaluation_data(*csv_reader, app_col, score_rank_normalized_col, sum
       TRAIT = {
         name: string,
         score_normalized: string
-        comments: concatenated string
+        comments: concatenated string, ready for list type
+        comment_scores: concatenated string, ready for list type
       }
 
     The columns that data is looked up are required named integer arguments as follows:
@@ -315,7 +319,7 @@ def process_evaluation_data(*csv_reader, app_col, score_rank_normalized_col, sum
             evaluation_data[application_id] = {
                     "overall_score_rank_normalized": row[score_rank_normalized_col],
                     "sum_of_scores_normalized": row[sum_of_scores_normalized_col],
-                    "traits": [{ "name": trait, "score_normalized": 0, "comments": "" } for trait in valid_traits],
+                    "traits": [{ "name": trait, "score_normalized": 0, "comments": "", "comment_scores": "" } for trait in valid_traits],
                     }
 
         judge_datum = evaluation_data[application_id]
@@ -328,7 +332,8 @@ def process_evaluation_data(*csv_reader, app_col, score_rank_normalized_col, sum
         for trait in judge_datum["traits"]:
             if trait["name"] == row[trait_col]:
                 trait["score_normalized"] += float(row[score_normalized_col])
-                trait["comments"] += "\n\n* " + row[comments_col] + " (" + row[comments_score_normalized_col] + ")"
+                trait["comments"] += row[comments_col] + "\n"
+                trait["comment_scores"] += row[comments_score_normalized_col] + "\n"
 
     return evaluation_data
 
@@ -439,6 +444,7 @@ def compose_csvs(proposals, admin_review, judge_eval, thematic_areas_csv, region
         header_row.append("Judge " + trait)
         header_row.append("Judge " + trait + " Score Normalized")
         header_row.append("Judge " + trait + " Comments")
+        header_row.append("Judge " + trait + " Comment Scores Normalized")
 
     # We only accept applications if they're one of the rows in the
     # admin_review csv, which has an "Application #" column (3),
@@ -517,6 +523,7 @@ def compose_csvs(proposals, admin_review, judge_eval, thematic_areas_csv, region
                         new_row.append(trait["name"])
                         new_row.append("{0:.1f}".format(trait["score_normalized"]))
                         new_row.append(trait["comments"])
+                        new_row.append(trait["comment_scores"])
 
         else:
             new_row.extend([9999, ""])
