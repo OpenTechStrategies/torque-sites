@@ -190,6 +190,7 @@ def fix_cell(cell):
     cell = collapse_replace(cell, '&nbsp;</', '</')
     cell = collapse_replace(cell, '\\"', '"')
     cell = re.sub(intertag_nbsp_re, '\\1 \\2', cell)
+    cell = cell.replace('\n', '<br/>\n')
 
     soup = form_well(cell)
     cell = weaken_the_strong(str(soup))
