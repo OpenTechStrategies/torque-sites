@@ -58,6 +58,9 @@ Command-line options:
                                   between judges and the proposals they evaluated,
                                   with the extra data being their evaluation
 
+  --lfc-evaluation-csv FILE       FILE is a csv FILE with the LFC evaluation data,
+                                  keyed by application #.
+
   --pare N                        Reduce the nuber of tiems to 1/N rows, for quick
                                   testing and development
 
@@ -254,7 +257,7 @@ def process_thematic_areas(csv_reader):
 
     return data
 
-def generate_generic_toc(toc_dir, grouped_review_numbers, toc_name, json_only=False):
+def generate_generic_toc(toc_dir, grouped_review_numbers, toc_name, json_only=True):
     """Generates a TOC mwiki and TOC data file in TOC_DIR for the given data,
     which is a dict where the proposals are all grouped by some key.
     Then put into TOC_DIR/TOC_NAME.json.
@@ -388,7 +391,7 @@ def create_tdc_config(tdc_config_dir, header_row, new_rows):
         for column in header_row:
             f.writelines("* %s\n" % column)
 
-def compose_csvs(proposals, admin_review, judge_eval, thematic_areas_csv, regionconfig,
+def compose_csvs(proposals, admin_review, judge_eval, lfc_eval, thematic_areas_csv, regionconfig,
         attachments_dir, toc_dir, tdc_config_dir, pare=None):
     """Write a composed version of PROPOSALS (a CSV file), ADMIN_REVIEW
     (a CSV file) standard out.
@@ -421,6 +424,8 @@ def compose_csvs(proposals, admin_review, judge_eval, thematic_areas_csv, region
                                          delimiter=',', quotechar='"')
         judge_eval_reader = csv.reader(open(judge_eval, encoding='utf-8'),
                                        delimiter=',', quotechar='"')
+        lfc_eval_reader = csv.reader(open(lfc_eval, encoding='utf-8'),
+                                     delimiter=',', quotechar='"')
         regionconfig_reader = csv.reader(open(regionconfig, encoding='utf-8'),
                                        delimiter=',', quotechar='"')
         if thematic_areas_csv is not None:
@@ -445,6 +450,7 @@ def compose_csvs(proposals, admin_review, judge_eval, thematic_areas_csv, region
         header_row.append("Judge " + trait + " Score Normalized")
         header_row.append("Judge " + trait + " Comments")
         header_row.append("Judge " + trait + " Comment Scores Normalized")
+    header_row.append("LFC Recommendation")
 
     # We only accept applications if they're one of the rows in the
     # admin_review csv, which has an "Application #" column (3),
@@ -456,6 +462,9 @@ def compose_csvs(proposals, admin_review, judge_eval, thematic_areas_csv, region
     judge_data = process_evaluation_data(judge_eval_reader,
         app_col=3, score_rank_normalized_col=9, sum_of_scores_normalized_col=11,
         trait_col=16, score_normalized_col=14, comments_col=15, comments_score_normalized_col=14)
+
+    next(lfc_eval_reader)
+    lfc_data = { row[0]: row[1] for row in lfc_eval_reader }
 
     attachments_to_upload = {}
 
@@ -530,6 +539,8 @@ def compose_csvs(proposals, admin_review, judge_eval, thematic_areas_csv, region
 
             for _ in range(len(valid_traits)):
                 new_row.extend(["", "", ""])
+
+        new_row.append(lfc_data[row[3]] if row[3] in lfc_data else "")
 
         print("Sanitized row %d (%d cols, %d fixed)." % (row_num, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
@@ -611,6 +622,7 @@ def main():
                                     "proposals-csv=",
                                     "admin-review-csv=",
                                     "judge-evaluation-csv=",
+                                    "lfc-evaluation-csv=",
                                     "thematic-areas-csv=",
                                     "regionconfig-csv=",
                                     "toc-dir=",
@@ -638,6 +650,8 @@ def main():
             admin_review_csv = a
         elif o == "--judge-evaluation-csv":
             judge_evaluation_csv = a
+        elif o == "--lfc-evaluation-csv":
+            lfc_evaluation_csv = a
         elif o == "--thematic-areas-csv":
             thematic_areas_csv = a
         elif o == "--regionconfig-csv":
@@ -658,8 +672,8 @@ def main():
             "ERROR: need --proposals-csv, and --admin-review-csv options.\n\n")
         sys.stderr.write(__doc__)
         sys.exit(1)
-    compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, thematic_areas_csv, regionconfig_csv,
-            attachments_dir, toc_dir, tdc_config_dir, pare)
+    compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, lfc_evaluation_csv,
+            thematic_areas_csv, regionconfig_csv, attachments_dir, toc_dir, tdc_config_dir, pare)
 
 if __name__ == '__main__':
     main()

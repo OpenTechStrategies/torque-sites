@@ -50,6 +50,7 @@ python3 -V > /dev/null 2>&1 || { echo "python3 required, aborting" ; exit 1; }
 PROPOSALS_CSV="EOC_registration_and_application_data.csv"
 ADMIN_REVIEW_CSV="AdminReviewEP_eoc2019_03102020.csv"
 JUDGE_EVALUATION_CSV="EconomicOpportunityChallenge_Evaluation_Panel_Data_anon_judge.csv"
+LFC_EVALUATION_CSV="lfcrecommendations.csv"
 REGIONCONFIG_CSV="regionconfig.csv"
 THEMATIC_AREAS_CSV="EOC_Applications_Thematic_Areas.csv"
 BASE_ATTACHMENTS="Registration\&Application_data_exports_EOC.zip"
@@ -98,6 +99,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   gpg -o ${DATA_DIR}/${ADMIN_REVIEW_CSV} --decrypt ${ENCRYPTED_DIR}/${ADMIN_REVIEW_CSV}.asc || exit 1
   gpg -o ${DATA_DIR}/${THEMATIC_AREAS_CSV} --decrypt ${ENCRYPTED_DIR}/${THEMATIC_AREAS_CSV}.asc || exit 1
   gpg -o ${DATA_DIR}/${JUDGE_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${JUDGE_EVALUATION_CSV}.asc || exit 1
+  gpg -o ${DATA_DIR}/${LFC_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${LFC_EVALUATION_CSV}.asc || exit 1
   gpg -o ${DATA_DIR}/${BASE_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.asc || exit 1
 
   mkdir -p ${TOC_DIR}
@@ -125,8 +127,8 @@ fi
 mkdir -p $TOC_DIR
 rm $TOC_DIR/*
 cp tocs/generic.j2 $TOC_DIR/Population_TOC.j2
-cp tocs/generic.j2 $TOC_DIR/Topic_TOC.j2
-cp tocs/generic.j2 $TOC_DIR/Top25_Topic_TOC.j2
+cp tocs/thematic.j2 $TOC_DIR/Topic_TOC.j2
+cp tocs/thematic.j2 $TOC_DIR/Top25_Topic_TOC.j2
 cp tocs/list.j2 $TOC_DIR/AllProposals.j2
 cp tocs/list.j2 $TOC_DIR/Top25.j2
 cp tocs/Geographic_TOC.j2 $TOC_DIR/
@@ -140,6 +142,7 @@ echo "Stage 1: Composing..."
 ${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
             --admin-review-csv="${DATA_DIR}/${ADMIN_REVIEW_CSV}" \
             --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
+            --lfc-evaluation-csv="${DATA_DIR}/${LFC_EVALUATION_CSV}" \
             --thematic-areas-csv="${DATA_DIR}/${THEMATIC_AREAS_CSV}" \
             --regionconfig-csv="${MACFOUND_DIR}/${REGIONCONFIG_CSV}" \
             --attachments-dir=${ATTACHMENTS_DIR} \

@@ -1,0 +1,24 @@
+__TOC__
+
+'''Human Capital''' – all levels of education, coaching and mentoring<br/>
+'''Workforce Strategies''' – job services, job training, placement services<br/>
+'''Asset Building''' – financial coaching, microfinance, entrepreneurship, cash and cash-like transfers<br/>
+'''Family Services''' – family support, housing, referral services<br/>
+'''Place-based Investing''' – includes targeted business development<br/>
+'''Policy & Action''' – public policy, rights, and civic participation<br/>
+'''Other''' – rural development, community leadership, employee ownership<br/>
+{% for group_name, proposal_ids in groups.items() %}
+    {%- set proposals_in_group = [] %}
+    {%- for proposal_id in proposal_ids %}
+        {%- if proposal_id in EO2020.keys() %}
+            {{- "" if proposals_in_group.append(proposal_id) }}
+        {%- endif %}
+    {%- endfor %}
+    {%- if proposals_in_group|length > 0 %}
+<div id='{{ group_name }}'></div>
+= {{ group_name }} ({{ proposals_in_group|length }}) =
+        {%- for proposal_id in proposals_in_group %}
+* {{ toc_lines[proposal_id] }}
+        {%- endfor %}
+    {%- endif %}
+{%- endfor %}
