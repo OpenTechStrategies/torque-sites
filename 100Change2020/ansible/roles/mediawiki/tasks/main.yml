@@ -404,6 +404,16 @@
     marker: "## {mark} ANSIBLE GROUP PERMISSIONS CONFIG"
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     block: |
+      $wgGroupPermissions['*']['createaccount'] = false;
+      $wgGroupPermissions['*']['writeapi'] = false;
+      $wgGroupPermissions['user']['writeapi'] = false;
+
+      $wgGroupPermissions['LFCTorque']['writeapi'] = true;
+      $wgGroupPermissions['LFCTorqueAdmin']['writeapi'] = true;
+      $wgGroupPermissions['LFCConsultants']['writeapi'] = true;
+      $wgGroupPermissions['BoardMembers']['writeapi'] = true;
+      $wgGroupPermissions['PseudoBoardMembers']['writeapi'] = true;
+
       $wgGroupPermissions['torqueapi']['read'] = true;
       $wgGroupPermissions['ForumOne']['read'] = true;
       $wgGroupPermissions['LFCConsultants']['read'] = true;
