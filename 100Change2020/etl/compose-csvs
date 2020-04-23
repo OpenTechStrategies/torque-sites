@@ -818,6 +818,8 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, ots_metadat
                     attachment_display_name = "Fact Sheet"
                 elif ots_metadata.get(row[3], {}).get("Application", "") == attachment_file:
                     attachment_display_name = "Application"
+                elif re.search("COVID_.*", attachment_file):
+                    attachment_display_name = "Covid Response"
                 else:
                     attachment_display_name = re.sub("^\\d*_", "", attachment_file)
                     attachment_display_name = re.sub("\.pdf$", "", attachment_display_name)
