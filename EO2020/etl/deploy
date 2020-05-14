@@ -52,9 +52,12 @@ ADMIN_REVIEW_CSV="AdminReviewEP_eoc2019_03102020.csv"
 JUDGE_EVALUATION_CSV="EconomicOpportunityChallenge_Evaluation_Panel_Data_anon_judge.csv"
 LFC_EVALUATION_CSV="lfcrecommendations.csv"
 REGIONCONFIG_CSV="regionconfig.csv"
+TOP13_DATA_FILE="top13.dat"
 THEMATIC_AREAS_CSV="EOC_Applications_Thematic_Areas.csv"
 BASE_ATTACHMENTS="Registration\&Application_data_exports_EOC.zip"
+TOP13_SUPPLEMENTAL_ATTACHMENTS="EOC_Docs for Upload.zip"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
+TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
 TOC_DIR="${DATA_DIR}/tocs"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
 CSV2WIKI_CONFIG="${MACFOUND_DIR}"/csv2wiki-config
@@ -99,8 +102,10 @@ if [ ! -d "${DATA_DIR}" ] ; then
   gpg -o ${DATA_DIR}/${ADMIN_REVIEW_CSV} --decrypt ${ENCRYPTED_DIR}/${ADMIN_REVIEW_CSV}.asc || exit 1
   gpg -o ${DATA_DIR}/${THEMATIC_AREAS_CSV} --decrypt ${ENCRYPTED_DIR}/${THEMATIC_AREAS_CSV}.asc || exit 1
   gpg -o ${DATA_DIR}/${JUDGE_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${JUDGE_EVALUATION_CSV}.asc || exit 1
+  gpg -o ${DATA_DIR}/${TOP13_DATA_FILE} --decrypt ${ENCRYPTED_DIR}/${TOP13_DATA_FILE}.asc || exit 1
   gpg -o ${DATA_DIR}/${LFC_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${LFC_EVALUATION_CSV}.asc || exit 1
   gpg -o ${DATA_DIR}/${BASE_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.asc || exit 1
+  gpg -o "${DATA_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}" --decrypt "${ENCRYPTED_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}.asc" || exit 1
 
   mkdir -p ${TOC_DIR}
   mkdir -p ${TDC_CONFIG_DIR}
@@ -108,8 +113,17 @@ if [ ! -d "${DATA_DIR}" ] ; then
   echo "Setting up attachments..."
   unzip -d ${DATA_DIR} ${DATA_DIR}/${BASE_ATTACHMENTS}
   mv "${DATA_DIR}/Registration&Application_forms_PDFs_EOC" $ATTACHMENTS_DIR
+
+  mkdir -p $TMP_ATTACHMENTS_DIR
+  unzip -d $TMP_ATTACHMENTS_DIR "${DATA_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}"
+  ls $TMP_ATTACHMENTS_DIR | grep "[[:digit:]]\+_" | while read dir ; do
+    cp -v "$TMP_ATTACHMENTS_DIR/$dir/"*.pdf ${ATTACHMENTS_DIR}/${dir/_*/} ;
+  done
+  rm -rf $TMP_ATTACHMENTS_DIR
+
   # Clean up large zips to save disk space
   rm ${DATA_DIR}/${BASE_ATTACHMENTS}
+  rm "${DATA_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}"
 fi
 
 if ! echo "fcc64efaf84cb0d10497bac4b1e9750e9f866faf  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
@@ -131,6 +145,7 @@ cp tocs/thematic.j2 $TOC_DIR/Topic_TOC.j2
 cp tocs/thematic.j2 $TOC_DIR/Top25_Topic_TOC.j2
 cp tocs/list.j2 $TOC_DIR/AllProposals.j2
 cp tocs/list.j2 $TOC_DIR/Top25.j2
+cp tocs/supplemental.j2 $TOC_DIR/Top13Supplemental.j2
 cp tocs/Geographic_TOC.j2 $TOC_DIR/
 
 mkdir -p $TDC_CONFIG_DIR
@@ -145,6 +160,7 @@ ${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
             --lfc-evaluation-csv="${DATA_DIR}/${LFC_EVALUATION_CSV}" \
             --thematic-areas-csv="${DATA_DIR}/${THEMATIC_AREAS_CSV}" \
             --regionconfig-csv="${MACFOUND_DIR}/${REGIONCONFIG_CSV}" \
+            --top13-data-file="${DATA_DIR}/${TOP13_DATA_FILE}" \
             --attachments-dir=${ATTACHMENTS_DIR} \
             --tdc-config-dir="${TDC_CONFIG_DIR}" \
             --toc-dir="${TOC_DIR}" \
