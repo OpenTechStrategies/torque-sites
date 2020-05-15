@@ -404,10 +404,14 @@
     marker: "## {mark} ANSIBLE GROUP PERMISSIONS CONFIG"
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     block: |
-      $wgGroupPermissions['*']['createaccount'] = false;
-      $wgGroupPermissions['*']['writeapi'] = false;
-      $wgGroupPermissions['user']['writeapi'] = false;
+      # For now, this must be set so that accounts coming in from okta
+      # work correctly!  writeapi and creataccount must also be true
+      # for all users ('*').
+      $wgGroupPermissions['*']['autocreateaccount'] = true;
 
+      # For when we resolve how the new accounts are created (see above)
+      # these permissions will still need to exist, even though they
+      # are redundant for now.
       $wgGroupPermissions['LFCTorque']['writeapi'] = true;
       $wgGroupPermissions['LFCTorqueAdmin']['writeapi'] = true;
       $wgGroupPermissions['LFCConsultants']['writeapi'] = true;
