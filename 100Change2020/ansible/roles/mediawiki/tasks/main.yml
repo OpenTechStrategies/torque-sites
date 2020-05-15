@@ -200,7 +200,7 @@
       $wgSimpleSAMLphp_AuthSourceId = '{{ simplesaml_okta_metadata_name }}';
       $wgSimpleSAMLphp_RealNameAttribute = ['firstName', 'lastName'];
       $wgSimpleSAMLphp_EmailAttribute = 'email';
-      $wgSimpleSAMLphp_UsernameAttribute = 'email';
+      $wgSimpleSAMLphp_UsernameAttribute = 'username';
       $wgSimpleSAMLphp_SyncAllGroups_GroupNameModificationCallback = function($origGroupName){
         # Remove spaces
         return preg_replace('/\s/', '', $origGroupName);
