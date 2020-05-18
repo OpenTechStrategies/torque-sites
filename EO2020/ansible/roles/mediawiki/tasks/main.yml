@@ -268,7 +268,7 @@
 
 - name: Transfer EO Logo
   copy:
-    src: "{{ lookup('env','OTSDIR') }}/clients/macfound/torque-sites/EO2020/data/EOLogo.png"
+    src: "{{ lookup('env','OTSDIR') }}/clients/lever-for-change/torque-sites/EO2020/data/EOLogo.png"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/resources/assets/EOLogo.png"
 
 - name: Transfer LFC Logo

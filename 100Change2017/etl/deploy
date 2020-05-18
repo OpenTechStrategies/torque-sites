@@ -97,7 +97,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
     exit 1
   fi
 
-  ENCRYPTED_DIR="${OTSDIR}/clients/macfound/torque-sites/${COMPETITION}/data/bigdata"
+  ENCRYPTED_DIR="${OTSDIR}/clients/lever-for-change/torque-sites/${COMPETITION}/data/bigdata"
   if [ ! -d "${ENCRYPTED_DIR}" ] ; then
     echo "ERROR: it looks like your encrypted dir isn't checked out"
     echo ""
@@ -105,7 +105,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
     echo "  $ENCRYPTED_DIR"
     echo ""
     echo "You will need to check out the subversion torque-sites data, and then"
-    echo "run get-bigdata from ${OTSDIR}/clients/macfound/torque-sites/${COMPETITION}/data/"
+    echo "run get-bigdata from ${OTSDIR}/clients/lever-for-change/torque-sites/${COMPETITION}/data/"
     exit 1
   fi
 
@@ -152,10 +152,10 @@ fi
 #   5: e
 #   6: f
 # 
-#   $ csvlook ~/private/work/ots/clients/macfound/eval-system/data/Exclusions.csv
+#   $ csvlook ~/private/work/ots/clients/lever-for-change/.../data/.../Exclusions.csv
 #   ...see from output that column "a" has the Review Numbers we want...
 # 
-#   $ csvcut -c a ~/private/work/ots/clients/macfound/eval-system/data/Exclusions.csv \
+#   $ csvcut -c a ~/private/work/ots/clients/lever-for-change/.../data/.../Exclusions.csv \
 #           | grep -E "[0-9]+" > ${DATA_DIR}/excluded-review-numbers.txt
 # 
 #   $ cat ${DATA_DIR}/excluded-review-numbers.txt

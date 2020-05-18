@@ -55,14 +55,14 @@ whatever environment file you use.
 
 Second, [opass](https://github.com/OpenTechStrategies/ots-tools/blob/master/opass)
 needs to be installed.  You will also need to have all the files
-in `clients/macfound/torque-sites` be accessible with your key.
+in `clients/lever-for-change/torque-sites` be accessible with your key.
 
 Third, for the competition installs (NOT for supporting system installs)
 you need to get the secrets and put them where ansible can find them.
 For a given environment, it will look something like this:
 
 ```
-$ opass show clients/macfound/torque-sites/<project-name>/ansible/<environment> > inv/<environment>/group_vars/all/secret
+$ opass show clients/lever-for-change/torque-sites/<project-name>/ansible/<environment> > inv/<environment>/group_vars/all/secret
 ```
 
 The name of the file (secret) is added to .gitignore so you don't
@@ -86,8 +86,8 @@ First, set up your `$OTSDIR` (see onboarding for more information).
 Then you need to check out the macfound torque-sites
 
 ```
-$ mkdir -p $OTSDIR/clients/macfound/
-$ svn co https://svn.opentechstrategies.com/repos/ots/trunk/clients/macfound/torque-sites $OTSDIR/clients/macfound/
+$ mkdir -p $OTSDIR/clients/lever-for-change/
+$ svn co https://svn.opentechstrategies.com/repos/ots/trunk/clients/lever-for-change/torque-sites $OTSDIR/clients/lever-for-change
 ```
 
 Then you need to get the OTS utilities that includes `get-bigdata`
@@ -98,7 +98,7 @@ $ svn co https://svn.opentechstrategies.com/repos/ots/trunk/utils $OTSDIR/
 Now get the confidential data for the site you're working on.
 
 ```
-$ cd $OTSDIR/clients/macfound/torque-sites/<competition-name>/data
+$ cd $OTSDIR/clients/lever-for-change/torque-sites/<competition-name>/data
 $ $OTSDIR/utils/get-bigdata
 ```
 
@@ -155,7 +155,7 @@ from ansible instructions above for the following:
 
 The simplesaml inventories do need secrets, but they aren't stored in the
 normal place in opass.  Instead, you need to edit the secret file and
-put in the values from `opass show clients/macfound/torque-sites/simplesamlsalt`
+put in the values from `opass show clients/lever-for-change/torque-sites/simplesamlsalt`
 
 ```
 $ $EDITOR simplesaml/inv/<environment>/group_vars/all/secret
