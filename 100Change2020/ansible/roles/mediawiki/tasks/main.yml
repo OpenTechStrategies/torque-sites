@@ -423,6 +423,7 @@
       $wgGroupPermissions['LFCConsultants']['read'] = true;
       $wgGroupPermissions['BoardMembers']['read'] = true;
       $wgGroupPermissions['PseudoBoardMembers']['read'] = true;
+      $wgGroupPermissions['LFCResearchPartners']['read'] = true;
       $wgGroupPermissions['BoardMembers']['picksome'] = true;
       $wgGroupPermissions['BoardMembers']['picksome-write'] = true;
       $wgGroupPermissions['PseudoBoardMembers']['picksome'] = true;
