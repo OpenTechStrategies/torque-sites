@@ -1,3 +1,2 @@
-hosts
 group_vars/all
 all.retry

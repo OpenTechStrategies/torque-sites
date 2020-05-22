@@ -1,0 +1,8 @@
+[mediawiki]
+macfound.opentechstrategies.com ansible_ssh_user="{{ lookup('env','OTSUSER') }}"
+
+[mysql]
+macfound.opentechstrategies.com ansible_ssh_user="{{ lookup('env','OTSUSER') }}"
+
+[simplesaml]
+macfound.opentechstrategies.com ansible_ssh_user="{{ lookup('env','OTSUSER') }}"

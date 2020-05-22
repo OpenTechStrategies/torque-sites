@@ -1,0 +1,8 @@
+[mediawiki]
+wiki.opentechstrategies.com ansible_ssh_user="{{ lookup('env','OTSUSER') }}"
+
+[mysql]
+wiki.opentechstrategies.com ansible_ssh_user="{{ lookup('env','OTSUSER') }}"
+
+[simplesaml]
+wiki.opentechstrategies.com ansible_ssh_user="{{ lookup('env','OTSUSER') }}"
