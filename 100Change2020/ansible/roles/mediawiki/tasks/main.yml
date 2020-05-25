@@ -431,6 +431,20 @@
         $wgGroupPermissions['LFCTorque'][$key] = $value;
       }
 
+      # There may be other groups who shouldn't have TeamComments
+      # access, but we know at least this one to start with.
+      # 
+      # NOTE: As of this writing (on 2020-05-24, with the TeamComments
+      #       plugin at commit b9b49a5a449864a), adding this line does
+      #       *not* seem to prevent the LFCResearchPartners group from
+      #       seeing team comments on a proposal page.  When I look in
+      #       the TeamComments source code, I don't see any permission
+      #       check that would prevent TeamComments from being displayed
+      #       if the 'teamcomment' user right is false, though it could
+      #       be that I just don't know where to look yet.  Further
+      #       investigation is clearly needed.       -Karl
+      $wgGroupPermissions['LFCResearchPartners']['teamcomment'] = false;
+
       $wgGroupPermissions['bot']['protect'] = true;
       $wgRestrictionLevels[] = 'generated';
       $wgGroupPermissions['bot']['generated'] = true;
@@ -443,6 +457,9 @@
       $wgGroupPermissions['sysop']['edittorqueconfig'] = true;
       $wgGroupPermissions['sysop']['torquedataconnect-admin'] = true;
       foreach($wgGroupPermissions['sysop'] as $key => $value) {
+        $wgGroupPermissions['LFCTorqueAdmin'][$key] = $value;
+      }
+      foreach($wgGroupPermissions['bureaucrat'] as $key => $value) {
         $wgGroupPermissions['LFCTorqueAdmin'][$key] = $value;
       }
 
