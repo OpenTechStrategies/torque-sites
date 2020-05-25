@@ -64,7 +64,7 @@
   git:
     repo: https://github.com/OpenTechStrategies/TeamComments
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/TeamComments/"
-    version: bd0fd77
+    version: 32e8f88
 
 - name: Checkout Torque
   git:

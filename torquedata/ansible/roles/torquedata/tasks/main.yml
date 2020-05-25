@@ -19,9 +19,9 @@
   git:
     repo: https://github.com/OpenTechStrategies/torque
     dest: "{{ torquedata_install_directory }}/torque/"
-    version: b3afba9
+    version: 456430a
 
-- name: Link TorqueDataConnect
+- name: Link TorqueData
   file:
     src: "{{ torquedata_install_directory }}/torque/torquedata/"
     dest: "{{ torquedata_install_directory }}/server"
