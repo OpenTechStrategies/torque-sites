@@ -828,7 +828,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, ots_metadat
                         attachment_display_name = \
                             attachment_display_name[0:15] + \
                             "..." + \
-                            attachment_display_name[(len(attachment_display_name)-15):]
+                            attachment_display_name[-15:]
 
                 attachment_data.append({"name": attachment_display_name, "file": attachment_file})
 
