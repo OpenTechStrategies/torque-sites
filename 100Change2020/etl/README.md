@@ -64,7 +64,7 @@ it first.)
 
   Start from the [torque-refresh](torque-refresh) script and see how it
   drives first [compose-csvs](compose-csvs), which performs some one-time
-  transformations to specific CSVa file from the MacArthur Foundation,
+  transformations to a specific CSV file from the MacArthur Foundation,
   as well as joining them with some supplemental data, and then uploads
   the final CSV to a running torque server.  After which is creates
   proposal pages using
