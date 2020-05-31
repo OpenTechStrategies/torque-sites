@@ -59,6 +59,32 @@ def usage(errout=False):
     out = sys.stderr if errout else sys.stdout
     out.write(__doc__)
 
+def upload_attachment(site, dir, proposal_id, file, column):
+    """Uploads an attachment to the torque instance.
+
+    SITE is the mediawiki connection.
+
+    DIR is the directory attachments live in, PROPOSAL_ID is the id
+    of the proposal this attachment is linked to, FILE is the filename,
+    and COLUMN is the permissions column that will be checked by torque."""
+
+    print("Uploading " + file, file=sys.stderr)
+    with open(os.path.join(dir, proposal_id, file), "rb") as attachment:
+        site.raw_call(
+        'api',
+        {
+            "action": "torquedataconnectuploadattachment",
+            "format": 'json',
+            "sheet_name": 'proposals',
+            "object_id": proposal_id,
+            "permissions_column": column,
+            "attachment_name": file
+        },
+                    {
+                        "attachment": attachment.read()
+                    }
+                    )
+
 def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:],
@@ -138,24 +164,16 @@ def main():
             attachments_to_upload = pickle.load(f)
 
         for (attachment_proposal_id,attachment_files) in attachments_to_upload.items():
-            for attachment_file in attachment_files:
+            for (attachment_column,attachment_file) in attachment_files.items():
+                if not attachment_file:
+                    continue
 
-                print("Uploading " + attachment_file, file=sys.stderr)
-                with open(os.path.join(attachments_dir, attachment_proposal_id, attachment_file), "rb") as attachment:
-                    site.raw_call(
-                    'api',
-                    {
-                        "action": "torquedataconnectuploadattachment",
-                        "format": 'json',
-                        "sheet_name": 'proposals',
-                        "object_id": attachment_proposal_id,
-                        "permissions_column": "Attachments",
-                        "attachment_name": attachment_file
-                    },
-                    {
-                        "attachment": attachment.read()
-                    }
-                    )
+                # For some columns, we have N attachments, so we need to handle that
+                if type(attachment_file) == list:
+                    for at in attachment_file:
+                        upload_attachment(site, attachments_dir, attachment_proposal_id, at, attachment_column)
+                else:
+                    upload_attachment(site, attachments_dir, attachment_proposal_id, attachment_file, attachment_column)
 
     toc_names = [ os.path.splitext(f)[0] for f in os.listdir(toc_dir) if f.endswith(".j2") ]
     for toc_name in toc_names:

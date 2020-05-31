@@ -243,8 +243,8 @@ def create_column_types_row(header_row):
     expressed as a row of strings that torque understands."""
 
     column_types = {
-            "Attachments": "list",
-            "Attachment Display Names": "list",
+            "Other Attachments": "list",
+            "Other Attachment Display Names": "list",
             "Sustainable Development Goals": "list",
             "Priority Populations": "list",
             }
@@ -540,7 +540,7 @@ def create_tdc_config(tdc_config_dir, header_row, new_rows):
       """
 
     def row_to_title_line(row):
-        return "* {3}: ".format(*row) + "[[" + row[206] + "]]\n"
+        return "* {3}: ".format(*row) + "[[" + row[212] + "]]\n"
 
     with open(os.path.join(tdc_config_dir, "AllProposals"), 'w') as f:
         f.writelines([row_to_title_line(row) for row in new_rows])
@@ -552,13 +552,13 @@ def create_tdc_config(tdc_config_dir, header_row, new_rows):
         f.writelines([
             row_to_title_line(row)
             for row in new_rows
-            if (int(row[188]) < 101 or row[207] == "Wild Card")])
+            if (int(row[188]) < 101 or row[213] == "Wild Card")])
 
     with open(os.path.join(tdc_config_dir, "FinalistCandidates"), 'w') as f:
         f.writelines([
             row_to_title_line(row)
             for row in new_rows
-            if (int(row[188]) < 101 or row[207] == "Wild Card") and row[208] != "TR Disqualified" ])
+            if (int(row[188]) < 101 or row[213] == "Wild Card") and row[214] != "TR Disqualified" ])
 
     with open(os.path.join(tdc_config_dir, "Top200"), 'w') as f:
         # 202 here because there was a duplicate removed before
@@ -702,8 +702,14 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, ots_metadat
             header_row.append(data_type + " " + trait + " Score Normalized")
             header_row.append(data_type + " " + trait + " Comments")
     header_row.append("Application Level")
-    header_row.append("Attachment Display Names")
-    header_row.append("Attachments")
+    header_row.append("Financials Attachment")
+    header_row.append("Tech Review Attachment")
+    header_row.append("MOU Attachment")
+    header_row.append("Application Attachment")
+    header_row.append("COVID Response Attachment")
+    header_row.append("Fact Sheet Attachment")
+    header_row.append("Other Attachment Display Names")
+    header_row.append("Other Attachments")
     header_row.append("Wild Card Eligible")
     header_row.append("MediaWiki Title")
     header_row.append("Wild Card")
@@ -802,7 +808,14 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, ots_metadat
         else:
             new_row.append("NULL")
 
-        attachment_data = []
+        other_attachment_data = []
+        financial_attachment = None
+        tech_review_attachment = None
+        mou_attachment = None
+        application_attachment = None
+        covid_response_attachment = None
+        fact_sheet_attachment = None
+
         if attachments_dir is not None:
             application_attachment_dir = os.path.join(attachments_dir, row[3])
             for attachment_file in os.listdir(application_attachment_dir):
@@ -810,17 +823,23 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, ots_metadat
                     continue
 
                 if ots_metadata.get(row[3], {}).get("Financial Attachment", "") == attachment_file:
-                    attachment_display_name = "Financials"
+                    financial_attachment = attachment_file
+                    continue
                 elif ots_metadata.get(row[3], {}).get("MOU Attachment", "") == attachment_file:
-                    attachment_display_name = "MOU"
+                    mou_attachment = attachment_file
+                    continue
                 elif ots_metadata.get(row[3], {}).get("Tech Review Attachment", "") == attachment_file:
-                    attachment_display_name = "Tech Review"
+                    tech_review_attachment = attachment_file
+                    continue
                 elif ots_metadata.get(row[3], {}).get("Two Page Fact Sheet", "") == attachment_file:
-                    attachment_display_name = "Fact Sheet"
-                elif ots_metadata.get(row[3], {}).get("Application", "") == attachment_file:
-                    attachment_display_name = "Application"
+                    fact_sheet_attachment = attachment_file
+                    continue
+                elif ots_metadata.get(row[3], {}).get("Application Attachment", "") == attachment_file:
+                    application_attachment = attachment_file
+                    continue
                 elif re.search("COVID_.*", attachment_file):
-                    attachment_display_name = "Covid Response"
+                    covid_response_attachment = attachment_file
+                    continue
                 else:
                     attachment_display_name = re.sub("^\\d*_", "", attachment_file)
                     attachment_display_name = re.sub("\.pdf$", "", attachment_display_name)
@@ -830,13 +849,30 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, ots_metadat
                             "..." + \
                             attachment_display_name[-15:]
 
-                attachment_data.append({"name": attachment_display_name, "file": attachment_file})
+                other_attachment_data.append({"name": attachment_display_name, "file": attachment_file})
 
-            attachment_data.sort(key=lambda a: a["name"])
+            other_attachment_data.sort(key=lambda a: a["name"])
 
-        attachments_to_upload[row[3]] = [a["file"] for a in attachment_data]
-        new_row.append("\n".join([a["name"] for a in attachment_data])) # The names
-        new_row.append("\n".join(attachments_to_upload[row[3]])) # The files
+
+
+        new_row.append(financial_attachment or "")
+        new_row.append(tech_review_attachment or "")
+        new_row.append(mou_attachment or "")
+        new_row.append(application_attachment or "")
+        new_row.append(covid_response_attachment or "")
+        new_row.append(fact_sheet_attachment or "")
+        new_row.append("\n".join([a["name"] for a in other_attachment_data])) # The names
+        new_row.append("\n".join([a["file"] for a in other_attachment_data])) # The files
+
+        attachments_to_upload[row[3]] = {
+            "Financials Attachment": financial_attachment,
+            "Tech Review Attachment": tech_review_attachment,
+            "MOU Attachment": mou_attachment,
+            "Application Attachment": application_attachment,
+            "COVID Response Attachment": covid_response_attachment,
+            "Fact Sheet Attachment": fact_sheet_attachment,
+            "Other Attachments": [a["file"] for a in other_attachment_data]
+        }
 
         if rank > 100 and rank <= 201:
             new_row.append("Wild Card Eligible")
@@ -909,7 +945,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, ots_metadat
         finalist_candidate_numbers = [
                 row[3]
                 for row in new_rows
-                if (int(row[188]) < 101 or row[207] == "Wild Card") and row[208] != "TR Disqualified"
+                if (int(row[188]) < 101 or row[213] == "Wild Card") and row[214] != "TR Disqualified"
             ]
         generate_list_toc(toc_dir, finalist_candidate_numbers, "Finalist_Candidates")
 
