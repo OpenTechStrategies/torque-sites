@@ -283,6 +283,7 @@
       $wgGroupPermissions['Staff']['teamcomment'] = true;
       $wgGroupPermissions['PseudoDecisionMaker']['teamcomment'] = true;
       $wgGroupPermissions['DecisionMaker']['teamcomment'] = true;
+      $wgGroupPermissions['sysop']['teamcomment'] = true;
 
 - name: Transfer EO Logo
   copy:
