@@ -260,11 +260,29 @@
       $wgGroupPermissions['sysop']['edittorqueconfig'] = true;
       $wgGroupPermissions['sysop']['torquedataconnect-admin'] = true;
 
+      # NOTE: There are some MediaWiki 'sysop' and 'bureaucrat' permissions
+      # that we give to LFCTorque and LFCTorqueAdmin in 100Change2020 in
+      # ../../../../../100Change2020/ansible/roles/mediawiki/tasks/main.yml
+      # that we don't seem to be giving here.  I'm not sure whether
+      # that's an oversight or whether there's a reason we don't do it
+      # for EO2020, so for now I'm just noting this on 2020-06-01.  -Karl
+
+      # Groups requested specifically by LFC.
+      $wgGroupPermissions['LFCResearchPartners']['read'] = true;
+
       # These are OTS Torque Standard Groups
       $wgGroupPermissions['OutsideReviewer']['read'] = true;
       $wgGroupPermissions['Staff']['read'] = true;
       $wgGroupPermissions['PseudoDecisionMaker']['read'] = true;
       $wgGroupPermissions['DecisionMaker']['read'] = true;
+
+      # Disable teamcomments for users on this wiki by default.
+      $wgGroupPermissions['*']['teamcomment'] = false;
+
+      # Then enable teamcomments for the groups that should be leaving comments
+      $wgGroupPermissions['Staff']['teamcomment'] = true;
+      $wgGroupPermissions['PseudoDecisionMaker']['teamcomment'] = true;
+      $wgGroupPermissions['DecisionMaker']['teamcomment'] = true;
 
 - name: Transfer EO Logo
   copy:
