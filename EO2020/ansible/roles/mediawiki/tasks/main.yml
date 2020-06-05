@@ -70,7 +70,7 @@
   git:
     repo: https://github.com/OpenTechStrategies/torque
     dest: "{{ mediawiki_install_directory }}/torque/"
-    version: b3afba9
+    version: 424fc37
 
 - name: Link TorqueDataConnect
   file:
