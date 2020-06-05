@@ -499,9 +499,6 @@ def compose_csvs(proposals, admin_review, judge_eval, lfc_eval, thematic_areas_c
 
         attachment_data = []
 
-        # In order to quickly add sorting, a number is prepended to all of
-        # the attachment display names, which is then stripped off before
-        # upload.
         if attachments_dir is not None:
             application_attachment_dir = os.path.join(attachments_dir, row[3])
             for attachment_file in os.listdir(application_attachment_dir):
@@ -511,28 +508,26 @@ def compose_csvs(proposals, admin_review, judge_eval, lfc_eval, thematic_areas_c
                 attachment_display_name = re.sub("^\\d*_", "", attachment_file)
                 attachment_display_name = re.sub("\.pdf$", "", attachment_display_name)
                 if re.search(".*Response to Questions", attachment_file):
-                    attachment_display_name = "3. Responses to Follow Up Questions"
+                    attachment_data.append({"name": "Responses to Follow Up Questions", "file": attachment_file, "rank": 3})
                 elif re.search(".*Synthesis Memo", attachment_file):
-                    attachment_display_name = "1. Synthesis Memo"
+                    attachment_data.append({"name": "Synthesis Memo", "file": attachment_file, "rank": 1})
                 elif re.search(".*Supplemental Documents", attachment_file):
-                    attachment_display_name = "2. Financials and MoUs"
+                    attachment_data.append({"name": "Financials and MoUsMemo", "file": attachment_file, "rank": 2})
                 elif len(attachment_display_name) > 33:
                     attachment_display_name = \
-                        "4. " + \
                         attachment_display_name[0:15] + \
                         "..." + \
                         attachment_display_name[(len(attachment_display_name)-15):]
+                    attachment_data.append({"name": attachment_display_name, "file": attachment_file, "rank": 4})
                 else:
-                    attachment_display_name = "4. " + attachment_display_name
+                    attachment_data.append({"name": attachment_display_name, "file": attachment_file, "rank": 4})
 
-                attachment_data.append({"name": attachment_display_name, "file": attachment_file})
-
-            attachment_data.sort(key=lambda a: a["name"])
+            # Sort first by rank, then by name
+            attachment_data.sort(key=lambda a: str(a["rank"]) + " " + a["name"])
 
         attachments_to_upload[row[3]] = [a["file"] for a in attachment_data]
 
-        # Strip off the sort helping numeric start
-        new_row.append("\n".join([a["name"][3:] for a in attachment_data])) # The names
+        new_row.append("\n".join([a["name"] for a in attachment_data])) # The names
         new_row.append("\n".join(attachments_to_upload[row[3]])) # The files
 
         mwiki_title = wiki_escape_page_title("{30} ({3})".format(*new_row))
