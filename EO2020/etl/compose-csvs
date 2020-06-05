@@ -614,7 +614,7 @@ def compose_csvs(proposals, admin_review, judge_eval, lfc_eval, thematic_areas_c
 
         with open(top13_data_file) as f:
             top13 = f.read().splitlines()
-            generate_list_toc(toc_dir, top13, "Top13Supplemental", True)
+            generate_list_toc(toc_dir, top13, "Top13", True)
 
         top25_topic_data = {}
         for new_row in new_rows[0:25]:

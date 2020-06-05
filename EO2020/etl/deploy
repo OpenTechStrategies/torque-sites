@@ -156,7 +156,7 @@ cp tocs/thematic.j2 $TOC_DIR/Topic_TOC.j2
 cp tocs/thematic.j2 $TOC_DIR/Top25_Topic_TOC.j2
 cp tocs/list.j2 $TOC_DIR/AllProposals.j2
 cp tocs/list.j2 $TOC_DIR/Top25.j2
-cp tocs/supplemental.j2 $TOC_DIR/Top13Supplemental.j2
+cp tocs/list.j2 $TOC_DIR/Top13.j2
 cp tocs/Geographic_TOC.j2 $TOC_DIR/
 
 mkdir -p $TDC_CONFIG_DIR
