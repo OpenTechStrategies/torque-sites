@@ -56,6 +56,7 @@ TOP13_DATA_FILE="top13.dat"
 THEMATIC_AREAS_CSV="EOC_Applications_Thematic_Areas.csv"
 BASE_ATTACHMENTS="Registration\&Application_data_exports_EOC.zip"
 TOP13_SUPPLEMENTAL_ATTACHMENTS="EOC_Docs for Upload.zip"
+TOP13_SYNTHESIS_MEMO_ATTACHMENTS="EOC_Synthesis_Memos.zip"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
 TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
 TOC_DIR="${DATA_DIR}/tocs"
@@ -106,6 +107,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   gpg -o ${DATA_DIR}/${LFC_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${LFC_EVALUATION_CSV}.asc || exit 1
   gpg -o ${DATA_DIR}/${BASE_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.asc || exit 1
   gpg -o "${DATA_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}" --decrypt "${ENCRYPTED_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}.asc" || exit 1
+  gpg -o "${DATA_DIR}/${TOP13_SYNTHESIS_MEMO_ATTACHMENTS}" --decrypt "${ENCRYPTED_DIR}/${TOP13_SYNTHESIS_MEMO_ATTACHMENTS}.asc" || exit 1
 
   mkdir -p ${TOC_DIR}
   mkdir -p ${TDC_CONFIG_DIR}
@@ -121,9 +123,18 @@ if [ ! -d "${DATA_DIR}" ] ; then
   done
   rm -rf $TMP_ATTACHMENTS_DIR
 
+  mkdir -p $TMP_ATTACHMENTS_DIR
+  unzip -d $TMP_ATTACHMENTS_DIR "${DATA_DIR}/${TOP13_SYNTHESIS_MEMO_ATTACHMENTS}"
+  ls $TMP_ATTACHMENTS_DIR | while read file ; do
+    dir=${file/_*}
+    cp -v "$TMP_ATTACHMENTS_DIR/$file" ${ATTACHMENTS_DIR}/$dir/ ;
+  done
+  rm -rf $TMP_ATTACHMENTS_DIR
+
   # Clean up large zips to save disk space
   rm ${DATA_DIR}/${BASE_ATTACHMENTS}
   rm "${DATA_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}"
+  rm "${DATA_DIR}/${TOP13_SYNTHESIS_MEMO_ATTACHMENTS}"
 fi
 
 if ! echo "fcc64efaf84cb0d10497bac4b1e9750e9f866faf  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then

@@ -508,6 +508,8 @@ def compose_csvs(proposals, admin_review, judge_eval, lfc_eval, thematic_areas_c
                 attachment_display_name = re.sub("\.pdf$", "", attachment_display_name)
                 if re.search(".*Response to Questions", attachment_file):
                     attachment_display_name = "Responses to Follow Up Questions"
+                elif re.search(".*Synthesis Memo", attachment_file):
+                    attachment_display_name = "Synthesis Memo"
                 elif re.search(".*Supplemental Documents", attachment_file):
                     attachment_display_name = "Financials and MoUs"
                 elif len(attachment_display_name) > 33:
