@@ -61,6 +61,14 @@ Command-line options:
   --lfc-evaluation-csv FILE       FILE is a csv FILE with the LFC evaluation data,
                                   keyed by application #.
 
+  --thematic-areas-csv FILE       FILE is a csv FILE with thematic areas declared by
+                                  LFC for more user friendly groupings.
+
+  --bridgespan-data-csv FILE      FILE is a csv FILE with extra data, provided by bridgespan.
+
+  --bridgespan-overview-folder D  D is the directory with the financial overview spreadsheets
+                                  for the bridgespan data.
+
   --pare N                        Reduce the nuber of tiems to 1/N rows, for quick
                                   testing and development
 
@@ -200,6 +208,7 @@ def create_column_types_row(header_row):
             "Attachments": "list",
             "Attachment Display Names": "list",
             "Priority Populations": "list",
+            "Bridgespan Financial overview table": "json",
             }
 
     column_types.update({ "Judge " + trait + " Comments": "list" for trait in valid_traits})
@@ -257,6 +266,76 @@ def process_thematic_areas(csv_reader):
         data[row[0]] = row[3]
 
     return data
+
+def fix_bridgespan_cell(cell):
+    """Uses FIX_CELL to fix CELL, then does additional fixing based
+    on the specifics of the bridgespan data.  Then returns the fixed
+    cell."""
+
+    cell = fix_cell(cell)
+
+    # Bridgespan comes with a second bullet type for sublists (the circle type)
+    subbullets_re = re.compile("^◦", re.MULTILINE)
+    cell = subbullets_re.sub("**", cell)
+
+    # Make the first line bold if it ends with a colon
+    bold_first_re = re.compile("^(\*+) ([^.,:\n]*:)", re.MULTILINE)
+    cell = bold_first_re.sub("\\1 '''\\2'''", cell)
+
+    return cell
+
+def process_bridgespan_financial_overview(overview_folder, application_number):
+    """Takes an OVERVIEW_FOLDER and APPLICATION_NUMBER to find a financial
+    overview csv, then uses the data therein to make an object to display on
+    the final table.  This object is specific to the data being passed in,
+    and so may break if the data changes.  That's unlikely, though.
+
+    For instance, it assumes 5 years (2014-2018), and rows."""
+
+    reader = csv.reader(
+            open(
+                os.path.join(overview_folder, application_number + "-financial-overview.csv"),
+                encoding='mac_roman'),
+            delimiter=',', quotechar='"')
+
+    table = {"rows": []}
+
+    # Header line is always the same, so we'll put in template
+    next(reader)
+
+    for row in reader:
+        if row[0].startswith("Magnitude of surplus"):
+            table["Magnitude of surplus"] = row[1]
+            continue
+
+        row_obj = {}
+        row_obj['name'] = row[0]
+        row_obj['data'] = []
+
+        for col in row[1:6]:
+            row_obj['data'].append(col)
+        table['rows'].append(row_obj)
+
+    return json.dumps(table)
+
+def process_bridgespan_data(overview_folder, csv_reader):
+    """Takes a CSV_READER representing a csv with the first column being
+    a review number, and the rest being other infromation provided.
+
+    Returns a dictionary mapping the former to the latter."""
+
+    if csv_reader is None:
+        return {}
+
+    data = {}
+
+    header = next(csv_reader)
+    header.append("Financial overview table")
+    for row in csv_reader:
+        data[row[0]] = [fix_bridgespan_cell(cell) for cell in row]
+        data[row[0]].append(process_bridgespan_financial_overview(overview_folder, row[0]))
+
+    return data, header
 
 def generate_generic_toc(toc_dir, grouped_review_numbers, toc_name, json_only=True):
     """Generates a TOC mwiki and TOC data file in TOC_DIR for the given data,
@@ -392,8 +471,8 @@ def create_tdc_config(tdc_config_dir, header_row, new_rows):
         for column in header_row:
             f.writelines("* %s\n" % column)
 
-def compose_csvs(proposals, admin_review, judge_eval, lfc_eval, thematic_areas_csv, regionconfig,
-        top13_data_file, attachments_dir, toc_dir, tdc_config_dir, pare=None):
+def compose_csvs(proposals, admin_review, judge_eval, lfc_eval, thematic_areas_csv, bridgespan_data_csv,
+        bridgespan_overview_folder, regionconfig, top13_data_file, attachments_dir, toc_dir, tdc_config_dir, pare=None):
     """Write a composed version of PROPOSALS (a CSV file), ADMIN_REVIEW
     (a CSV file) standard out.
 
@@ -403,6 +482,8 @@ def compose_csvs(proposals, admin_review, judge_eval, lfc_eval, thematic_areas_c
 
     THEMATIC_AREAS_CSV is a csv containing thematic areas which are
     added to the spreadsheet by proposal.
+
+    BRIDGESPAN_DATA_CSV is a csv with extra information provided by Bridgespan
 
     REGIONCONFIG is a filename of a simple mapping of countries to regions
     they belong to based on the UN geoscheme.
@@ -432,6 +513,8 @@ def compose_csvs(proposals, admin_review, judge_eval, lfc_eval, thematic_areas_c
                                      delimiter=',', quotechar='"')
         regionconfig_reader = csv.reader(open(regionconfig, encoding='utf-8'),
                                        delimiter=',', quotechar='"')
+        bridgespan_data_reader = csv.reader(open(bridgespan_data_csv, encoding='utf-8'),
+                                            delimiter=',', quotechar='"')
         if thematic_areas_csv is not None:
             thematic_areas_reader = csv.reader(open(thematic_areas_csv, encoding='utf-8'),
                                        delimiter=',', quotechar='"')
@@ -440,6 +523,7 @@ def compose_csvs(proposals, admin_review, judge_eval, lfc_eval, thematic_areas_c
         sys.exit(-1)
 
     thematic_areas = process_thematic_areas(thematic_areas_reader)
+    bridgespan_data, bridgespan_header = process_bridgespan_data(bridgespan_overview_folder, bridgespan_data_reader)
 
     header_row = next(proposals_reader)
     header_row.append("Valid")
@@ -455,6 +539,8 @@ def compose_csvs(proposals, admin_review, judge_eval, lfc_eval, thematic_areas_c
         header_row.append("Judge " + trait + " Comments")
         header_row.append("Judge " + trait + " Comment Scores Normalized")
     header_row.append("LFC Recommendation")
+
+    header_row = header_row + ["Bridgespan " + h for h in bridgespan_header]
 
     # We only accept applications if they're one of the rows in the
     # admin_review csv, which has an "Application #" column (3),
@@ -556,6 +642,11 @@ def compose_csvs(proposals, admin_review, judge_eval, lfc_eval, thematic_areas_c
 
         new_row.append(lfc_data[row[3]] if row[3] in lfc_data else "")
 
+        if row[3] in bridgespan_data:
+            new_row = new_row + bridgespan_data[row[3]]
+        else:
+            new_row = new_row + ([""] * len(bridgespan_header))
+
         print("Sanitized row %d (%d cols, %d fixed)." % (row_num, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
 
@@ -642,6 +733,8 @@ def main():
                                     "judge-evaluation-csv=",
                                     "lfc-evaluation-csv=",
                                     "thematic-areas-csv=",
+                                    "bridgespan-data-csv=",
+                                    "bridgespan-overview-folder=",
                                     "regionconfig-csv=",
                                     "top13-data-file=",
                                     "toc-dir=",
@@ -656,6 +749,8 @@ def main():
     proposals_csv = None
     admin_review_csv = None
     thematic_areas_csv = None
+    bridgespan_data_csv = None
+    bridgespan_overview_folder = None
     regionconfig_csv = None
     top13_data_file = None
     attachments_dir = None
@@ -674,6 +769,10 @@ def main():
             lfc_evaluation_csv = a
         elif o == "--thematic-areas-csv":
             thematic_areas_csv = a
+        elif o == "--bridgespan-data-csv":
+            bridgespan_data_csv = a
+        elif o == "--bridgespan-overview-folder":
+            bridgespan_overview_folder = a
         elif o == "--regionconfig-csv":
             regionconfig_csv = a
         elif o == "--top13-data-file":
@@ -695,8 +794,8 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
     compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, lfc_evaluation_csv,
-            thematic_areas_csv, regionconfig_csv, top13_data_file, attachments_dir, toc_dir,
-            tdc_config_dir, pare)
+            thematic_areas_csv, bridgespan_data_csv, bridgespan_overview_folder, regionconfig_csv,
+            top13_data_file, attachments_dir, toc_dir, tdc_config_dir, pare)
 
 if __name__ == '__main__':
     main()

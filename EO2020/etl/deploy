@@ -57,6 +57,9 @@ THEMATIC_AREAS_CSV="EOC_Applications_Thematic_Areas.csv"
 BASE_ATTACHMENTS="Registration\&Application_data_exports_EOC.zip"
 TOP13_SUPPLEMENTAL_ATTACHMENTS="EOC_Docs for Upload.zip"
 TOP13_SYNTHESIS_MEMO_ATTACHMENTS="EOC_Synthesis_Memos.zip"
+BRIDGESPAN_ANALYSIS_ZIP="200601-Bridgespan-data.zip"
+BRIDGESPAN_ANALYSIS_CSV="200601-Bridgespan-data-for-Wiki-v1.csv"
+BRIDGESPAN_ANALYSIS_FOLDER="${DATA_DIR}/Bridgespan-data"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
 TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
 TOC_DIR="${DATA_DIR}/tocs"
@@ -108,6 +111,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   gpg -o ${DATA_DIR}/${BASE_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.asc || exit 1
   gpg -o "${DATA_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}" --decrypt "${ENCRYPTED_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}.asc" || exit 1
   gpg -o "${DATA_DIR}/${TOP13_SYNTHESIS_MEMO_ATTACHMENTS}" --decrypt "${ENCRYPTED_DIR}/${TOP13_SYNTHESIS_MEMO_ATTACHMENTS}.asc" || exit 1
+  gpg -o "${DATA_DIR}/${BRIDGESPAN_ANALYSIS_ZIP}" --decrypt "${ENCRYPTED_DIR}/${BRIDGESPAN_ANALYSIS_ZIP}.asc" || exit 1
 
   mkdir -p ${TOC_DIR}
   mkdir -p ${TDC_CONFIG_DIR}
@@ -131,10 +135,14 @@ if [ ! -d "${DATA_DIR}" ] ; then
   done
   rm -rf $TMP_ATTACHMENTS_DIR
 
+  mkdir -p $BRIDGESPAN_ANALYSIS_FOLDER
+  unzip -d $BRIDGESPAN_ANALYSIS_FOLDER "${DATA_DIR}/${BRIDGESPAN_ANALYSIS_ZIP}"
+
   # Clean up large zips to save disk space
   rm ${DATA_DIR}/${BASE_ATTACHMENTS}
   rm "${DATA_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}"
   rm "${DATA_DIR}/${TOP13_SYNTHESIS_MEMO_ATTACHMENTS}"
+  rm "${DATA_DIR}/${BRIDGESPAN_ANALYSIS_ZIP}"
 fi
 
 if ! echo "fcc64efaf84cb0d10497bac4b1e9750e9f866faf  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
@@ -170,6 +178,8 @@ ${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
             --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
             --lfc-evaluation-csv="${DATA_DIR}/${LFC_EVALUATION_CSV}" \
             --thematic-areas-csv="${DATA_DIR}/${THEMATIC_AREAS_CSV}" \
+            --bridgespan-data-csv="${BRIDGESPAN_ANALYSIS_FOLDER}/${BRIDGESPAN_ANALYSIS_CSV}" \
+            --bridgespan-overview-folder="${BRIDGESPAN_ANALYSIS_FOLDER}" \
             --regionconfig-csv="${MACFOUND_DIR}/${REGIONCONFIG_CSV}" \
             --top13-data-file="${DATA_DIR}/${TOP13_DATA_FILE}" \
             --attachments-dir=${ATTACHMENTS_DIR} \
