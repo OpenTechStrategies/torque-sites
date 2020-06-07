@@ -19,7 +19,7 @@
   git:
     repo: https://github.com/OpenTechStrategies/torque
     dest: "{{ torquedata_install_directory }}/torque/"
-    version: 424fc37
+    version: 39c669e
 
 - name: Link TorqueData
   file:
