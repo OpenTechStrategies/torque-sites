@@ -163,10 +163,79 @@ $ $EDITOR simplesaml/inv/<environment>/group_vars/all/secret
 
 # Installing a competition
 
+## Questions to ask before creating a new competition
+
+* Is the competition itself confidential?
+
+  Can the existence, name, and logo of the competition be made public?
+  If anything needs to be confidential, find that out up front and
+  make sure this repository does not expose any of the confidential
+  information.
+
+* Is there a competition logo?
+
+* What should shortname be for this competition?  
+
+  This will be the URL slug and the abbreviation used in other places.
+  Usually it includes a date, even if it is not yet known whether the
+  competition will happen in multiple years.  For example, for the
+  "Larson/Lam ICONIQ Impact Award" in 2020, the shortname is
+  `LLIIA2020`.
+
+* Okta vs local login?  Both?  Some other SSO service?
+
+* What groups/roles will be accessing this competition's data?
+
+  What permissions do the groups need, especially regarding
+  attachments?
+
+* Which proposals (rows) should be included?
+
+  I.e., What are the validation criteria?
+
+* Confirm which columns are to be included and which are not.
+
+  After setting up ETL, send the client a list of columns that
+  *aren't* included in the template at all, just to confirm.
+  
+* How should proposals be sorted initially?
+
+* What categorizations do we want to have Tables of Contents for?
+
+* Is any review/evaluation/ranking data included at competition
+  creation time?
+
+* Will review spreadsheets be coming later?  
+
+  How many different stages of review will there be?  (This is not
+  always knowable in advance, and that's fine, but the more we know
+  ahead of time the better.)
+
+* Do we know what followup information (budget tables, etc?) might be coming later?
+
+* Any special instructinos regarding attachments?
+
+* What plugin-based features will be enabled?
+
+  - [TeamComments](https://github.com/opentechstrategies/TeamComments)?  
+
+  - [PickSome](https://github.com/opentechstrategies/PickSome)?  (If
+    so, we have some config decisions to make: naming, how many
+    instances, etc.)
+
+  - [SimpleFavorites](https://github.com/opentechstrategies/SimpleFavorites)?
+  
+* Is there some existing competition that this new one is similar to? 
+
+  I.e., which template to base this new competition on?
+  100Change2020, EO, something else?
+  
+## Technical installation
+
 For the competition you're working with, run the instructions from
 "Installing via Ansible" and "Running the ETL pipeline" above.
 
-## Post-installation checklist for new competition instances
+### Post-installation checklist for new competition instances
 
 (Note: Many of the items in this checklist come from looking over
 `<competition>/ansible/roles/mediawiki/tasks/main.yml`, as 
@@ -180,11 +249,12 @@ For the competition you're working with, run the instructions from
    (TODO: This item needs more detail.)
 3. Does login work?  Often it's via some third-party SSO provider like Okta.
 4. Is TOC depth adjusted right?
-5. Do you need book-printing to work?  Does it?  You may need to
+5. Create TOC link(s) in the left navigation pane.
+6. Do you need book-printing to work?  Does it?  You may need to
    fiddle with the template.  (TODO: Say where that template is.)
-6. Does the `PickSome` feature need to be configured?
-7. Does the `ActivityLog` feature need to be configured?
-8. Does the `TeamComments` feature need to be configured?
-9. Does the `SimpleFavorites` feature need to be configured?
+7. Make sure `ActivityLog` logging is working.
+8. Does the `PickSome` feature need to be configured?
+9. Does the `TeamComments` feature need to be configured?
+10. Does the `SimpleFavorites` feature need to be configured?
 
 Please add items to this list as needed.
