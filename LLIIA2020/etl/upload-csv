@@ -1,0 +1,181 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Upload a spreadsheet to a configured version of torquedata.
+#
+# Copyright (C) 2020 Open Tech Strategies, LLC
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+__doc__ = """\
+Upload a proposals spreadsheet to a running version of torquedata.
+
+Usage:
+
+  $ upload-csv \\
+       --config=CONFIG_FILE \\
+       --csv=CSV_TO_UPLOAD
+
+Command-line options:
+  --csv FILE                      FILE is a csv FILE representing the proposals after
+                                  compose-csv has been run
+
+  --toc-dir DIR                   DIR is the directory tocs live in for uploading
+
+  --attachments-dir DIR           DIR is the directory attachments live in for uploading
+
+  --config CONFIG_FILE            CONFIG_FILE is a python config FILE that has the login
+                                  information required to call into the mediawiki api.
+                                  See below for needed variables.
+
+CONFIG_FILE Format
+
+THe CONFIG_FILE contains the wiki_url and credentials in the same format
+that csv2wiki expects for ease of use.
+"""
+
+import configparser
+import mwclient
+import getopt
+import sys
+import os
+import re
+import pickle
+
+def usage(errout=False):
+    """Print a message explaining how to use this script.
+    Print to stdout, unless ERROUT, in which case print to stderr."""
+    out = sys.stderr if errout else sys.stdout
+    out.write(__doc__)
+
+def main():
+    try:
+        opts, args = getopt.getopt(sys.argv[1:],
+                                   'h?',
+                                   ["help",
+                                    "csv=",
+                                    "toc-dir=",
+                                    "attachments-dir=",
+                                    "config=",
+                                    ])
+    except getopt.GetoptError as err:
+        sys.stderr.write("ERROR: '%s'\n" % err)
+        usage(errout=True)
+        sys.exit(2)
+
+    csv_file = None
+    config_file = None
+    toc_dir = None
+    attachments_dir = None
+    for o, a in opts:
+        if o in ("-h", "-?", "--help",):
+            usage()
+            sys.exit(0)
+        elif o in ("--csv",):
+            csv_file = a
+        elif o in ("--toc-dir",):
+            toc_dir = a
+        elif o in ("--attachments-dir",):
+            attachments_dir = a
+        elif o in ("--config",):
+            config_file = a
+
+    if csv_file is None:
+        sys.stderr.write('Error: --csv-file missing')
+        usage(errout=True)
+        sys.exit(2)
+
+    if config_file is None:
+        sys.stderr.write('Error: --config missing')
+        usage(errout=True)
+        sys.exit(2)
+
+    if toc_dir is None:
+        sys.stderr.write('Error: --toc-dir missing')
+        usage(errout=True)
+        sys.exit(2)
+
+    config = configparser.ConfigParser()
+    parsed_files = config.read(config_file)
+
+    if len(parsed_files) == 0:
+        raise IOError("Failed to read config file %s" % config_file)
+
+    wiki_url = config["default"]["wiki_url"]
+    username = config["default"]["username"]
+    password = config["default"]["password"]
+
+    (scheme, host) = wiki_url.split("://")
+    # We need a very large timeout because uploading reindexes everything!
+    site = mwclient.Site(host, path="/", scheme=scheme, reqs={'timeout': 300})
+    site.login(username, password)
+    with open(csv_file) as f:
+        site.raw_call(
+        'api',
+        {
+            "action": "torquedataconnectuploadsheet",
+            "format": 'json',
+            "object_name": 'proposal',
+            "sheet_name": 'LLIIA2020',
+            "key_column": 'Application #'
+        },
+        { "data_file": f.read() }
+        )
+
+    if attachments_dir is not None:
+        with open(os.path.join(attachments_dir, "attachments_to_upload"), 'rb') as f:
+            attachments_to_upload = pickle.load(f)
+
+        for (attachment_proposal_id,attachment_files) in attachments_to_upload.items():
+            for attachment_file in attachment_files:
+
+                print("Uploading " + attachment_file, file=sys.stderr)
+                with open(os.path.join(attachments_dir, attachment_proposal_id, attachment_file), "rb") as attachment:
+                    site.raw_call(
+                    'api',
+                    {
+                        "action": "torquedataconnectuploadattachment",
+                        "format": 'json',
+                        "sheet_name": 'LLIIA2020',
+                        "object_id": attachment_proposal_id,
+                        "permissions_column": "Attachments",
+                        "attachment_name": attachment_file
+                    },
+                    {
+                        "attachment": attachment.read()
+                    }
+                    )
+
+    toc_names = [ os.path.splitext(f)[0] for f in os.listdir(toc_dir) if f.endswith(".j2") ]
+    for toc_name in toc_names:
+        template_file_name = toc_name + ".j2"
+        json_file_name = toc_name + ".json"
+        with open(os.path.join(toc_dir, template_file_name)) as template_file, \
+            open(os.path.join(toc_dir, json_file_name)) as json_file:
+                site.raw_call(
+                'api',
+                {
+                    "action": "torquedataconnectuploadtoc",
+                    "format": 'json',
+                    "sheet_name": 'LLIIA2020',
+                    "toc_name": toc_name
+                },
+                {
+                    "template": template_file.read(),
+                    "json": json_file.read()
+                }
+                )
+
+if __name__ == '__main__':
+    main()

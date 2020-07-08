@@ -1,0 +1,590 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Perform some one-time fixes to the MacArthur Foundation 100&Change CSV file
+#
+# This is necessary because not everything can be addressed with the
+# 'sanitize' script.  The 'sanitize' script isn't aware of CSV rows or
+# columns; it just treats the whole CSV file as a normal text file.
+# But for, e.g., fixing the YouTube links (see features.org for more),
+# we really need a one-time transformation that knows what cell it's
+# operating on.
+#
+# Copyright (C) 2017, 2019, 2020 Open Tech Strategies, LLC
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+##########################################################################
+#                                                                        #
+#   NOTE: This code is highly specific to the needs of the MacArthur     #
+#   Foundation and is unlikely to be correct for your CSV.  It is        #
+#   open source software, so please modify it to suit your needs.        #
+#                                                                        #
+##########################################################################
+
+__doc__ = """\
+Compose all of the MacArthur Foundation 2019 Proposal CSV files.
+
+Usage:
+
+  $ compose-csvs \\
+       --proposals-csv=PROPOSALS_CSV \\
+       --admin-review-csv=ADMIN_REVIEW_CSV \\
+       --regionconfig-csv=REGIONCONFIG_CSV \\
+       --toc-dir=TOC_DIR \\
+       --attachments-dir=ATTACHMENTS_DIR \\
+       --tdc-config-dir=TDC_CONFIG_DIR
+
+Command-line options:
+  --proposals-csv FILE            FILE is a csv FILE representing the bulk
+                                  of the proposal information
+
+  --admin-review-csv FILE         FILE is a csv FILE representing which applications
+                                  in PROPOSALS_CSV should be included
+
+  --pare N                        Reduce the nuber of tiems to 1/N rows, for quick
+                                  testing and development
+
+  --regionconfig-csv FILE         FILE is a csv of country/subregion/region
+                                  configurations, that when provided, allows a detailed
+                                  geographic TOC to be created
+
+  --toc-dir DIR                   DIR is the directory where extra TOCs will be placed for loading
+                                  up to the torque wiki with csv2wiki.  If not included, TOCs won't
+                                  be generated.
+
+  --attachments-dir DIR           DIR is a directory for compose-csvs to look in for what attachments
+                                  will be uploaded to the torque wiki.  It needs to have subdirectories
+                                  by proposal number.
+
+  --tdc-config-dir DIR            DIR is the location for files that are the base configuration files
+                                  needed by TorqueDataConnect, and can be optionally, manually, put on
+                                  the torque wiki.  We don't autmoatically do that because we want to
+                                  overwrite the configuration out there.
+"""
+
+import csv
+import getopt
+import re
+import io
+import sys
+import warnings
+import string
+import os
+import json
+import pickle
+from bs4 import BeautifulSoup
+
+def collapse_replace(string, old, new):
+    "Return STRING, with OLD repeatedly replaced by NEW until no more OLD."
+    while string.find(old) != -1: 
+        string = string.replace(old, new)
+    return string
+
+def weaken_the_strong(html):
+    """Strip any meaningless <strong>...</strong> tags from HTML.
+    HTML is a Unicode string; the return value is either HTML or a new
+    Unicode string based on HTML.
+
+    If <strong> tags cover everything in HTML, remove the tags.  But if
+    <strong> tags are used only sometimes, maybe they're meaningful, so
+    leave them.  Basically, we want to make strength great again."""
+    # If there's no strength here, move on.
+    if not "<strong>" in html:
+        return html
+    
+    # Remove the stuff inside strong tags
+    soup = BeautifulSoup(html, "html.parser")
+    while "<strong>" in str(soup):
+        soup.strong.extract()
+
+    # Check whether the non-bold stuff is more than just tags and
+    # punctuation.  If not, all the important stuff was bold, so strip
+    # bold and return.
+    if re.sub(r"\W", "", soup.get_text()) == "":
+        return re.sub("</?strong>", "", html)
+
+    # OTOH, if the non-bold stuff contained letters or numbers, maybe
+    # there's real content there, which means the html was a mix of
+    # bold and non-bold text.  Better to leave it alone.
+    return html
+
+def form_well(html):
+    """Return a well-formed version of HTML with dangling tags closed.
+    Some of the input includes tables that cut off without closing
+    tags; some entries leave <td> tags open too."""
+    # Parse html and suppress warnings about urls in the text
+    warnings.filterwarnings("ignore",
+                            category=UserWarning, module='bs4')
+    soup = BeautifulSoup(html, "html.parser")
+
+    # Return well-formed html as a soup object
+    return soup
+
+# Used in converting "<foo>&nbsp;<bar>" and "</foo>&nbsp;<bar>"
+# to "<foo> <bar>" and "</foo> <bar>" respectively.  (Those particular
+# instances of "&nbsp;" in the data are not very convincing, and they
+# create noise when we're looking for unnecessary escaping elsewhere.)
+intertag_nbsp_re = re.compile('(?m)(</?[a-z]+>)&nbsp;(<[a-z]+>)')
+
+# Matches Unicode 8226 (U+2022) at the beginning of a line,
+# which is something that applicants do in a lot of fields.
+bullets_re = re.compile("^•", re.MULTILINE)
+
+def fix_cell(cell):
+    """Return a cleaned up version of the CELL that will work well
+    with mediawiki, mainly through text subsitution."""
+    # A straight-up HTML-unescaping might be the right thing
+    # (i.e., cell = html_parser.unescape(cell) below)
+    # in the long run, but for now, let's do the same limited
+    # set of unescapings the original 'sanitize' script did:
+    cell = cell.replace('&amp;', '&')
+    cell = cell.replace('&lt;', '<')
+    cell = cell.replace('&gt;', '>')
+    # The rest should be recursively collapsing replacements:
+    cell = collapse_replace(cell, '\t', ' ')
+    cell = collapse_replace(cell, '&nbsp;&nbsp;', '&nbsp;')
+    cell = collapse_replace(cell, '&nbsp; ', ' ')
+    cell = collapse_replace(cell, ' &nbsp;', ' ')
+    cell = collapse_replace(cell, '&nbsp;</', '</')
+    cell = collapse_replace(cell, '\\"', '"')
+    cell = cell.replace('\n', '<br/>\n')
+    cell = re.sub(intertag_nbsp_re, '\\1 \\2', cell)
+
+    soup = form_well(cell)
+    cell = weaken_the_strong(str(soup))
+
+    # The parsing for lists requires an asterisk at the start
+    # of the line, but some entries use bullets. This regex
+    # swaps the bullets for asterisks.
+    cell = bullets_re.sub("*", cell)
+
+    # We don't want to have extra new lines added at the beginning or end
+    # because that could make the wiki formatting odd
+    cell = cell.strip()
+
+    if cell.lower() == "null":
+        cell = ""
+
+    if cell.lower() == "not applicable":
+        cell = ""
+
+    return cell
+
+valid_traits = [ "Likelihood of Success", "Magnitude of Impact", "Potential for Scale", "Strength of Evidence" ]
+
+def create_column_types_row(header_row):
+    """Declaration of the types different columns in the spreadsheet have,
+    expressed as a row of strings that torque understands."""
+
+    column_types = {
+            "Attachments": "list",
+            "Attachment Display Names": "list",
+            "Priority Populations": "list",
+            }
+
+    column_types.update({ "Judge " + trait + " Comments": "list" for trait in valid_traits})
+    column_types.update({ "Judge " + trait + " Comment Scores Normalized": "list" for trait in valid_traits})
+
+    return [ (column_types[col] if col in column_types else "") for col in header_row ]
+
+def print_csv(header_row, rows, output):
+    """Print the HEADER_ROW and ROWS to OUTPUT via csv"""
+
+    csv_writer = csv.writer(output,
+                            delimiter=',', quotechar='"', lineterminator="\n")
+
+    csv_writer.writerow(header_row)
+    csv_writer.writerow(create_column_types_row(header_row))
+    for row in rows:
+        csv_writer.writerow(row)
+
+def process_regionconfig_data(csv_reader):
+    """Takes a CSV_READER representing a country ot region mapping in a
+    spreadsheet and converts it into a dict representing a lookup by
+    country.  If no reader is provided, then {} is returned.
+
+    The return object, when CSV_READER is present is of the form:
+      REGION_DATA_BY_COUNTRY[country] = {
+        subregion: SUBREGION,
+        region: REGION
+      }
+    """
+
+    if csv_reader is None:
+        return {}
+
+    region_data_by_country = {}
+
+    next(csv_reader)
+    for row in csv_reader:
+        region_data_by_country[row[0]] = { "subregion": row[1], "region": row[2] }
+
+    return region_data_by_country
+
+def generate_generic_toc(toc_dir, grouped_review_numbers, toc_name, json_only=True):
+    """Generates a TOC mwiki and TOC data file in TOC_DIR for the given data,
+    which is a dict where the proposals are all grouped by some key.
+    Then put into TOC_DIR/TOC_NAME.json.
+
+    Notably, this doesn't create the jinja template file, as that doesn't
+    need to be dynamically generated."""
+    with open(os.path.join(toc_dir, toc_name + ".json"), 'w') as f:
+        f.writelines(json.dumps({"groups": grouped_review_numbers}))
+
+    if not json_only:
+        with open(os.path.join(toc_dir, toc_name + ".mwiki"), 'w') as f:
+            f.writelines(toc_name + "\n")
+            f.writelines("{{ #tdcrender:LLIIA2020/toc/" + toc_name + ".mwiki }}")
+
+def process_evaluation_data(*csv_reader, app_col, score_rank_normalized_col, sum_of_scores_normalized_col, trait_col,
+        score_normalized_col, comments_col, comments_score_normalized_col):
+    """Takes a CSV_READER representing evaluation data in a spreadsheet and
+    turns that into a dict of dicts in the following form:
+
+      EVALUATION_DATA[app_id] = {
+        overall_score_rank_normalized: string,
+        sum_of_scores_normalized: string,
+        traits: array of TRAIT (below)
+      }
+
+      TRAIT = {
+        name: string,
+        score_normalized: string
+        comments: concatenated string, ready for list type
+        comment_scores: concatenated string, ready for list type
+      }
+
+    The columns that data is looked up are required named integer arguments as follows:
+      - APP_COL: column with application number
+      - SCORE_RANK_COL: column with normalized score rank
+      - SUM_OF_SCORES_COL: column with normalized scores
+      - TRAIL_COL: column with the trait name
+      - SCORE_NORMALIZED_COL: column with the normalized score
+      - COMMENTS_COL: column with the comments
+      - COMMENTS_SCORE_NORMALIZED_COL: the normalized score of the commeng
+
+    The evaluation data coming in has many comments in their own row to one
+    application.  There are N traits, and M judges per trait, with things like
+    overall_score_rank_normalized being duplicated for all NxM rows.
+
+    The name of the trait has to be one of the valid_traits defined globally.
+
+    The reason we don't dynamically load this is that for the purposes of
+    the json export, as well as the spreadsheet headers, we need to know
+    the names of the traits.
+
+    The scores for the traits are added up based here rather than in the
+    spreasheet.  Then, comments are concatenated for that trait.
+    """
+
+    evaluation_data = {}
+
+    next(csv_reader[0])
+    for row in csv_reader[0]:
+        application_id = row[app_col]
+        if not application_id in evaluation_data:
+            evaluation_data[application_id] = {
+                    "overall_score_rank_normalized": row[score_rank_normalized_col],
+                    "sum_of_scores_normalized": row[sum_of_scores_normalized_col],
+                    "traits": [{ "name": trait, "score_normalized": 0, "comments": "", "comment_scores": "" } for trait in valid_traits],
+                    }
+
+        judge_datum = evaluation_data[application_id]
+
+        found = False
+
+        if row[trait_col] not in valid_traits:
+            raise Exception("Trait is not a valid trait: " + row[trait_col])
+
+        for trait in judge_datum["traits"]:
+            if trait["name"] == row[trait_col]:
+                trait["score_normalized"] += float(row[score_normalized_col])
+                trait["comments"] += row[comments_col] + "\n"
+                trait["comment_scores"] += row[comments_score_normalized_col] + "\n"
+
+    return evaluation_data
+
+def generate_list_toc(toc_dir, review_numbers, toc_name, json_only=False):
+    """Generates a TOC mwiki and TOC data file in TOC_DIR for the given data,
+    which is a list of review numbers we want to be in the list.  Then put
+    into TOC_DIR/TOC_NAME.json.
+
+    Notably, this doesn't create the jinja template file, as that doesn't
+    need to be dynamically generated."""
+    with open(os.path.join(toc_dir, toc_name + ".json"), 'w') as f:
+        f.writelines(json.dumps({"proposal_ids": review_numbers}))
+
+    if not json_only:
+        with open(os.path.join(toc_dir, toc_name + ".mwiki"), 'w') as f:
+            f.writelines(toc_name + "\n")
+            f.writelines("{{ #tdcrender:LLIIA2020/toc/" + toc_name + ".mwiki }}")
+
+def wiki_escape_page_title(s):
+    import unidecode
+    """Return a wiki-escaped version of STRING."""
+    for c in ["#", "<", ">", "[", "]", "{", "|", "}",]:
+        if s.find(c) != -1:
+            s = s.replace(c, "-")
+    while len(bytes(s, "UTF-8")) > 255:
+        s = s[:-1]
+
+    # Also convert non unicode because we do this with titles on the other side
+    return unidecode.unidecode_expect_nonascii(s).strip()
+
+def create_tdc_config(tdc_config_dir, header_row, new_rows):
+    """Helper method to write out base config files to TDC_CONFIG_DIR.
+
+    Needs HEADER_ROW and NEW_ROWS to generate the column and proposal
+    data.  Generates the following:
+
+      - AllProposals - All the proposals generated
+      - ValidProposals - The ~150 proposals that were marked valid
+      - AllColumns - All the available columns
+      """
+
+    def row_to_title_line(row):
+        return "* {3}: ".format(*row) + "[[" + row[143] + "]]\n"
+
+    with open(os.path.join(tdc_config_dir, "AllProposals"), 'w') as f:
+        f.writelines([row_to_title_line(row) for row in new_rows])
+
+    with open(os.path.join(tdc_config_dir, "AllColumns"), 'w') as f:
+        for column in header_row:
+            f.writelines("* %s\n" % column)
+
+def compose_csvs(proposals, admin_review, regionconfig, attachments_dir, toc_dir, tdc_config_dir, pare=None):
+    """Write a composed version of PROPOSALS (a CSV file), ADMIN_REVIEW
+    (a CSV file) standard out.
+
+    PROPOSALS, ADMIN_REVIEW, and JUDGE_EVAL all filenames.  They
+    represent a full list of proposals and a list of accepted proposals,
+    and evaluation on those proposals, respectively.
+
+    REGIONCONFIG is a filename of a simple mapping of countries to regions
+    they belong to based on the UN geoscheme.
+
+    ATTACHMENTS_DIR is the directory to look in for attachments.
+
+    TOC_DIR is the directory that, when not None, will have files written
+    to it that are various tables of contents that are of interest to macfound.
+
+    TDC_CONFIG_DIR is the directory that, when not None, will have files
+    written to it that have the base configuration of columns, proposals, etc
+    that we launched the LFC torque instance with.
+
+    If PARE is not None, it is a positive integer indicating that only
+    1 of every PARE entries should be processed, and the others skipped."""
+    try:
+        proposals_reader = csv.reader(open(proposals, encoding='utf-8'),
+                                      delimiter=',', quotechar='"')
+        #admin_review_reader = csv.reader(open(admin_review, encoding='utf-8'),
+        #                                 delimiter=',', quotechar='"')
+        regionconfig_reader = csv.reader(open(regionconfig, encoding='utf-8'),
+                                       delimiter=',', quotechar='"')
+    except UnicodeDecodeError:
+        sys.stderr.write("fix-csv expects utf-8-encoded unicode, not whatever is in this csv file.\n")
+        sys.exit(-1)
+
+    header_row = next(proposals_reader)
+    #header_row.append("Valid")
+    header_row.append("Attachment Display Names")
+    header_row.append("Attachments")
+    header_row.append("MediaWiki Title")
+
+    # We only accept applications if they're one of the rows in the
+    # admin_review csv, which has an "Application #" column (3),
+    # which matches a "Review #" column in the proposals (3)
+    # and for which the "Status" column (7) is valid
+    #next(admin_review_reader) # Don't look at header
+    #acceptable_application_numbers = { row[3]: row[7] for row in admin_review_reader }
+
+    attachments_to_upload = {}
+
+    row_num = 0
+    new_rows = []
+
+    for row in proposals_reader:
+#        if row[3] not in acceptable_application_numbers.keys():
+#            continue
+        if attachments_dir is not None and not os.path.isdir(os.path.join(attachments_dir, row[3])):
+            continue
+
+        row_num += 1  # first row here is row 1 (the header row was row 0) 
+        if pare is not None and row_num % pare != 0:
+            continue
+
+        # This is required to be before the corrections because of legacy issues
+        new_row = []
+        num_fixed_cells = 0
+        for cell in row:
+            fixed_cell = fix_cell(cell)
+            if fixed_cell != cell:
+                num_fixed_cells += 1
+            new_row.append(fixed_cell)
+
+        # Population
+        new_row[61] = "\n".join([pop.strip() for pop in new_row[61].split(",")])
+
+#        new_row.append(acceptable_application_numbers[row[3]])
+
+        attachment_data = []
+
+        if attachments_dir is not None and os.path.isdir(os.path.join(attachments_dir, row[3])):
+            application_attachment_dir = os.path.join(attachments_dir, row[3])
+            for attachment_file in os.listdir(application_attachment_dir):
+                if re.search("^\\d*_Registration.pdf", attachment_file):
+                    continue
+
+                attachment_display_name = re.sub("^\\d*_", "", attachment_file)
+                attachment_display_name = re.sub("\.pdf$", "", attachment_display_name)
+                if len(attachment_display_name) > 33:
+                    attachment_display_name = \
+                        attachment_display_name[0:15] + \
+                        "..." + \
+                        attachment_display_name[(len(attachment_display_name)-15):]
+                    attachment_data.append({"name": attachment_display_name, "file": attachment_file, "rank": 4})
+                else:
+                    attachment_data.append({"name": attachment_display_name, "file": attachment_file, "rank": 4})
+
+            # Sort first by rank, then by name
+            attachment_data.sort(key=lambda a: str(a["rank"]) + " " + a["name"])
+
+        attachments_to_upload[row[3]] = [a["file"] for a in attachment_data]
+
+        new_row.append("\n".join([a["name"] for a in attachment_data])) # The names
+        new_row.append("\n".join(attachments_to_upload[row[3]])) # The files
+
+        mwiki_title = wiki_escape_page_title("{30} ({3})".format(*new_row))
+
+        new_row.append(mwiki_title)
+
+        print("Sanitized row %d (%d cols, %d fixed)." % (row_num, len(new_row), num_fixed_cells), file=sys.stderr)
+        new_rows.append(new_row)
+
+    new_rows.sort(key=lambda row: row[7]) # Organization Name
+
+    # Build TOCs after sorted proposals
+
+    if toc_dir is not None:
+        # Population
+        population_data = {}
+        for new_row in new_rows:
+            for population in new_row[61].split("\n"):
+                if population not in population_data:
+                    population_data[population] = []
+                population_data[population].append(new_row[3])
+        generate_generic_toc(toc_dir, population_data, "Population_TOC", False)
+
+#        # Topic
+#        topic_data = {}
+#        for new_row in new_rows:
+#            if new_row[135] not in topic_data:
+#                topic_data[new_row[135]] = []
+#            topic_data[new_row[135]].append(new_row[3])
+#        generate_generic_toc(toc_dir, topic_data, "Topic_TOC")
+
+        # Geographic.  There's a "shown" flag for working with the template file
+        # to know when to show headers, depending on whether proposals are valid.
+        geographic_data = {}
+        regionconfig_data_by_country = process_regionconfig_data(regionconfig_reader)
+        country_errors = []
+        for new_row in new_rows:
+            for col in [69, 75, 81, 87, 93, 99, 105, 111, 117, 123]:
+                country = new_row[col]
+                state = new_row[col + 2]
+                try:
+                    region = regionconfig_data_by_country[country]["region"]
+                    subregion = regionconfig_data_by_country[country]["subregion"]
+                    if region not in geographic_data:
+                        geographic_data[region] = {"shown": False, "subregions": {}}
+                    if subregion not in geographic_data[region]["subregions"]:
+                        geographic_data[region]["subregions"][subregion] = {"shown": False, "countries": {}}
+                    if country not in geographic_data[region]["subregions"][subregion]["countries"]:
+                        geographic_data[region]["subregions"][subregion]["countries"][country] = {"shown": False, "states": {}}
+                    if state not in geographic_data[region]["subregions"][subregion]["countries"][country]["states"]:
+                        geographic_data[region]["subregions"][subregion]["countries"][country]["states"][state] = {"shown": False, "proposals": []}
+                    if new_row[3] not in geographic_data[region]["subregions"][subregion]["countries"][country]["states"][state]["proposals"]:
+                        geographic_data[region]["subregions"][subregion]["countries"][country]["states"][state]["proposals"].append(new_row[3])
+                except KeyError:
+                    if country not in country_errors:
+                        print("Country %s not in region config file, skipping" % country, file=sys.stderr)
+                        country_errors.append(country)
+        generate_generic_toc(toc_dir, geographic_data, "Geographic_TOC", False)
+
+        generate_list_toc(toc_dir, [new_row[3] for new_row in new_rows], "AllProposals")
+
+    if attachments_dir is not None:
+        with open(os.path.join(attachments_dir, "attachments_to_upload"), 'wb') as f:
+            pickle.dump(attachments_to_upload, f)
+
+    print_csv(header_row, new_rows, sys.stdout)
+
+    if tdc_config_dir is not None:
+        create_tdc_config(tdc_config_dir, header_row, new_rows)
+
+def main():
+    """Compose the MacFound input and emit it as html-ized csv."""
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], '',
+                                   ["pare=",
+                                    "proposals-csv=",
+                                    "admin-review-csv=",
+                                    "regionconfig-csv=",
+                                    "toc-dir=",
+                                    "tdc-config-dir=",
+                                    "attachments-dir=",
+                                    ])
+    except getopt.GetoptError as err:
+        sys.stderr.write("ERROR: '%s'\n" % err)
+        sys.exit(2)
+
+    pare = None
+    proposals_csv = None
+    admin_review_csv = None
+    regionconfig_csv = None
+    attachments_dir = None
+    toc_dir = None
+    tdc_config_dir = None
+    for o, a in opts:
+        if o == "--pare":
+            pare = int(a)
+        elif o == "--proposals-csv":
+            proposals_csv = a
+        elif o == "--admin-review-csv":
+            admin_review_csv = a
+        elif o == "--regionconfig-csv":
+            regionconfig_csv = a
+        elif o == "--toc-dir":
+            toc_dir = a
+        elif o == "--tdc-config-dir":
+            tdc_config_dir = a
+        elif o == "--attachments-dir":
+            attachments_dir = a
+        else:
+            sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
+            sys.exit(2)
+
+    if (proposals_csv is None #or
+            #admin_review_csv is None
+            ):
+        sys.stderr.write(
+            "ERROR: need --proposals-csv, and --admin-review-csv options.\n\n")
+        sys.stderr.write(__doc__)
+        sys.exit(1)
+    compose_csvs(proposals_csv, admin_review_csv, regionconfig_csv,
+            attachments_dir, toc_dir, tdc_config_dir, pare)
+
+if __name__ == '__main__':
+    main()

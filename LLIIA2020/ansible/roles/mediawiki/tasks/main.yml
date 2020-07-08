@@ -1,0 +1,347 @@
+---
+
+- name: Setup installation directory
+  file:
+    path: "{{ mediawiki_install_directory }}"
+    state: directory
+
+- name: Download MediaWiki
+  get_url:
+    url: https://releases.wikimedia.org/mediawiki/1.33/mediawiki-1.33.0.tar.gz
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0.tar.gz"
+    checksum: sha256:8335a2d8740c5dd5919a480b74c3d8e19f23a68b396df48c2d77646272fdcd67
+
+- name: Extract MediaWiki tarball
+  unarchive:
+    src: "{{ mediawiki_install_directory }}/mediawiki-1.33.0.tar.gz"
+    dest: "{{ mediawiki_install_directory }}/"
+    remote_src: yes
+    creates: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/"
+
+- name: Install MW with Composer
+  command: composer install --no-dev
+  args:
+    chdir: "{{ mediawiki_install_directory }}/mediawiki-1.33.0"
+
+- name: Install EmbedVideo
+  unarchive:
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/EmbedVideo-v2.8.0.zip"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+
+- name: Patch EmbedVideo
+  patch:
+    src: EmbedVideoIframeTitle.patch
+    basedir: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/EmbedVideo-v2.8.0/"
+
+- name: Install PluggableAuth
+  unarchive:
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/PluggableAuth-REL1_33-a69f626.tar.gz"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+
+- name: Install SimpleSAML extension
+  unarchive:
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/SimpleSAMLphp-REL1_33-7d91f27.tar.gz"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+
+- name: Install Collection
+  unarchive:
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/Collection-REL1_33-8566dd1.tar.gz"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+
+- name: Checkout ActivityLog
+  git:
+    repo: https://github.com/OpenTechStrategies/ActivityLog
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/ActivityLog/"
+    version: db4d6aa
+
+- name: Checkout SimpleFavorites
+  git:
+    repo: https://github.com/OpenTechStrategies/SimpleFavorites
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/SimpleFavorites/"
+    version: 5b5a2a8
+
+- name: Checkout TeamComments
+  git:
+    repo: https://github.com/OpenTechStrategies/TeamComments
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/TeamComments/"
+    version: 32e8f88
+
+- name: Checkout Torque
+  git:
+    repo: https://github.com/OpenTechStrategies/torque
+    dest: "{{ mediawiki_install_directory }}/torque/"
+    version: 424fc37
+
+- name: Link TorqueDataConnect
+  file:
+    src: "{{ mediawiki_install_directory }}/torque/TorqueDataConnect/"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/TorqueDataConnect"
+    state: link
+
+- name: Create Wiki
+  command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/install.php --dbtype=mysql --dbserver=localhost --dbuser=wikiuser --dbpass=\"{{ db_password }}\" --dbname=LLIIA2020  --scriptpath=\"/LLIIA2020\" --lang=en --pass=\"{{ mediawiki_admin_password }}\" \"LLIIA2020\" \"admin\""
+  args:
+    creates: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+
+- name: Enable EmbedVideo
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    line: "wfLoadExtension('EmbedVideo-v2.8.0');"
+
+- name: Enable PluggableAuth
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE PLUGABLE AUTH CONFIG"
+    block: |
+      wfLoadExtension( 'PluggableAuth' );
+      $wgPluggableAuth_EnableAutoLogin = true;
+      $wgPluggableAuth_EnableLocalLogin = true;
+      $wgPluggableAuth_EnableLocalProperties = false;
+      $wgPluggableAuth_ButtonLabel = "Log In With MacArthur Okta";
+      $wgInvalidUsernameCharacters = "";
+
+- name: Enable SimpleSAMLphp extension
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE SIMPLE SAML PHP CONFIG"
+    block: |
+      wfLoadExtension( 'SimpleSAMLphp' );
+      $wgSimpleSAMLphp_InstallDir = '{{ simplesaml_install_directory }}/simplesamlphp-1.18.4';
+      $wgSimpleSAMLphp_AuthSourceId = '{{ simplesaml_okta_metadata_name }}';
+      $wgSimpleSAMLphp_RealNameAttribute = ['firstName', 'lastName'];
+      $wgSimpleSAMLphp_EmailAttribute = 'email';
+      $wgSimpleSAMLphp_UsernameAttribute = 'email';
+      $wgSimpleSAMLphp_GroupMap = ['sysop' => ['groups' => ['LFC Torque Admin', 'LFC Staff']]];
+      $wgSimpleSAMLphp_SyncAllGroups_GroupNameModificationCallback = function($origGroupName){
+        # Remove spaces
+        return preg_replace('/\s/', '', $origGroupName);
+      };
+      $wgSimpleSAMLphp_AttributeProcessorFactories = [
+        "MediaWiki\\Extension\\SimpleSAMLphp\\AttributeProcessor\\SyncAllGroups::factory"
+      ];
+
+- name: Enable Collection
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE COLLECTION CONFIG"
+    block: |
+      require_once "$IP/extensions/Collection/Collection.php";
+      $wgCollectionMWServeURL = "http://127.0.0.1:8899";
+      $wgCollectionMaxArticles = 250;
+      $wgEnableApi = true;
+      $wgCollectionFormats = array( 'rl' => 'PDF',);
+      $wgCollectionPortletFormats = [];
+      $wgCollectionDisableDownloadSection = false;
+      $wgHooks['ApiBeforeMain'][] = function($main) {
+        global $wgTorqueDataConnectGroup, $wgTorqueDataConnectRenderToHTML, $wgTorqueDataConnectView;
+        if($main->getUser() && strtolower($main->getUser()->getName()) == "{{ mediawiki_mwlib_username }}") {
+          $wgTorqueDataConnectRenderToHTML = false;
+          $tdcinfo = $main->getRequest()->getText("tdcinfo", false);
+          list($wgTorqueDataConnectGroup, $wgTorqueDataConnectView) = explode("|", $tdcinfo);
+        }
+      };
+      $wgHooks['BeforeInitialize'][] = function(&$title, &$article = null, &$output, &$user, $request, $mediaWiki) {
+        global $wgCollectionMWServeCredentials;
+        $group = TorqueDataConnectConfig::getValidGroup($user);
+        $view = TorqueDataConnectConfig::getCurrentView();
+        $wgCollectionMWServeCredentials = "{{ mediawiki_mwlib_username }}:${group}|${view}:{{ mediawiki_mwlib_password }}";
+      };
+
+- name: Enable TorqueDataConnect
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE TORQUEDATACONNECT CONFIG"
+    block: |
+      define("TORQUE_CONFIG", 4000);
+      define("TORQUE_CONFIG_TALK", 4001);
+      $wgExtraNamespaces[TORQUE_CONFIG] = "TorqueConfig";
+      $wgExtraNamespaces[TORQUE_CONFIG_TALK] = "TorqueConfig_talk";
+      $wgNamespaceProtection[TORQUE_CONFIG] = array("edittorqueconfig");
+      $wgTorqueDataConnectSheetName = "LLIIA2020";
+      $wgTorqueDataConnectWikiKey = "LLIIA2020";
+      $wgTorqueDataConnectConfigPage = "TorqueConfig:MainConfig";
+      $wgTorqueDataConnectNotFoundMessage = "This proposal has been disqualified in admin, peer, or expert review.";
+      wfLoadExtension('TorqueDataConnect');
+
+- name: Enable SimpleFavorites
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    line: "wfLoadExtension('SimpleFavorites');"
+
+- name: Enable TeamComments
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE TEAMCOMMENTS CONFIG"
+    block: |
+      wfLoadExtension('TeamComments');
+      $wgTeamCommentsCheatSheetLocation = "Wiki_Markup_Cheat_Sheet";
+
+- name: Enable Uploading
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} UPLOAD CONFIG"
+    block: |
+      $wgEnableUploads = true;
+      $wgFileExtensions = array_merge($wgFileExtensions, array('doc', 'docx', 'html', 'pdf', 'xlsx'));
+      $wgFileBlacklist = array();
+      $wgMimeTypeBlacklist = array();
+      $wgStrictFileExtensions = false;
+      $wgTrustedMediaFormats = array('application/zip', 'text/html');
+      $wgVerifyMimeType = false;
+      $wgAllowJavaUploads = true;
+      $wgCheckFileExtensions = false;
+      $wgGroupPermissions['bot']['edit'] = true;
+      $wgGroupPermissions['bot']['upload'] = true;
+      $wgGroupPermissions['bot']['torquedataconnect-admin'] = true;
+      $wgGroupPermissions['autoconfirmed']['reupload'] = true;
+
+- name: Set TOC depth
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    line: $wgMaxTocLevel = 2;
+
+- name: Disable Collection Warning 1
+  replace:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/Collection/Collection.body.php"
+    regexp: '^(\t.*MessageBoxHelper::renderWarningBoxes.*)$'
+    replace: '#\1'
+
+- name: Disable Collection Warning 2
+  replace:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/Collection/templates/CollectionPageTemplate.php"
+    regexp: '^(\t.*MessageBoxHelper::renderWarningBoxes.*)$'
+    replace: '#\1'
+
+- name: Remove Collection Book Text
+  replace:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/Collection/i18n/en.json"
+    regexp: '\t"coll-book_creator_intro": "<big>With the ''''book creator'''' you can create a book containing wiki pages of your choice. You can export the book in different formats \(for example PDF or ODF\) or order a printed copy.</big>",'
+    replace: '\t"coll-book_creator_intro": "<big>With the ''''book creator'''' you can create a book containing wiki pages of your choice. You can export the book in different formats (for example PDF or ODF).</big>",'
+
+- name: Enable ActivityLog
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE ACTIVITYLOG CONFIG"
+    block: |
+      wfLoadExtension('ActivityLog');
+      $wgActivityLogHooksToWatch["ArticleViewHeader"] = true;
+      $wgActivityLogHooksToWatch["UserLoginComplete"] = true;
+
+- name: Disable MediaWiki Cache
+  # When the cache is enabled, on AWS, with the default setting,
+  # the following createAndPromote.php command fails due to cache timeout.
+  # The reason isn't clear, but for now, this will fix it.
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    line: $wgMainCacheType = CACHE_NONE;
+
+- name: Create mwlib user
+  command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/createAndPromote.php --force --dbuser=wikiuser --dbpass=\"{{ db_password }}\" \"{{ mediawiki_mwlib_username }}\" \"{{ mediawiki_mwlib_password }}\""
+
+- name: Create csv2wiki user
+  command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/createAndPromote.php --bot --force --dbuser=wikiuser --dbpass=\"{{ db_password }}\" \"{{ mediawiki_csv2wiki_username }}\" \"{{ mediawiki_csv2wiki_password }}\""
+
+- name: Set Group Permissions
+  blockinfile:
+    marker: "## {mark} ANSIBLE GROUP PERMISSIONS CONFIG"
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    block: |
+      $wgGroupPermissions['*']['read'] = false;
+      $wgGroupPermissions['bot']['protect'] = true;
+      $wgRestrictionLevels[] = 'generated';
+      $wgGroupPermissions['bot']['generated'] = true;
+
+      # Permissions that we want sysops/admins to have that
+      # but not for staff go here
+      $wgGroupPermissions['sysop']['generated'] = true;
+      $wgGroupPermissions['sysop']['edittorqueconfig'] = true;
+      $wgGroupPermissions['sysop']['torquedataconnect-admin'] = true;
+
+      # Groups requested specifically by LFC.
+      $wgGroupPermissions['LFCResearchPartners']['read'] = true;
+
+      # These are OTS Torque Standard Groups
+      $wgGroupPermissions['OutsideReviewer']['read'] = true;
+      $wgGroupPermissions['Staff']['read'] = true;
+      $wgGroupPermissions['PseudoDecisionMaker']['read'] = true;
+      $wgGroupPermissions['DecisionMaker']['read'] = true;
+
+      # Disable teamcomments for users on this wiki by default.
+      $wgGroupPermissions['*']['teamcomment'] = false;
+
+      # Then enable teamcomments for the groups that should be leaving comments
+      $wgGroupPermissions['Staff']['teamcomment'] = true;
+      $wgGroupPermissions['PseudoDecisionMaker']['teamcomment'] = true;
+      $wgGroupPermissions['DecisionMaker']['teamcomment'] = true;
+      $wgGroupPermissions['sysop']['teamcomment'] = true;
+
+- name: Transfer LLIIA Logo
+  copy:
+    src: LLIIA_Logo.png
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/resources/assets/LLIIA_Logo.png"
+
+- name: Install LLIIA Logo
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    regexp: ^\$wgLogo = .*
+    line: $wgLogo = "$wgResourceBasePath/resources/assets/LLIIA_Logo.png";
+
+- name: Transfer DecisionMaker group css
+  copy:
+    src: Group-DecisionMaker.css
+    dest: "{{ mediawiki_install_directory }}/Group-DecisionMaker.css"
+
+- name: Install DecisionMaker group css
+  raw: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/edit.php -b MediaWiki:Group-{{ item }}.css < {{ mediawiki_install_directory }}/Group-DecisionMaker.css"
+  loop:
+    - PseudoDecisionMaker
+    - DecisionMaker
+
+- name: Remove DecisionMaker group css
+  file:
+    path: "{{ mediawiki_install_directory }}/Group-DecisionMaker.css"
+    state: absent
+
+- name: Transfer htaccess
+  copy:
+    src: .htaccess
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/.htaccess"
+
+- name: Transfer wiki cheat sheet
+  copy:
+    src: Wiki_Markup_Cheat_Sheet
+    dest: "{{ mediawiki_install_directory }}/Wiki_Markup_Cheat_Sheet"
+
+- name: Install wiki cheat sheet
+  raw: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/edit.php -b Wiki_Markup_Cheat_Sheet < {{ mediawiki_install_directory }}/Wiki_Markup_Cheat_Sheet"
+
+- name: Transfer wiki cheat sheet
+  file:
+    path: "{{ mediawiki_install_directory }}/Wiki_Markup_Cheat_Sheet"
+    state: absent
+
+# This should come near the end to make sure that all the database updates
+# for the extensions get run after the rest of the system is set up.
+- name: Run mediawiki updates
+  command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/update.php"
+
+# Handle Apache changes
+- name: Symlink to webserver directory
+  become_user: root
+  file:
+    state: link
+    src: "{{ mediawiki_install_directory }}/mediawiki-1.33.0"
+    path: /var/www/html/LLIIA2020
+
+- name: Set permissions on attachments directory
+  become_user: root
+  file:
+    path: "/var/www/html/LLIIA2020/images"
+    owner: www-data
+    group: www-data
+
+- name: Restart Apache
+  become_user: root
+  service:
+    name: apache2
+    state: restarted

@@ -1,0 +1,26 @@
+__TOC__
+{%- for region_name, region_data in groups.items() %}
+    {%- for subregion_name, subregion_data in region_data["subregions"].items() %}
+        {%- for country_name, country_data in subregion_data["countries"].items() %}
+            {%- for state_name, state_data in country_data["states"].items() %}
+                {%- for proposal_id in state_data["proposals"] -%}
+                    {% if proposal_id in LLIIA2020.keys() %}
+                        {%- if not subregion_data["shown"] -%}
+                            {%- set _ = subregion_data.update({"shown": True }) %}
+= {{ subregion_name }} =
+                        {%- endif -%}
+                        {%- if not country_data["shown"] -%}
+                            {%- set _ = country_data.update({"shown": True }) %}
+== {{ country_name }} ==
+                        {%- endif -%}
+                        {%- if not state_data["shown"] -%}
+                            {%- set _ = state_data.update({"shown": True }) %}
+=== {{ state_name }} ===
+{% endif -%}
+* {{ toc_lines[proposal_id] }}
+                {%- endif %}
+{% endfor %}
+            {%- endfor %}
+        {%- endfor %}
+    {%- endfor %}
+{%- endfor %}
