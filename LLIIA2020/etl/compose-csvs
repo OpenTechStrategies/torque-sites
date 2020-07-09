@@ -501,7 +501,6 @@ def compose_csvs(proposals, admin_review, regionconfig, attachments_dir, toc_dir
         for new_row in new_rows:
             for col in [69, 75, 81, 87, 93, 99, 105, 111, 117, 123]:
                 country = new_row[col]
-                state = new_row[col + 2]
                 try:
                     region = regionconfig_data_by_country[country]["region"]
                     subregion = regionconfig_data_by_country[country]["subregion"]
@@ -510,11 +509,9 @@ def compose_csvs(proposals, admin_review, regionconfig, attachments_dir, toc_dir
                     if subregion not in geographic_data[region]["subregions"]:
                         geographic_data[region]["subregions"][subregion] = {"shown": False, "countries": {}}
                     if country not in geographic_data[region]["subregions"][subregion]["countries"]:
-                        geographic_data[region]["subregions"][subregion]["countries"][country] = {"shown": False, "states": {}}
-                    if state not in geographic_data[region]["subregions"][subregion]["countries"][country]["states"]:
-                        geographic_data[region]["subregions"][subregion]["countries"][country]["states"][state] = {"shown": False, "proposals": []}
-                    if new_row[3] not in geographic_data[region]["subregions"][subregion]["countries"][country]["states"][state]["proposals"]:
-                        geographic_data[region]["subregions"][subregion]["countries"][country]["states"][state]["proposals"].append(new_row[3])
+                        geographic_data[region]["subregions"][subregion]["countries"][country] = {"shown": False, "proposals": []}
+                    if new_row[3] not in geographic_data[region]["subregions"][subregion]["countries"][country]["proposals"]:
+                        geographic_data[region]["subregions"][subregion]["countries"][country]["proposals"].append(new_row[3])
                 except KeyError:
                     if country not in country_errors:
                         print("Country %s not in region config file, skipping" % country, file=sys.stderr)
