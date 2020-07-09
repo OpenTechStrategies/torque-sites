@@ -1,5 +1,5 @@
 {%- for proposal_id in proposal_ids %}
     {%- if proposal_id in EO2020.keys() -%}
 * {{ toc_lines[proposal_id] }}
-    {%- endif %}
+{% endif -%}
 {% endfor %}
