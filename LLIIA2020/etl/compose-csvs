@@ -355,7 +355,7 @@ def create_tdc_config(tdc_config_dir, header_row, new_rows):
       """
 
     def row_to_title_line(row):
-        return "* {3}: ".format(*row) + "[[" + row[143] + "]]\n"
+        return "* {3}: ".format(*row) + "[[" + row[144] + "]]\n"
 
     with open(os.path.join(tdc_config_dir, "AllProposals"), 'w') as f:
         f.writelines([row_to_title_line(row) for row in new_rows])
@@ -389,8 +389,8 @@ def compose_csvs(proposals, admin_review, regionconfig, attachments_dir, toc_dir
     try:
         proposals_reader = csv.reader(open(proposals, encoding='utf-8'),
                                       delimiter=',', quotechar='"')
-        #admin_review_reader = csv.reader(open(admin_review, encoding='utf-8'),
-        #                                 delimiter=',', quotechar='"')
+        admin_review_reader = csv.reader(open(admin_review, encoding='utf-8'),
+                                         delimiter=',', quotechar='"')
         regionconfig_reader = csv.reader(open(regionconfig, encoding='utf-8'),
                                        delimiter=',', quotechar='"')
     except UnicodeDecodeError:
@@ -398,7 +398,7 @@ def compose_csvs(proposals, admin_review, regionconfig, attachments_dir, toc_dir
         sys.exit(-1)
 
     header_row = next(proposals_reader)
-    #header_row.append("Valid")
+    header_row.append("Valid")
     header_row.append("Attachment Display Names")
     header_row.append("Attachments")
     header_row.append("MediaWiki Title")
@@ -406,9 +406,9 @@ def compose_csvs(proposals, admin_review, regionconfig, attachments_dir, toc_dir
     # We only accept applications if they're one of the rows in the
     # admin_review csv, which has an "Application #" column (3),
     # which matches a "Review #" column in the proposals (3)
-    # and for which the "Status" column (7) is valid
-    #next(admin_review_reader) # Don't look at header
-    #acceptable_application_numbers = { row[3]: row[7] for row in admin_review_reader }
+    # and for which the "Status" column (5) is valid
+    next(admin_review_reader) # Don't look at header
+    acceptable_application_numbers = { row[3]: row[5] for row in admin_review_reader }
 
     attachments_to_upload = {}
 
@@ -416,9 +416,7 @@ def compose_csvs(proposals, admin_review, regionconfig, attachments_dir, toc_dir
     new_rows = []
 
     for row in proposals_reader:
-#        if row[3] not in acceptable_application_numbers.keys():
-#            continue
-        if attachments_dir is not None and not os.path.isdir(os.path.join(attachments_dir, row[3])):
+        if row[3] not in acceptable_application_numbers.keys():
             continue
 
         row_num += 1  # first row here is row 1 (the header row was row 0) 
@@ -437,7 +435,7 @@ def compose_csvs(proposals, admin_review, regionconfig, attachments_dir, toc_dir
         # Population
         new_row[61] = "\n".join([pop.strip() for pop in new_row[61].split(",")])
 
-#        new_row.append(acceptable_application_numbers[row[3]])
+        new_row.append(acceptable_application_numbers[row[3]])
 
         attachment_data = []
 
@@ -576,9 +574,7 @@ def main():
             sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
             sys.exit(2)
 
-    if (proposals_csv is None #or
-            #admin_review_csv is None
-            ):
+    if (proposals_csv is None or admin_review_csv is None):
         sys.stderr.write(
             "ERROR: need --proposals-csv, and --admin-review-csv options.\n\n")
         sys.stderr.write(__doc__)
