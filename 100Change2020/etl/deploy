@@ -56,6 +56,7 @@ ATTACHMENTS_DIR="${DATA_DIR}/attachments"
 TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
 BASE_ATTACHMENTS="Pdfs-and-Submission-Deadline-exports.zip"
 TECH_REVIEW_ATTACHMENTS="Tech_Review_PDFs.zip"
+EDITED_TECH_REVIEW_ATTACHMENTS="Reviews_Edited_for_Applicants.zip"
 FACTSHEET_ATTACHMENTS="Two-page_Factsheets.zip"
 COVID_ATTACHMENTS="Covid-for-OTS-2020-04-25.zip"
 SDGCONFIG_CSV="sdgconfig.csv"
@@ -113,6 +114,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   gpg -o ${DATA_DIR}/${OTS_METADATA} --decrypt ${ENCRYPTED_DIR}/${OTS_METADATA}.asc || exit 1
   gpg -o ${DATA_DIR}/${BASE_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.asc || exit 1
   gpg -o ${DATA_DIR}/${TECH_REVIEW_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${TECH_REVIEW_ATTACHMENTS}.asc || exit 1
+  gpg -o ${DATA_DIR}/${EDITED_TECH_REVIEW_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${EDITED_TECH_REVIEW_ATTACHMENTS}.asc || exit 1
   gpg -o ${DATA_DIR}/${FACTSHEET_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${FACTSHEET_ATTACHMENTS}.asc || exit 1
   gpg -o ${DATA_DIR}/${COVID_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${COVID_ATTACHMENTS}.asc || exit 1
 
@@ -145,6 +147,15 @@ if [ ! -d "${DATA_DIR}" ] ; then
     NUM=${file/_*/};
     COVID_FILENAME=COVID_$file
     cp -v $TMP_ATTACHMENTS_DIR/$file ${ATTACHMENTS_DIR}/$NUM/$COVID_FILENAME;
+  done
+  rm -rf $TMP_ATTACHMENTS_DIR
+
+  mkdir -p $TMP_ATTACHMENTS_DIR
+  unzip -d $TMP_ATTACHMENTS_DIR ${DATA_DIR}/${EDITED_TECH_REVIEW_ATTACHMENTS}
+  ls $TMP_ATTACHMENTS_DIR | grep "^[[:digit:]]\+_.*.pdf$" | while read file ; do
+    NUM=${file/_*/};
+    EDITED_TECH_REVIEW_FILENAME="${NUM}_Tech Review Redacted.pdf"
+    cp -v "$TMP_ATTACHMENTS_DIR/$file" "${ATTACHMENTS_DIR}/$NUM/$EDITED_TECH_REVIEW_FILENAME"
   done
   rm -rf $TMP_ATTACHMENTS_DIR
 

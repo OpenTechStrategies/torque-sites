@@ -540,7 +540,7 @@ def create_tdc_config(tdc_config_dir, header_row, new_rows):
       """
 
     def row_to_title_line(row):
-        return "* {3}: ".format(*row) + "[[" + row[212] + "]]\n"
+        return "* {3}: ".format(*row) + "[[" + row[213] + "]]\n"
 
     with open(os.path.join(tdc_config_dir, "AllProposals"), 'w') as f:
         f.writelines([row_to_title_line(row) for row in new_rows])
@@ -704,6 +704,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, ots_metadat
     header_row.append("Application Level")
     header_row.append("Financials Attachment")
     header_row.append("Tech Review Attachment")
+    header_row.append("Tech Review Redacted Attachment")
     header_row.append("MOU Attachment")
     header_row.append("Application Attachment")
     header_row.append("COVID Response Attachment")
@@ -811,6 +812,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, ots_metadat
         other_attachment_data = []
         financial_attachment = None
         tech_review_attachment = None
+        redacted_tech_review_attachment = None
         mou_attachment = None
         application_attachment = None
         covid_response_attachment = None
@@ -840,6 +842,9 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, ots_metadat
                 elif re.search("COVID_.*", attachment_file):
                     covid_response_attachment = attachment_file
                     continue
+                elif re.search(".*Tech Review Redacted.*", attachment_file):
+                    redacted_tech_review_attachment = attachment_file
+                    continue
                 else:
                     attachment_display_name = re.sub("^\\d*_", "", attachment_file)
                     attachment_display_name = re.sub("\.pdf$", "", attachment_display_name)
@@ -853,10 +858,9 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, ots_metadat
 
             other_attachment_data.sort(key=lambda a: a["name"])
 
-
-
         new_row.append(financial_attachment or "")
         new_row.append(tech_review_attachment or "")
+        new_row.append(redacted_tech_review_attachment or "")
         new_row.append(mou_attachment or "")
         new_row.append(application_attachment or "")
         new_row.append(covid_response_attachment or "")
@@ -867,6 +871,7 @@ def compose_csvs(proposals, admin_review, judge_eval, wisehead_eval, ots_metadat
         attachments_to_upload[row[3]] = {
             "Financials Attachment": financial_attachment,
             "Tech Review Attachment": tech_review_attachment,
+            "Tech Review Redacted Attachment": redacted_tech_review_attachment,
             "MOU Attachment": mou_attachment,
             "Application Attachment": application_attachment,
             "COVID Response Attachment": covid_response_attachment,
