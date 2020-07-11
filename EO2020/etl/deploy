@@ -54,8 +54,8 @@ LFC_EVALUATION_CSV="lfcrecommendations.csv"
 REGIONCONFIG_CSV="regionconfig.csv"
 TOP13_DATA_FILE="top13.dat"
 THEMATIC_AREAS_CSV="EOC_Applications_Thematic_Areas.csv"
-BASE_ATTACHMENTS="Registration\&Application_data_exports_EOC.zip"
-TOP13_SUPPLEMENTAL_ATTACHMENTS="EOC_Docs for Upload.zip"
+BASE_ATTACHMENTS="Registration_and_Application_data_exports_EOC.zip"
+TOP13_SUPPLEMENTAL_ATTACHMENTS="EOC_Docs_for_Upload.zip"
 TOP13_SYNTHESIS_MEMO_ATTACHMENTS="EOC_Synthesis_Memos.zip"
 BRIDGESPAN_ANALYSIS_ZIP="200601-Bridgespan-data.zip"
 BRIDGESPAN_ANALYSIS_CSV="200601-Bridgespan-data-for-Wiki-v1.csv"
@@ -103,22 +103,22 @@ if [ ! -d "${DATA_DIR}" ] ; then
   mkdir -p $DATA_DIR
   echo "Decrypting..."
 
-  gpg -o ${DATA_DIR}/${ADMIN_REVIEW_CSV} --decrypt ${ENCRYPTED_DIR}/${ADMIN_REVIEW_CSV}.asc || exit 1
-  gpg -o ${DATA_DIR}/${THEMATIC_AREAS_CSV} --decrypt ${ENCRYPTED_DIR}/${THEMATIC_AREAS_CSV}.asc || exit 1
-  gpg -o ${DATA_DIR}/${JUDGE_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${JUDGE_EVALUATION_CSV}.asc || exit 1
-  gpg -o ${DATA_DIR}/${TOP13_DATA_FILE} --decrypt ${ENCRYPTED_DIR}/${TOP13_DATA_FILE}.asc || exit 1
-  gpg -o ${DATA_DIR}/${LFC_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${LFC_EVALUATION_CSV}.asc || exit 1
-  gpg -o ${DATA_DIR}/${BASE_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.asc || exit 1
-  gpg -o "${DATA_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}" --decrypt "${ENCRYPTED_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}.asc" || exit 1
-  gpg -o "${DATA_DIR}/${TOP13_SYNTHESIS_MEMO_ATTACHMENTS}" --decrypt "${ENCRYPTED_DIR}/${TOP13_SYNTHESIS_MEMO_ATTACHMENTS}.asc" || exit 1
-  gpg -o "${DATA_DIR}/${BRIDGESPAN_ANALYSIS_ZIP}" --decrypt "${ENCRYPTED_DIR}/${BRIDGESPAN_ANALYSIS_ZIP}.asc" || exit 1
+  gpg -o ${DATA_DIR}/${ADMIN_REVIEW_CSV} --decrypt ${ENCRYPTED_DIR}/${ADMIN_REVIEW_CSV}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${THEMATIC_AREAS_CSV} --decrypt ${ENCRYPTED_DIR}/${THEMATIC_AREAS_CSV}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${JUDGE_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${JUDGE_EVALUATION_CSV}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${TOP13_DATA_FILE} --decrypt ${ENCRYPTED_DIR}/${TOP13_DATA_FILE}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${LFC_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${LFC_EVALUATION_CSV}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${BASE_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg || exit 1
+  gpg -o "${DATA_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}" --decrypt "${ENCRYPTED_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}.gpg" || exit 1
+  gpg -o "${DATA_DIR}/${TOP13_SYNTHESIS_MEMO_ATTACHMENTS}" --decrypt "${ENCRYPTED_DIR}/${TOP13_SYNTHESIS_MEMO_ATTACHMENTS}.gpg" || exit 1
+  gpg -o "${DATA_DIR}/${BRIDGESPAN_ANALYSIS_ZIP}" --decrypt "${ENCRYPTED_DIR}/${BRIDGESPAN_ANALYSIS_ZIP}.gpg" || exit 1
 
   mkdir -p ${TOC_DIR}
   mkdir -p ${TDC_CONFIG_DIR}
 
   echo "Setting up attachments..."
   unzip -d ${DATA_DIR} ${DATA_DIR}/${BASE_ATTACHMENTS}
-  mv "${DATA_DIR}/Registration&Application_forms_PDFs_EOC" $ATTACHMENTS_DIR
+  mv "${DATA_DIR}/Registration_and_Application_forms_PDFs_EOC" $ATTACHMENTS_DIR
 
   mkdir -p $TMP_ATTACHMENTS_DIR
   unzip -d $TMP_ATTACHMENTS_DIR "${DATA_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}"

@@ -50,7 +50,7 @@ python3 -V > /dev/null 2>&1 || { echo "python3 required, aborting" ; exit 1; }
 PROPOSALS_CSV="Export-reg-and-app-data-Submission-deadline-06082019-fixed-by-OTS.csv"
 ADMIN_REVIEW_CSV="AdminReviewP2P_mac2019_09192019.csv"
 JUDGE_EVALUATION_CSV="P2P-review-data-20190929-for-OTS-copy-fixed-by-OTS.csv"
-WISEHEAD_EVALUATION_CSV="100&Change_Wise_Head_Review_data_anon_judges_11162019.csv"
+WISEHEAD_EVALUATION_CSV="100Change_Wise_Head_Review_data_anon_judges_11162019.csv"
 REGIONCONFIG_CSV="regionconfig.csv"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments"
 TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
@@ -105,18 +105,18 @@ if [ ! -d "${DATA_DIR}" ] ; then
   mkdir -p $DATA_DIR
   echo "Decrypting..."
 
-  gpg -o ${DATA_DIR}/${PROPOSALS_CSV} --decrypt ${ENCRYPTED_DIR}/${PROPOSALS_CSV}.asc || exit 1
-  gpg -o ${DATA_DIR}/${ADMIN_REVIEW_CSV} --decrypt ${ENCRYPTED_DIR}/${ADMIN_REVIEW_CSV}.asc || exit 1
-  gpg -o ${DATA_DIR}/${JUDGE_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${JUDGE_EVALUATION_CSV}.asc || exit 1
-  gpg -o ${DATA_DIR}/${WISEHEAD_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${WISEHEAD_EVALUATION_CSV}.asc || exit 1
-  gpg -o ${DATA_DIR}/${CANDID_CORRECTION_FILE} --decrypt ${ENCRYPTED_DIR}/${CANDID_CORRECTION_FILE}.asc || exit 1
-  gpg -o ${DATA_DIR}/${OTS_CORRECTION_FILE} --decrypt ${ENCRYPTED_DIR}/${OTS_CORRECTION_FILE}.asc || exit 1
-  gpg -o ${DATA_DIR}/${OTS_METADATA} --decrypt ${ENCRYPTED_DIR}/${OTS_METADATA}.asc || exit 1
-  gpg -o ${DATA_DIR}/${BASE_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.asc || exit 1
-  gpg -o ${DATA_DIR}/${TECH_REVIEW_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${TECH_REVIEW_ATTACHMENTS}.asc || exit 1
-  gpg -o ${DATA_DIR}/${EDITED_TECH_REVIEW_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${EDITED_TECH_REVIEW_ATTACHMENTS}.asc || exit 1
-  gpg -o ${DATA_DIR}/${FACTSHEET_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${FACTSHEET_ATTACHMENTS}.asc || exit 1
-  gpg -o ${DATA_DIR}/${COVID_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${COVID_ATTACHMENTS}.asc || exit 1
+  gpg -o ${DATA_DIR}/${PROPOSALS_CSV} --decrypt ${ENCRYPTED_DIR}/${PROPOSALS_CSV}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${ADMIN_REVIEW_CSV} --decrypt ${ENCRYPTED_DIR}/${ADMIN_REVIEW_CSV}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${JUDGE_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${JUDGE_EVALUATION_CSV}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${WISEHEAD_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${WISEHEAD_EVALUATION_CSV}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${CANDID_CORRECTION_FILE} --decrypt ${ENCRYPTED_DIR}/${CANDID_CORRECTION_FILE}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${OTS_CORRECTION_FILE} --decrypt ${ENCRYPTED_DIR}/${OTS_CORRECTION_FILE}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${OTS_METADATA} --decrypt ${ENCRYPTED_DIR}/${OTS_METADATA}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${BASE_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${TECH_REVIEW_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${TECH_REVIEW_ATTACHMENTS}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${EDITED_TECH_REVIEW_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${EDITED_TECH_REVIEW_ATTACHMENTS}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${FACTSHEET_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${FACTSHEET_ATTACHMENTS}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${COVID_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${COVID_ATTACHMENTS}.gpg || exit 1
 
   mkdir -p ${TOC_DIR}
   mkdir -p ${ATTACHMENTS_DIR}

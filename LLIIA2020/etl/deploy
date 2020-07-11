@@ -94,8 +94,8 @@ if [ ! -d "${DATA_DIR}" ] ; then
   mkdir -p $DATA_DIR
   echo "Decrypting..."
 
-  gpg -o ${DATA_DIR}/${ADMIN_REVIEW_CSV} --decrypt ${ENCRYPTED_DIR}/${ADMIN_REVIEW_CSV}.asc || exit 1
-  gpg -o ${DATA_DIR}/${BASE_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.asc || exit 1
+  gpg -o ${DATA_DIR}/${ADMIN_REVIEW_CSV} --decrypt ${ENCRYPTED_DIR}/${ADMIN_REVIEW_CSV}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${BASE_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg || exit 1
 
   mkdir -p ${TOC_DIR}
   mkdir -p ${TDC_CONFIG_DIR}

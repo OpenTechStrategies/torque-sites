@@ -112,13 +112,13 @@ if [ ! -d "${DATA_DIR}" ] ; then
   mkdir -p $DATA_DIR
 
   echo "Decrypting..."
-  gpg -o ${DATA_DIR}/${MASTER_CSV}.gz --decrypt ${ENCRYPTED_DIR}/${MASTER_CSV}.gz.asc || exit 1
+  gpg -o ${DATA_DIR}/${MASTER_CSV}.gz --decrypt ${ENCRYPTED_DIR}/${MASTER_CSV}.gz.gpg || exit 1
   gunzip ${DATA_DIR}/${MASTER_CSV}.gz
   cp ${ENCRYPTED_DIR}/${PRINCIPAL_CONTACT_CSV} ${DATA_DIR}/${PRINCIPAL_CONTACT_CSV}
   cp ${ENCRYPTED_DIR}/${REASON_FOR_TURNDOWN_CSV} ${DATA_DIR}/${REASON_FOR_TURNDOWN_CSV}
   cp ${ENCRYPTED_DIR}/${EXCLUDED_REVIEW_NUMBERS_TXT} ${DATA_DIR}/${EXCLUDED_REVIEW_NUMBERS_TXT}
-  gpg -o ${DATA_DIR}/${RECLASSIFICATION_XLSX} --decrypt ${ENCRYPTED_DIR}/${RECLASSIFICATION_XLSX}.asc || exit 1
-  gpg -o ${DATA_DIR}/${ATTACHMENT_ZIP} --decrypt ${ENCRYPTED_DIR}/${ATTACHMENT_ZIP}.asc || exit 1
+  gpg -o ${DATA_DIR}/${RECLASSIFICATION_XLSX} --decrypt ${ENCRYPTED_DIR}/${RECLASSIFICATION_XLSX}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${ATTACHMENT_ZIP} --decrypt ${ENCRYPTED_DIR}/${ATTACHMENT_ZIP}.gpg || exit 1
 
   mkdir -p ${TOC_DIR}
   mkdir -p ${ATTACHMENTS_DIR}
