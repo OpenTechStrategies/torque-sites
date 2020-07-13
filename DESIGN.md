@@ -72,6 +72,25 @@ Torque is deployed using [Ansible](https://www.ansible.com/).
 But because each Torque site is a wiki, Torque originated pages are
 set with a flag that disables editing by non Administrator users.
 
+### Preference for using OS distro packages instead of source installs
+
+Our long-term preference is to depend on the versions of applications
+and libraries that are packaged in the underlying operating system
+distribution (typically Debian GNU/Linux), rather than, say,
+installing from stored source tarballs via ansible.  By using
+OS-packaged versions, security updates come in as part of standard OS
+updates.
+
+There is still work to be done to reach this goal.  For example, we'll
+need to switch to using one instance of MediaWiki across Torque,
+albeit with different databases (that is, from an external
+perspective, it would continue to look like multiple separate wikis).
+[Issue
+#56](https://github.com/OpenTechStrategies/torque-sites/issues/56)
+describes this in detail, and [issue
+#55](https://github.com/OpenTechStrategies/torque-sites/issues/55)
+describes a similar situation with SimpleSamlPHP.
+
 ## Generating PDF books from sets of articles
 
 Currently, book creation in torque is done through a now-obsolete
