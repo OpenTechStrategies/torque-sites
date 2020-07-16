@@ -110,7 +110,7 @@
       $wgSimpleSAMLphp_AuthSourceId = '{{ simplesaml_okta_metadata_name }}';
       $wgSimpleSAMLphp_RealNameAttribute = ['firstName', 'lastName'];
       $wgSimpleSAMLphp_EmailAttribute = 'email';
-      $wgSimpleSAMLphp_UsernameAttribute = 'email';
+      $wgSimpleSAMLphp_UsernameAttribute = 'username';
       $wgSimpleSAMLphp_GroupMap = ['sysop' => ['groups' => ['LFC Torque Admin', 'LFC Staff']]];
       $wgSimpleSAMLphp_SyncAllGroups_GroupNameModificationCallback = function($origGroupName){
         # Remove spaces
@@ -261,18 +261,18 @@
       $wgGroupPermissions['LFCResearchPartners']['read'] = true;
 
       # These are OTS Torque Standard Groups
-      $wgGroupPermissions['OutsideReviewer']['read'] = true;
+      $wgGroupPermissions['OutsideReviewers']['read'] = true;
       $wgGroupPermissions['Staff']['read'] = true;
-      $wgGroupPermissions['PseudoDecisionMaker']['read'] = true;
-      $wgGroupPermissions['DecisionMaker']['read'] = true;
+      $wgGroupPermissions['PseudoDecisionMakers']['read'] = true;
+      $wgGroupPermissions['DecisionMakers']['read'] = true;
 
       # Disable teamcomments for users on this wiki by default.
       $wgGroupPermissions['*']['teamcomment'] = false;
 
       # Then enable teamcomments for the groups that should be leaving comments
       $wgGroupPermissions['Staff']['teamcomment'] = true;
-      $wgGroupPermissions['PseudoDecisionMaker']['teamcomment'] = true;
-      $wgGroupPermissions['DecisionMaker']['teamcomment'] = true;
+      $wgGroupPermissions['PseudoDecisionMakers']['teamcomment'] = true;
+      $wgGroupPermissions['DecisionMakers']['teamcomment'] = true;
       $wgGroupPermissions['sysop']['teamcomment'] = true;
 
 - name: Transfer LLIIA Logo
@@ -286,20 +286,20 @@
     regexp: ^\$wgLogo = .*
     line: $wgLogo = "$wgResourceBasePath/resources/assets/LLIIA_Logo.png";
 
-- name: Transfer DecisionMaker group css
+- name: Transfer DecisionMakers group css
   copy:
-    src: Group-DecisionMaker.css
-    dest: "{{ mediawiki_install_directory }}/Group-DecisionMaker.css"
+    src: Group-DecisionMakers.css
+    dest: "{{ mediawiki_install_directory }}/Group-DecisionMakers.css"
 
-- name: Install DecisionMaker group css
-  raw: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/edit.php -b MediaWiki:Group-{{ item }}.css < {{ mediawiki_install_directory }}/Group-DecisionMaker.css"
+- name: Install DecisionMakers group css
+  raw: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/edit.php -b MediaWiki:Group-{{ item }}.css < {{ mediawiki_install_directory }}/Group-DecisionMakers.css"
   loop:
-    - PseudoDecisionMaker
-    - DecisionMaker
+    - PseudoDecisionMakers
+    - DecisionMakers
 
-- name: Remove DecisionMaker group css
+- name: Remove DecisionMakers group css
   file:
-    path: "{{ mediawiki_install_directory }}/Group-DecisionMaker.css"
+    path: "{{ mediawiki_install_directory }}/Group-DecisionMakers.css"
     state: absent
 
 - name: Transfer htaccess
