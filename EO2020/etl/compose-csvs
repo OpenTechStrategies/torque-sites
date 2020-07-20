@@ -598,7 +598,7 @@ def compose_csvs(proposals, admin_review, judge_eval, lfc_eval, thematic_areas_c
                 elif re.search(".*Synthesis Memo", attachment_file):
                     attachment_data.append({"name": "Synthesis Memo", "file": attachment_file, "rank": 1})
                 elif re.search(".*Supplemental Documents", attachment_file):
-                    attachment_data.append({"name": "Financials and MoUsMemo", "file": attachment_file, "rank": 2})
+                    attachment_data.append({"name": "Financials and MoUs", "file": attachment_file, "rank": 2})
                 elif len(attachment_display_name) > 33:
                     attachment_display_name = \
                         attachment_display_name[0:15] + \
