@@ -434,6 +434,7 @@
       $wgGroupPermissions['BoardMembers']['read'] = true;
       $wgGroupPermissions['PseudoBoardMembers']['read'] = true;
       $wgGroupPermissions['LFCResearchPartners']['read'] = true;
+      $wgGroupPermissions['LFCEvaluators']['read'] = true;
       $wgGroupPermissions['BoardMembers']['picksome'] = true;
       $wgGroupPermissions['BoardMembers']['picksome-write'] = true;
       $wgGroupPermissions['PseudoBoardMembers']['picksome'] = true;
@@ -480,6 +481,8 @@
   loop:
     - BoardMembersTorque
     - BoardMembers
+    - LFCEvaluators
+    - LFCResearchPartners
 
 - name: Remove board group css
   file:

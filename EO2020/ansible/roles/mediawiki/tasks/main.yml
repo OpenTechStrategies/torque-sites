@@ -269,6 +269,7 @@
 
       # Groups requested specifically by LFC.
       $wgGroupPermissions['LFCResearchPartners']['read'] = true;
+      $wgGroupPermissions['LFCEvaluators']['read'] = true;
 
       # These are OTS Torque Standard Groups
       $wgGroupPermissions['OutsideReviewer']['read'] = true;
@@ -311,6 +312,8 @@
   loop:
     - PseudoDecisionMaker
     - DecisionMaker
+    - LFCEvaluators
+    - LFCResearchPartners
 
 - name: Remove DecisionMaker group css
   file:
