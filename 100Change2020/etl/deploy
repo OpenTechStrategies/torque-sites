@@ -112,16 +112,19 @@ if [ ! -d "${DATA_DIR}" ] ; then
   gpg -o ${DATA_DIR}/${CANDID_CORRECTION_FILE} --decrypt ${ENCRYPTED_DIR}/${CANDID_CORRECTION_FILE}.gpg || exit 1
   gpg -o ${DATA_DIR}/${OTS_CORRECTION_FILE} --decrypt ${ENCRYPTED_DIR}/${OTS_CORRECTION_FILE}.gpg || exit 1
   gpg -o ${DATA_DIR}/${OTS_METADATA} --decrypt ${ENCRYPTED_DIR}/${OTS_METADATA}.gpg || exit 1
+
+  mkdir -p ${TOC_DIR}
+  mkdir -p ${TDC_CONFIG_DIR}
+fi
+
+if [ ! -d "${ATTACHMENTS_DIR}" ] && [ -z "${SKIP_ATTACHMENTS}" ] ; then
   gpg -o ${DATA_DIR}/${BASE_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg || exit 1
   gpg -o ${DATA_DIR}/${TECH_REVIEW_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${TECH_REVIEW_ATTACHMENTS}.gpg || exit 1
   gpg -o ${DATA_DIR}/${EDITED_TECH_REVIEW_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${EDITED_TECH_REVIEW_ATTACHMENTS}.gpg || exit 1
   gpg -o ${DATA_DIR}/${FACTSHEET_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${FACTSHEET_ATTACHMENTS}.gpg || exit 1
   gpg -o ${DATA_DIR}/${COVID_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${COVID_ATTACHMENTS}.gpg || exit 1
 
-  mkdir -p ${TOC_DIR}
   mkdir -p ${ATTACHMENTS_DIR}
-  mkdir -p ${TDC_CONFIG_DIR}
-
   echo "Setting up attachments..."
   unzip -d $ATTACHMENTS_DIR ${DATA_DIR}/${BASE_ATTACHMENTS} 
 
@@ -204,13 +207,18 @@ mkdir -p $TDC_CONFIG_DIR
 #
 # Use --pare to convert only 1% of the entries, to save time while testing. 
 echo "Stage 1: Composing..."
+if [ -z "${SKIP_ATTACHMENTS}" ] ; then
+  ATTACHMENT_ARG="--attachments-dir=${ATTACHMENTS_DIR}"
+else
+  ATTACHMENT_ARG=""
+fi
 ${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
             --admin-review-csv="${DATA_DIR}/${ADMIN_REVIEW_CSV}" \
             --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
             --wisehead-evaluation-csv="${DATA_DIR}/${WISEHEAD_EVALUATION_CSV}" \
             --regionconfig-csv="${MACFOUND_DIR}/${REGIONCONFIG_CSV}" \
             --sdgconfig-csv="${MACFOUND_DIR}/${SDGCONFIG_CSV}" \
-            --attachments-dir=${ATTACHMENTS_DIR} \
+            $ATTACHMENT_ARG \
             --tdc-config-dir="${TDC_CONFIG_DIR}" \
             --ots-metadata="${DATA_DIR}/${OTS_METADATA}" \
             --toc-dir="${TOC_DIR}" \
