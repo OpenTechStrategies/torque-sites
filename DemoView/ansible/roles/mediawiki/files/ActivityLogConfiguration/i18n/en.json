@@ -1,0 +1,6 @@
+{
+  "activitylog-articleviewheader": "$1 visited $3",
+  "activitylog-articlesavepage": "$1 edited $3",
+  "activitylog-articleviewheader-with-referrer": "$1 visited $3 (from $5)",
+  "activitylog-userlogin": "$1 logged in"
+}

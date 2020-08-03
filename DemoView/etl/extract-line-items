@@ -1,0 +1,136 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Extract Budget Line Item information from EO Application pdfs
+#
+# This is necessary because not everything can be addressed with the
+# 'sanitize' script.  The 'sanitize' script isn't aware of CSV rows or
+# columns; it just treats the whole CSV file as a normal text file.
+# But for, e.g., fixing the YouTube links (see features.org for more),
+# we really need a one-time transformation that knows what cell it's
+# operating on.
+#
+# Copyright (C) 2017, 2019, 2020 Open Tech Strategies, LLC
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+##########################################################################
+#                                                                        #
+#   NOTE: This code is highly specific to the needs of the MacArthur     #
+#   Foundation and is unlikely to be correct for your CSV.  It is        #
+#   open source software, so please modify it to suit your needs.        #
+#                                                                        #
+##########################################################################
+
+__doc__ = """\
+Extract budget line items from Application PDFs into a csv
+
+This needs more work because the pdfs are not normal enough to process,
+and so edge cases need to be handled.  Of note is how multi line item
+descriptions are handled differs from case to case, and how sometimes
+there are page breaks with repeating headers.
+
+Usage:
+
+  $ extract-line-items --attachments-dir=ATTACHMENTS_DIR
+
+Command-line options:
+  --attachments-dir DIR           DIR is a directory for extract-line-items-csvs to look in for what attachments
+                                  will be uploaded to the torque wiki.  It needs to have subdirectories
+                                  by proposal number.
+"""
+
+import re
+import subprocess
+import os
+import getopt
+import sys
+import csv
+
+def extract_pdf_line_items(attachment_dir, proposal_number):
+    """Extracts the budget line items from the Application pdf in
+    ATTACHMENT_DIR belonging to proposal for Application # ID.
+
+    Returns the line item block as expected by compose-csvs"""
+
+    application_path = os.path.join(attachment_dir, proposal_number, proposal_number + "_Application.pdf")
+    output = subprocess.run(["pdftohtml", "-stdout", application_path], capture_output=True)
+    started = False
+    desc = True
+
+    line_items = ""
+    for line in str(output.stdout).split("\\n"):
+        line = line.strip()
+        if line == "AMOUNT (US DOLLARS)<br/>":
+            started = True
+        elif line == "<b>TOTAL (must equal $10 million):</b><br/>":
+            break
+        elif started and desc:
+            desc = False
+            line_items += line.replace("<br/>", "")
+        elif started and not re.match("\\$[0-9,]*<br/>", line):
+            line_items += "<br/>" + line.replace("<br/>", "")
+        elif started and not desc:
+            desc = True
+            line_items += "|" + line.replace("<br/>", "") + "\n"
+
+    return line_items
+
+def extract_all_line_items(attachment_dir):
+    """Extracts the line items from Application pdfs in ATTACHMENT_DIR.
+
+    These are expected to be in ATTACHMENT_DIR/<proposal_number>/<proposal_number>_Application.pdf
+    
+    Writes a csv to output as needed by compose-csvs"""
+
+    csv_writer = csv.writer(sys.stdout, delimiter=',', quotechar='"', lineterminator="\n")
+
+    csv_writer.writerow(["Application #", "Budget Line Items"])
+    for proposal_dir in os.listdir(attachment_dir):
+        line_items = extract_pdf_line_items(attachment_dir, proposal_dir)
+        csv_writer.writerow([proposal_dir, line_items])
+
+def main():
+    """Compose the MacFound input and emit it as html-ized csv."""
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], '',
+                                   ["attachments-dir=",
+                                    ])
+    except getopt.GetoptError as err:
+        sys.stderr.write("ERROR: '%s'\n" % err)
+        sys.exit(2)
+
+    attachments_dir = None
+    for o, a in opts:
+        if o == "--attachments-dir":
+            attachments_dir = a
+        else:
+            sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
+            sys.exit(2)
+
+    if (attachments_dir is None):
+        sys.stderr.write(
+            "ERROR: need --attachments-dir.\n\n")
+        sys.stderr.write(__doc__)
+        sys.exit(1)
+
+    # Never run because this isn't really done, see doc for more info
+    sys.stderr.write(__doc__)
+    sys.exit(1)
+
+    extract_all_line_items(attachments_dir)
+
+
+if __name__ == '__main__':
+    main()

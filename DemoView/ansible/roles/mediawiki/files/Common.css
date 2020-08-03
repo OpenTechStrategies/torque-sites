@@ -1,0 +1,13 @@
+/* This disables some of the Special:Log inputs */
+.rootpage-Special_Log .mw-usertoollinks {
+  display:none;
+}
+.rootpage-Special_Log .comment {
+  display:none;
+}
+.rootpage-Special_Log .mw-htmlform-field-HTMLTagFilter {
+  display:none;
+}
+.rootpage-Special_Log .mw-htmlform-field-HTMLMultiSelectField {
+  display:none;
+}
