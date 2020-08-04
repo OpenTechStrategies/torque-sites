@@ -65,6 +65,72 @@ like this:
    applications section, with appropriate group set.
 2. Logins by that person will show up with Board member preferences.
 
+### User Groups
+
+We use the same authorization groups across competitions whenever
+possible, since access patterns tend to be the same.  The groups we've
+settled on are as follows (the "LFC" prefix helps MacFound IT track
+them in Okta):
+
+- **`LFC Evaluators`**
+
+  Someone who works with LFC to evaluate the proposals (or some subset
+  of proposals) in a competition.  A typical configuration would be
+  that they don't have edit ability but can make comments; they don't
+  necessarily see all fields or all attachments; and they might get
+  anonymized or pseudonymized versions of certain things (e.g.,
+  comments, attachments).
+
+  Most LFC Evaluators aren't employees of LFC; they're from
+  third-party organizations helping with evaluation.  However, there
+  is no reason in principle why one couldn't be an employee of LFC.
+
+- **`LFC Research Partners`**
+
+  Basically the same as "LFC Evaluators", but their purpose is to use
+  the proposals as input to some larger analytic goal.  This can
+  sometimes result in them having slightly different permissions,
+  which is why they are a distinct group.
+
+- **`LFC Staff`**
+
+  People who work at LFC and can see & edit basically everything about
+  a proposal.
+
+- **`LFC Admins`**
+
+  Like "LFC Staff", but in addition can perform administrative tasks
+  such as viewing logs, creating new users, etc.
+
+- **`LFC DecisionMakers`**
+
+  People who make decisions about the fate of proposals.  Typically,
+  this is a Board Member or other senior decision-maker at the donor
+  organization.  
+
+  The Torque interface is optimized to show decision support features
+  to LFC DecisionMakers: e.g., finalist selection, voting, being able
+  to see all scores and reviewer comments, etc.
+
+  Furthermore, the interface takes care to avoid showing them things
+  that might distract from decision support, such as administrative
+  links, edit links, etc.
+
+- **`LFC PseudoDecisionMakers`**
+
+  This is just a group for staff to use when they need to test how
+  things look for "LCF DecisionMakers".
+
+- **`LFC Robots`**
+
+  Automated bots and processes get this group when they log in.
+
+This section will always hold the canonical list of groups and their
+meanings.  For historical background, see [issue
+#62](https://github.com/OpenTechStrategies/torque-sites/issues/62) and
+the [2020-03-17 meeting
+notes](https://github.com/OpenTechStrategies/torque/wiki/Meeting-Notes#2020-03-17-frankkarl-discussion-re-eo-and-usergroup-permissions).
+
 ## Automated deployment and content management
 
 Torque is deployed using [Ansible](https://www.ansible.com/).
