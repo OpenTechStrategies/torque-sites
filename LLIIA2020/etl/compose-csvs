@@ -508,7 +508,7 @@ def compose_csvs(proposals, admin_review, judge_eval, regionconfig, attachments_
         print("Sanitized row %d (%d cols, %d fixed)." % (row_num, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
 
-    new_rows.sort(key=lambda row: row[7]) # Organization Name
+    new_rows.sort(key=lambda row: int(row[145])) # Judge rank
 
     # Build TOCs after sorted proposals
 
