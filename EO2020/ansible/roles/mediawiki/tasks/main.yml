@@ -64,13 +64,13 @@
   git:
     repo: https://github.com/OpenTechStrategies/TeamComments
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/TeamComments/"
-    version: 778cce5
+    version: 450bff7
 
 - name: Checkout Torque
   git:
     repo: https://github.com/OpenTechStrategies/torque
     dest: "{{ mediawiki_install_directory }}/torque/"
-    version: 0f5e135
+    version: e9e787b
 
 - name: Link TorqueDataConnect
   file:
@@ -178,6 +178,9 @@
     block: |
       wfLoadExtension('TeamComments');
       $wgTeamCommentsCheatSheetLocation = "Wiki_Markup_Cheat_Sheet";
+      $wgTeamCommentsUserPseudonymizer = function($username) {
+        return "Pseudonymous User #" . TorqueDataConnectUserLookup::lookupByUsername($username)->{"id"};
+      };
 
 - name: Enable Uploading
   blockinfile:
@@ -309,12 +312,21 @@
 
       # Disable teamcomments for users on this wiki by default.
       $wgGroupPermissions['*']['teamcomment'] = false;
+      $wgGroupPermissions['*']['teamcommentseeusernames'] = false;
 
       # Then enable teamcomments for the groups that should be leaving comments
       $wgGroupPermissions['Staff']['teamcomment'] = true;
       $wgGroupPermissions['PseudoDecisionMaker']['teamcomment'] = true;
       $wgGroupPermissions['DecisionMaker']['teamcomment'] = true;
       $wgGroupPermissions['sysop']['teamcomment'] = true;
+      $wgGroupPermissions['LFCResearchPartners']['teamcomment'] = true;
+      $wgGroupPermissions['LFCEvaluators']['teamcomment'] = true;
+
+      # Allow some groups to see usernames
+      $wgGroupPermissions['Staff']['teamcommentseeusernames'] = true;
+      $wgGroupPermissions['PseudoDecisionMaker']['teamcommentseeusernames'] = true;
+      $wgGroupPermissions['DecisionMaker']['teamcommentseeusernames'] = true;
+      $wgGroupPermissions['sysop']['teamcommentseeusernames'] = true;
 
       # Log permissions (ability to see Special:Log)
       $wgAvailableRights[] = 'view-special-log';
