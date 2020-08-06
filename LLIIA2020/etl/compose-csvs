@@ -197,6 +197,7 @@ def create_column_types_row(header_row):
             "Attachments": "list",
             "Attachment Display Names": "list",
             "Priority Populations": "list",
+            "Key Words and Phrases": "list",
             }
 
     column_types.update({ "Judge " + trait + " Comments": "list" for trait in valid_traits})
@@ -453,6 +454,9 @@ def compose_csvs(proposals, admin_review, judge_eval, regionconfig, attachments_
         # Population
         new_row[61] = "\n".join([pop.strip() for pop in new_row[61].split(",")])
 
+        # Key words and phrases
+        new_row[68] = "\n".join([keyword.strip() for keyword in new_row[68].split(",")])
+
         new_row.append(acceptable_application_numbers[row[3]])
 
         attachment_data = []
@@ -521,6 +525,15 @@ def compose_csvs(proposals, admin_review, judge_eval, regionconfig, attachments_
                     population_data[population] = []
                 population_data[population].append(new_row[3])
         generate_generic_toc(toc_dir, population_data, "Population_TOC", False)
+
+        # Key Words and Phrases
+        keyword_data = {}
+        for new_row in new_rows:
+            for keyword in new_row[68].split("\n"):
+                if keyword not in keyword_data:
+                    keyword_data[keyword] = []
+                keyword_data[keyword].append(new_row[3])
+        generate_generic_toc(toc_dir, keyword_data, "Keyword_TOC", False)
 
 #        # Topic
 #        topic_data = {}
