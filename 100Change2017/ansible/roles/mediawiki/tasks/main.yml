@@ -217,6 +217,9 @@
         $wgGroupPermissions['LFCTorqueAdmin'][$key] = $value;
       }
 
+      $wgGroupPermissions['LFCResearchPartners']['read'] = true;
+      $wgGroupPermissions['LFCEvaluators']['read'] = true;
+
 - name: Transfer LFC Logo
   copy:
     src: 100Change-logo150.png
@@ -227,6 +230,30 @@
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     regexp: ^\$wgLogo = .*
     line: $wgLogo = "$wgResourceBasePath/resources/assets/100Change-logo150.png";
+
+- name: Install board group css
+  raw: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/edit.php -b MediaWiki:Group-{{ item }}.css < {{ mediawiki_install_directory }}/Group-board.css"
+  loop:
+    - LFCEvaluators
+    - LFCResearchPartners
+
+- name: Remove board group css
+  file:
+    path: "{{ mediawiki_install_directory }}/Group-board.css"
+    state: absent
+
+- name: Transfer Common css
+  copy:
+    src: Common.css
+    dest: "{{ mediawiki_install_directory }}/Common.css"
+
+- name: Install Common css
+  raw: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/edit.php -b MediaWiki:Common.css < {{ mediawiki_install_directory }}/Common.css"
+
+- name: Remove Common css
+  file:
+    path: "{{ mediawiki_install_directory }}/Common.css"
+    state: absent
 
 - name: Transfer htaccess
   copy:
