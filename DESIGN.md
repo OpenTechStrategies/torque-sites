@@ -65,7 +65,7 @@ like this:
    applications section, with appropriate group set.
 2. Logins by that person will show up with Board member preferences.
 
-### User Groups
+### User Groups / Roles
 
 We use the same authorization groups across competitions whenever
 possible, since access patterns tend to be the same.  The groups we've
