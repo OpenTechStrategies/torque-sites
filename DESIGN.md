@@ -65,10 +65,10 @@ like this:
    applications section, with appropriate group set.
 2. Logins by that person will show up with Board member preferences.
 
-### User Groups / Roles
+### User Groups
 
 We use the same authorization groups across competitions whenever
-possible, since access patterns tend to be the same.  The groups we've
+possible, since access patterns tend to be the same.  The roles we've
 settled on are as follows (the "LFC" prefix helps MacFound IT track
 them in Okta):
 
