@@ -6,29 +6,29 @@ Morocco,North Africa,Africa
 Sudan,North Africa,Africa
 Tunisia,North Africa,Africa
 Western Sahara,North Africa,Africa
-British Indian Ocean Territory,East Africa,Africa
-Burundi,East Africa,Africa
-Comoros,East Africa,Africa
-Djibouti,East Africa,Africa
-Eritrea,East Africa,Africa
-Ethiopia,East Africa,Africa
-French Southern Territories,East Africa,Africa
-Kenya,East Africa,Africa
-Madagascar,East Africa,Africa
-Malawi,East Africa,Africa
-Mauritius,East Africa,Africa
-Mayotte,East Africa,Africa
-Mozambique,East Africa,Africa
-Réunion,East Africa,Africa
-Rwanda,East Africa,Africa
-Seychelles,East Africa,Africa
-Somalia,East Africa,Africa
-South Sudan,East Africa,Africa
-"Tanzania, United Republic of",East Africa,Africa
-Tanzania,East Africa,Africa
-Uganda,East Africa,Africa
-Zambia,East Africa,Africa
-Zimbabwe,East Africa,Africa
+British Indian Ocean Territory,Eastern Africa,Africa
+Burundi,Eastern Africa,Africa
+Comoros,Eastern Africa,Africa
+Djibouti,Eastern Africa,Africa
+Eritrea,Eastern Africa,Africa
+Ethiopia,Eastern Africa,Africa
+French Southern Territories,Eastern Africa,Africa
+Kenya,Eastern Africa,Africa
+Madagascar,Eastern Africa,Africa
+Malawi,Eastern Africa,Africa
+Mauritius,Eastern Africa,Africa
+Mayotte,Eastern Africa,Africa
+Mozambique,Eastern Africa,Africa
+Réunion,Eastern Africa,Africa
+Rwanda,Eastern Africa,Africa
+Seychelles,Eastern Africa,Africa
+Somalia,Eastern Africa,Africa
+South Sudan,Eastern Africa,Africa
+"Tanzania, United Republic of",Eastern Africa,Africa
+Tanzania,Eastern Africa,Africa
+Uganda,Eastern Africa,Africa
+Zambia,Southern Africa,Africa
+Zimbabwe,Southern Africa,Africa
 Angola,Central Africa,Africa
 Cameroon,Central Africa,Africa
 Central African Republic,Central Africa,Africa
@@ -154,32 +154,32 @@ Afghanistan,South Asia,Asia
 Bangladesh,South Asia,Asia
 Bhutan,South Asia,Asia
 India,South Asia,Asia
-Iran,South Asia,Asia
-Iran (Islamic Republic of),South Asia,Asia
+Iran,West Asia,Asia
+Iran (Islamic Republic of),West Asia,Asia
 Maldives,South Asia,Asia
 Nepal,South Asia,Asia
 Pakistan,South Asia,Asia
 Sri Lanka,South Asia,Asia
-Armenia,West Asia,Asia
-Azerbaijan,West Asia,Asia
-Bahrain,West Asia,Asia
-Cyprus,West Asia,Asia
-Georgia,West Asia,Asia
-Iraq,West Asia,Asia
-Israel,West Asia,Asia
-Jordan,West Asia,Asia
-Kuwait,West Asia,Asia
-Lebanon,West Asia,Asia
-Oman,West Asia,Asia
-"Palestine, State of",West Asia,Asia
-Palestinian Territory,West Asia,Asia
-Qatar,West Asia,Asia
-Saudi Arabia,West Asia,Asia
-Syria,West Asia,Asia
-Syrian Arab Republic,West Asia,Asia
-Turkey,West Asia,Asia
-United Arab Emirates,West Asia,Asia
-Yemen,West Asia,Asia
+Armenia,Middle East,Asia
+Azerbaijan,Middle East,Asia
+Bahrain,Middle East,Asia
+Cyprus,Middle East,Asia
+Georgia,Middle East,Asia
+Iraq,Middle East,Asia
+Israel,Middle East,Asia
+Jordan,Middle East,Asia
+Kuwait,Middle East,Asia
+Lebanon,Middle East,Asia
+Oman,Middle East,Asia
+"Palestine, State of",Middle East,Asia
+Palestinian Territory,Middle East,Asia
+Qatar,Middle East,Asia
+Saudi Arabia,Middle East,Asia
+Syria,Middle East,Asia
+Syrian Arab Republic,Middle East,Asia
+Turkey,Middle East,Asia
+United Arab Emirates,Middle East,Asia
+Yemen,Middle East,Asia
 Belarus,Eastern Europe,Europe
 Bulgaria,Eastern Europe,Europe
 Czechia,Eastern Europe,Europe
