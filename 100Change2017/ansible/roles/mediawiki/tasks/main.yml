@@ -80,21 +80,37 @@
   args:
     chdir: "{{ mediawiki_install_directory }}/mediawiki-1.33.0"
 
-- name: Install Collection
-  unarchive:
-    src: "{{ playbook_dir }}/../../thirdparty/extensions/Collection-REL1_33-8566dd1.tar.gz"
-    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
-
 - name: Install EmbedVideo
   unarchive:
     src: "{{ playbook_dir }}/../../thirdparty/extensions/EmbedVideo-v2.8.0.zip"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
+- name: Install PluggableAuth
+  unarchive:
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/PluggableAuth-REL1_33-a69f626.tar.gz"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+
+- name: Install SimpleSAML extension
+  unarchive:
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/SimpleSAMLphp-REL1_33-7d91f27.tar.gz"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+
+- name: Install Collection
+  unarchive:
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/Collection-REL1_33-8566dd1.tar.gz"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+
+- name: Checkout ActivityLog
+  git:
+    repo: https://github.com/OpenTechStrategies/ActivityLog
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/ActivityLog/"
+    version: 27e9191
+
 - name: Checkout Torque
   git:
     repo: https://github.com/OpenTechStrategies/torque
     dest: "{{ mediawiki_install_directory }}/torque/"
-    version: b3afba9
+    version: e9e787b
 
 - name: Link TorqueDataConnect
   file:
@@ -111,6 +127,44 @@
   lineinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     line: "wfLoadExtension('EmbedVideo-v2.8.0');"
+
+- name: Enable PluggableAuth
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE PLUGABLE AUTH CONFIG"
+    block: |
+      wfLoadExtension( 'PluggableAuth' );
+      $wgPluggableAuth_EnableAutoLogin = true;
+      $wgPluggableAuth_EnableLocalLogin = true;
+      $wgPluggableAuth_EnableLocalProperties = false;
+      $wgPluggableAuth_ButtonLabel = "Log In With MacArthur Okta";
+      $wgInvalidUsernameCharacters = "";
+
+- name: Enable SimpleSAMLphp extension
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE SIMPLE SAML PHP CONFIG"
+    block: |
+      wfLoadExtension( 'SimpleSAMLphp' );
+      $wgSimpleSAMLphp_SyncAllGroups_LocallyManaged = ["sysop", "DecisionMakers", "LFCEvaluators"];
+      $wgSimpleSAMLphp_InstallDir = '{{ simplesaml_install_directory }}/simplesamlphp-1.18.4';
+      $wgSimpleSAMLphp_AuthSourceId = '{{ simplesaml_okta_metadata_name }}';
+      $wgSimpleSAMLphp_RealNameAttribute = ['firstName', 'lastName'];
+      $wgSimpleSAMLphp_EmailAttribute = 'email';
+      $wgSimpleSAMLphp_UsernameAttribute = 'username';
+      $wgSimpleSAMLphp_GroupMap = [
+        'sysop' => ['groups' => ['LFC Torque Admin', 'LFC Staff']],
+        'DecisionMakers' => ['groups' => ['LFC Decision Makers']],
+        'LFCEvaluators' => ['groups' => ['LFC Consultants']]
+      ];
+
+      $wgSimpleSAMLphp_SyncAllGroups_GroupNameModificationCallback = function($origGroupName){
+        # Remove spaces
+        return preg_replace('/\s/', '', $origGroupName);
+      };
+      $wgSimpleSAMLphp_AttributeProcessorFactories = [
+        "MediaWiki\\Extension\\SimpleSAMLphp\\AttributeProcessor\\SyncAllGroups::factory"
+      ];
 
 - name: Enable Collection
   blockinfile:
@@ -149,10 +203,10 @@
       $wgExtraNamespaces[TORQUE_CONFIG] = "TorqueConfig";
       $wgExtraNamespaces[TORQUE_CONFIG_TALK] = "TorqueConfig_talk";
       $wgNamespaceProtection[TORQUE_CONFIG] = array("edittorqueconfig");
-      $wgTorqueDataConnectConfigPage = "TorqueConfig:MainConfig";
-      $wgTorqueDataConnectNotFoundMessage = "This proposal has been disqualified in admin, peer, or expert review.";
       $wgTorqueDataConnectWikiKey = "100Change2017";
       $wgTorqueDataConnectSheetName = "LFC100Change2017";
+      $wgTorqueDataConnectConfigPage = "TorqueConfig:MainConfig";
+      $wgTorqueDataConnectNotFoundMessage = "This proposal has been disqualified in admin, peer, or expert review.";
       wfLoadExtension('TorqueDataConnect');
 
 - name: Set TOC depth
@@ -177,6 +231,45 @@
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/Collection/i18n/en.json"
     regexp: '\t"coll-book_creator_intro": "<big>With the ''''book creator'''' you can create a book containing wiki pages of your choice. You can export the book in different formats \(for example PDF or ODF\) or order a printed copy.</big>",'
     replace: '\t"coll-book_creator_intro": "<big>With the ''''book creator'''' you can create a book containing wiki pages of your choice. You can export the book in different formats (for example PDF or ODF).</big>",'
+
+- name: Install ActivityLog Configuration
+  copy:
+    src: ActivityLogConfiguration
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/"
+
+- name: Enable ActivityLog
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE ACTIVITYLOG CONFIG"
+    block: |
+      wfLoadExtension('ActivityLog');
+      $wgMessagesDirs['ActivityLogConfiguration'] = 'ActivityLogConfiguration/i18n';
+      $wgActivityLogHooksToWatch["ArticleViewHeader"] = function ($article) {
+        $referrer = $_SERVER['HTTP_REFERER'];
+        $ourServer = "http://torque.leverforchange.org";
+
+        if($referrer && $ourServer == substr($referrer, 0, strlen($ourServer))) {
+          return array($article->getContext()->getUser(),
+            $article->getTitle(),
+            "activitylog-articleviewheader-with-referrer",
+            $_SERVER['HTTP_REFERER']
+          );
+        } else {
+          return array($article->getContext()->getUser(),
+            $article->getTitle(),
+            "activitylog-articleviewheader"
+          );
+        }
+      };
+
+      $wgActivityLogHooksToWatch["UserLoginComplete"] = function(&$user, &$inject_html, $direct) {
+        global $wgTitle;
+        return array($user, $wgTitle, "activitylog-userlogin");
+      };
+
+      $wgActivityLogHooksToWatch["PageContentSave"] = function($wikiPage, $user, $content, &$summary, $isMinor, $isWatch, $section, $flags, $status) {
+        return array($user, $wikiPage->getTitle(), "activitylog-articlesavepage");
+      };
 
 - name: Disable MediaWiki Cache
   # When the cache is enabled, on AWS, with the default setting,
@@ -217,6 +310,107 @@
         $wgGroupPermissions['LFCTorqueAdmin'][$key] = $value;
       }
 
+      # Groups requested specifically by LFC.
+      $wgGroupPermissions['LFCResearchPartners']['read'] = true;
+      $wgGroupPermissions['LFCEvaluators']['read'] = true;
+
+      # These are OTS Torque Standard Groups
+      $wgGroupPermissions['OutsideReviewers']['read'] = true;
+      $wgGroupPermissions['Staff']['read'] = true;
+      $wgGroupPermissions['PseudoDecisionMakers']['read'] = true;
+      $wgGroupPermissions['DecisionMakers']['read'] = true;
+
+      # Disable teamcomments for users on this wiki by default.
+      $wgGroupPermissions['*']['teamcomment'] = false;
+      $wgGroupPermissions['*']['teamcommentseeusernames'] = false;
+
+      # Then enable teamcomments for the groups that should be leaving comments
+      $wgGroupPermissions['Staff']['teamcomment'] = true;
+      $wgGroupPermissions['PseudoDecisionMaker']['teamcomment'] = true;
+      $wgGroupPermissions['DecisionMaker']['teamcomment'] = true;
+      $wgGroupPermissions['sysop']['teamcomment'] = true;
+      $wgGroupPermissions['LFCResearchPartners']['teamcomment'] = true;
+      $wgGroupPermissions['LFCEvaluators']['teamcomment'] = true;
+
+      # Allow some groups to see usernames
+      $wgGroupPermissions['Staff']['teamcommentseeusernames'] = true;
+      $wgGroupPermissions['PseudoDecisionMaker']['teamcommentseeusernames'] = true;
+      $wgGroupPermissions['DecisionMaker']['teamcommentseeusernames'] = true;
+      $wgGroupPermissions['sysop']['teamcommentseeusernames'] = true;
+
+      # Log permissions (ability to see Special:Log)
+      $wgAvailableRights[] = 'view-special-log';
+      $wgGroupPermissions['*']['view-special-log'] = false;
+      $wgGroupPermissions['sysop']['view-special-log'] = true;
+
+- name: Disable Special:Log for groups that don't have view-special-log
+  blockinfile:
+    marker: "## {mark} ANSIBLE SPECIAL LOG PERMISSIONS CONFIG"
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    block: |
+      $wgHooks['SpecialPage_initList'][] = function ( &$list ) {
+        global $wgUser;
+
+        if(!$wgUser->isAllowed('view-special-log')) {
+          unset( $list['Log'] );
+        }
+        return true;
+      };
+
+- name: Create Special:Log name overrides
+  blockinfile:
+    marker: "## {mark} ANSIBLE SPECIAL LOG NAME OVERRIDES CONFIG"
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    block: |
+      $logTitlesOverrideMessages = [
+        "picksomelogpage" => "Selection",
+        "activitylogpage" => "Misc. Activity (page views, login, logout, etc)",
+        "simplefavoriteslog" => "Favorites",
+        "log-name-create" => "Page Creation",
+        "movelogpage" => "Page Rename",
+        "uploadlogpage" => "File Upload",
+        "dellogpage" => "Page Deletion",
+        "newuserlogpage" => "User Creation",
+        "log-name-teamcomments" => "Comments",
+        "torquedataconnect-apiaccesslog" => "API Accesses",
+        "torquedataconnect-datachangeslog" => "Data Changes",
+        "rightslog" => "Changes to Access Control / Permissions"
+      ];
+
+      $wgHooks['MessagesPreLoad'][] = function($title, &$message, $code) {
+              global $logTitlesOverrideMessages;
+        if(array_key_exists(strtolower($title), $logTitlesOverrideMessages)) {
+          $message = $logTitlesOverrideMessages[strtolower($title)];
+        }
+      };
+
+- name: Disable Special:Log types that aren't of interest
+  blockinfile:
+    marker: "## {mark} ANSIBLE DISABLE SPECIAL LOG TYPES CONFIG"
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    block: |
+      $logTypesBlacklist = ["block", "contentmodel", "import", "managetags", "merge", "patrol", "protect", "rights", "tag"];
+
+      $wgHooks['SetupAfterCache'][] = function () {
+        global $wgLogTypes, $logTypesBlacklist;
+        foreach($logTypesBlacklist as $logType) {
+          unset($wgLogTypes[array_search($logType, $wgLogTypes)]);
+        }
+
+        return true;
+      };
+
+- name: Change Special:Log format slightly
+  blockinfile:
+    marker: "## {mark} ANSIBLE CHANGE SPECIAL LOG FORMAT CONFIG"
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    block: |
+      # This is a little brittle, based on how the lines are rendered by the skin currently used
+      # but should work for the foreseeable future.
+      $wgHooks['LogEventsListLineEnding'][] = function ($page, &$line, &$entry, &$classes, &$attribs){
+        $line = preg_replace('/(\d\d\d\d)/', '\1 &mdash;', $line, 1);
+      };
+
 - name: Transfer LFC Logo
   copy:
     src: 100Change-logo150.png
@@ -227,6 +421,19 @@
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     regexp: ^\$wgLogo = .*
     line: $wgLogo = "$wgResourceBasePath/resources/assets/100Change-logo150.png";
+
+- name: Transfer Common group css
+  copy:
+    src: Common.css
+    dest: "{{ mediawiki_install_directory }}/Common.css"
+
+- name: Install Common group css
+  raw: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/edit.php -b MediaWiki:Common.css < {{ mediawiki_install_directory }}/Common.css"
+
+- name: Remove Common group css
+  file:
+    path: "{{ mediawiki_install_directory }}/Common.css"
+    state: absent
 
 - name: Transfer htaccess
   copy:
