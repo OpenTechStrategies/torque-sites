@@ -86,8 +86,8 @@ First, set up your `$OTSDIR` (see onboarding for more information).
 Then you need to check out the macfound torque-sites
 
 ```
-$ mkdir -p $OTSDIR/clients/lever-for-change/
-$ svn co https://svn.opentechstrategies.com/repos/ots/trunk/clients/lever-for-change/torque-sites $OTSDIR/clients/lever-for-change
+$ mkdir -p $OTSDIR/clients/lever-for-change
+$ svn co https://svn.opentechstrategies.com/repos/ots/trunk/clients/lever-for-change/torque-sites $OTSDIR/clients/lever-for-change/torque-sites
 ```
 
 Then you need to get the OTS utilities that includes `get-bigdata`
