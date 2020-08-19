@@ -24,6 +24,31 @@ is probably easiest through package management.
 $ sudo apt-get install ansible
 ```
 
+#### Apache configuration for large files
+
+Because the etl pipelines we use generate large csvs to upload, and those are
+normally bigger than the default allowed upload size in php.  For that reason,
+after you install apache, you need to make sure that our installed .htaccess
+files overload the php configuration.
+
+You need to add this line
+
+```
+AllowOverride All
+```
+
+to the permissions of your apache directory, in a section that looks like
+
+```
+<Directory /var/www/html>
+    # Options ...
+    AllowOverride All
+</Directory>
+```
+
+Or set the php values `upload_max_filesize` and `post_max_size` to appropriate
+values in whatever php configuration you are using.
+
 ### Local installs
 
 In order to install locally, two things need to happen.  First
