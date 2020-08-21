@@ -1,0 +1,33 @@
+#!/bin/sh
+
+CONFIG="lfc-competitions.cfg"  # What we're creating.
+TMPL="${CONFIG}.tmpl"          # The source we're creating it from.
+INTERMEDIATE=${TMPL}.$$        # A temporary intermediate file we use.
+
+rm -f ${INTERMEDIATE}
+cp ${TMPL} ${INTERMEDIATE}
+
+oroot="clients/lever-for-change/torque-sites"
+for competition in `grep -E "^\\[" ${TMPL} \
+                  | grep -v -F "[default]" \
+                  | sed -e 's/\[//g'       \
+                  | sed -e 's/\]//g'`
+do
+  echo "Fetching authentication information for ${competition}..."
+  password=`opass show ${oroot}/${competition}/ansible/prod 2>/dev/null \
+    | grep "mediawiki_admin_password"                                   \
+    | cut -d ":" -f 2                                                   \
+    | cut -c 2-`
+
+  cat "${INTERMEDIATE}"                                     \
+    | sed -e "s/XXX_${competition}_PASSWORD_XXX/${password}/" \
+    > "${INTERMEDIATE}.tmp"
+
+  mv "${INTERMEDIATE}.tmp" "${INTERMEDIATE}"
+done
+
+mv "${INTERMEDIATE}" "${CONFIG}"
+
+echo "Done."
+echo "Created '${CONFIG}'."
+
