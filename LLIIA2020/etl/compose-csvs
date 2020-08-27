@@ -58,6 +58,10 @@ Command-line options:
                                   between judges and the proposals they evaluated,
                                   with the extra data being their evaluation
 
+  --budget-csv FILE               FILE is a csv with the budget data in the specific format
+                                  where lines are separated by || and columns are separated
+                                  by |
+
   --pare N                        Reduce the nuber of tiems to 1/N rows, for quick
                                   testing and development
 
@@ -198,6 +202,7 @@ def create_column_types_row(header_row):
             "Attachment Display Names": "list",
             "Priority Populations": "list",
             "Key Words and Phrases": "list",
+            "Budget Data": "json",
             }
 
     column_types.update({ "Judge " + trait + " Comments": "list" for trait in valid_traits})
@@ -322,6 +327,44 @@ def process_evaluation_data(*csv_reader, app_col, score_rank_normalized_col, sum
 
     return evaluation_data
 
+def process_budget_data(budget_reader):
+    """Takes a BUDGET_READER which represents a csv with budget information.
+    The information is in column 7, while the application number to match
+    is in column 3.  It then returns an object wherein the key is the application
+    number, and the value is an array of budget items, each having a description
+    and an amount.  The resulting BUDGET_DATA looks like:
+
+    BUDGET_DATA[app_id] = [
+      { description: string, amount: number },
+      { description: string, amount: number },
+      ...
+    ]"""
+
+    from math import floor
+
+    budget_data = {}
+    next(budget_reader)
+    for row in budget_reader:
+        application_id = row[3]
+        budget_text = row[7]
+        budget_rows = budget_text.split("||")
+
+        budget_row_data = []
+        for budget_row in budget_rows:
+            budget_items = budget_row.split("|")
+            budget_amount = budget_items[1]
+            try:
+                budget_amount = floor(float(budget_amount))
+                budget_amount = '{:,}'.format(budget_amount)
+            except Exception as e:
+                print(application_id, file=sys.stderr)
+                pass
+            budget_row_data.append({ "description": budget_items[0], "amount": budget_amount })
+
+        budget_data[application_id] = budget_row_data
+
+    return budget_data
+
 def generate_list_toc(toc_dir, review_numbers, toc_name, json_only=False):
     """Generates a TOC mwiki and TOC data file in TOC_DIR for the given data,
     which is a list of review numbers we want to be in the list.  Then put
@@ -370,13 +413,14 @@ def create_tdc_config(tdc_config_dir, header_row, new_rows):
         for column in header_row:
             f.writelines("* %s\n" % column)
 
-def compose_csvs(proposals, admin_review, judge_eval, regionconfig, attachments_dir, toc_dir, tdc_config_dir, pare=None):
+def compose_csvs(proposals, admin_review, judge_eval, budget, regionconfig,
+        attachments_dir, toc_dir, tdc_config_dir, pare=None):
     """Write a composed version of PROPOSALS (a CSV file), ADMIN_REVIEW
     (a CSV file) standard out.
 
-    PROPOSALS, ADMIN_REVIEW, and JUDGE_EVAL all filenames.  They
+    PROPOSALS, ADMIN_REVIEW, and JUDGE_EVAL, BUDGET all filenames.  They
     represent a full list of proposals and a list of accepted proposals,
-    and evaluation on those proposals, respectively.
+    evaluation on those proposals, and budge data, respectively.
 
     REGIONCONFIG is a filename of a simple mapping of countries to regions
     they belong to based on the UN geoscheme.
@@ -401,6 +445,8 @@ def compose_csvs(proposals, admin_review, judge_eval, regionconfig, attachments_
                                        delimiter=',', quotechar='"')
         regionconfig_reader = csv.reader(open(regionconfig, encoding='utf-8'),
                                        delimiter=',', quotechar='"')
+        budget_reader = csv.reader(open(budget, encoding='utf-8'),
+                                       delimiter=',', quotechar='"')
     except UnicodeDecodeError:
         sys.stderr.write("fix-csv expects utf-8-encoded unicode, not whatever is in this csv file.\n")
         sys.exit(-1)
@@ -417,6 +463,7 @@ def compose_csvs(proposals, admin_review, judge_eval, regionconfig, attachments_
         header_row.append("Judge " + trait + " Score Normalized")
         header_row.append("Judge " + trait + " Comments")
         header_row.append("Judge " + trait + " Comment Scores Normalized")
+    header_row.append("Budget Data")
 
     # We only accept applications if they're one of the rows in the
     # admin_review csv, which has an "Application #" column (3),
@@ -428,6 +475,8 @@ def compose_csvs(proposals, admin_review, judge_eval, regionconfig, attachments_
     judge_data = process_evaluation_data(judge_eval_reader,
         app_col=3, score_rank_normalized_col=9, sum_of_scores_normalized_col=11,
         trait_col=16, score_normalized_col=14, comments_col=15, comments_score_normalized_col=14)
+
+    budget_data = process_budget_data(budget_reader)
 
     attachments_to_upload = {}
 
@@ -509,6 +558,11 @@ def compose_csvs(proposals, admin_review, judge_eval, regionconfig, attachments_
             for _ in range(len(valid_traits)):
                 new_row.extend(["", "", ""])
 
+        if row[3] in budget_data:
+            new_row.append(json.dumps(budget_data[row[3]]))
+        else:
+            new_row.append(json.dumps({}))
+
         print("Sanitized row %d (%d cols, %d fixed)." % (row_num, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
 
@@ -587,6 +641,7 @@ def main():
                                     "proposals-csv=",
                                     "admin-review-csv=",
                                     "judge-evaluation-csv=",
+                                    "budget-csv=",
                                     "regionconfig-csv=",
                                     "toc-dir=",
                                     "tdc-config-dir=",
@@ -600,6 +655,7 @@ def main():
     proposals_csv = None
     admin_review_csv = None
     judge_evaluation_csv = None
+    budget_csv = None
     regionconfig_csv = None
     attachments_dir = None
     toc_dir = None
@@ -613,6 +669,8 @@ def main():
             admin_review_csv = a
         elif o == "--judge-evaluation-csv":
             judge_evaluation_csv = a
+        elif o == "--budget-csv":
+            budget_csv = a
         elif o == "--regionconfig-csv":
             regionconfig_csv = a
         elif o == "--toc-dir":
@@ -630,7 +688,7 @@ def main():
             "ERROR: need --proposals-csv, and --admin-review-csv options.\n\n")
         sys.stderr.write(__doc__)
         sys.exit(1)
-    compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, regionconfig_csv,
+    compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, budget_csv, regionconfig_csv,
             attachments_dir, toc_dir, tdc_config_dir, pare)
 
 if __name__ == '__main__':
