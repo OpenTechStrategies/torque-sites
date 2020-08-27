@@ -5,5 +5,7 @@ mediawiki_csv2wiki_username: csv2wiki
 
 simplesaml_install_directory: /home/deploy/simplesaml/
 
+torquedata_server_port: 5001
+
 # This is only needed for ots deployments, and so not part of the template
 deployment_user: deploy

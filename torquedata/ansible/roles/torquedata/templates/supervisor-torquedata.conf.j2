@@ -1,7 +1,7 @@
-[program:torquedata]
+[program:{{ supervisor_torquedata_name }}]
 directory={{ torquedata_install_directory }}/server
 user:{{ deployment_user }}
-command=pipenv run flask run
+command=pipenv run flask run -p {{ torquedata_port }}
 autostart=true
 autorestart=false
 redirect_stderr=true

@@ -22,3 +22,14 @@ torquedata_install_directory: __INSTALLATION_DIRECTORY__
 # Also note that ansible won't be installing the spreadsheet, just
 # the configuration torquedata needs.
 torquedata_spreadsheet_location: __SPREADSHEET_LOCATION__
+
+# The port the flask server listens on
+torquedata_port: 5000
+
+# The name for starting, stopping, and logging from supervisor
+supervisor_torquedata_name: torquedata
+
+# The version at https://github.com/OpenTechStrategies/torque
+# to deploy.  A default of master works for development, but for
+# other environments, we want to use specific commit shas
+torquedata_git_version: master

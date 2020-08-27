@@ -19,7 +19,7 @@
   git:
     repo: https://github.com/OpenTechStrategies/torque
     dest: "{{ torquedata_install_directory }}/torque/"
-    version: e9e787b
+    version: "{{ torquedata_git_version }}"
 
 - name: Link TorqueData
   file:
@@ -31,7 +31,7 @@
   become_user: root
   template:
     src: supervisor-torquedata.conf.j2
-    dest: /etc/supervisor/conf.d/torquedata.conf
+    dest: /etc/supervisor/conf.d/{{ supervisor_torquedata_name}}.conf
 
 - name: Run pipenv install
   command: "pipenv install"
@@ -51,5 +51,5 @@
 - name: Restart supervisor for torquedata
   become_user: root
   supervisorctl:
-    name: 'torquedata'
+    name: "{{ supervisor_torquedata_name }}"
     state: restarted
