@@ -357,7 +357,6 @@ def process_budget_data(budget_reader):
                 budget_amount = floor(float(budget_amount))
                 budget_amount = '{:,}'.format(budget_amount)
             except Exception as e:
-                print(application_id, file=sys.stderr)
                 pass
             budget_row_data.append({ "description": budget_items[0], "amount": budget_amount })
 
