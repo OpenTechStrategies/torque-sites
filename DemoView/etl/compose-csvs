@@ -100,6 +100,7 @@ import string
 import os
 import json
 import pickle
+import random
 from bs4 import BeautifulSoup
 
 def collapse_replace(string, old, new):
@@ -650,7 +651,14 @@ def compose_csvs(proposals, admin_review, judge_eval, lfc_eval, thematic_areas_c
         print("Sanitized row %d (%d cols, %d fixed)." % (row_num, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
 
-    new_rows.sort(key=lambda row: int(row[136])) # Sort by judge rank
+    # We set the seed so that we get the same ordered list for every re-run
+    random.seed(1)
+    random.shuffle(new_rows)
+    i = 1
+    for new_row in new_rows:
+      new_row[136] = str(i)
+      new_row[137] = "%.3f" % random.uniform(1,99)
+      i += 1
 
     # Build TOCs after sorted proposals
 
