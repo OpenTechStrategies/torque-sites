@@ -28,7 +28,7 @@
 #                                                                        #
 ##########################################################################
 
-COMPETITION="EO2020"
+COMPETITION="DemoView"
 MACFOUND_DIR=`dirname "${0}"`
 BASE_DATA_DIR="${1}"
 
@@ -88,7 +88,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
     exit 1
   fi
 
-  ENCRYPTED_DIR="${OTSDIR}/clients/lever-for-change/torque-sites/${COMPETITION}/data/bigdata"
+  ENCRYPTED_DIR="${OTSDIR}/clients/lever-for-change/torque-sites/EO2020/data/bigdata"
   if [ ! -d "${ENCRYPTED_DIR}" ] ; then
     echo "ERROR: it looks like your encrypted dir isn't checked out"
     echo ""
@@ -96,7 +96,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
     echo "  $ENCRYPTED_DIR"
     echo ""
     echo "You will need to check out the subversion torque-sites data, and then"
-    echo "run get-bigdata from ${OTSDIR}/clients/lever-for-change/torque-sites/${COMPETITION}/data/"
+    echo "run get-bigdata from ${OTSDIR}/clients/lever-for-change/torque-sites/EO2020/data/"
     exit 1
   fi
 
