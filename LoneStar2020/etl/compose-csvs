@@ -581,8 +581,10 @@ def compose_csvs(proposals, attachments_dir, toc_dir, tdc_config_dir, pare=None)
         current_location_data = {}
         for new_row in new_rows:
             for col in [74, 80, 86, 92, 98]:
-                county = new_row[col]
-                state = new_row[col-2]
+                county = new_row[col].strip()
+                state = new_row[col-2].strip()
+                if not state:
+                    continue
                 if state not in current_location_data:
                     current_location_data[state] = {"shown": False, "counties": {}}
                 if county not in current_location_data[state]["counties"]:
