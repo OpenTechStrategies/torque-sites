@@ -368,7 +368,7 @@ def create_tdc_config(tdc_config_dir, header_row, new_rows):
         for column in header_row:
             f.writelines("* %s\n" % column)
 
-def compose_csvs(proposals, attachments_dir, toc_dir, tdc_config_dir, pare=None):
+def compose_csvs(proposals, judge_eval, attachments_dir, toc_dir, tdc_config_dir, pare=None):
     """Write a composed version of PROPOSALS (a CSV file), ADMIN_REVIEW
     (a CSV file) standard out.
 
@@ -395,8 +395,8 @@ def compose_csvs(proposals, attachments_dir, toc_dir, tdc_config_dir, pare=None)
                                       delimiter=',', quotechar='"')
 #        admin_review_reader = csv.reader(open(admin_review, encoding='utf-8'),
 #                                         delimiter=',', quotechar='"')
-#        judge_eval_reader = csv.reader(open(judge_eval, encoding='utf-8'),
-#                                       delimiter=',', quotechar='"')
+        judge_eval_reader = csv.reader(open(judge_eval, encoding='utf-8'),
+                                       delimiter=',', quotechar='"')
     except UnicodeDecodeError:
         sys.stderr.write("fix-csv expects utf-8-encoded unicode, not whatever is in this csv file.\n")
         sys.exit(-1)
@@ -424,6 +424,16 @@ def compose_csvs(proposals, attachments_dir, toc_dir, tdc_config_dir, pare=None)
 #    judge_data = process_evaluation_data(judge_eval_reader,
 #        app_col=3, score_rank_normalized_col=9, sum_of_scores_normalized_col=11,
 #        trait_col=16, score_normalized_col=14, comments_col=15, comments_score_normalized_col=14)
+
+    judge_data = {}
+    judge_header = next(judge_eval_reader)
+    judge_columns_of_interest = [3, 4, 7, 8, 9, 10]
+    for row in judge_eval_reader:
+        judge_data[row[0]] = {}
+        for col_idx in judge_columns_of_interest:
+            judge_data[row[0]][judge_header[col_idx]] = row[col_idx]
+    for col_idx in judge_columns_of_interest:
+        header_row.append(judge_header[col_idx])
 
     attachments_to_upload = {}
 
@@ -495,6 +505,12 @@ def compose_csvs(proposals, attachments_dir, toc_dir, tdc_config_dir, pare=None)
 
         new_row.append(mwiki_title)
 
+        if row[3] in judge_data:
+            for col_idx in judge_columns_of_interest:
+                new_row.append(judge_data[row[3]][judge_header[col_idx]])
+        else:
+            new_row.extend(["9999", "", "", "", "", ""])
+
 #        if row[3] in judge_data:
 #            new_row.extend([
 #                judge_data[row[3]]["overall_score_rank_normalized"],
@@ -517,7 +533,7 @@ def compose_csvs(proposals, attachments_dir, toc_dir, tdc_config_dir, pare=None)
         print("Sanitized row %d (%d cols, %d fixed)." % (row_num, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
 
-    new_rows.sort(key=lambda row: row[8]) # Org Name
+    new_rows.sort(key=lambda row: int(row[150])) # rank
 
     # Build TOCs after sorted proposals
 
@@ -672,7 +688,7 @@ def main():
             "ERROR: need --proposals-csv, and --admin-review-csv options.\n\n")
         sys.stderr.write(__doc__)
         sys.exit(1)
-    compose_csvs(proposals_csv, attachments_dir, toc_dir, tdc_config_dir, pare)
+    compose_csvs(proposals_csv, judge_evaluation_csv, attachments_dir, toc_dir, tdc_config_dir, pare)
 
 if __name__ == '__main__':
     main()
