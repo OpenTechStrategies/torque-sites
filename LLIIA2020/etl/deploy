@@ -50,6 +50,7 @@ python3 -V > /dev/null 2>&1 || { echo "python3 required, aborting" ; exit 1; }
 PROPOSALS_CSV="LLIIAE_registration_and_application_data.csv"
 ADMIN_REVIEW_CSV="AdminReviewP2P_LLIIA2020_07082020.csv"
 JUDGE_EVALUATION_CSV="LLIIA_Peer_Review_Data_Pseudonymous_20200803.csv"
+PANEL_EVALUATION_CSV="LLIIA_Evaluation_Panel_Data_anon.csv"
 BUDGET_ZIP="LLIAE_AR_budget_data.zip"
 BUDGET_CSV="LLIAE_registration_and_application_export_budget_data.csv"
 REGIONCONFIG_CSV="regionconfig.csv"
@@ -99,6 +100,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
 
   gpg -o ${DATA_DIR}/${ADMIN_REVIEW_CSV} --decrypt ${ENCRYPTED_DIR}/${ADMIN_REVIEW_CSV}.gpg || exit 1
   gpg -o ${DATA_DIR}/${JUDGE_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${JUDGE_EVALUATION_CSV}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${PANEL_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${PANEL_EVALUATION_CSV}.gpg || exit 1
   gpg -o ${DATA_DIR}/${BASE_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg || exit 1
   gpg -o ${DATA_DIR}/${BUDGET_ZIP} --decrypt ${ENCRYPTED_DIR}/${BUDGET_ZIP}.gpg || exit 1
 
@@ -143,6 +145,7 @@ echo "Stage 1: Composing..."
 ${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
             --admin-review-csv="${DATA_DIR}/${ADMIN_REVIEW_CSV}" \
             --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
+            --panel-evaluation-csv="${DATA_DIR}/${PANEL_EVALUATION_CSV}" \
             --budget-csv="${DATA_DIR}/${BUDGET_CSV}" \
             --regionconfig-csv="${MACFOUND_DIR}/${REGIONCONFIG_CSV}" \
             --attachments-dir=${ATTACHMENTS_DIR} \
