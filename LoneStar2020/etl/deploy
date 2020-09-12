@@ -50,7 +50,7 @@ python3 -V > /dev/null 2>&1 || { echo "python3 required, aborting" ; exit 1; }
 PROPOSALS_CSV="LSP_Registration_Application_data.csv"
 BASE_ATTACHMENTS="LSP_Registration_Application_data.zip"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
-PEER_REVIEW_FIRST_PASS="Peer Review Rankings.csv"
+JUDGE_EVALUATION_CSV="LSP_Peer_Review_Data.csv"
 TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
 TOC_DIR="${DATA_DIR}/tocs"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
@@ -94,7 +94,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   echo "Decrypting..."
 
   gpg -o ${DATA_DIR}/${BASE_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg || exit 1
-  gpg -o "${DATA_DIR}/${PEER_REVIEW_FIRST_PASS}" --decrypt "${ENCRYPTED_DIR}/${PEER_REVIEW_FIRST_PASS}.gpg" || exit 1
+  gpg -o "${DATA_DIR}/${JUDGE_EVALUATION_CSV}" --decrypt "${ENCRYPTED_DIR}/${JUDGE_EVALUATION_CSV}.gpg" || exit 1
 
   mkdir -p ${TOC_DIR}
   mkdir -p ${TDC_CONFIG_DIR}
@@ -139,7 +139,7 @@ mkdir -p $TDC_CONFIG_DIR
 # Use --pare to convert only 1% of the entries, to save time while testing. 
 echo "Stage 1: Composing..."
 ${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
-            --judge-evaluation-csv="${DATA_DIR}/${PEER_REVIEW_FIRST_PASS}" \
+            --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
             --attachments-dir=${ATTACHMENTS_DIR} \
             --tdc-config-dir="${TDC_CONFIG_DIR}" \
             --toc-dir="${TOC_DIR}" \

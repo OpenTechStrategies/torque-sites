@@ -184,7 +184,7 @@ def fix_cell(cell):
 
     return cell
 
-valid_traits = [ "COMMUNITY-INFORMED", "EVIDENCE-BASED", "FEASIBLE", "IMPACTFUL" ]
+valid_traits = [ "EVIDENCE-BASED", "FEASIBLE", "SCALABLE", "TRANSFORMATIVE" ]
 
 def create_column_types_row(header_row):
     """Declaration of the types different columns in the spreadsheet have,
@@ -308,11 +308,11 @@ def process_evaluation_data(*csv_reader, app_col, score_rank_normalized_col, sum
 
         found = False
 
-        if row[trait_col] not in valid_traits:
-            raise Exception("Trait is not a valid trait: " + row[trait_col])
+        if row[trait_col].strip() not in valid_traits:
+            raise Exception("Trait is not a valid trait: " + row[trait_col].strip())
 
         for trait in judge_datum["traits"]:
-            if trait["name"] == row[trait_col]:
+            if trait["name"] == row[trait_col].strip():
                 trait["score_normalized"] += float(row[score_normalized_col])
                 trait["comments"] += row[comments_col] + "\n"
                 trait["comment_scores"] += row[comments_score_normalized_col] + "\n"
@@ -406,13 +406,13 @@ def compose_csvs(proposals, judge_eval, attachments_dir, toc_dir, tdc_config_dir
     header_row.append("Attachment Display Names")
     header_row.append("Attachments")
     header_row.append("MediaWiki Title")
-#    header_row.append("Judge Overall Score Rank Normalized")
-#    header_row.append("Judge Sum of Scores Normalized")
-#    for trait in valid_traits:
-#        header_row.append("Judge " + trait)
-#        header_row.append("Judge " + trait + " Score Normalized")
-#        header_row.append("Judge " + trait + " Comments")
-#        header_row.append("Judge " + trait + " Comment Scores Normalized")
+    header_row.append("Judge Overall Score Rank Normalized")
+    header_row.append("Judge Sum of Scores Normalized")
+    for trait in valid_traits:
+        header_row.append("Judge " + trait)
+        header_row.append("Judge " + trait + " Score Normalized")
+        header_row.append("Judge " + trait + " Comments")
+        header_row.append("Judge " + trait + " Comment Scores Normalized")
 
     # We only accept applications if they're one of the rows in the
     # admin_review csv, which has an "Application #" column (3),
@@ -421,19 +421,9 @@ def compose_csvs(proposals, judge_eval, attachments_dir, toc_dir, tdc_config_dir
 #    next(admin_review_reader) # Don't look at header
 #    acceptable_application_numbers = { row[3]: row[5] for row in admin_review_reader }
 
-#    judge_data = process_evaluation_data(judge_eval_reader,
-#        app_col=3, score_rank_normalized_col=9, sum_of_scores_normalized_col=11,
-#        trait_col=16, score_normalized_col=14, comments_col=15, comments_score_normalized_col=14)
-
-    judge_data = {}
-    judge_header = next(judge_eval_reader)
-    judge_columns_of_interest = [3, 4, 7, 8, 9, 10]
-    for row in judge_eval_reader:
-        judge_data[row[0]] = {}
-        for col_idx in judge_columns_of_interest:
-            judge_data[row[0]][judge_header[col_idx]] = row[col_idx]
-    for col_idx in judge_columns_of_interest:
-        header_row.append(judge_header[col_idx])
+    judge_data = process_evaluation_data(judge_eval_reader,
+        app_col=3, score_rank_normalized_col=9, sum_of_scores_normalized_col=11,
+        trait_col=17, score_normalized_col=15, comments_col=16, comments_score_normalized_col=15)
 
     attachments_to_upload = {}
 
@@ -506,29 +496,23 @@ def compose_csvs(proposals, judge_eval, attachments_dir, toc_dir, tdc_config_dir
         new_row.append(mwiki_title)
 
         if row[3] in judge_data:
-            for col_idx in judge_columns_of_interest:
-                new_row.append(judge_data[row[3]][judge_header[col_idx]])
-        else:
-            new_row.extend(["9999", "", "", "", "", ""])
+            new_row.extend([
+                judge_data[row[3]]["overall_score_rank_normalized"],
+                judge_data[row[3]]["sum_of_scores_normalized"] ])
 
-#        if row[3] in judge_data:
-#            new_row.extend([
-#                judge_data[row[3]]["overall_score_rank_normalized"],
-#                judge_data[row[3]]["sum_of_scores_normalized"] ])
-#
-#            for valid_trait in valid_traits:
-#                for trait in judge_data[row[3]]["traits"]:
-#                    if trait["name"] == valid_trait:
-#                        new_row.append(trait["name"])
-#                        new_row.append("{0:.1f}".format(trait["score_normalized"]))
-#                        new_row.append(trait["comments"])
-#                        new_row.append(trait["comment_scores"])
-#
-#        else:
-#            new_row.extend([9999, ""])
-#
-#            for _ in range(len(valid_traits)):
-#                new_row.extend(["", "", ""])
+            for valid_trait in valid_traits:
+                for trait in judge_data[row[3]]["traits"]:
+                    if trait["name"] == valid_trait:
+                        new_row.append(trait["name"])
+                        new_row.append("{0:.1f}".format(trait["score_normalized"]))
+                        new_row.append(trait["comments"])
+                        new_row.append(trait["comment_scores"])
+
+        else:
+            new_row.extend([9999, ""])
+
+            for _ in range(len(valid_traits)):
+                new_row.extend(["", "", ""])
 
         print("Sanitized row %d (%d cols, %d fixed)." % (row_num, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
