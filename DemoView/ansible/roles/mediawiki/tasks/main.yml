@@ -76,7 +76,7 @@
   git:
     repo: https://github.com/OpenTechStrategies/torque
     dest: "{{ mediawiki_install_directory }}/torque/"
-    version: a55eb43
+    version: 4c81bac
 
 - name: Link TorqueDataConnect
   file:
@@ -411,6 +411,33 @@
           unset( $list['Log'] );
         }
         return true;
+      };
+
+- name: Create LFC Evaluator page rule
+  blockinfile:
+    marker: "## {mark} ANSIBLE LFC EVALUATOR CONFIG"
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    block: |
+      $wgHooks['SkinTemplateNavigation'][] = function ( $template, &$links ) {
+        $currentTitle = $template->getTitle()->getFullText();
+        $prepend = "LFC Analysis of ";
+        $isAnalysisPage = (strlen($currentTitle) > strlen($prepend) && substr($currentTitle, 0, strlen($prepend)) === $prepend);
+
+        if($isAnalysisPage) {
+          $originalPageTitle = substr($currentTitle, strlen($prepend));
+          $links['namespaces']['main']['class'] = '';
+          $links['namespaces']['main']['href'] = Title::newFromText($originalPageTitle)->getLocalUrl();
+        }
+        $lfcAnalysisTitle = Title::newFromText($prepend . $template->getTitle()->getFullText());
+        if($isAnalysisPage || $lfcAnalysisTitle->exists()) {
+          $links['namespaces']['new'] = [
+           'class' => ($isAnalysisPage ? 'selected' : ''),
+           'href' => ($isAnalysisPage ? $template->getTitle()->getLocalUrl() : $lfcAnalysisTitle->getLocalUrl()),
+           'text' => 'LFC Analysis',
+          ];
+        }
+
+        unset($links['namespaces']['talk']);
       };
 
 - name: Create Special:Log name overrides

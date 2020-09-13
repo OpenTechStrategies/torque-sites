@@ -353,6 +353,18 @@ def generate_generic_toc(toc_dir, grouped_review_numbers, toc_name, json_only=Tr
             f.writelines(toc_name + "\n")
             f.writelines("{{ #tdcrender:DemoView/toc/" + toc_name + ".mwiki }}")
 
+def generate_lfc_analysis(toc_dir, application_id, mwiki_name):
+    """Generate a page for the LFC Analysis int he TOC_DIR for the application
+    with id APPLICATION_ID, which is a named page on the wiki of MWIKI_NAME
+
+    This re-uses the toc_dir as a general place to put pages that will get updated,
+    and should be refactored when we remove csv2wiki as a whole since we no longer
+    need it."""
+
+    with open(os.path.join(toc_dir, application_id + ".mwiki"), 'w') as f:
+        f.writelines("LFC Analysis of " + mwiki_name + "\n")
+        f.writelines("{{ #tdcrender:DemoView/id/" + application_id + ".mwiki|LFCAnalysis }}")
+
 def process_evaluation_data(*csv_reader, app_col, score_rank_normalized_col, sum_of_scores_normalized_col, trait_col,
         score_normalized_col, comments_col, comments_score_normalized_col):
     """Takes a CSV_READER representing evaluation data in a spreadsheet and
@@ -543,6 +555,19 @@ def compose_csvs(proposals, admin_review, judge_eval, lfc_eval, thematic_areas_c
 
     header_row = header_row + ["Bridgespan " + h for h in bridgespan_header]
 
+    header_row.append("LFC Analysis: Recommendation")
+    header_row.append("LFC Analysis: Short Description")
+    header_row.append("LFC Analysis: Likelihood of Success Summary")
+    header_row.append("LFC Analysis: Magnitude of Impact Summary")
+    header_row.append("LFC Analysis: Potential for Scale Summary")
+    header_row.append("LFC Analysis: Strength of Evidence Summary")
+    header_row.append("LFC Analysis: Overview")
+    header_row.append("LFC Analysis: Strength of Approach")
+    header_row.append("LFC Analysis: Risks and Challenges")
+    header_row.append("LFC Analysis: Internet Scan")
+    header_row.append("LFC Analysis: Diversity, Equity and Inclusion")
+    header_row.append("LFC Analysis: Observations")
+
     # We only accept applications if they're one of the rows in the
     # admin_review csv, which has an "Application #" column (3),
     # which matches a "Review #" column in the proposals (3)
@@ -648,6 +673,8 @@ def compose_csvs(proposals, admin_review, judge_eval, lfc_eval, thematic_areas_c
         else:
             new_row = new_row + ([""] * len(bridgespan_header))
 
+        new_row.extend(["", "", "", "", "", "", "", "", "", "", "", ""])
+
         print("Sanitized row %d (%d cols, %d fixed)." % (row_num, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
 
@@ -659,6 +686,10 @@ def compose_csvs(proposals, admin_review, judge_eval, lfc_eval, thematic_areas_c
       new_row[136] = str(i)
       new_row[137] = "%.3f" % random.uniform(1,99)
       i += 1
+
+    for new_row in new_rows:
+        if int(new_row[136]) < 16:
+            generate_lfc_analysis(toc_dir, new_row[3], new_row[134])
 
     # Build TOCs after sorted proposals
 
