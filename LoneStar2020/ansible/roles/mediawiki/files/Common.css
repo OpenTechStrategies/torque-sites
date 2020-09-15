@@ -14,3 +14,13 @@
 #mw-input-pluggableauthlogin {
   background-color:#9056a9;
 }
+.mw-htmlform-login-or {margin-top:50px;
+  display:flex;
+}
+.mw-htmlform-login-or:before, .mw-htmlform-login-or:after {
+  color:white;
+  content:'';
+  flex:1;
+  border-bottom:2px solid black;
+  margin:auto 0.25em;
+}

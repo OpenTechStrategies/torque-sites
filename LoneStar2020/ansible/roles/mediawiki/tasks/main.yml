@@ -97,7 +97,7 @@
       $wgPluggableAuth_EnableAutoLogin = true;
       $wgPluggableAuth_EnableLocalLogin = true;
       $wgPluggableAuth_EnableLocalProperties = false;
-      $wgPluggableAuth_ButtonLabel = "Log In With MacArthur Okta";
+      $wgPluggableAuth_ButtonLabel = "Log In Using MacArthur SSO";
       $wgInvalidUsernameCharacters = "";
 
 - name: Enable SimpleSAMLphp extension
@@ -311,16 +311,16 @@
 
       # Then enable teamcomments for the groups that should be leaving comments
       $wgGroupPermissions['Staff']['teamcomment'] = true;
-      $wgGroupPermissions['PseudoDecisionMaker']['teamcomment'] = true;
-      $wgGroupPermissions['DecisionMaker']['teamcomment'] = true;
+      $wgGroupPermissions['PseudoDecisionMakers']['teamcomment'] = true;
+      $wgGroupPermissions['DecisionMakers']['teamcomment'] = true;
       $wgGroupPermissions['sysop']['teamcomment'] = true;
       $wgGroupPermissions['LFCResearchPartners']['teamcomment'] = true;
       $wgGroupPermissions['LFCEvaluators']['teamcomment'] = true;
 
       # Allow some groups to see usernames
       $wgGroupPermissions['Staff']['teamcommentseeusernames'] = true;
-      $wgGroupPermissions['PseudoDecisionMaker']['teamcommentseeusernames'] = true;
-      $wgGroupPermissions['DecisionMaker']['teamcommentseeusernames'] = true;
+      $wgGroupPermissions['PseudoDecisionMakers']['teamcommentseeusernames'] = true;
+      $wgGroupPermissions['DecisionMakers']['teamcommentseeusernames'] = true;
       $wgGroupPermissions['sysop']['teamcommentseeusernames'] = true;
 
       # Log permissions (ability to see Special:Log)
@@ -394,6 +394,36 @@
       # but should work for the foreseeable future.
       $wgHooks['LogEventsListLineEnding'][] = function ($page, &$line, &$entry, &$classes, &$attribs){
         $line = preg_replace('/(\d\d\d\d)/', '\1 &mdash;', $line, 1);
+      };
+
+- name: Rearrange Login Page
+  blockinfile:
+    marker: "## {mark} ANSIBLE CHANGE LOGIN ORDERING"
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    block: |
+      $wgHooks['AuthChangeFormFields'][] = function ($requests, $fieldInfo, &$formDescriptor, $action) {
+        if($action != \MediaWiki\Auth\AuthManager::ACTION_LOGIN) {
+          return;
+        }
+
+        $formDescriptor['username']['weight'] = 200;
+        $formDescriptor['password']['weight'] = 201;
+        $formDescriptor['rememberMe']['weight'] = 202;
+        $formDescriptor['loginattempt']['weight'] = 203;
+        $formDescriptor['break'] = [
+          'type' => 'info',
+          'weight' => 150,
+          'cssclass' => 'mw-htmlform-login-or',
+          'default' => "or"
+        ];
+
+        unset($formDescriptor['linkcontainer']);
+        unset($formDescriptor['passwordReset']);
+        unset($formDescriptor['createOrLogin']);
+
+        if ( isset( $formDescriptor['pluggableauthlogin'] ) ) {
+          $formDescriptor['pluggableauthlogin']['weight'] = -1;
+        }
       };
 
 - name: Enable Common.css on Login Page
