@@ -636,6 +636,26 @@ def compose_csvs(proposals, admin_review, judge_eval, panel_eval, budget, region
 #            topic_data[new_row[135]].append(new_row[3])
 #        generate_generic_toc(toc_dir, topic_data, "Topic_TOC")
 
+        # We initialize to the order we want, and while technically a dictionary could be
+        # unordered, in reality it is ordered.  Anything we don't know about here will
+        # just go to the bottom
+        annual_budget_data = {
+                "Less than $1 Million": [],
+                "$1.0 to 5 Million": [],
+                "$5.1 to 10 Million": [],
+                "$10.1 to 25 Million": [],
+                "$25.1 to 50 Million": [],
+                "$50.1 to 100 Million": [],
+                "$100.1 to 500 Million": [],
+                "$500.1 Million to $1 Billion": [],
+                "$1 Billion +": [],
+        }
+        for new_row in new_rows:
+            if new_row[139] not in annual_budget_data:
+                annual_budget_data[new_row[139]] = []
+            annual_budget_data[new_row[139]].append(new_row[3])
+        generate_generic_toc(toc_dir, annual_budget_data, "Annual_Budgets", False)
+
         # Geographic.  There's a "shown" flag for working with the template file
         # to know when to show headers, depending on whether proposals are valid.
         geographic_data = {}
