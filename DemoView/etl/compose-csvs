@@ -415,7 +415,7 @@ def process_evaluation_data(*csv_reader, app_col, score_rank_normalized_col, sum
             evaluation_data[application_id] = {
                     "overall_score_rank_normalized": row[score_rank_normalized_col],
                     "sum_of_scores_normalized": row[sum_of_scores_normalized_col],
-                    "traits": [{ "name": trait, "score_normalized": 0, "comments": "", "comment_scores": "" } for trait in valid_traits],
+                    "traits": [{ "name": trait, "score_normalized": 24.9, "comments": "", "comment_scores": "" } for trait in valid_traits],
                     }
 
         judge_datum = evaluation_data[application_id]
@@ -427,9 +427,8 @@ def process_evaluation_data(*csv_reader, app_col, score_rank_normalized_col, sum
 
         for trait in judge_datum["traits"]:
             if trait["name"] == row[trait_col]:
-                trait["score_normalized"] += float(row[score_normalized_col])
                 trait["comments"] += row[comments_col] + "\n"
-                trait["comment_scores"] += row[comments_score_normalized_col] + "\n"
+                trait["comment_scores"] += "4.9\n"
 
     return evaluation_data
 
@@ -472,13 +471,13 @@ def create_tdc_config(tdc_config_dir, header_row, new_rows):
       """
 
     def row_to_title_line(row):
-        return "* {3}: ".format(*row) + "[[" + row[133] + "]]\n"
+        return "* {3}: ".format(*row) + "[[" + row[134] + "]]\n"
 
     with open(os.path.join(tdc_config_dir, "AllProposals"), 'w') as f:
         f.writelines([row_to_title_line(row) for row in new_rows])
 
     with open(os.path.join(tdc_config_dir, "ValidProposals"), 'w') as f:
-        f.writelines([row_to_title_line(row) for row in new_rows if row[132] == "Valid"])
+        f.writelines([row_to_title_line(row) for row in new_rows if row[131] == "Valid"])
 
     with open(os.path.join(tdc_config_dir, "AllColumns"), 'w') as f:
         for column in header_row:
@@ -678,13 +677,14 @@ def compose_csvs(proposals, admin_review, judge_eval, lfc_eval, thematic_areas_c
         print("Sanitized row %d (%d cols, %d fixed)." % (row_num, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
 
+        new_row[137] = "99.9"
+
     # We set the seed so that we get the same ordered list for every re-run
     random.seed(1)
     random.shuffle(new_rows)
     i = 1
     for new_row in new_rows:
       new_row[136] = str(i)
-      new_row[137] = "%.3f" % random.uniform(1,99)
       i += 1
 
     for new_row in new_rows:
