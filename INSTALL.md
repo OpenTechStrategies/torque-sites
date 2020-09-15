@@ -238,7 +238,7 @@ $ $EDITOR simplesaml/inv/<environment>/group_vars/all/secret
 
 * Do we know what followup information (budget tables, etc?) might be coming later?
 
-* Any special instructinos regarding attachments?
+* Any special instructions regarding attachments?
 
 * What plugin-based features will be enabled?
 
