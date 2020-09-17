@@ -248,8 +248,16 @@ $ $EDITOR simplesaml/inv/<environment>/group_vars/all/secret
     so, we have some config decisions to make: naming, how many
     instances, etc.)
 
-  - [SimpleFavorites](https://github.com/opentechstrategies/SimpleFavorites)?
-  
+  [SimpleFavorites](https://github.com/opentechstrategies/SimpleFavorites)
+  should always be set up by default, as per Jeff's email:
+    
+        From: Jeff Ubois
+        Subject: Re: Climate 2030 set up
+        To: Karl Fogel
+        CC: Frank Duncan
+        Date: Tue, 15 Sep 2020 22:14:13 +0000
+        Message-ID: <07CBB723-814E-43AC-B8EA-964412149F7D@macfound.org>
+
 * Is there some existing competition that this new one is similar to? 
 
   I.e., which template to base this new competition on?
