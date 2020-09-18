@@ -267,6 +267,19 @@ def generate_generic_toc(toc_dir, grouped_review_numbers, toc_name, json_only=Tr
             f.writelines(toc_name + "\n")
             f.writelines("{{ #tdcrender:LLIIA2020/toc/" + toc_name + ".mwiki }}")
 
+def generate_companion_page(companion_name, template, toc_dir, application_id, mwiki_name):
+    """Generate a companion page in the TOC_DIR for the application
+    with id APPLICATION_ID, which is a named page on the wiki of the concatenation
+    of COMPANION_NAME and MWIKI_NAME.
+
+    This re-uses the toc_dir as a general place to put pages that will get updated,
+    and should be refactored when we remove csv2wiki as a whole since we no longer
+    need it."""
+
+    with open(os.path.join(toc_dir, application_id + "".join(companion_name.split()) + ".mwiki"), 'w') as f:
+        f.writelines(companion_name + mwiki_name + "\n")
+        f.writelines("{{ #tdcrender:LLIIA2020/id/" + application_id + ".mwiki|" + template + " }}")
+
 def process_evaluation_data(*csv_reader, app_col, score_rank_normalized_col, sum_of_scores_normalized_col, trait_col,
         score_normalized_col, comments_col, comments_score_normalized_col):
     """Takes a CSV_READER representing evaluation data in a spreadsheet and
@@ -420,7 +433,7 @@ def create_tdc_config(tdc_config_dir, header_row, new_rows):
         for column in header_row:
             f.writelines("* %s\n" % column)
 
-def compose_csvs(proposals, admin_review, judge_eval, panel_eval, budget, regionconfig,
+def compose_csvs(proposals, admin_review, judge_eval, panel_eval, budget, regionconfig, top16_data_file,
         attachments_dir, toc_dir, tdc_config_dir, pare=None):
     """Write a composed version of PROPOSALS (a CSV file), ADMIN_REVIEW
     (a CSV file) standard out.
@@ -440,6 +453,9 @@ def compose_csvs(proposals, admin_review, judge_eval, panel_eval, budget, region
     TDC_CONFIG_DIR is the directory that, when not None, will have files
     written to it that have the base configuration of columns, proposals, etc
     that we launched the LFC torque instance with.
+
+    TOP13_DATA_FILE is a simple file with a list of Application #'s that's used
+    to generate LFC Analysis pages for select proposals.
 
     If PARE is not None, it is a positive integer indicating that only
     1 of every PARE entries should be processed, and the others skipped."""
@@ -480,6 +496,20 @@ def compose_csvs(proposals, admin_review, judge_eval, panel_eval, budget, region
         header_row.append("Panel " + trait + " Score Normalized")
         header_row.append("Panel " + trait + " Comments")
         header_row.append("Panel " + trait + " Comment Scores Normalized")
+
+    header_row.append("LFC Analysis: Recommendation")
+    header_row.append("LFC Analysis: Short Description")
+    header_row.append("LFC Analysis: COMMUNITY-INFORMED Summary")
+    header_row.append("LFC Analysis: EVIDENCE-BASED Summary")
+    header_row.append("LFC Analysis: FEASIBLE Summary")
+    header_row.append("LFC Analysis: IMPACTFUL Summary")
+    header_row.append("LFC Analysis: Overview")
+    header_row.append("LFC Analysis: Strength of Approach")
+    header_row.append("LFC Analysis: Risks and Challenges")
+    header_row.append("LFC Analysis: Internet Scan")
+    header_row.append("LFC Analysis: Diversity, Equity and Inclusion")
+    header_row.append("LFC Analysis: Observations")
+    header_row.append("LFC Analysis: Financial Overview")
 
     # We only accept applications if they're one of the rows in the
     # admin_review csv, which has an "Application #" column (3),
@@ -602,10 +632,22 @@ def compose_csvs(proposals, admin_review, judge_eval, panel_eval, budget, region
             for _ in range(len(valid_traits)):
                 new_row.extend(["", "", "", ""])
 
+        # LFC Evaluation columns (empty because they are supplied via the edit interface)
+        new_row.extend(["", "", "", "", "", "", "", "", "", "", "", "", ""])
+
         print("Sanitized row %d (%d cols, %d fixed)." % (row_num, len(new_row), num_fixed_cells), file=sys.stderr)
         new_rows.append(new_row)
 
     new_rows.sort(key=lambda row: int(row[164])) # Judge rank
+
+    with open(top16_data_file) as f:
+        top16 = f.read().splitlines()
+        for new_row in new_rows:
+            if new_row[3] in top16:
+                generate_companion_page("LFC Analysis of ", "LFCAnalysis", toc_dir, new_row[3], new_row[144])
+
+    for new_row in new_rows:
+        generate_companion_page("Evaluations of ", "Evaluations", toc_dir, new_row[3], new_row[144])
 
     # Build TOCs after sorted proposals
 
@@ -703,6 +745,7 @@ def main():
                                     "panel-evaluation-csv=",
                                     "budget-csv=",
                                     "regionconfig-csv=",
+                                    "top16-data-file=",
                                     "toc-dir=",
                                     "tdc-config-dir=",
                                     "attachments-dir=",
@@ -719,6 +762,7 @@ def main():
     budget_csv = None
     regionconfig_csv = None
     attachments_dir = None
+    top16_data_file = None
     toc_dir = None
     tdc_config_dir = None
     for o, a in opts:
@@ -736,6 +780,8 @@ def main():
             budget_csv = a
         elif o == "--regionconfig-csv":
             regionconfig_csv = a
+        elif o == "--top16-data-file":
+            top16_data_file = a
         elif o == "--toc-dir":
             toc_dir = a
         elif o == "--tdc-config-dir":
@@ -752,7 +798,7 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
     compose_csvs(proposals_csv, admin_review_csv, judge_evaluation_csv, panel_evaluation_csv,
-            budget_csv, regionconfig_csv, attachments_dir, toc_dir, tdc_config_dir, pare)
+            budget_csv, regionconfig_csv, top16_data_file, attachments_dir, toc_dir, tdc_config_dir, pare)
 
 if __name__ == '__main__':
     main()

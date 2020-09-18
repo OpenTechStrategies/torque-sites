@@ -54,6 +54,7 @@ PANEL_EVALUATION_CSV="LLIIA_Evaluation_Panel_Data_anon.csv"
 BUDGET_ZIP="LLIAE_AR_budget_data.zip"
 BUDGET_CSV="LLIAE_registration_and_application_export_budget_data.csv"
 REGIONCONFIG_CSV="regionconfig.csv"
+TOP16_DATA_FILE="top16.dat"
 BASE_ATTACHMENTS="LLIAE_registration_and_application_data.zip"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
 TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
@@ -100,6 +101,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
 
   gpg -o ${DATA_DIR}/${ADMIN_REVIEW_CSV} --decrypt ${ENCRYPTED_DIR}/${ADMIN_REVIEW_CSV}.gpg || exit 1
   gpg -o ${DATA_DIR}/${JUDGE_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${JUDGE_EVALUATION_CSV}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${TOP16_DATA_FILE} --decrypt ${ENCRYPTED_DIR}/${TOP16_DATA_FILE}.gpg || exit 1
   gpg -o ${DATA_DIR}/${PANEL_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${PANEL_EVALUATION_CSV}.gpg || exit 1
   gpg -o ${DATA_DIR}/${BASE_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg || exit 1
   gpg -o ${DATA_DIR}/${BUDGET_ZIP} --decrypt ${ENCRYPTED_DIR}/${BUDGET_ZIP}.gpg || exit 1
@@ -149,6 +151,7 @@ ${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
             --panel-evaluation-csv="${DATA_DIR}/${PANEL_EVALUATION_CSV}" \
             --budget-csv="${DATA_DIR}/${BUDGET_CSV}" \
             --regionconfig-csv="${MACFOUND_DIR}/${REGIONCONFIG_CSV}" \
+            --top16-data-file="${DATA_DIR}/${TOP16_DATA_FILE}" \
             --attachments-dir=${ATTACHMENTS_DIR} \
             --tdc-config-dir="${TDC_CONFIG_DIR}" \
             --toc-dir="${TOC_DIR}" \
