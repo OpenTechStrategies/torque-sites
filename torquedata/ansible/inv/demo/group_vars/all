@@ -5,4 +5,4 @@ torquedata_spreadsheet_location: /home/deploy/spreadsheets-demo/
 deployment_user: deploy
 torquedata_port: 5001
 supervisor_torquedata_name: torquedata-demo
-torquedata_git_version: 4c81bac
+torquedata_git_version: 9fa0572
