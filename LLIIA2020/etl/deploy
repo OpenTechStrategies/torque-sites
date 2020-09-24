@@ -77,14 +77,14 @@ fi
 if [ ! -d "${DATA_DIR}" ] ; then
   echo "Stage 0: Setting up data directory..."
 
-  if [ "${OTSDIR}" = "" ] ; then
-    echo "ERROR: \$OTSDIR is not set up"
+  if [ "${OTS_DIR}" = "" ] ; then
+    echo "ERROR: \$OTS_DIR is not set up"
     echo ""
-    echo "See bureaucracy/onboarding about setting the OTSDIR environment variable up"
+    echo "See bureaucracy/onboarding about setting the OTS_DIR environment variable up"
     exit 1
   fi
 
-  ENCRYPTED_DIR="${OTSDIR}/clients/lever-for-change/torque-sites/${COMPETITION}/data/bigdata"
+  ENCRYPTED_DIR="${OTS_DIR}/clients/lever-for-change/torque-sites/${COMPETITION}/data/bigdata"
   if [ ! -d "${ENCRYPTED_DIR}" ] ; then
     echo "ERROR: it looks like your encrypted dir isn't checked out"
     echo ""
@@ -92,7 +92,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
     echo "  $ENCRYPTED_DIR"
     echo ""
     echo "You will need to check out the subversion torque-sites data, and then"
-    echo "run get-bigdata from ${OTSDIR}/clients/lever-for-change/torque-sites/${COMPETITION}/data/"
+    echo "run get-bigdata from ${OTS_DIR}/clients/lever-for-change/torque-sites/${COMPETITION}/data/"
     exit 1
   fi
 

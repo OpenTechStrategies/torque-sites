@@ -1,8 +1,8 @@
 [mediawiki]
-macfound.opentechstrategies.com ansible_ssh_user="{{ lookup('env','OTSUSER') }}"
+macfound.opentechstrategies.com ansible_ssh_user="{{ lookup('env','OTS_USERNAME') }}"
 
 [mysql]
-macfound.opentechstrategies.com ansible_ssh_user="{{ lookup('env','OTSUSER') }}"
+macfound.opentechstrategies.com ansible_ssh_user="{{ lookup('env','OTS_USERNAME') }}"
 
 [simplesaml]
-macfound.opentechstrategies.com ansible_ssh_user="{{ lookup('env','OTSUSER') }}"
+macfound.opentechstrategies.com ansible_ssh_user="{{ lookup('env','OTS_USERNAME') }}"

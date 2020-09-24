@@ -72,7 +72,7 @@ $ ansible-playbook <projectname>.yml -i inv/local
 There are a few more steps to install on production because there's
 secrets needed.
 
-First, the `$OTSUSER` needs to be set up (see the onboarding docs
+First, the `$OTS_USERNAME` needs to be set up (see the onboarding docs
 for more information).  This user is the one which you have an
 account on the target machines with ssh and sudo access granted.
 They should all be the same account name.  Set the variable in
@@ -107,24 +107,24 @@ prerequisite steps.
 
 ### System setup
 
-First, set up your `$OTSDIR` (see onboarding for more information).
+First, set up your `$OTS_DIR` (see onboarding for more information).
 Then you need to check out the macfound torque-sites
 
 ```
-$ mkdir -p $OTSDIR/clients/lever-for-change
-$ svn co https://svn.opentechstrategies.com/repos/ots/trunk/clients/lever-for-change/torque-sites $OTSDIR/clients/lever-for-change/torque-sites
+$ mkdir -p $OTS_DIR/clients/lever-for-change
+$ svn co https://svn.opentechstrategies.com/repos/ots/trunk/clients/lever-for-change/torque-sites $OTS_DIR/clients/lever-for-change/torque-sites
 ```
 
 Then you need to get the OTS utilities that includes `get-bigdata`
 ```
-$ svn co https://svn.opentechstrategies.com/repos/ots/trunk/utils $OTSDIR/
+$ svn co https://svn.opentechstrategies.com/repos/ots/trunk/utils $OTS_DIR/
 ```
 
 Now get the confidential data for the site you're working on.
 
 ```
-$ cd $OTSDIR/clients/lever-for-change/torque-sites/<competition-name>/data
-$ $OTSDIR/utils/get-bigdata
+$ cd $OTS_DIR/clients/lever-for-change/torque-sites/<competition-name>/data
+$ $OTS_DIR/utils/get-bigdata
 ```
 
 Install necessary system libraries

@@ -114,12 +114,12 @@
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/"
   loop:
     - demo.php
-    - "{{ lookup('env','OTSDIR') }}/clients/lever-for-change/torque-sites/100Change2020Demo/data/demo_header.php"
-    - "{{ lookup('env','OTSDIR') }}/clients/lever-for-change/torque-sites/100Change2020Demo/data/demo_footer.php"
+    - "{{ lookup('env','OTS_DIR') }}/clients/lever-for-change/torque-sites/100Change2020Demo/data/demo_header.php"
+    - "{{ lookup('env','OTS_DIR') }}/clients/lever-for-change/torque-sites/100Change2020Demo/data/demo_footer.php"
 
 - name: Install Demo Files
   unarchive:
-    src: "{{ lookup('env','OTSDIR') }}/clients/lever-for-change/torque-sites/100Change2020Demo/data/demo_files.tar.gz"
+    src: "{{ lookup('env','OTS_DIR') }}/clients/lever-for-change/torque-sites/100Change2020Demo/data/demo_files.tar.gz"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/"
     creates: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/demo_files/"
 

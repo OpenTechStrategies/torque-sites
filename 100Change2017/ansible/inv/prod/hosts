@@ -1,8 +1,8 @@
 [postgresql]
-torque.leverforchange.org ansible_ssh_user="{{ lookup('env','OTSUSER') }}"
+torque.leverforchange.org ansible_ssh_user="{{ lookup('env','OTS_USERNAME') }}"
 
 [mediawiki]
-torque.leverforchange.org ansible_ssh_user="{{ lookup('env','OTSUSER') }}"
+torque.leverforchange.org ansible_ssh_user="{{ lookup('env','OTS_USERNAME') }}"
 
 [simplesaml]
-torque.leverforchange.org ansible_ssh_user="{{ lookup('env','OTSUSER') }}"
+torque.leverforchange.org ansible_ssh_user="{{ lookup('env','OTS_USERNAME') }}"

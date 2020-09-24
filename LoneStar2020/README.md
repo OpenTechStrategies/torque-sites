@@ -8,4 +8,4 @@ For that reason, some of the critical installation parts are in svn.
 ## Note for OTS Members
 
 You need to have the torque-sites svn directory checked out in you
-`$OTSDIR`.
+`$OTS_DIR`.
