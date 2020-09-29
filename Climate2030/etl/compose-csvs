@@ -205,6 +205,7 @@ def create_column_types_row(header_row):
             "Attachments": "list",
             "Attachment Display Names": "list",
             "Priority Populations": "list",
+            "Project Focus": "list",
             "Budget data": "json",
             }
 
@@ -464,6 +465,9 @@ def compose_csvs(proposals, judge_eval, attachments_dir, toc_dir, tdc_config_dir
         # Population
         new_row[60] = "\n".join([pop.strip() for pop in new_row[60].split(",")])
 
+        # Project Focus
+        new_row[56] = "\n".join([pop.strip() for pop in new_row[56].split(",")])
+
         # Total Projected Costs
         new_row[113] = commaize_number(new_row[113])
 
@@ -580,6 +584,15 @@ def compose_csvs(proposals, judge_eval, attachments_dir, toc_dir, tdc_config_dir
                     population_data[population] = []
                 population_data[population].append(new_row[3])
         generate_generic_toc(toc_dir, population_data, "Populations", False)
+
+        # Project Focus
+        population_data = {}
+        for new_row in new_rows:
+            for population in new_row[56].split("\n"):
+                if population not in population_data:
+                    population_data[population] = []
+                population_data[population].append(new_row[3])
+        generate_generic_toc(toc_dir, population_data, "Project_Focus", False)
 
         # Geographic.  There's a "shown" flag for working with the template file
         # to know when to show headers, depending on whether proposals are valid.

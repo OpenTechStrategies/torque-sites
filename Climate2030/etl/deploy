@@ -125,6 +125,7 @@ fi
 mkdir -p $TOC_DIR
 rm $TOC_DIR/*
 cp tocs/generic.j2 $TOC_DIR/Populations.j2
+cp tocs/generic.j2 $TOC_DIR/Project_Focus.j2
 cp tocs/generic.j2 $TOC_DIR/Annual_Budgets.j2
 cp tocs/generic.j2 $TOC_DIR/Number_of_Employees.j2
 cp tocs/Geographic_TOC.j2 $TOC_DIR/Current_Work_Locations.j2
