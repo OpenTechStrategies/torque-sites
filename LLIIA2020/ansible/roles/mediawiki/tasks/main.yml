@@ -106,7 +106,7 @@
     marker: "## {mark} ANSIBLE SIMPLE SAML PHP CONFIG"
     block: |
       wfLoadExtension( 'SimpleSAMLphp' );
-      $wgSimpleSAMLphp_SyncAllGroups_LocallyManaged = ["sysop", "DecisionMakers"];
+      $wgSimpleSAMLphp_SyncAllGroups_LocallyManaged = ["sysop", "DecisionMakers", "interface-admin", "bureaucrat"];
       $wgSimpleSAMLphp_InstallDir = '{{ simplesaml_install_directory }}/simplesamlphp-1.18.4';
       $wgSimpleSAMLphp_AuthSourceId = '{{ simplesaml_okta_metadata_name }}';
       $wgSimpleSAMLphp_RealNameAttribute = ['firstName', 'lastName'];
@@ -114,6 +114,8 @@
       $wgSimpleSAMLphp_UsernameAttribute = 'username';
       $wgSimpleSAMLphp_GroupMap = [
         'sysop' => ['groups' => ['LFC Torque Admin', 'LFC Staff']],
+        'interface-admin' => ['groups' => ['LFC Torque Admin', 'LFC Staff']],
+        'bureaucrat' => ['groups' => ['LFC Torque Admin', 'LFC Staff']],
         'DecisionMakers' => ['groups' => ['LFC Decision Makers']]
       ];
 
