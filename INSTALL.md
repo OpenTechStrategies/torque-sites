@@ -289,5 +289,10 @@ For the competition you're working with, run the instructions from
 8. Does the `PickSome` feature need to be configured?
 9. Does the `TeamComments` feature need to be configured?
 10. Does the `SimpleFavorites` feature need to be configured?
+11. Are all the [user roles](DESIGN.md#user-groups) working correctly?
+    - Log in as each role and make sure you see what you expect to see.
+      For example, in a competition that has no finalists yet, someone
+      logging in with the "Donor" role might see no proposals!  You
+      probably don't want that to be the donor's first experience.
 
 Please add items to this list as needed.
