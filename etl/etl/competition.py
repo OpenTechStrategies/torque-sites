@@ -193,6 +193,18 @@ class ColumnEqualsProposalFilter(ProposalFilter):
         return proposal.cell(self.column_name) == self.value
 
 
+class ColumnNotEqualsProposalFilter(ProposalFilter):
+    """A basic filter for when a the value in a given column fails to match
+    the setup value"""
+
+    def __init__(self, column_name, value):
+        self.column_name = column_name
+        self.value = value
+
+    def proposal_matches(self, proposal):
+        return proposal.cell(self.column_name) != self.value
+
+
 class CellProcessor:
     """The base class for Cell Processors, which implement column_type
     and process_cell"""
@@ -394,3 +406,163 @@ class BasicAttachments(InformationAdder):
             return "\n".join([a.file for a in attachments])
         else:
             raise Exception(column_name + "is not a valid attachment column name")
+
+
+class EvaluationAdder(InformationAdder):
+    """Reperesents the evaluation data that comes in from a many to one relationship
+    to the proposals.  There are N traits, and M judges per trait, with things like
+    overall_score_rank_normalized being duplicated for all NxM rows."""
+
+    def __init__(
+        *params,
+        app_col_name,
+        score_rank_normalized_col_name,
+        sum_of_scores_normalized_col_name,
+        trait_col_name,
+        score_normalized_col_name,
+        comments_col_name,
+        comments_score_normalized_col_name
+    ):
+        """Takes a NAME representing the name of this evaluation data (Judge, Peer Review, etc)
+        and CSV_READER representing evaluation data in a spreadsheet and turns that into a dict
+        of dicts in the following form:
+
+          EVALUATION_DATA[app_id] = {
+            overall_score_rank_normalized: string,
+            sum_of_scores_normalized: string,
+            traits: array of TRAIT (below)
+          }
+
+          TRAIT = {
+            name: string,
+            score_normalized: string
+            comments: concatenated string, ready for list type
+            comment_scores: concatenated string, ready for list type
+          }
+
+        The columns that data is looked up are required named integer arguments as follows:
+          - APP_COL: column with application number
+          - SCORE_RANK_NORMALIZED_COL: column with normalized score rank
+          - SUM_OF_SCORES_NORMALIZED_COL: column with normalized scores
+          - TRAIT_COL: column with the trait name
+          - SCORE_NORMALIZED_COL: column with the normalized score
+          - COMMENTS_COL: column with the comments
+          - COMMENTS_SCORE_NORMALIZED_COL: the normalized score of the commeng
+
+        The scores for the traits are added up based here rather than in the
+        spreasheet.  Then, comments are concatenated for that trait.
+
+        The following columns are added:
+          - <NAME> Overall Score Rank Normalized
+          - <NAME> Sum of Scores Normalized
+          - Then for each unique TRAIT in the TRAIT_COL
+            - <NAME> <TRAIT>
+            - <NAME> <TRAIT> Comments
+            - <NAME> <TRAIT> Score Normalized
+            - <NAME> <TRAIT> Comment Scores Normalized
+        """
+
+        self = params[0]
+        self.name = params[1]
+        csv_location = params[2]
+
+        csv_reader = csv.reader(
+            open(csv_location, encoding="utf-8"), delimiter=",", quotechar='"'
+        )
+
+        self.traits = []
+        self.evaluation_data = {}
+
+        header_row = next(csv_reader)
+
+        app_col = header_row.index(app_col_name)
+        score_rank_normalized_col = header_row.index(score_rank_normalized_col_name)
+        sum_of_scores_normalized_col = header_row.index(
+            sum_of_scores_normalized_col_name
+        )
+        trait_col = header_row.index(trait_col_name)
+        score_normalized_col = header_row.index(score_normalized_col_name)
+        comments_col = header_row.index(comments_col_name)
+        comments_score_normalized_col = header_row.index(
+            comments_score_normalized_col_name
+        )
+
+        for row in csv_reader:
+            application_id = row[app_col]
+            if not application_id in self.evaluation_data:
+                self.evaluation_data[application_id] = {
+                    "%s Overall Score Rank Normalized"
+                    % self.name: row[score_rank_normalized_col],
+                    "%s Sum of Scores Normalized"
+                    % self.name: row[sum_of_scores_normalized_col],
+                }
+
+            evaluation_datum = self.evaluation_data[application_id]
+
+            trait_name = row[trait_col].strip()
+            if trait_name not in self.traits:
+                self.traits.append(trait_name)
+
+            if "%s %s" % (self.name, trait_name) not in evaluation_datum:
+                evaluation_datum["%s %s" % (self.name, trait_name)] = trait_name
+                evaluation_datum[
+                    "%s %s Score Normalized" % (self.name, trait_name)
+                ] = 0.0
+                evaluation_datum["%s %s Comments" % (self.name, trait_name)] = ""
+                evaluation_datum[
+                    "%s %s Comment Scores Normalized" % (self.name, trait_name)
+                ] = ""
+
+            evaluation_datum[
+                "%s %s Score Normalized" % (self.name, trait_name)
+            ] += float(row[score_normalized_col])
+            evaluation_datum["%s %s Comments" % (self.name, trait_name)] += (
+                row[comments_col] + "\n"
+            )
+            evaluation_datum[
+                "%s %s Comment Scores Normalized" % (self.name, trait_name)
+            ] += (row[comments_score_normalized_col] + "\n")
+
+        self.traits.sort()
+
+        self.regular_columns = [
+            "%s Overall Score Rank Normalized" % self.name,
+            "%s Sum of Scores Normalized" % self.name,
+        ]
+        self.regular_columns.extend(
+            ["%s %s" % (self.name, trait) for trait in self.traits]
+        )
+        self.regular_columns.extend(
+            ["%s %s Score Normalized" % (self.name, trait) for trait in self.traits]
+        )
+        self.list_columns = []
+        self.list_columns.extend(
+            ["%s %s Comments" % (self.name, trait) for trait in self.traits]
+        )
+        self.list_columns.extend(
+            [
+                "%s %s Comment Scores Normalized" % (self.name, trait)
+                for trait in self.traits
+            ]
+        )
+
+    def column_type(self, column_name):
+        if column_name in self.list_columns:
+            return "list"
+        return None
+
+    def column_names(self):
+        return self.regular_columns + self.list_columns
+
+    def cell(self, proposal, column_name):
+        if proposal.key() not in self.evaluation_data:
+            if column_name == "%s Overall Score Rank Normalized" % self.name:
+                return "9999"
+            return ""
+
+        val = self.evaluation_data[proposal.key()][column_name]
+
+        if isinstance(val, float):
+            return "{0:.1f}".format(val)
+        else:
+            return val
