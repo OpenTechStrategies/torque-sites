@@ -40,21 +40,22 @@ for commenting in our style; see our
 ## Users and their capabilities.
 
 Every user of the system is authenticated; there is no anonymous
-access.  Users are:
-
-* Decision Makers - Board Members and the primary users of the system
-* Pseudo Decision Makers - Test accounts and support staff that
-  want to see the system as Decision Makers do
-* Outside Reviewers - People who want to be able to view the proposals,
-  but may not have access to all the confidential data
-* Foundation staff members - LFC members that support the systems
-* Administrators - System administrators who have full rights
-* Robots - accounts that do uploading/downloading of data programmatically
+access.  See the "User Groups" section farther down for the kinds of
+access permissions users can have.
 
 Each of these user groups needs to be set up in torque configuration
 in order to view data.  In the case of group information coming from
 outside (see below about Okta), a mapping needs to be done to these
 groups.
+
+### Shared user accounts
+
+Some partner organizations may use a shared account -- a single login
+used by multiple individuals at that organization.  This kind of
+account is no different from any other in terms of how it functions
+technically.  This note is merely here to record that, as a matter of
+policy, we've decided it's okay to have shared accounts for certain
+trusted organizations.
 
 ## Authentication, Authorization, and Okta
 
@@ -102,7 +103,7 @@ them in Okta):
   Like "LFC Staff", but in addition can perform administrative tasks
   such as viewing logs, creating new users, etc.
 
-- **`LFC DecisionMakers`**
+- **`LFC Decision Makers`**
 
   People who make decisions about the fate of proposals.  Typically,
   this is a Board Member or other senior decision-maker at the donor
@@ -116,10 +117,10 @@ them in Okta):
   that might distract from decision support, such as administrative
   links, edit links, etc.
 
-- **`LFC PseudoDecisionMakers`**
+- **`LFC Pseudo Decision Makers`**
 
   This is just a group for staff to use when they need to test how
-  things look for "LCF DecisionMakers".
+  things look for "LCF Decision Makers".
 
 - **`LFC Robots`**
 
