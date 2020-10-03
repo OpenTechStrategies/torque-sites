@@ -1,0 +1,435 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Perform some one-time fixes to the MacArthur Foundation 100&Change CSV file
+#
+# This is necessary because not everything can be addressed with the
+# 'sanitize' script.  The 'sanitize' script isn't aware of CSV rows or
+# columns; it just treats the whole CSV file as a normal text file.
+# But for, e.g., fixing the YouTube links (see features.org for more),
+# we really need a one-time transformation that knows what cell it's
+# operating on.
+#
+# Copyright (C) 2017, 2019, 2020 Open Tech Strategies, LLC
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+##########################################################################
+#                                                                        #
+#   NOTE: This code is highly specific to the needs of the MacArthur     #
+#   Foundation and is unlikely to be correct for your CSV.  It is        #
+#   open source software, so please modify it to suit your needs.        #
+#                                                                        #
+##########################################################################
+
+__doc__ = """\
+Compose all of the MacArthur Foundation 2019 Proposal CSV files.
+
+Usage:
+
+  $ compose-csvs \\
+       --proposals-csv=PROPOSALS_CSV \\
+       --admin-review-csv=ADMIN_REVIEW_CSV \\
+       --judge-evaluation-csv=JUDGE_EVALUATION_CSV \\
+       --regionconfig-csv=REGIONCONFIG_CSV \\
+       --toc-dir=TOC_DIR \\
+       --attachments-dir=ATTACHMENTS_DIR \\
+       --tdc-config-dir=TDC_CONFIG_DIR
+
+Command-line options:
+  --proposals-csv FILE            FILE is a csv FILE representing the bulk
+                                  of the proposal information
+
+  --admin-review-csv FILE         FILE is a csv FILE representing which applications
+                                  in PROPOSALS_CSV should be included
+
+  --judge-evaluation-csv FILE     FILE is a csv FILE with a many to one relationshp
+                                  between judges and the proposals they evaluated,
+                                  with the extra data being their evaluation
+
+  --lfc-evaluation-csv FILE       FILE is a csv FILE with the LFC evaluation data,
+                                  keyed by application #.
+
+  --thematic-areas-csv FILE       FILE is a csv FILE with thematic areas declared by
+                                  LFC for more user friendly groupings.
+
+  --bridgespan-data-csv FILE      FILE is a csv FILE with extra data, provided by bridgespan.
+
+  --bridgespan-overview-folder D  D is the directory with the financial overview spreadsheets
+                                  for the bridgespan data.
+
+  --regionconfig-csv FILE         FILE is a csv of country/subregion/region
+                                  configurations, that when provided, allows a detailed
+                                  geographic TOC to be created
+
+  --attachments-dir DIR           DIR is a directory for compose-csvs to look in for what attachments
+                                  will be uploaded to the torque wiki.  It needs to have subdirectories
+                                  by proposal number.
+
+  --tdc-config-dir DIR            DIR is the location for files that are the base configuration files
+                                  needed by TorqueDataConnect, and can be optionally, manually, put on
+                                  the torque wiki.  We don't autmoatically do that because we want to
+                                  overwrite the configuration out there.
+"""
+
+from etl import competition, wiki, toc, tdc, utils
+import config
+import getopt
+import sys
+import os
+import csv
+import re
+import json
+
+
+class ThematicAreasAdder(competition.InformationAdder):
+    """Adds the thematic area to proposals"""
+
+    def __init__(self, csv_location):
+        self.data = {}
+        if csv_location is None:
+            return
+
+        csv_reader = csv.reader(
+            open(csv_location, encoding="utf-8"), delimiter=",", quotechar='"'
+        )
+
+        header = next(csv_reader)
+        app_col = header.index("Review #")
+        thematic_area_col = header.index("Thematic Area")
+        for row in csv_reader:
+            self.data[row[app_col]] = row[thematic_area_col]
+
+    def column_type(self, column_name):
+        return None
+
+    def column_names(self):
+        return ["Thematic Area"]
+
+    def cell(self, proposal, column_name):
+        if proposal.key() in self.data:
+            return self.data[proposal.key()]
+
+        return ""
+
+
+class BridgeSpanDataAdder(competition.InformationAdder):
+    """Adds and processes the BridgeSpan data"""
+
+    def __init__(self, csv_location, overview_folder):
+        """Takes a CSV_ representing a csv with the first column being
+        a review number, and the rest being other infromation provided.
+
+        OVERVIEW_FOLDER is where supporting budget csvs can be found."""
+
+        self.data = {}
+        self.header = []
+        if csv_location is None:
+            return
+
+        csv_reader = csv.reader(
+            open(csv_location, encoding="utf-8"), delimiter=",", quotechar='"'
+        )
+
+        self.header = ["Bridgespan " + h for h in next(csv_reader)]
+        self.header.append("Bridgespan Financial overview table")
+        for row in csv_reader:
+            self.data[row[0]] = [self.fix_bridgespan_cell(cell) for cell in row]
+            self.data[row[0]].append(
+                self.process_bridgespan_financial_overview(overview_folder, row[0])
+            )
+
+    def process_bridgespan_financial_overview(
+        self, overview_folder, application_number
+    ):
+        """Takes an OVERVIEW_FOLDER and APPLICATION_NUMBER to find a financial
+        overview csv, then uses the data therein to make an object to display on
+        the final table.  This object is specific to the data being passed in,
+        and so may break if the data changes.  That's unlikely, though.
+
+        For instance, it assumes 5 years (2014-2018), and rows."""
+
+        reader = csv.reader(
+            open(
+                os.path.join(
+                    overview_folder, application_number + "-financial-overview.csv"
+                ),
+                encoding="mac_roman",
+            ),
+            delimiter=",",
+            quotechar='"',
+        )
+
+        table = {"rows": []}
+
+        # Header line is always the same, so we'll put in template
+        next(reader)
+
+        for row in reader:
+            if row[0].startswith("Magnitude of surplus"):
+                table["Magnitude of surplus"] = row[1]
+                continue
+
+            row_obj = {}
+            row_obj["name"] = row[0]
+            row_obj["data"] = []
+
+            for col in row[1:6]:
+                row_obj["data"].append(col)
+            table["rows"].append(row_obj)
+
+        return json.dumps(table)
+
+    def fix_bridgespan_cell(self, cell):
+        """Uses FIX_CELL to fix CELL, then does additional fixing based
+        on the specifics of the bridgespan data.  Then returns the fixed
+        cell."""
+
+        cell = utils.fix_cell(cell)
+
+        # Bridgespan comes with a second bullet type for sublists (the circle type)
+        subbullets_re = re.compile("^◦", re.MULTILINE)
+        cell = subbullets_re.sub("**", cell)
+
+        # Make the first line bold if it ends with a colon
+        bold_first_re = re.compile("^(\*+) ([^.,:\n]*:)", re.MULTILINE)
+        cell = bold_first_re.sub("\\1 '''\\2'''", cell)
+
+        return cell
+
+    def column_type(self, column_name):
+        if column_name == "Bridgespan Financial overview table":
+            return "json"
+
+    def column_names(self):
+        return self.header
+
+    def cell(self, proposal, column_name):
+        if proposal.key() in self.data:
+            col_idx = self.header.index(column_name)
+            return self.data[proposal.key()][col_idx]
+
+        return ""
+
+
+class LFCEvaluationAdder(competition.InformationAdder):
+    """Adds the result of the LFC Evaluation (A spreadsheet created by OTS)"""
+
+    def __init__(self, csv_location):
+        csv_reader = csv.reader(
+            open(csv_location, encoding="utf-8"), delimiter=",", quotechar='"'
+        )
+        next(csv_reader)
+        self.data = {row[0]: row[1] for row in csv_reader}
+
+    def column_type(self, column_name):
+        return None
+
+    def column_names(self):
+        return ["LFC Recommendation"]
+
+    def cell(self, proposal, column_name):
+        return self.data[proposal.key()] if (proposal.key() in self.data) else ""
+
+
+def main():
+    """Compose the MacFound input and emit it as html-ized csv."""
+    try:
+        opts, args = getopt.getopt(
+            sys.argv[1:],
+            "",
+            [
+                "proposals-csv=",
+                "admin-review-csv=",
+                "judge-evaluation-csv=",
+                "lfc-evaluation-csv=",
+                "thematic-areas-csv=",
+                "bridgespan-data-csv=",
+                "bridgespan-overview-folder=",
+                "regionconfig-csv=",
+                "top13-data-file=",
+                "tdc-config-dir=",
+                "attachments-dir=",
+            ],
+        )
+    except getopt.GetoptError as err:
+        sys.stderr.write("ERROR: '%s'\n" % err)
+        sys.exit(2)
+
+    proposals_csv = None
+    admin_review_csv = None
+    thematic_areas_csv = None
+    bridgespan_data_csv = None
+    bridgespan_overview_folder = None
+    regionconfig_csv = None
+    top13_data_file = None
+    attachments_dir = None
+    tdc_config_dir = None
+    for o, a in opts:
+        if o == "--proposals-csv":
+            proposals_csv = a
+        elif o == "--admin-review-csv":
+            admin_review_csv = a
+        elif o == "--judge-evaluation-csv":
+            judge_evaluation_csv = a
+        elif o == "--lfc-evaluation-csv":
+            lfc_evaluation_csv = a
+        elif o == "--thematic-areas-csv":
+            thematic_areas_csv = a
+        elif o == "--bridgespan-data-csv":
+            bridgespan_data_csv = a
+        elif o == "--bridgespan-overview-folder":
+            bridgespan_overview_folder = a
+        elif o == "--regionconfig-csv":
+            regionconfig_csv = a
+        elif o == "--top13-data-file":
+            top13_data_file = a
+        elif o == "--tdc-config-dir":
+            tdc_config_dir = a
+        elif o == "--attachments-dir":
+            attachments_dir = a
+        else:
+            sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
+            sys.exit(2)
+
+    if proposals_csv is None:
+        sys.stderr.write("ERROR: need --proposals-csv option.\n\n")
+        sys.stderr.write(__doc__)
+        sys.exit(1)
+
+    comp = competition.Competition(
+        proposals_csv, "EO2020", "Application #", "Project Title"
+    )
+
+    attachments = competition.RegexSpecifiedAttachments(attachments_dir)
+    attachments.specify_by_regex(
+        ".*Response to Questions", "Responses to Follow Up Questions", 3
+    )
+    attachments.specify_by_regex(".*Synthesis Memo", "Synthesis Memo", 1)
+    attachments.specify_by_regex(".*Supplemental Documents", "Financials and MoUs", 2)
+    comp.add_supplemental_information(attachments)
+
+    if judge_evaluation_csv is not None:
+        comp.add_supplemental_information(
+            competition.EvaluationAdder(
+                "Judge",
+                judge_evaluation_csv,
+                app_col_name="Application #",
+                score_rank_normalized_col_name="OverallScoreRankNormalized",
+                sum_of_scores_normalized_col_name="SumOfScoresNormalized",
+                trait_col_name="Trait",
+                score_normalized_col_name="TraitScoreNormalized",
+                comments_col_name="TraitJudgeComment",
+                comments_score_normalized_col_name="TraitScoreNormalized",
+            )
+        )
+
+    comp.add_supplemental_information(ThematicAreasAdder(thematic_areas_csv))
+    comp.add_supplemental_information(
+        BridgeSpanDataAdder(bridgespan_data_csv, bridgespan_overview_folder)
+    )
+    comp.add_supplemental_information(LFCEvaluationAdder(lfc_evaluation_csv))
+
+    admin_review = competition.AdminReview(admin_review_csv, "Application #", "Status")
+    comp.add_supplemental_information(admin_review)
+    comp.filter_proposals(admin_review)
+
+    comp.process_cells_special("Priority Populations", competition.MultiLineProcessor())
+
+    comp.sort("Judge Overall Score Rank Normalized", True)
+
+    comp.add_toc(toc.GenericToc("Topic_TOC", "Thematic Area"))
+    comp.add_toc(toc.GenericMultiLineToc("Population_TOC", "Priority Populations"))
+    comp.add_toc(toc.ListToc("AllProposals"))
+
+    top25 = toc.ListToc("Top25")
+    top25.proposals = comp.ordered_proposals()[0:25]
+    comp.add_toc(top25)
+
+    top25_topic = toc.GenericToc("Top25_Topic_TOC", "Thematic Area")
+    top25_topic.proposals = top25.proposals
+    comp.add_toc(top25_topic)
+
+    with open(top13_data_file) as f:
+        top13_data = f.read().splitlines()
+        top13 = toc.ListToc("Top13")
+        top13.proposals = [comp.proposals[k] for k in top13_data]
+        comp.add_toc(top13)
+
+    comp.add_toc(
+        toc.RegionAwareGeographicToc(
+            "Geographic_TOC",
+            [
+                [
+                    "Location of Current Work #1 Nation",
+                    "Location of Current Work #1 State /Province",
+                ],
+                [
+                    "Location of Current Work #2 Nation",
+                    "Location of Current Work #2 State /Province",
+                ],
+                [
+                    "Location of Current Work #3 Nation",
+                    "Location of Current Work #3 State /Province",
+                ],
+                [
+                    "Location of Current Work #4 Nation",
+                    "Location of Current Work #4 State /Province",
+                ],
+                [
+                    "Location of Current Work #5 Nation",
+                    "Location of Current Work #5 State /Province",
+                ],
+                [
+                    "Location of Future Work #1 Nation",
+                    "Location of Future Work #1 State / Province",
+                ],
+                [
+                    "Location of Future Work #2 Nation",
+                    "Location of Future Work #2 State /Province",
+                ],
+                [
+                    "Location of Future Work #3 Nation",
+                    "Location of Future Work #3 State /Province",
+                ],
+                [
+                    "Location of Future Work #4 Nation",
+                    "Location of Future Work #4 State /Province",
+                ],
+                [
+                    "Location of Future Work #5 Nation",
+                    "Location of Future Work #5 State /Province",
+                ],
+            ],
+        )
+    )
+
+    comp.process_tocs()
+
+    if tdc_config_dir is not None:
+        tdc.AllProposals(comp).generate(tdc_config_dir)
+        tdc.ValidProposals(comp, "Valid", "Valid").generate(tdc_config_dir)
+        tdc.AllColumns(comp).generate(tdc_config_dir)
+        tdc.ProcessedSpreadsheet(comp).generate(tdc_config_dir)
+
+    my_wiki = wiki.WikiSession(
+        config.username, config.password, comp.name, config.wiki_url
+    )
+    my_wiki.upload_sheet(comp)
+    if os.environ.get("SKIP_ATTACHMENTS") is None:
+        my_wiki.upload_attachments(attachments.attachments)
+
+
+if __name__ == "__main__":
+    main()
