@@ -6,12 +6,23 @@
 # to just have them here.
 
 
+import csv
+import sys
+
+
 class Toc:
+    def __init__(self):
+        self.proposals = None
+
     def process_competition(self, competition):
         """Processes a COMPETITION after it has been built.  This
         is separate from the initializer because we want to
         declare the TOCs somewhere ahead of all the competition
-        processing."""
+        processing.
+
+        It should use the self.proposals attribute to process the data,
+        which will be set to all the proposals of the competition
+        in the case that it wasn't set from outside."""
         pass
 
     def template_file(self):
@@ -31,6 +42,7 @@ class GenericToc(Toc):
     being a heading in the eventual wiki page."""
 
     def __init__(self, name, column, initial_groupings=[]):
+        super().__init__()
         self.name = name
         self.column = column
         self.groupings = initial_groupings
@@ -38,7 +50,11 @@ class GenericToc(Toc):
 
     def process_competition(self, competition):
         self.competition_name = competition.name
-        for proposal in competition.ordered_proposals():
+
+        if self.proposals is None:
+            self.proposals = competition.ordered_proposals()
+
+        for proposal in self.proposals:
             grouping = proposal.cell(self.column)
             if grouping not in self.data:
                 self.groupings.append(grouping)
@@ -46,7 +62,7 @@ class GenericToc(Toc):
             self.data[grouping].append(proposal.key())
 
     def template_file(self):
-        template = "__TOC__\n"
+        template = ""
         template += "{% for group_name, proposal_ids in groups.items() %}\n"
         template += "    {%- set proposals_in_group = [] %}\n"
         template += "    {%- for proposal_id in proposal_ids %}\n"
@@ -79,7 +95,12 @@ class GenericMultiLineToc(GenericToc):
 
     def process_competition(self, competition):
         self.competition_name = competition.name
-        for proposal in competition.ordered_proposals():
+
+        # Allows someone outside to set which specific proposals we should use.
+        if self.proposals is None:
+            self.proposals = competition.ordered_proposals()
+
+        for proposal in self.proposals:
             groupings = proposal.cell(self.column).split("\n")
             for grouping in groupings:
                 if grouping not in self.data:
@@ -92,11 +113,16 @@ class ListToc(Toc):
     """A Toc that just lists all the proposals someone has access to."""
 
     def __init__(self, name):
+        super().__init__()
         self.name = name
 
     def process_competition(self, competition):
         self.competition_name = competition.name
-        self.keys = [p.key() for p in competition.ordered_proposals()]
+
+        if self.proposals is None:
+            self.proposals = competition.ordered_proposals()
+
+        self.keys = [p.key() for p in self.proposals]
 
     def template_file(self):
         template = "{% for proposal_id in proposal_ids %}\n"
@@ -120,8 +146,10 @@ class GeographicToc(Toc):
     out the toc in a general way."""
 
     def __init__(self, name, column_sets):
+        super().__init__()
         self.name = name
         self.column_sets = column_sets
+        self.num_levels = len(column_sets[0])
         self.data = {}
 
     def process_competition(self, competition):
@@ -140,7 +168,10 @@ class GeographicToc(Toc):
                     data[val] = {"shown": False, "proposals": []}
                 data[val]["proposals"].append(proposal.key())
 
-        for proposal in competition.ordered_proposals():
+        if self.proposals is None:
+            self.proposals = competition.ordered_proposals()
+
+        for proposal in self.proposals:
             for column_set in self.column_sets:
                 add_proposal_to_data(proposal, self.data, column_set)
 
@@ -148,23 +179,22 @@ class GeographicToc(Toc):
         return {"groups": self.data}
 
     def template_file(self):
-        template = "__TOC__\n"
-
+        template = ""
         template += "{%- for subcolumn_name_0, subcolumn_data_0 in groups.items() %}\n"
-        for i in range(1, len(self.column_sets[0])):
+        for i in range(1, self.num_levels):
             template += (
                 '{%%- for subcolumn_name_%s, subcolumn_data_%s in subcolumn_data_%s["subcolumn"].items() %%}\n'
                 % (i, i, i - 1)
             )
 
         template += '{%%- for proposal_id in subcolumn_data_%s["proposals"] -%%}\n' % (
-            len(self.column_sets[0]) - 1
+            self.num_levels - 1
         )
         template += "{%% if proposal_id in %s.keys() %%}\n" % self.competition_name
         template += '{%- if not subcolumn_data_0["shown"] -%}\n'
         template += '{%- set _ = subcolumn_data_0.update({"shown": True }) %}\n'
         template += "= {{ subcolumn_name_0 }} =\n"
-        for i in range(1, len(self.column_sets[0])):
+        for i in range(1, self.num_levels):
             template += "{%- endif -%}\n"
             template += '{%%- if not subcolumn_data_%s["shown"] -%%}\n' % i
             template += (
@@ -180,7 +210,59 @@ class GeographicToc(Toc):
         template += "* {{ toc_lines[proposal_id] }}\n"
         template += "{% endif -%}\n"
         template += "{% endfor %}\n"
-        for _ in range(len(self.column_sets[0])):
+        for _ in range(self.num_levels):
             template += "{%- endfor %}\n"
 
         return template
+
+
+class RegionAwareGeographicToc(GeographicToc):
+    """A special case of the GeographicToc that adds region and subregion data
+    to the geographic data.  This data doesn't belong in the spreadsheet, so it's
+    just added to this data.
+
+    The assumption is that the highest level location data is going to be a country,
+    and that's the key to look into the region data."""
+
+    def process_competition(self, competition):
+        import importlib.resources as pkg_resources
+        from . import data
+
+        super().process_competition(competition)
+
+        region_data_by_country = {}
+        csv_reader = csv.reader(
+            pkg_resources.open_text(data, "regionconfig.csv", encoding="utf-8"),
+            delimiter=",",
+            quotechar='"',
+        )
+        next(csv_reader)
+        for row in csv_reader:
+            region_data_by_country[row[0]] = {"subregion": row[1], "region": row[2]}
+
+        country_errors = []
+
+        self.num_levels = self.num_levels + 2
+        country_data = self.data
+        self.data = {}
+        for country in country_data.keys():
+            try:
+                region = region_data_by_country[country]["region"]
+                subregion = region_data_by_country[country]["subregion"]
+                if region not in self.data:
+                    self.data[region] = {"shown": False, "subcolumn": {}}
+                if subregion not in self.data[region]["subcolumn"]:
+                    self.data[region]["subcolumn"][subregion] = {
+                        "shown": False,
+                        "subcolumn": {},
+                    }
+                self.data[region]["subcolumn"][subregion]["subcolumn"][
+                    country
+                ] = country_data[country]
+            except KeyError:
+                if country not in country_errors:
+                    print(
+                        "Country %s not in region config file, skipping" % country,
+                        file=sys.stderr,
+                    )
+                    country_errors.append(country)

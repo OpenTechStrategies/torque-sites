@@ -84,13 +84,10 @@ class Competition:
     def filter_proposals(self, proposal_filter):
         """Removes proposals according to PROPOSAL_FILTER, which needs
         to be an object of the instance ProposalFilter."""
-        filtered_proposal_keys = [
-            p.key()
-            for p in self.proposals.values()
-            if proposal_filter.proposal_matches(p)
-        ]
         self.sorted_proposal_keys = [
-            k for k in self.sorted_proposal_keys if k not in filtered_proposal_keys
+            k
+            for k in self.sorted_proposal_keys
+            if not proposal_filter.filter_proposal(self.proposals[k])
         ]
         self.proposals = {k: self.proposals[k] for k in self.sorted_proposal_keys}
 
@@ -173,11 +170,11 @@ class Proposal:
 
 class ProposalFilter:
     """The base class for Proposal Filters, which will usually implement
-    proposal_matches"""
+    filter_proposal"""
 
-    def proposal_matches(self, proposal):
-        """Return whether the proposal matches this filter.  Should be over
-        loaded"""
+    def filter_proposal(self, proposal):
+        """Return whether the proposal matches this filter, and should be
+        filtered.  Should be over loaded"""
         return True
 
 
@@ -189,7 +186,7 @@ class ColumnEqualsProposalFilter(ProposalFilter):
         self.column_name = column_name
         self.value = value
 
-    def proposal_matches(self, proposal):
+    def filter_proposal(self, proposal):
         return proposal.cell(self.column_name) == self.value
 
 
@@ -201,7 +198,7 @@ class ColumnNotEqualsProposalFilter(ProposalFilter):
         self.column_name = column_name
         self.value = value
 
-    def proposal_matches(self, proposal):
+    def filter_proposal(self, proposal):
         return proposal.cell(self.column_name) != self.value
 
 
@@ -356,7 +353,10 @@ class BasicAttachments(InformationAdder):
     are in the Proposal so that torque knows where they are.
 
     The column names can be variable based on what attachments are important
-    for the competition."""
+    for the competition.
+
+    The rank for all attachments is set to 99 for default.  This is used for
+    sorting later."""
 
     defined_column_names = ["Attachment Display Names", "Attachments"]
 
@@ -379,7 +379,7 @@ class BasicAttachments(InformationAdder):
                         Attachment(
                             key,
                             attachment_file,
-                            4,
+                            99,
                             BasicAttachments.defined_column_names[1],
                             os.path.join(
                                 full_application_attachment_dir, attachment_file
@@ -406,6 +406,49 @@ class BasicAttachments(InformationAdder):
             return "\n".join([a.file for a in attachments])
         else:
             raise Exception(column_name + "is not a valid attachment column name")
+
+
+class RegexSpecifiedAttachments(BasicAttachments):
+    """A special case of BasicAttachments with the ability to specify the name
+    and the rank based on a regular expression using the method SPECIFY_BY_REGEX"""
+
+    def specify_by_regex(self, regex, name, rank=99):
+        """Matches the REGEX against the filename, and then updates the display
+        name to NAME, and the rank to RANK (default of 99) if it matches."""
+        for attachment in self.attachments:
+            if re.search(regex, attachment.file):
+                attachment.name = name
+                attachment.rank = rank
+
+
+class AdminReview(InformationAdder, ProposalFilter):
+    """Adds the result of the Admin Review spreadsheets into a column "Valid",
+    and is also a filter for proposals that don't show up in that spreadsheet."""
+
+    def __init__(self, csv_location, key_column_name, valid_column_name):
+        """Builds the dataset from the CSV_LOCATION, using the KEY_COLUMN_NAME
+        to link up against the proposal keys, and teh VALID_COLUMN_NAME for
+        which column in the admin spreadsheet has the validity column"""
+        csv_reader = csv.reader(
+            open(csv_location, encoding="utf-8"), delimiter=",", quotechar='"'
+        )
+        header_row = next(csv_reader)
+
+        key_col_idx = header_row.index(key_column_name)
+        valid_col_idx = header_row.index(valid_column_name)
+        self.data = {row[key_col_idx]: row[valid_col_idx] for row in csv_reader}
+
+    def column_type(self, column_name):
+        return None
+
+    def column_names(self):
+        return ["Valid"]
+
+    def cell(self, proposal, column_name):
+        return self.data[proposal.key()] if (proposal.key() in self.data) else ""
+
+    def filter_proposal(self, proposal):
+        return proposal.key() not in self.data
 
 
 class EvaluationAdder(InformationAdder):
