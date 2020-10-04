@@ -122,9 +122,7 @@ def main():
         tdc.AllProposals(comp).generate(tdc_config_dir)
         tdc.AllColumns(comp).generate(tdc_config_dir)
 
-    my_wiki = wiki.WikiSession(
-        config.username, config.password, comp.name, config.wiki_url
-    )
+    my_wiki = wiki.WikiSession(config.username, config.password, comp.name, config.wiki_url)
     my_wiki.upload_sheet(comp)
     if os.environ.get("SKIP_ATTACHMENTS") is None:
         my_wiki.upload_attachments(attachments.attachments)

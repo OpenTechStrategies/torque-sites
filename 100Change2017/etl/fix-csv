@@ -56,11 +56,13 @@ import warnings
 import string
 from bs4 import BeautifulSoup
 
+
 def collapse_replace(string, old, new):
     "Return STRING, with OLD repeatedly replaced by NEW until no more OLD."
-    while string.find(old) != -1: 
+    while string.find(old) != -1:
         string = string.replace(old, new)
     return string
+
 
 def weaken_the_strong(html):
     """Strip any meaningless <strong>...</strong> tags from HTML.
@@ -73,7 +75,7 @@ def weaken_the_strong(html):
     # If there's no strength here, move on.
     if not "<strong>" in html:
         return html
-    
+
     # Remove the stuff inside strong tags
     soup = BeautifulSoup(html, "html.parser")
     while "<strong>" in str(soup):
@@ -90,19 +92,26 @@ def weaken_the_strong(html):
     # bold and non-bold text.  Better to leave it alone.
     return html
 
+
 def form_well(html):
     """Return a well-formed version of HTML with dangling tags closed.
     Some of the input includes tables that cut off without closing
     tags; some entries leave <td> tags open too."""
     # Parse html and suppress warnings about urls in the text
-    warnings.filterwarnings("ignore",
-                            category=UserWarning, module='bs4')
+    warnings.filterwarnings("ignore", category=UserWarning, module="bs4")
     soup = BeautifulSoup(html, "html.parser")
 
     # Return well-formed html as a soup object
     return soup
 
-def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False, reclassifications_csv=None):
+
+def fix_csv(
+    fname_in,
+    fname_out=None,
+    pare=None,
+    show_table_problem=False,
+    reclassifications_csv=None,
+):
     """Write a sanitized version of FNAME_IN (a CSV file) to FNAME_OUT.
 
     FNAME_IN is a filename.  FNAME_OUT is either a filename or None.
@@ -121,22 +130,22 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False, recla
     organization name in column A (1)."""
     reclass_csv_reader = None
     try:
-        csv_reader = csv.reader(open(fname_in, encoding='utf-8'),
-                                delimiter=',', quotechar='"')
+        csv_reader = csv.reader(open(fname_in, encoding="utf-8"), delimiter=",", quotechar='"')
         if reclassifications_csv is not None:
-            reclass_csv_reader = csv.reader(open(reclassifications_csv,
-                                                 encoding='utf-8'),
-                                            delimiter=',', quotechar='"')
+            reclass_csv_reader = csv.reader(
+                open(reclassifications_csv, encoding="utf-8"),
+                delimiter=",",
+                quotechar='"',
+            )
     except UnicodeDecodeError:
         sys.stderr.write("fix-csv expects utf-8-encoded unicode, not whatever is in this csv file.\n")
         sys.exit(-1)
 
     if fname_out:
-        out = open(fname_out, 'w', encoding="utf-8")
+        out = open(fname_out, "w", encoding="utf-8")
     else:
         out = io.StringIO()
-    csv_writer = csv.writer(out,
-                            delimiter=',', quotechar='"', lineterminator="\n")
+    csv_writer = csv.writer(out, delimiter=",", quotechar='"', lineterminator="\n")
 
     header_row = next(csv_reader)
     csv_writer.writerow(header_row)
@@ -161,28 +170,31 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False, recla
             if row[0] in reclassifications:
                 reclassifications[row[0]] = None
             else:
-                reclassifications[row[0]] = (row[1], row[3],)
+                reclassifications[row[0]] = (
+                    row[1],
+                    row[3],
+                )
 
     # Convert "<foo>&nbsp;<bar>" and "</foo>&nbsp;<bar>" to
     # to "<foo> <bar>" and "</foo> <bar>" respectively.  This is
     # because those particular instances of "&nbsp;" in the data are
     # not very convincing, and they create noise when we're looking
     # for unnecessary escaping elsewhere.
-    intertag_nbsp_re = re.compile('(?m)(</?[a-z]+>)&nbsp;(<[a-z]+>)')
+    intertag_nbsp_re = re.compile("(?m)(</?[a-z]+>)&nbsp;(<[a-z]+>)")
 
     # Actually, some invalid identifiers would still match this,
     # because this regular expression doesn't check the length.
     # That's okay; we check length manually at the call site.
-    youtube_id_re = re.compile('^[-_a-zA-Z0-9]+$')
+    youtube_id_re = re.compile("^[-_a-zA-Z0-9]+$")
 
     bullets_re = re.compile("^•", re.MULTILINE)
 
     attachments_to_upload = {}
-    
+
     row_num = 0
     new_rows = []
     for row in csv_reader:
-        row_num += 1  # first row here is row 1 (the header row was row 0) 
+        row_num += 1  # first row here is row 1 (the header row was row 0)
         if pare is not None and row_num % pare != 0:
             continue
 
@@ -201,9 +213,11 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False, recla
                 # "other" appears in the original spreadsheet is
                 # bogus, and those proposals actually have some
                 # random different classification.
-                if (found_old_class == old
+                if (
+                    found_old_class == old
                     or (found_old_class == "select" and old == "other")
-                    or (found_old_class == ""       and old == "other")):
+                    or (found_old_class == "" and old == "other")
+                ):
                     # NOTE: This is not absolutely guaranteed to be
                     # correct.  It might be that a given org submitted
                     # multiple proposals, and that "Select" or "Other"
@@ -215,7 +229,7 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False, recla
                     # but want to ask Jeff about this first.
                     row[11] = new
         new_row = []
-        org_name = None   # used only for debugging output
+        org_name = None  # used only for debugging output
         cell_num = 0
         for cell in row:
             new_cell = cell
@@ -223,21 +237,21 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False, recla
             # (i.e., new_cell = html_parser.unescape(new_cell) below)
             # in the long run, but for now, let's do the same limited
             # set of unescapings the original 'sanitize' script did:
-            new_cell = new_cell.replace('&amp;', '&')
-            new_cell = new_cell.replace('&lt;', '<')
-            new_cell = new_cell.replace('&gt;', '>')
+            new_cell = new_cell.replace("&amp;", "&")
+            new_cell = new_cell.replace("&lt;", "<")
+            new_cell = new_cell.replace("&gt;", ">")
             # The rest should be recursively collapsing replacements:
-            new_cell = collapse_replace(new_cell, '&nbsp;&nbsp;', '&nbsp;')
-            new_cell = collapse_replace(new_cell, '&nbsp; ', ' ')
-            new_cell = collapse_replace(new_cell, ' &nbsp;', ' ')
-            new_cell = collapse_replace(new_cell, '&nbsp;</', '</')
+            new_cell = collapse_replace(new_cell, "&nbsp;&nbsp;", "&nbsp;")
+            new_cell = collapse_replace(new_cell, "&nbsp; ", " ")
+            new_cell = collapse_replace(new_cell, " &nbsp;", " ")
+            new_cell = collapse_replace(new_cell, "&nbsp;</", "</")
             new_cell = collapse_replace(new_cell, '\\"', '"')
-            new_cell = re.sub(intertag_nbsp_re, '\\1 \\2', new_cell)
+            new_cell = re.sub(intertag_nbsp_re, "\\1 \\2", new_cell)
             if org_name is None:
                 org_name = new_cell
             soup = form_well(new_cell)
             new_cell = weaken_the_strong(str(soup))
-            
+
             # The parsing for lists requires an asterisk at the start
             # of the line, but some entries use bullets. This regex
             # swaps the bullets for asterisks.
@@ -267,16 +281,13 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False, recla
                 # string.capwords() doesn't treat a word immediately
                 # following a hyphen as a separate word, so we need
                 # to special-case the two known instances of that.
-                new_cell = new_cell.replace("Well-being", 
-                                            "Well-Being")
-                new_cell = new_cell.replace("Non-communicable", 
-                                            "Non-Communicable")
+                new_cell = new_cell.replace("Well-being", "Well-Being")
+                new_cell = new_cell.replace("Non-communicable", "Non-Communicable")
                 # Often a comma was used to delimit the common prefix
                 # "Health and Well-Being", but sometimes a colon was
                 # used.  The colon probably makes more sense, so let's
                 # just switch them all to that.
-                new_cell = new_cell.replace("Health and Well-Being,", 
-                                            "Health and Well-Being:")
+                new_cell = new_cell.replace("Health and Well-Being,", "Health and Well-Being:")
                 # And a couple of judgement calls:
                 if re.match("^Resilience Against Climate Change$", new_cell):
                     # The shorter name only had 18 members, compared
@@ -292,13 +303,11 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False, recla
                     # Cannot use special formatting here because this
                     # will be used as a category, not just as a value.
                     new_cell = "No Primary Thematic Area Selected"
-            if (show_table_problem
-                and new_cell.find('<table') != -1
-                and new_cell.find('</table') == -1):
-                sys.stderr.write("DEBUG: unclosed <table>: row %d, col %d (%s): '%s':\n'%s'\n\n"
-                                 % (row_num, cell_num,
-                                    header_row[cell_num - 1],
-                                    org_name, new_cell))
+            if show_table_problem and new_cell.find("<table") != -1 and new_cell.find("</table") == -1:
+                sys.stderr.write(
+                    "DEBUG: unclosed <table>: row %d, col %d (%s): '%s':\n'%s'\n\n"
+                    % (row_num, cell_num, header_row[cell_num - 1], org_name, new_cell)
+                )
             if cell_num == 89:  # The pitch video cell may need fixing.
                 # They all contain just an ID like "iIrGUi95ko4", not a URL
                 # like "https://www.youtube.com/watch?v=iIrGUi95ko4".
@@ -315,28 +324,31 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False, recla
                 # "/JO7Eg6Kc-qk" kept their leading slash:
                 if new_cell.find("/") == 0:
                     new_cell = new_cell[1:]
-                if ((len(new_cell) == 11 and youtube_id_re.match(new_cell))
+                if (
+                    (len(new_cell) == 11 and youtube_id_re.match(new_cell))
                     # One valid ID had "&feature" tacked on to the
                     # end, and two had time markers in the URL.
                     # Since we know they're valid, just say yes.
                     or new_cell.find("&feature") != -1
-                    or new_cell.find("?t=") != -1):
+                    or new_cell.find("?t=") != -1
+                ):
                     # Okay, any of the above can become a video URL:
                     video_id = new_cell
                     # Note that the "#ev" embed code below requires
                     # the EmbedVideo MediaWiki extension.  See issue
                     # #26 for details.
-                    new_cell = "https://www.youtube.com/watch?v="   \
-                              + video_id                            \
-                              + "\n\n"                              \
-                              + "{{#ev:youtube|" + video_id + "}}"
-                else: # There were 8 with no video that we could find:
-                    new_cell = ('<span style='
-                            + '"color: red; font-family: monospace;" >'
-                            + 'Could not convert "'
-                            + new_cell
-                            + '" to a YouTube video URL.'
-                            + '</span>')
+                    new_cell = (
+                        "https://www.youtube.com/watch?v=" + video_id + "\n\n" + "{{#ev:youtube|" + video_id + "}}"
+                    )
+                else:  # There were 8 with no video that we could find:
+                    new_cell = (
+                        "<span style="
+                        + '"color: red; font-family: monospace;" >'
+                        + 'Could not convert "'
+                        + new_cell
+                        + '" to a YouTube video URL.'
+                        + "</span>"
+                    )
             new_row.append(new_cell)
 
             cell_num += 1
@@ -344,13 +356,11 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False, recla
 
     return out
 
+
 def main():
     """Sanitize the MacFound input and emit it as html-ized csv."""
     try:
-        opts, args = getopt.getopt(sys.argv[1:], '',
-                                   ["pare=",
-                                    "reclassifications=",
-                                    "show-table-problem"])
+        opts, args = getopt.getopt(sys.argv[1:], "", ["pare=", "reclassifications=", "show-table-problem"])
     except getopt.GetoptError as err:
         sys.stderr.write("ERROR: '%s'\n" % err)
         sys.exit(2)
@@ -370,11 +380,17 @@ def main():
             sys.exit(2)
 
     if len(args) != 2:
-        sys.stderr.write(
-            "ERROR: need CSV_INPUT and NEW_CSV_OUTPUT arguments.\n\n")
+        sys.stderr.write("ERROR: need CSV_INPUT and NEW_CSV_OUTPUT arguments.\n\n")
         sys.stderr.write(__doc__)
         sys.exit(1)
-    fix_csv(args[0], args[1], pare, show_table_problem, reclassifications_csv=reclassifications_csv)
+    fix_csv(
+        args[0],
+        args[1],
+        pare,
+        show_table_problem,
+        reclassifications_csv=reclassifications_csv,
+    )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

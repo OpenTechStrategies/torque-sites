@@ -73,9 +73,7 @@ class WikiSession:
 
         p = self.site.pages[toc.name]
         if not p.exists:
-            p.save(
-                "{{ #tdcrender:%s/toc/%s.mwiki }}" % (self.competition_name, toc.name)
-            )
+            p.save("{{ #tdcrender:%s/toc/%s.mwiki }}" % (self.competition_name, toc.name))
 
     def create_pages(self, comp):
         """Creates all the pages in the Competition COMP according to their
@@ -83,9 +81,7 @@ class WikiSession:
 
         That page will have a single line contaning the #tdcrender call."""
         for proposal in comp.ordered_proposals():
-            page_title = proposal.cell(
-                competition.MediaWikiTitleAdder.title_column_name
-            )
+            page_title = proposal.cell(competition.MediaWikiTitleAdder.title_column_name)
 
             if page_title is None:
                 raise Exception("Competition needs the page title adder run")
@@ -93,7 +89,4 @@ class WikiSession:
             p = self.site.pages[page_title]
 
             if not p.exists:
-                p.save(
-                    "{{ #tdcrender:%s/id/%s.mwiki }}"
-                    % (self.competition_name, proposal.key())
-                )
+                p.save("{{ #tdcrender:%s/id/%s.mwiki }}" % (self.competition_name, proposal.key()))
