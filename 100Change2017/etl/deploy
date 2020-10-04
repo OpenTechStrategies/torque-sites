@@ -60,20 +60,8 @@ check_for_bin csvgrep
 check_for_bin gunzip
 csvgrep --version 2&>/dev/null || { echo "csvkit needs to be a recent version. Please upgrade to version 1.0.2+"; exit 1; }
 
-CSV2WIKI="python3 -m csv2wiki"
 SANITIZER="${MACFOUND_DIR}"/fix-csv
-UPLOADER="${MACFOUND_DIR}"/upload-csv
-
-# csv2wiki needs a run-time config file.
-CSV2WIKI_CONFIG="${MACFOUND_DIR}"/csv2wiki-config
-if [ ! -f "${CSV2WIKI_CONFIG}" ]; then
-  echo "ERROR: No csv2wiki-config file found."
-  echo ""
-  echo "Try doing 'cp csv2wiki-config.tmpl csv2wiki-config' and"
-  echo "then editing csv2wiki-config as needed."
-  echo ""
-  exit 1
-fi
+RUNNER="${MACFOUND_DIR}"/compose-and-upload
 
 MASTER_CSV="100andchangeExport-all-judges.csv"
 PRINCIPAL_CONTACT_CSV="Principal-contact-join-20170716-utf8.csv"
@@ -83,7 +71,6 @@ RECLASSIFICATION_CSV="geo-and-topic-revisions-Reclassify-themes-ALL-complete-(me
 EXCLUDED_REVIEW_NUMBERS_TXT="excluded-review-numbers.txt"
 ATTACHMENT_ZIP="Generated-Attachments-From-Mediawiki.zip"
 
-TOC_DIR="${DATA_DIR}/tocs/"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig/"
 
@@ -120,7 +107,6 @@ if [ ! -d "${DATA_DIR}" ] ; then
   gpg -o ${DATA_DIR}/${RECLASSIFICATION_XLSX} --decrypt ${ENCRYPTED_DIR}/${RECLASSIFICATION_XLSX}.gpg || exit 1
   gpg -o ${DATA_DIR}/${ATTACHMENT_ZIP} --decrypt ${ENCRYPTED_DIR}/${ATTACHMENT_ZIP}.gpg || exit 1
 
-  mkdir -p ${TOC_DIR}
   mkdir -p ${ATTACHMENTS_DIR}
   mkdir -p ${TDC_CONFIG_DIR}
 
@@ -182,11 +168,6 @@ fi
 # 
 #   $ 
 
-# We want to make sure there's no lingering old TOCs if we change how
-# fix-csv creates them
-rm -f $TOC_DIR/*
-cp tocs/generic.j2 $TOC_DIR/Topic_TOC.j2
-
 # First we sanitize, then we filter, then we join.  We leave all the
 # intermediate stages in place, in case we need to debug them later.
 STAGE_1_PREFIX="sanitized-"
@@ -204,9 +185,6 @@ STAGE_FINAL_CSV="${STAGE_FINAL_PREFIX}${MASTER_CSV}"
 # Use --pare to convert only 1% of the entries, to save time while testing. 
 echo "Stage 1: Sanitizing..."
 ${SANITIZER} --reclassifications="${DATA_DIR}/${RECLASSIFICATION_CSV}" \
-             --tdc-config-dir="${TDC_CONFIG_DIR}" \
-             --toc-dir="${TOC_DIR}" \
-             --attachments-dir=${ATTACHMENTS_DIR} \
              "${DATA_DIR}/${MASTER_CSV}" \
              "${DATA_DIR}/${STAGE_1_CSV}"
 if [ $? -ne 0 ]; then
@@ -230,8 +208,7 @@ echo ""
 # "Reason_For_Turndown" column with the new Reason_For_Turndown.
 #
 # In the latter case, the new column will be at a slightly different
-# position than the original.  The col_map section in run-time config
-# file for csv2wiki has been adjusted accordingly.
+# position than the original.
 
 echo "Stage 3: Adding some supplemental data..."
 # First, gather the two new columns into a single CSV, keyed
@@ -335,8 +312,6 @@ csvjoin --snifflimit=0 --delimiter=',' --quotechar='"'                \
 #  Pitch Video Link           90        89
 #  Participant_Email         N/A        90
 #  Reason_For_Turndown        88        91
-#
-# All the csv2wiki-config files have been adjusted accordingly.
 echo "Done with Stage 3 (joining CSVs to add supplemental data)."
 echo ""
 
@@ -354,34 +329,11 @@ cp "${DATA_DIR}"/"${STAGE_3_CSV}" "${DATA_DIR}"/"${STAGE_FINAL_CSV}"
 # variable to test if someone wants to.
 echo "Stage 4: Uploading csv and attachments..."
 echo "  If you want to skip attachments, set SKIP_ATTACHMENTS in your environment"
-if [ -z "${SKIP_ATTACHMENTS}" ] ; then
-  ATTACHMENT_ARG="--attachments-dir=${ATTACHMENTS_DIR}"
-else
-  ATTACHMENT_ARG=""
-fi
-${UPLOADER} --csv="${DATA_DIR}/${STAGE_FINAL_CSV}" \
-            --toc-dir="${TOC_DIR}" \
-            $ATTACHMENT_ARG \
-            --config="${CSV2WIKI_CONFIG}"
+${RUNNER} --proposals-csv="${DATA_DIR}/${STAGE_FINAL_CSV}" \
+          --tdc-config-dir="${TDC_CONFIG_DIR}" \
+          --attachments-dir=${ATTACHMENTS_DIR}
 if [ $? -ne 0 ]; then
 		echo Upload failure!
 		exit 1
 fi
 echo "Done with Stage 4 (Uploading csv)."
-echo ""
-
-# This pages are the template callers hosted on the wiki, as opposed to
-# the data/jinja files that are processed by torquedata
-TOC_PAGES=""
-for file in $TOC_DIR/*.mwiki ; do
-  TOC_PAGES="$TOC_PAGES --helper-page=$file"
-done
-
-echo "Creating wiki..."
-${CSV2WIKI} -c ${CSV2WIKI_CONFIG} \
-            --make-non-editable \
-            --skip-rows=1 \
-            ${TOC_PAGES} \
-            --csv "${DATA_DIR}/${STAGE_FINAL_CSV}"
-echo "Done creating wiki."
-echo ""

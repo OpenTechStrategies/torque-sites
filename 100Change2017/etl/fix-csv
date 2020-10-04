@@ -102,56 +102,7 @@ def form_well(html):
     # Return well-formed html as a soup object
     return soup
 
-def wiki_escape_page_title(s):
-    import unidecode
-    """Return a wiki-escaped version of STRING."""
-    for c in ["#", "<", ">", "[", "]", "{", "|", "}",]:
-        if s.find(c) != -1:
-            s = s.replace(c, "-")
-    while len(bytes(s, "UTF-8")) > 255:
-        s = s[:-1]
-
-    # Also convert non unicode because we do this with titles on the other side
-    return unidecode.unidecode_expect_nonascii(s).strip()
-
-def create_tdc_config(tdc_config_dir, header_row, new_rows):
-    import os
-    """Helper method to write out base config files to TDC_CONFIG_DIR.
-
-    Needs HEADER_ROW and NEW_ROWS to generate the column and proposal
-    data.  Generates the following:
-
-      - AllProposals - All the proposals generated
-      - ValidProposals - The ~150 proposals that were marked valid
-      - AllColumns - All the available columns
-      """
-
-    def row_to_title_line(row):
-        return "* {14}: ".format(*row) + "[[" + row[90] + "]]\n"
-
-    with open(os.path.join(tdc_config_dir, "AllProposals"), 'w') as f:
-        f.writelines([row_to_title_line(row) for row in new_rows])
-
-    with open(os.path.join(tdc_config_dir, "AllColumns"), 'w') as f:
-        for column in header_row:
-            f.writelines("* %s\n" % column)
-
-def generate_generic_toc(toc_dir, grouped_review_numbers, toc_name):
-    """Generates a TOC mwiki and TOC data file in TOC_DIR for the given data,
-    which is a dict where the proposals are all grouped by some key.
-    Then put into TOC_DIR/TOC_NAME.json.
-
-    Notably, this doesn't create the jinja template file, as that doesn't
-    need to be dynamically generated."""
-    with open(os.path.join(toc_dir, toc_name + ".json"), 'w') as f:
-        f.writelines(json.dumps({"groups": grouped_review_numbers}))
-
-    with open(os.path.join(toc_dir, toc_name + ".mwiki"), 'w') as f:
-        f.writelines(toc_name + "\n")
-        f.writelines("{{ #tdcrender:LFC100Change2017/toc/" + toc_name + ".mwiki }}")
-
-def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False, tdc_config_dir=None, toc_dir=None, attachments_dir=None,
-            reclassifications_csv=None):
+def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False, reclassifications_csv=None):
     """Write a sanitized version of FNAME_IN (a CSV file) to FNAME_OUT.
 
     FNAME_IN is a filename.  FNAME_OUT is either a filename or None.
@@ -186,15 +137,9 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False, tdc_c
         out = io.StringIO()
     csv_writer = csv.writer(out,
                             delimiter=',', quotechar='"', lineterminator="\n")
-    header_row = next(csv_reader)
-    header_row.append("MediaWiki Title")
-    header_row.append("MOU Attachment")
-    header_row.append("Team Attachment")
-    header_row.append("Financials Attachment")
-    csv_writer.writerow(header_row)
 
-    # Types row, empty because everything is just a string
-    csv_writer.writerow(["" for col in header_row])
+    header_row = next(csv_reader)
+    csv_writer.writerow(header_row)
 
     # Keys are organization names; values are tuples of this form:
     #
@@ -395,59 +340,7 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False, tdc_c
             new_row.append(new_cell)
 
             cell_num += 1
-
-        new_row.append(wiki_escape_page_title("{0} ({14})".format(*new_row)))
-
-        attachments_to_upload[row[14]] = {}
-        if attachments_dir is not None:
-            mou = None
-            team = None
-            financials = None
-
-            application_attachment_dir = os.path.join(attachments_dir, row[14])
-            for attachment_file in os.listdir(application_attachment_dir):
-                if re.search("^\\d*_mou", attachment_file, flags=re.I):
-                    # This must match the row header above
-                    attachments_to_upload[row[14]]["MOU Attachment"] = attachment_file
-                    mou = attachment_file
-                elif re.search("^\\d*_team", attachment_file, flags=re.I):
-                    # This must match the row header above
-                    attachments_to_upload[row[14]]["Team Attachment"] = attachment_file
-                    team = attachment_file
-                elif re.search("financial", attachment_file, flags=re.I):
-                    # This must match the row header above
-                    attachments_to_upload[row[14]]["Financials Attachment"] = attachment_file
-                    financials = attachment_file
-
-            new_row.append(mou)
-            new_row.append(team)
-            new_row.append(financials)
-
         csv_writer.writerow(new_row)
-        new_rows.append(new_row)
-        print("Sanitized row %d." % row_num)
-
-    if toc_dir is not None:
-        # Topic
-        orderable_topic_data = {}
-        for new_row in new_rows:
-            if new_row[11] not in orderable_topic_data:
-                orderable_topic_data[new_row[11]] = []
-            orderable_topic_data[new_row[11]].append([new_row[14], new_row[90]])
-
-        topic_data = {}
-        for topic, group in orderable_topic_data.items():
-            group.sort(key=lambda pair: pair[1])
-            topic_data[topic] = [pair[0] for pair in group]
-
-        generate_generic_toc(toc_dir, topic_data, "Topic_TOC")
-
-    if tdc_config_dir is not None:
-        create_tdc_config(tdc_config_dir, header_row, new_rows)
-
-    if attachments_dir is not None:
-        with open(os.path.join(attachments_dir, "attachments_to_upload"), 'wb') as f:
-            pickle.dump(attachments_to_upload, f)
 
     return out
 
@@ -457,9 +350,6 @@ def main():
         opts, args = getopt.getopt(sys.argv[1:], '',
                                    ["pare=",
                                     "reclassifications=",
-                                    "toc-dir=",
-                                    "tdc-config-dir=",
-                                    "attachments-dir=",
                                     "show-table-problem"])
     except getopt.GetoptError as err:
         sys.stderr.write("ERROR: '%s'\n" % err)
@@ -468,9 +358,6 @@ def main():
     show_table_problem = False
     reclassifications_csv = None
     pare = None
-    toc_dir = None
-    tdc_config_dir = None
-    attachments_dir = None
     for o, a in opts:
         if o in ("--show-table-problem",):
             show_table_problem = True
@@ -478,12 +365,6 @@ def main():
             reclassifications_csv = a
         elif o == "--pare":
             pare = int(a)
-        elif o == "--toc-dir":
-            toc_dir = a
-        elif o == "--tdc-config-dir":
-            tdc_config_dir = a
-        elif o == "--attachments-dir":
-            attachments_dir = a
         else:
             sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
             sys.exit(2)
@@ -493,8 +374,7 @@ def main():
             "ERROR: need CSV_INPUT and NEW_CSV_OUTPUT arguments.\n\n")
         sys.stderr.write(__doc__)
         sys.exit(1)
-    fix_csv(args[0], args[1], pare, show_table_problem, tdc_config_dir, toc_dir, attachments_dir,
-            reclassifications_csv=reclassifications_csv)
+    fix_csv(args[0], args[1], pare, show_table_problem, reclassifications_csv=reclassifications_csv)
 
 if __name__ == '__main__':
     main()
