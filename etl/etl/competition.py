@@ -372,6 +372,11 @@ class BasicAttachments(InformationAdder):
 
                 full_application_attachment_dir = os.path.join(attachments_dir, key)
                 for attachment_file in os.listdir(full_application_attachment_dir):
+                    if os.path.isdir(
+                        os.path.join(attachments_dir, key, attachment_file)
+                    ):
+                        continue
+
                     if re.search("^\\d*_Registration.pdf", attachment_file):
                         continue
 
@@ -389,7 +394,9 @@ class BasicAttachments(InformationAdder):
 
     def column_type(self, column_name):
         # List for both, so we don't need to switch on it
-        return "list"
+        if column_name in self.defined_column_names:
+            return "list"
+        return None
 
     def column_names(self):
         return BasicAttachments.defined_column_names
@@ -400,25 +407,56 @@ class BasicAttachments(InformationAdder):
         # Sort first by rank, then by name
         attachments.sort(key=lambda a: str(a.rank) + " " + a.name)
 
+        attachments_by_column_name = {name:[] for name in self.defined_column_names}
+        for attachment in attachments:
+            if attachment.column_name not in attachments_by_column_name:
+                attachments_by_column_name[attachment.column_name] = []
+            attachments_by_column_name[attachment.column_name].append(attachment)
+
         if column_name == self.defined_column_names[0]:
-            return "\n".join([a.name for a in attachments])
+            return "\n".join([a.name for a in attachments_by_column_name[self.defined_column_names[1]]])
         elif column_name == self.defined_column_names[1]:
-            return "\n".join([a.file for a in attachments])
+            return "\n".join([a.file for a in attachments_by_column_name[self.defined_column_names[1]]])
+        elif column_name in attachments_by_column_name:
+            return "\n".join([a.file for a in attachments_by_column_name[column_name]])
         else:
-            raise Exception(column_name + "is not a valid attachment column name")
+            return ""
 
 
 class RegexSpecifiedAttachments(BasicAttachments):
     """A special case of BasicAttachments with the ability to specify the name
-    and the rank based on a regular expression using the method SPECIFY_BY_REGEX"""
+    and the rank based on a regular expression using the method SPECIFY_BY_REGEX.
+
+    The option to add a new column to the sheet specifically for the attachment
+    also exists using specify_new_column."""
+
+    def __init__(self, attachments_dir):
+        super().__init__(attachments_dir)
+        self.extra_columns = []
+
+    def column_names(self):
+        return BasicAttachments.defined_column_names + self.extra_columns
 
     def specify_by_regex(self, regex, name, rank=99):
         """Matches the REGEX against the filename, and then updates the display
         name to NAME, and the rank to RANK (default of 99) if it matches."""
         for attachment in self.attachments:
-            if re.search(regex, attachment.file):
+            if re.search(regex, attachment.file, flags=re.I):
                 attachment.name = name
                 attachment.rank = rank
+
+    def specify_new_column(self, regex, column_name, rank=99):
+        """Matches the REGEX against the filename, and then updates the display
+        name to COLUMN_NAME, and the rank to RANK (default of 99) if it matches.
+
+        Also adds COLUMN_NAME as a a column to the spreadsheet and links the
+        attachments specified to that column"""
+        self.extra_columns.append(column_name)
+        for attachment in self.attachments:
+            if re.search(regex, attachment.file, flags=re.I):
+                attachment.name = column_name
+                attachment.rank = rank
+                attachment.column_name = column_name
 
 
 class AdminReview(InformationAdder, ProposalFilter):
