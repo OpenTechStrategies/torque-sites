@@ -90,10 +90,13 @@ class WikiSession:
             if page_title is None:
                 raise Exception("Competition needs the page title adder run")
 
-            p = self.site.pages[page_title]
+            self.create_page(
+                page_title,
+                "{{ #tdcrender:%s/id/%s.mwiki }}"
+                % (self.competition_name, proposal.key()),
+            )
 
-            if not p.exists:
-                p.save(
-                    "{{ #tdcrender:%s/id/%s.mwiki }}"
-                    % (self.competition_name, proposal.key())
-                )
+    def create_page(self, page_title, body):
+        p = self.site.pages[page_title]
+        if not p.exists:
+            p.save(body)
