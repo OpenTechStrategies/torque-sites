@@ -48,31 +48,19 @@ DATA_DIR="${BASE_DATA_DIR}/${COMPETITION}"
 python3 -V > /dev/null 2>&1 || { echo "python3 required, aborting" ; exit 1; }
 
 PROPOSALS_CSV="LLIIAE_registration_and_application_data.csv"
-ADMIN_REVIEW_CSV="AdminReviewP2P_LLIIA2020_07082020.csv"
+BASE_ATTACHMENTS="LLIAE_registration_and_application_data.zip"
+ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
 JUDGE_EVALUATION_CSV="LLIIA_Peer_Review_Data_Pseudonymous_20200803.csv"
+ADMIN_REVIEW_CSV="AdminReviewP2P_LLIIA2020_07082020.csv"
 PANEL_EVALUATION_CSV="LLIIA_Evaluation_Panel_Data_anon.csv"
 BUDGET_ZIP="LLIAE_AR_budget_data.zip"
 BUDGET_CSV="LLIAE_registration_and_application_export_budget_data.csv"
 REGIONCONFIG_CSV="regionconfig.csv"
 TOP16_DATA_FILE="top16.dat"
-BASE_ATTACHMENTS="LLIAE_registration_and_application_data.zip"
-ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
 TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
-TOC_DIR="${DATA_DIR}/tocs"
-TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
-CSV2WIKI_CONFIG="${MACFOUND_DIR}"/csv2wiki-config
-OUTPUT_CSV="etl-processed.csv"
-COMPOSER="${MACFOUND_DIR}"/compose-csvs
-UPLOADER="${MACFOUND_DIR}"/upload-csv
 
-if [ ! -f "${CSV2WIKI_CONFIG}" ]; then
-  echo "ERROR: No csv2wiki-config file found."
-  echo ""
-  echo "Try doing 'cp csv2wiki-config.tmpl csv2wiki-config' and"
-  echo "then editing csv2wiki-config as needed."
-  echo ""
-  exit 1
-fi
+TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
+RUNNER="${MACFOUND_DIR}"/compose-and-upload
 
 if [ ! -d "${DATA_DIR}" ] ; then
   echo "Stage 0: Setting up data directory..."
@@ -129,91 +117,20 @@ if ! echo "831bd76551d1d21aea16820aa64463d27d3001a1  $DATA_DIR/$PROPOSALS_CSV" |
   exit 1
 fi
 
-# We want to make sure there's no lingering old TOCs if we change how
-# compose-csv creates them
-mkdir -p $TOC_DIR
-rm $TOC_DIR/*
-cp tocs/generic.j2 $TOC_DIR/Population_TOC.j2
-cp tocs/generic.j2 $TOC_DIR/Keyword_TOC.j2
-cp tocs/generic.j2 $TOC_DIR/Annual_Budgets.j2
-cp tocs/list.j2 $TOC_DIR/AllProposals.j2
-cp tocs/Geographic_TOC.j2 $TOC_DIR/
 
 mkdir -p $TDC_CONFIG_DIR
 
-### Compose the spreadsheets into one cohesive whole.
-#
-# Use --pare to convert only 1% of the entries, to save time while testing. 
-echo "Stage 1: Composing..."
-${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
-            --admin-review-csv="${DATA_DIR}/${ADMIN_REVIEW_CSV}" \
-            --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
-            --panel-evaluation-csv="${DATA_DIR}/${PANEL_EVALUATION_CSV}" \
-            --budget-csv="${DATA_DIR}/${BUDGET_CSV}" \
-            --regionconfig-csv="${MACFOUND_DIR}/${REGIONCONFIG_CSV}" \
-            --top16-data-file="${DATA_DIR}/${TOP16_DATA_FILE}" \
-            --attachments-dir=${ATTACHMENTS_DIR} \
-            --tdc-config-dir="${TDC_CONFIG_DIR}" \
-            --toc-dir="${TOC_DIR}" \
-            > "${DATA_DIR}/${OUTPUT_CSV}"
+${RUNNER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
+          --admin-review-csv="${DATA_DIR}/${ADMIN_REVIEW_CSV}" \
+          --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
+          --panel-evaluation-csv="${DATA_DIR}/${PANEL_EVALUATION_CSV}" \
+          --budget-csv="${DATA_DIR}/${BUDGET_CSV}" \
+          --top16-data-file="${DATA_DIR}/${TOP16_DATA_FILE}" \
+          --attachments-dir=${ATTACHMENTS_DIR} \
+          --tdc-config-dir="${TDC_CONFIG_DIR}"
 if [ $? -ne 0 ]; then
-		echo Composition failure!
+		echo Failure!
 		exit 1
 fi
-echo "Done with Stage 1 (Composing)."
-echo ""
 
-### Upload the spreadsheet and TOCs to a running instance of torquedata
-#
-# There's a dependency on a running version of mediawiki
-# with a torquedata service running behind it, and a version of
-# the TorqueDataConnect running on the mediawiki
-#
-# Because attachments take a bit of time to upload, and we have no current
-# method to see if they have been uploaded, we just use a simple environment
-# variable to test if someone wants to.
-echo "Stage 2: Uploading csv and attachments..."
-echo "  If you want to skip attachments, set SKIP_ATTACHMENTS in your environment"
-if [ -z "${SKIP_ATTACHMENTS}" ] ; then
-  ATTACHMENT_ARG="--attachments-dir=${ATTACHMENTS_DIR}"
-else
-  ATTACHMENT_ARG=""
-fi
-${UPLOADER} --csv="${DATA_DIR}/${OUTPUT_CSV}" \
-            --toc-dir="${TOC_DIR}" \
-            $ATTACHMENT_ARG \
-            --config="${CSV2WIKI_CONFIG}"
-if [ $? -ne 0 ]; then
-		echo Upload failure!
-		exit 1
-fi
-echo "Done with Stage 2 (Uploading csv)."
-echo ""
-
-# This pages are the template callers hosted on the wiki, as opposed to
-# the data/jinja files that are processed by torquedata
-TOC_PAGES=""
-for file in $TOC_DIR/*.mwiki ; do
-  TOC_PAGES="$TOC_PAGES --helper-page=$file"
-done
-
-# See note in README about how we're not really using csv2wiki as it's
-# intended to be used...
-echo "Stage 3: Creating wiki..."
-python3 -m csv2wiki -c ${CSV2WIKI_CONFIG}      \
-            --make-non-editable \
-            --skip-rows=1 \
-            ${TOC_PAGES} \
-            --csv="${DATA_DIR}/${OUTPUT_CSV}"
 echo "Done creating wiki."
-
-echo "Stage 4: Creating config (optional)..."
-echo ""
-echo "We do not automatically upload the config because it's a living document."
-echo "However, the following v1 files were placed in $TDC_CONFIG_DIR for you to"
-echo "upload:"
-echo " - AllProposals - All the proposals generated"
-echo " - ValidProposals - The Valid proposals according to Admin Review"
-echo " - AllColumns - All the available columns"
-echo ""
-echo "Done creating config."
