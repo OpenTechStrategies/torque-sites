@@ -24,7 +24,12 @@ class AllProposals:
 
     def generate(self, config_dir):
         with open(os.path.join(config_dir, "AllProposals"), "w") as f:
-            f.writelines([proposal_to_title_line(p) for p in self.competition.ordered_proposals()])
+            f.writelines(
+                [
+                    proposal_to_title_line(p)
+                    for p in self.competition.ordered_proposals()
+                ]
+            )
         print("AllProposals written to TDC config dir")
 
 

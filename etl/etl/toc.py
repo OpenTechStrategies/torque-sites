@@ -66,7 +66,9 @@ class GenericToc(Toc):
         template += "{% for group_name, proposal_ids in groups.items() %}\n"
         template += "    {%- set proposals_in_group = [] %}\n"
         template += "    {%- for proposal_id in proposal_ids %}\n"
-        template += "        {%%- if proposal_id in %s.keys() %%}\n" % self.competition_name
+        template += (
+            "        {%%- if proposal_id in %s.keys() %%}\n" % self.competition_name
+        )
         template += '            {{- "" if proposals_in_group.append(proposal_id) }}\n'
         template += "        {%- endif %}\n"
         template += "    {%- endfor %}\n"
@@ -124,7 +126,9 @@ class ListToc(Toc):
 
     def template_file(self):
         template = "{% for proposal_id in proposal_ids %}\n"
-        template += "    {%%- if proposal_id in %s.keys() -%%}\n" % self.competition_name
+        template += (
+            "    {%%- if proposal_id in %s.keys() -%%}\n" % self.competition_name
+        )
         template += "* {{ toc_lines[proposal_id] }}\n"
         template += "{% endif -%}\n"
         template += "{% endfor %}\n"
@@ -183,7 +187,9 @@ class GeographicToc(Toc):
                 % (i, i, i - 1)
             )
 
-        template += '{%%- for proposal_id in subcolumn_data_%s["proposals"] -%%}\n' % (self.num_levels - 1)
+        template += '{%%- for proposal_id in subcolumn_data_%s["proposals"] -%%}\n' % (
+            self.num_levels - 1
+        )
         template += "{%% if proposal_id in %s.keys() %%}\n" % self.competition_name
         template += '{%- if not subcolumn_data_0["shown"] -%}\n'
         template += '{%- set _ = subcolumn_data_0.update({"shown": True }) %}\n'
@@ -191,7 +197,9 @@ class GeographicToc(Toc):
         for i in range(1, self.num_levels):
             template += "{%- endif -%}\n"
             template += '{%%- if not subcolumn_data_%s["shown"] -%%}\n' % i
-            template += '{%%- set _ = subcolumn_data_%s.update({"shown": True }) %%}\n' % i
+            template += (
+                '{%%- set _ = subcolumn_data_%s.update({"shown": True }) %%}\n' % i
+            )
             template += "%s {{ subcolumn_name_%s }} %s\n" % (
                 "=" * (i + 1),
                 i,
@@ -248,7 +256,9 @@ class RegionAwareGeographicToc(GeographicToc):
                         "shown": False,
                         "subcolumn": {},
                     }
-                self.data[region]["subcolumn"][subregion]["subcolumn"][country] = country_data[country]
+                self.data[region]["subcolumn"][subregion]["subcolumn"][
+                    country
+                ] = country_data[country]
             except KeyError:
                 if country not in country_errors:
                     print(

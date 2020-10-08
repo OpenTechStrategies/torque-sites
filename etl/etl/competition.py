@@ -18,9 +18,13 @@ class Competition:
         PROJECT_TITLE_COLUMN_NAME is the title, which is used in generated MediaWiki
         page titles."""
         try:
-            proposals_reader = csv.reader(open(proposals_location, encoding="utf-8"), delimiter=",", quotechar='"')
+            proposals_reader = csv.reader(
+                open(proposals_location, encoding="utf-8"), delimiter=",", quotechar='"'
+            )
         except UnicodeDecodeError:
-            sys.stderr.write("fix-csv expects utf-8-encoded unicode, not whatever is in this csv file.\n")
+            sys.stderr.write(
+                "fix-csv expects utf-8-encoded unicode, not whatever is in this csv file.\n"
+            )
             sys.exit(-1)
 
         self.name = name
@@ -70,14 +74,20 @@ class Competition:
                 key=lambda proposal: int(proposal.cell(column_name)),
             )
         else:
-            sorted_proposals = sorted(self.proposals.values(), key=lambda proposal: proposal.cell(column_name))
-        self.sorted_proposal_keys = [proposal.cell(self.key_column_name) for proposal in sorted_proposals]
+            sorted_proposals = sorted(
+                self.proposals.values(), key=lambda proposal: proposal.cell(column_name)
+            )
+        self.sorted_proposal_keys = [
+            proposal.cell(self.key_column_name) for proposal in sorted_proposals
+        ]
 
     def filter_proposals(self, proposal_filter):
         """Removes proposals according to PROPOSAL_FILTER, which needs
         to be an object of the instance ProposalFilter."""
         self.sorted_proposal_keys = [
-            k for k in self.sorted_proposal_keys if not proposal_filter.filter_proposal(self.proposals[k])
+            k
+            for k in self.sorted_proposal_keys
+            if not proposal_filter.filter_proposal(self.proposals[k])
         ]
         self.proposals = {k: self.proposals[k] for k in self.sorted_proposal_keys}
 
@@ -87,11 +97,18 @@ class Competition:
 
     def to_csv(self, output):
         """Writes a csv out to OUTPUT designed to be uploaded to a torque instance"""
-        csv_writer = csv.writer(output, delimiter=",", quotechar='"', lineterminator="\n")
+        csv_writer = csv.writer(
+            output, delimiter=",", quotechar='"', lineterminator="\n"
+        )
         csv_writer.writerow(self.columns)
 
         # The column types, as an array in the order of the header columns
-        csv_writer.writerow([(self.column_types[col] if col in self.column_types else "") for col in self.columns])
+        csv_writer.writerow(
+            [
+                (self.column_types[col] if col in self.column_types else "")
+                for col in self.columns
+            ]
+        )
         for proposal in self.ordered_proposals():
             csv_writer.writerow(proposal.to_csv(self.columns))
 
@@ -231,16 +248,16 @@ class MultiLineFromListProcessor(CellProcessor):
 
             for value in self.valid_list:
                 if cell.startswith(value):
-                    found = True;
+                    found = True
                     new_cell += value + "\n"
-                    cell = cell[len(value):]
+                    cell = cell[len(value) :]
                 if cell.startswith(","):
                     cell = cell[1:]
 
             if not found:
                 raise Exception("Could not find valid value in " + cell)
 
-            cell = cell.strip();
+            cell = cell.strip()
 
         new_cell.strip()
         return new_cell
@@ -261,7 +278,9 @@ class BudgetTableProcessor(CellProcessor):
         for budget_row in budget_rows:
             budget_items = budget_row.split("|")
             budget_amount = NumberCommaizer().process_cell(budget_items[1])
-            budget_row_data.append({"description": budget_items[0], "amount": budget_amount})
+            budget_row_data.append(
+                {"description": budget_items[0], "amount": budget_amount}
+            )
         return json.dumps(budget_row_data)
 
 
@@ -301,7 +320,9 @@ class CorrectionData(CellProcessor):
     def __init__(self, key_column_name, correction_csv):
         self.correction_data = {}
 
-        csv_reader = csv.reader(open(correction_csv, encoding='utf-8'), delimiter=',', quotechar='"')
+        csv_reader = csv.reader(
+            open(correction_csv, encoding="utf-8"), delimiter=",", quotechar='"'
+        )
         self.header = next(csv_reader)
         key_col_idx = self.header.index(key_column_name)
 
@@ -443,7 +464,9 @@ class BasicAttachments(InformationAdder):
 
                 full_application_attachment_dir = os.path.join(attachments_dir, key)
                 for attachment_file in os.listdir(full_application_attachment_dir):
-                    if os.path.isdir(os.path.join(attachments_dir, key, attachment_file)):
+                    if os.path.isdir(
+                        os.path.join(attachments_dir, key, attachment_file)
+                    ):
                         continue
 
                     if re.search("^\\d*_Registration.pdf", attachment_file):
@@ -455,7 +478,9 @@ class BasicAttachments(InformationAdder):
                             attachment_file,
                             99,
                             BasicAttachments.defined_column_names[1],
-                            os.path.join(full_application_attachment_dir, attachment_file),
+                            os.path.join(
+                                full_application_attachment_dir, attachment_file
+                            ),
                         )
                     )
 
@@ -474,16 +499,26 @@ class BasicAttachments(InformationAdder):
         # Sort first by rank, then by name
         attachments.sort(key=lambda a: str(a.rank) + " " + a.name)
 
-        attachments_by_column_name = {name:[] for name in self.defined_column_names}
+        attachments_by_column_name = {name: [] for name in self.defined_column_names}
         for attachment in attachments:
             if attachment.column_name not in attachments_by_column_name:
                 attachments_by_column_name[attachment.column_name] = []
             attachments_by_column_name[attachment.column_name].append(attachment)
 
         if column_name == self.defined_column_names[0]:
-            return "\n".join([a.name for a in attachments_by_column_name[self.defined_column_names[1]]])
+            return "\n".join(
+                [
+                    a.name
+                    for a in attachments_by_column_name[self.defined_column_names[1]]
+                ]
+            )
         elif column_name == self.defined_column_names[1]:
-            return "\n".join([a.file for a in attachments_by_column_name[self.defined_column_names[1]]])
+            return "\n".join(
+                [
+                    a.file
+                    for a in attachments_by_column_name[self.defined_column_names[1]]
+                ]
+            )
         elif column_name in attachments_by_column_name:
             return "\n".join([a.file for a in attachments_by_column_name[column_name]])
         else:
@@ -534,7 +569,9 @@ class AdminReview(InformationAdder, ProposalFilter):
         """Builds the dataset from the CSV_LOCATION, using the KEY_COLUMN_NAME
         to link up against the proposal keys, and teh VALID_COLUMN_NAME for
         which column in the admin spreadsheet has the validity column"""
-        csv_reader = csv.reader(open(csv_location, encoding="utf-8"), delimiter=",", quotechar='"')
+        csv_reader = csv.reader(
+            open(csv_location, encoding="utf-8"), delimiter=",", quotechar='"'
+        )
         header_row = next(csv_reader)
 
         key_col_idx = header_row.index(key_column_name)
@@ -612,7 +649,9 @@ class EvaluationAdder(InformationAdder):
         self.name = params[1]
         csv_location = params[2]
 
-        csv_reader = csv.reader(open(csv_location, encoding="utf-8"), delimiter=",", quotechar='"')
+        csv_reader = csv.reader(
+            open(csv_location, encoding="utf-8"), delimiter=",", quotechar='"'
+        )
 
         self.traits = []
         self.evaluation_data = {}
@@ -621,18 +660,24 @@ class EvaluationAdder(InformationAdder):
 
         app_col = header_row.index(app_col_name)
         score_rank_normalized_col = header_row.index(score_rank_normalized_col_name)
-        sum_of_scores_normalized_col = header_row.index(sum_of_scores_normalized_col_name)
+        sum_of_scores_normalized_col = header_row.index(
+            sum_of_scores_normalized_col_name
+        )
         trait_col = header_row.index(trait_col_name)
         score_normalized_col = header_row.index(score_normalized_col_name)
         comments_col = header_row.index(comments_col_name)
-        comments_score_normalized_col = header_row.index(comments_score_normalized_col_name)
+        comments_score_normalized_col = header_row.index(
+            comments_score_normalized_col_name
+        )
 
         for row in csv_reader:
             application_id = row[app_col]
             if not application_id in self.evaluation_data:
                 self.evaluation_data[application_id] = {
-                    "%s Overall Score Rank Normalized" % self.name: row[score_rank_normalized_col],
-                    "%s Sum of Scores Normalized" % self.name: row[sum_of_scores_normalized_col],
+                    "%s Overall Score Rank Normalized"
+                    % self.name: row[score_rank_normalized_col],
+                    "%s Sum of Scores Normalized"
+                    % self.name: row[sum_of_scores_normalized_col],
                 }
 
             evaluation_datum = self.evaluation_data[application_id]
@@ -643,15 +688,23 @@ class EvaluationAdder(InformationAdder):
 
             if "%s %s" % (self.name, trait_name) not in evaluation_datum:
                 evaluation_datum["%s %s" % (self.name, trait_name)] = trait_name
-                evaluation_datum["%s %s Score Normalized" % (self.name, trait_name)] = 0.0
+                evaluation_datum[
+                    "%s %s Score Normalized" % (self.name, trait_name)
+                ] = 0.0
                 evaluation_datum["%s %s Comments" % (self.name, trait_name)] = ""
-                evaluation_datum["%s %s Comment Scores Normalized" % (self.name, trait_name)] = ""
+                evaluation_datum[
+                    "%s %s Comment Scores Normalized" % (self.name, trait_name)
+                ] = ""
 
-            evaluation_datum["%s %s Score Normalized" % (self.name, trait_name)] += float(row[score_normalized_col])
-            evaluation_datum["%s %s Comments" % (self.name, trait_name)] += row[comments_col] + "\n"
-            evaluation_datum["%s %s Comment Scores Normalized" % (self.name, trait_name)] += (
-                row[comments_score_normalized_col] + "\n"
+            evaluation_datum[
+                "%s %s Score Normalized" % (self.name, trait_name)
+            ] += float(row[score_normalized_col])
+            evaluation_datum["%s %s Comments" % (self.name, trait_name)] += (
+                row[comments_col] + "\n"
             )
+            evaluation_datum[
+                "%s %s Comment Scores Normalized" % (self.name, trait_name)
+            ] += (row[comments_score_normalized_col] + "\n")
 
         self.traits.sort()
 
@@ -659,11 +712,22 @@ class EvaluationAdder(InformationAdder):
             "%s Overall Score Rank Normalized" % self.name,
             "%s Sum of Scores Normalized" % self.name,
         ]
-        self.regular_columns.extend(["%s %s" % (self.name, trait) for trait in self.traits])
-        self.regular_columns.extend(["%s %s Score Normalized" % (self.name, trait) for trait in self.traits])
+        self.regular_columns.extend(
+            ["%s %s" % (self.name, trait) for trait in self.traits]
+        )
+        self.regular_columns.extend(
+            ["%s %s Score Normalized" % (self.name, trait) for trait in self.traits]
+        )
         self.list_columns = []
-        self.list_columns.extend(["%s %s Comments" % (self.name, trait) for trait in self.traits])
-        self.list_columns.extend(["%s %s Comment Scores Normalized" % (self.name, trait) for trait in self.traits])
+        self.list_columns.extend(
+            ["%s %s Comments" % (self.name, trait) for trait in self.traits]
+        )
+        self.list_columns.extend(
+            [
+                "%s %s Comment Scores Normalized" % (self.name, trait)
+                for trait in self.traits
+            ]
+        )
 
     def column_type(self, column_name):
         if column_name in self.list_columns:
