@@ -41,7 +41,6 @@ Usage:
   $ compose-and-upload \\
        --proposals-csv=PROPOSALS_CSV \\
        --attachments-dir=ATTACHMENTS_DIR \\
-       --judge-evaluation-csv=JUDGE_EVALUATION_CSV \\
        --tdc-config-dir=TDC_CONFIG_DIR
 
 Command-line options:
@@ -73,7 +72,6 @@ def main():
             "",
             [
                 "proposals-csv=",
-                "judge-evaluation-csv=",
                 "tdc-config-dir=",
                 "attachments-dir=",
             ],
@@ -83,14 +81,11 @@ def main():
         sys.exit(2)
 
     proposals_csv = None
-    judge_evaluation_csv = None
     attachments_dir = None
     tdc_config_dir = None
     for o, a in opts:
         if o == "--proposals-csv":
             proposals_csv = a
-        elif o == "--judge-evaluation-csv":
-            judge_evaluation_csv = a
         elif o == "--tdc-config-dir":
             tdc_config_dir = a
         elif o == "--attachments-dir":
