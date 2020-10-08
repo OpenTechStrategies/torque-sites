@@ -116,26 +116,30 @@ def main():
         competition.ColumnNotEqualsProposalFilter("Admin Review Status", "Valid")
     )
 
-
     comp.process_cells_special("Priority Populations", competition.MultiLineProcessor())
-    comp.process_cells_special("Total Resource Requirements", competition.NumberCommaizer())
+    comp.process_cells_special(
+        "Total Resource Requirements", competition.NumberCommaizer()
+    )
     comp.process_cells_special("Budget data", competition.BudgetTableProcessor())
 
-    attachments = competition.BasicAttachments(attachments_dir)
+    attachments = competition.BasicAttachments(
+        comp.sorted_proposal_keys, attachments_dir
+    )
     comp.add_supplemental_information(attachments)
     if judge_evaluation_csv is not None:
         comp.add_supplemental_information(
-                competition.EvaluationAdder(
-                    "Judge",
-                    judge_evaluation_csv,
-                    app_col_name="Application #",
-                    score_rank_normalized_col_name="OverallScoreRankNormalized",
-                    sum_of_scores_normalized_col_name="SumOfScoresNormalized",
-                    trait_col_name="Trait",
-                    score_normalized_col_name="TraitScoreNormalized",
-                    comments_col_name="TraitJudgeComment",
-                    comments_score_normalized_col_name="TraitScoreNormalized",
-                    ))
+            competition.EvaluationAdder(
+                "Judge",
+                judge_evaluation_csv,
+                app_col_name="Application #",
+                score_rank_normalized_col_name="OverallScoreRankNormalized",
+                sum_of_scores_normalized_col_name="SumOfScoresNormalized",
+                trait_col_name="Trait",
+                score_normalized_col_name="TraitScoreNormalized",
+                comments_col_name="TraitJudgeComment",
+                comments_score_normalized_col_name="TraitScoreNormalized",
+            )
+        )
 
     comp.sort("Judge Overall Score Rank Normalized", True)
 

@@ -151,7 +151,6 @@ ${RUNNER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
           --thematic-areas-csv="${DATA_DIR}/${THEMATIC_AREAS_CSV}" \
           --bridgespan-data-csv="${BRIDGESPAN_ANALYSIS_FOLDER}/${BRIDGESPAN_ANALYSIS_CSV}" \
           --bridgespan-overview-folder="${BRIDGESPAN_ANALYSIS_FOLDER}" \
-          --regionconfig-csv="${MACFOUND_DIR}/${REGIONCONFIG_CSV}" \
           --top13-data-file="${DATA_DIR}/${TOP13_DATA_FILE}" \
           --attachments-dir=${ATTACHMENTS_DIR} \
           --tdc-config-dir="${TDC_CONFIG_DIR}"

@@ -312,7 +312,9 @@ def main():
         proposals_csv, "EO2020", "Application #", "Project Title"
     )
 
-    attachments = competition.RegexSpecifiedAttachments(attachments_dir)
+    attachments = competition.RegexSpecifiedAttachments(
+        comp.sorted_proposal_keys, attachments_dir
+    )
     attachments.specify_by_regex(
         ".*Response to Questions", "Responses to Follow Up Questions", 3
     )

@@ -130,7 +130,9 @@ def fix_csv(
     organization name in column A (1)."""
     reclass_csv_reader = None
     try:
-        csv_reader = csv.reader(open(fname_in, encoding="utf-8"), delimiter=",", quotechar='"')
+        csv_reader = csv.reader(
+            open(fname_in, encoding="utf-8"), delimiter=",", quotechar='"'
+        )
         if reclassifications_csv is not None:
             reclass_csv_reader = csv.reader(
                 open(reclassifications_csv, encoding="utf-8"),
@@ -138,7 +140,9 @@ def fix_csv(
                 quotechar='"',
             )
     except UnicodeDecodeError:
-        sys.stderr.write("fix-csv expects utf-8-encoded unicode, not whatever is in this csv file.\n")
+        sys.stderr.write(
+            "fix-csv expects utf-8-encoded unicode, not whatever is in this csv file.\n"
+        )
         sys.exit(-1)
 
     if fname_out:
@@ -287,12 +291,16 @@ def fix_csv(
                 # "Health and Well-Being", but sometimes a colon was
                 # used.  The colon probably makes more sense, so let's
                 # just switch them all to that.
-                new_cell = new_cell.replace("Health and Well-Being,", "Health and Well-Being:")
+                new_cell = new_cell.replace(
+                    "Health and Well-Being,", "Health and Well-Being:"
+                )
                 # And a couple of judgement calls:
                 if re.match("^Resilience Against Climate Change$", new_cell):
                     # The shorter name only had 18 members, compared
                     # with 170 for the longer name.
-                    new_cell = "Resilience Against Climate Change and Environmental Damage"
+                    new_cell = (
+                        "Resilience Against Climate Change and Environmental Damage"
+                    )
                 if re.match("^Crime and Punishment$", new_cell):
                     # The shorter name only had 9 members, compared
                     # with 54 for the longer name.
@@ -303,7 +311,11 @@ def fix_csv(
                     # Cannot use special formatting here because this
                     # will be used as a category, not just as a value.
                     new_cell = "No Primary Thematic Area Selected"
-            if show_table_problem and new_cell.find("<table") != -1 and new_cell.find("</table") == -1:
+            if (
+                show_table_problem
+                and new_cell.find("<table") != -1
+                and new_cell.find("</table") == -1
+            ):
                 sys.stderr.write(
                     "DEBUG: unclosed <table>: row %d, col %d (%s): '%s':\n'%s'\n\n"
                     % (row_num, cell_num, header_row[cell_num - 1], org_name, new_cell)
@@ -338,7 +350,12 @@ def fix_csv(
                     # the EmbedVideo MediaWiki extension.  See issue
                     # #26 for details.
                     new_cell = (
-                        "https://www.youtube.com/watch?v=" + video_id + "\n\n" + "{{#ev:youtube|" + video_id + "}}"
+                        "https://www.youtube.com/watch?v="
+                        + video_id
+                        + "\n\n"
+                        + "{{#ev:youtube|"
+                        + video_id
+                        + "}}"
                     )
                 else:  # There were 8 with no video that we could find:
                     new_cell = (
@@ -360,7 +377,9 @@ def fix_csv(
 def main():
     """Sanitize the MacFound input and emit it as html-ized csv."""
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "", ["pare=", "reclassifications=", "show-table-problem"])
+        opts, args = getopt.getopt(
+            sys.argv[1:], "", ["pare=", "reclassifications=", "show-table-problem"]
+        )
     except getopt.GetoptError as err:
         sys.stderr.write("ERROR: '%s'\n" % err)
         sys.exit(2)

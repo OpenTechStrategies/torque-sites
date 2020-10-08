@@ -110,7 +110,9 @@ def main():
     comp.process_cells_special("Total Projected Costs", competition.NumberCommaizer())
     comp.process_cells_special("Budget data", competition.BudgetTableProcessor())
 
-    attachments = competition.BasicAttachments(attachments_dir)
+    attachments = competition.BasicAttachments(
+        comp.sorted_proposal_keys, attachments_dir
+    )
     comp.add_supplemental_information(attachments)
     comp.sort("Organization Name")
 

@@ -81,13 +81,17 @@ def main():
         sys.exit(1)
 
     comp = competition.Competition(
-        proposals_csv, "LFC100Change2017", "Review_Number", "Registered Organization Name"
+        proposals_csv,
+        "LFC100Change2017",
+        "Review_Number",
+        "Registered Organization Name",
     )
 
     my_wiki = wiki.WikiSession(
         config.username, config.password, comp.name, config.wiki_url
     )
     my_wiki.create_pages(comp)
+
 
 if __name__ == "__main__":
     main()
