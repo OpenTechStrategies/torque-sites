@@ -129,13 +129,13 @@ class Proposal:
                 self.num_fixed_cells += 1
             self.data[column_name] = fixed_cell
 
-    def process_cell_special(self, column_name, processor):
-        """Process a cell noted by COLUMN_NAME from PROCESSOR of type CellProcessor"""
-        self.data[column_name] = processor.process_cell(self.data[column_name])
-
     def add_cell(self, column_name, cell):
         """Adds a new value CELL to the place held by COLUMN_NAME"""
         self.data[column_name] = cell
+
+    def process_cell_special(self, column_name, processor):
+        """Process a cell noted by COLUMN_NAME from PROCESSOR of type CellProcessor"""
+        self.data[column_name] = processor.process_cell(self, column_name)
 
     def cell(self, column_name):
         """Returns the cell value for COLUMN_NAME"""
@@ -194,8 +194,9 @@ class CellProcessor:
         column type"""
         return None
 
-    def process_cell(self, cell):
-        """Transforms the value in CELL to some other value, and returns it"""
+    def process_cell(self, proposal, column_name):
+        """Transforms the PROPOSAL, in COLUMN_NAME, to some other value, and
+        returns it."""
         pass
 
 
@@ -206,8 +207,43 @@ class MultiLineProcessor(CellProcessor):
     def column_type(self):
         return "list"
 
-    def process_cell(self, cell):
+    def process_cell(self, proposal, column_name):
+        cell = proposal.cell(column_name)
         return "\n".join([elem.strip() for elem in cell.split(",")])
+
+
+class MultiLineFromListProcessor(CellProcessor):
+    """A CellProcesor that splits a cell into multiple lines, but does
+    so based on a passed in list, verifying that each item appears
+    in the list, and allowing list items to have commas in them."""
+
+    def __init__(self, valid_list):
+        self.valid_list = valid_list
+
+    def column_type(self):
+        return "list"
+
+    def process_cell(self, proposal, column_name):
+        cell = proposal.cell(column_name).strip()
+        new_cell = ""
+        while cell is not "":
+            found = False
+
+            for value in self.valid_list:
+                if cell.startswith(value):
+                    found = True;
+                    new_cell += value + "\n"
+                    cell = cell[len(value):]
+                if cell.startswith(","):
+                    cell = cell[1:]
+
+            if not found:
+                raise Exception("Could not find valid value in " + cell)
+
+            cell = cell.strip();
+
+        new_cell.strip()
+        return new_cell
 
 
 class BudgetTableProcessor(CellProcessor):
@@ -218,7 +254,8 @@ class BudgetTableProcessor(CellProcessor):
     def column_type(self):
         return "json"
 
-    def process_cell(self, cell):
+    def process_cell(self, proposal, column_name):
+        cell = proposal.cell(column_name)
         budget_rows = cell.split("||")
         budget_row_data = []
         for budget_row in budget_rows:
@@ -235,16 +272,62 @@ class NumberCommaizer(CellProcessor):
     def column_type(self):
         return None
 
-    def process_cell(self, cell):
+    def process_cell(self, proposal, column_name):
         """Return the CELL with commas as if it were a large number,
         or do nothing if not parseable as a number"""
 
+        cell = proposal.cell(column_name)
         try:
             retn = floor(float(number))
             retn = "{:,}".format(retn)
             return retn
         except Exception as e:
             return cell
+
+
+class CorrectionData(CellProcessor):
+    """A CellProcessor that's generated from a csv file that has a row
+    per proposal (keyed by the specified KEY_COLUMN), and then columns for
+    the data in that spreadsheet that's being overriden, if not empty.
+    An example would look like:
+
+    Review Number,Project Title,Organization,...
+    1,New Title for 1,Corrected Organization,...
+    2,Correct Title for 2,,...   # There is no entry for Organization,
+                                 # so no correction is made
+
+    Will then replace cells in the proposals with the updated version."""
+
+    def __init__(self, key_column_name, correction_csv):
+        self.correction_data = {}
+
+        csv_reader = csv.reader(open(correction_csv, encoding='utf-8'), delimiter=',', quotechar='"')
+        self.header = next(csv_reader)
+        key_col_idx = self.header.index(key_column_name)
+
+        for correction_row in csv_reader:
+            key = correction_row[key_col_idx]
+            if key not in self.correction_data:
+                self.correction_data[key] = {}
+            for col_name, datum in zip(self.header, correction_row):
+                # If empty, or the key column, don't correct
+                if col_name != key_column_name and datum:
+                    self.correction_data[key][col_name] = datum
+
+    def columns_affected(self):
+        """Get all the columns this correction file corrects.  This can
+        be used with a loop to process a competition."""
+        return self.header
+
+    def column_type(self):
+        return None
+
+    def process_cell(self, proposal, column_name):
+        key = proposal.key()
+        if key in self.correction_data and column_name in self.correction_data[key]:
+            return self.correction_data[key][column_name]
+
+        return proposal.cell(column_name)
 
 
 class InformationAdder:
@@ -333,6 +416,10 @@ class BasicAttachments(InformationAdder):
     MediaWiki, but also is an InformationAdder so that those attachments values
     are in the Proposal so that torque knows where they are.
 
+    The KEYS passed in the constructor refers to which proposals to look for
+    attachments in, as the ATTACHMENTS_DIR should always have subdirectories
+    per proposal by key.
+
     The column names can be variable based on what attachments are important
     for the competition.
 
@@ -341,13 +428,16 @@ class BasicAttachments(InformationAdder):
 
     defined_column_names = ["Attachment Display Names", "Attachments"]
 
-    def __init__(self, attachments_dir):
+    def __init__(self, keys, attachments_dir):
         self.attachments = []
 
         # Attachments are always in a directory structure of
         # <attachments_dir>/<application #>/*
         if attachments_dir is not None and os.path.isdir(attachments_dir):
-            for key in os.listdir(attachments_dir):
+            for key in keys:
+                if not os.path.isdir(os.path.join(attachments_dir, key)):
+                    continue
+
                 if not re.search("^\\d*$", key):
                     continue
 
@@ -407,8 +497,8 @@ class RegexSpecifiedAttachments(BasicAttachments):
     The option to add a new column to the sheet specifically for the attachment
     also exists using specify_new_column."""
 
-    def __init__(self, attachments_dir):
-        super().__init__(attachments_dir)
+    def __init__(self, keys, attachments_dir):
+        super().__init__(keys, attachments_dir)
         self.extra_columns = []
 
     def column_names(self):
