@@ -48,13 +48,12 @@ DATA_DIR="${BASE_DATA_DIR}/${COMPETITION}"
 python3 -V > /dev/null 2>&1 || { echo "python3 required, aborting" ; exit 1; }
 
 PROPOSALS_CSV="Export-reg-and-app-data-Submission-deadline-06082019-fixed-by-OTS.csv"
-ADMIN_REVIEW_CSV="AdminReviewP2P_mac2019_09192019.csv"
-JUDGE_EVALUATION_CSV="P2P-review-data-20190929-for-OTS-copy-fixed-by-OTS.csv"
-WISEHEAD_EVALUATION_CSV="100Change_Wise_Head_Review_data_anon_judges_11162019.csv"
-REGIONCONFIG_CSV="regionconfig.csv"
-ATTACHMENTS_DIR="${DATA_DIR}/attachments"
-TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
 BASE_ATTACHMENTS="Pdfs-and-Submission-Deadline-exports.zip"
+ATTACHMENTS_DIR="${DATA_DIR}/attachments"
+JUDGE_EVALUATION_CSV="P2P-review-data-20190929-for-OTS-copy-fixed-by-OTS.csv"
+ADMIN_REVIEW_CSV="AdminReviewP2P_mac2019_09192019.csv"
+WISEHEAD_EVALUATION_CSV="100Change_Wise_Head_Review_data_anon_judges_11162019.csv"
+TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
 TECH_REVIEW_ATTACHMENTS="Tech_Review_PDFs.zip"
 EDITED_TECH_REVIEW_ATTACHMENTS="Reviews_Edited_for_Applicants.zip"
 FACTSHEET_ATTACHMENTS="Two-page_Factsheets.zip"
@@ -64,21 +63,8 @@ CANDID_CORRECTION_FILE="Candid_Application_Data_Clean_for_OTS_2020_01_13_01.csv"
 OTS_CORRECTION_FILE="OTS_Corrections.csv"
 OTS_METADATA="OTS_Metadata.csv"
 
-TOC_DIR="${DATA_DIR}/tocs"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
-OUTPUT_CSV="2019-processed.csv"
-CSV2WIKI_CONFIG="${MACFOUND_DIR}"/csv2wiki-config
-COMPOSER="${MACFOUND_DIR}"/compose-csvs
-UPLOADER="${MACFOUND_DIR}"/upload-csv
-
-if [ ! -f "${CSV2WIKI_CONFIG}" ]; then
-  echo "ERROR: No csv2wiki-config file found."
-  echo ""
-  echo "Try doing 'cp csv2wiki-config.tmpl csv2wiki-config' and"
-  echo "then editing csv2wiki-config as needed."
-  echo ""
-  exit 1
-fi
+RUNNER="${MACFOUND_DIR}"/compose-and-upload
 
 if [ ! -d "${DATA_DIR}" ] ; then
   echo "Stage 0: Setting up data directory..."
@@ -113,7 +99,6 @@ if [ ! -d "${DATA_DIR}" ] ; then
   gpg -o ${DATA_DIR}/${OTS_CORRECTION_FILE} --decrypt ${ENCRYPTED_DIR}/${OTS_CORRECTION_FILE}.gpg || exit 1
   gpg -o ${DATA_DIR}/${OTS_METADATA} --decrypt ${ENCRYPTED_DIR}/${OTS_METADATA}.gpg || exit 1
 
-  mkdir -p ${TOC_DIR}
   mkdir -p ${TDC_CONFIG_DIR}
 fi
 
@@ -189,108 +174,21 @@ if ! echo "5b1ad76d329a47f0a7b62a76abdbfc4f98a87c59  $DATA_DIR/$JUDGE_EVALUATION
   exit 1
 fi
 
-# We want to make sure there's no lingering old TOCs if we change how
-# compose-csv creates them
-mkdir -p $TOC_DIR
-rm $TOC_DIR/*
-cp tocs/generic.j2 $TOC_DIR/Population_TOC.j2
-cp tocs/sdg.j2 $TOC_DIR/SDG_TOC.j2
-cp tocs/generic.j2 $TOC_DIR/Topic_TOC.j2
-cp tocs/list.j2 $TOC_DIR/Finalist_Candidates.j2
-cp tocs/Geographic_TOC.j2 $TOC_DIR/
-cp tocs/All.j2 $TOC_DIR/
-cp tocs/All.json $TOC_DIR/
-
 mkdir -p $TDC_CONFIG_DIR
 
-### Compose the spreadsheets into one cohesive whole.
-#
-# Use --pare to convert only 1% of the entries, to save time while testing. 
-echo "Stage 1: Composing..."
-if [ -z "${SKIP_ATTACHMENTS}" ] ; then
-  ATTACHMENT_ARG="--attachments-dir=${ATTACHMENTS_DIR}"
-else
-  ATTACHMENT_ARG=""
-fi
-${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
-            --admin-review-csv="${DATA_DIR}/${ADMIN_REVIEW_CSV}" \
-            --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
-            --wisehead-evaluation-csv="${DATA_DIR}/${WISEHEAD_EVALUATION_CSV}" \
-            --regionconfig-csv="${MACFOUND_DIR}/${REGIONCONFIG_CSV}" \
-            --sdgconfig-csv="${MACFOUND_DIR}/${SDGCONFIG_CSV}" \
-            $ATTACHMENT_ARG \
-            --tdc-config-dir="${TDC_CONFIG_DIR}" \
-            --ots-metadata="${DATA_DIR}/${OTS_METADATA}" \
-            --toc-dir="${TOC_DIR}" \
-            --correction-file="${DATA_DIR}/${CANDID_CORRECTION_FILE}" \
-            --correction-file="${DATA_DIR}/${OTS_CORRECTION_FILE}" > \
-            "${DATA_DIR}/${OUTPUT_CSV}"
+${RUNNER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
+          --admin-review-csv="${DATA_DIR}/${ADMIN_REVIEW_CSV}" \
+          --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
+          --wisehead-evaluation-csv="${DATA_DIR}/${WISEHEAD_EVALUATION_CSV}" \
+          --sdgconfig-csv="${MACFOUND_DIR}/${SDGCONFIG_CSV}" \
+          --ots-metadata="${DATA_DIR}/${OTS_METADATA}" \
+          --correction-file="${DATA_DIR}/${CANDID_CORRECTION_FILE}" \
+          --correction-file="${DATA_DIR}/${OTS_CORRECTION_FILE}" \
+          --attachments-dir=${ATTACHMENTS_DIR} \
+          --tdc-config-dir="${TDC_CONFIG_DIR}"
 if [ $? -ne 0 ]; then
-		echo Composition failure!
+		echo Failure!
 		exit 1
 fi
-echo "Done with Stage 1 (Composing)."
-echo ""
 
-### Upload the spreadsheet and TOCs to a running instance of torquedata
-#
-# There's a dependency on a running version of mediawiki
-# with a torquedata service running behind it, and a version of
-# the TorqueDataConnect running on the mediawiki
-#
-# Because attachments take a bit of time to upload, and we have no current
-# method to see if they have been uploaded, we just use a simple environment
-# variable to test if someone wants to.
-echo "Stage 2: Uploading csv and attachments..."
-echo "  If you want to skip attachments, set SKIP_ATTACHMENTS in your environment"
-if [ -z "${SKIP_ATTACHMENTS}" ] ; then
-  ATTACHMENT_ARG="--attachments-dir=${ATTACHMENTS_DIR}"
-else
-  ATTACHMENT_ARG=""
-fi
-${UPLOADER} --csv="${DATA_DIR}/${OUTPUT_CSV}" \
-            --toc-dir="${TOC_DIR}" \
-            $ATTACHMENT_ARG \
-            --config="${CSV2WIKI_CONFIG}"
-if [ $? -ne 0 ]; then
-		echo Upload failure!
-		exit 1
-fi
-echo "Done with Stage 2 (Uploading csv)."
-echo ""
-
-# This pages are the template callers hosted on the wiki, as opposed to
-# the data/jinja files that are processed by torquedata
-TOC_PAGES=""
-for file in $TOC_DIR/*.mwiki ; do
-  TOC_PAGES="$TOC_PAGES --helper-page=$file"
-done
-
-# See note in README about how we're not really using csv2wiki as it's
-# intended to be used...
-echo "Stage 3: Creating wiki..."
-python3 -m csv2wiki -c ${CSV2WIKI_CONFIG}      \
-            --skip-rows=1 \
-            --make-non-editable \
-            ${TOC_PAGES} \
-            --csv="${DATA_DIR}/${OUTPUT_CSV}"
 echo "Done creating wiki."
-
-echo "Stage 4: Creating config (optional)..."
-echo ""
-echo "We do not automatically upload the config because it's a living document."
-echo "However, the following v1 files were placed in $TDC_CONFIG_DIR for you to"
-echo "upload:"
-echo " - AllProposals - All the proposals generated"
-echo " - Top100 - The top 100 proposals"
-echo " - Top100AndWildCards - The top 100 proposals with the 13 Wild Cards"
-echo " - Top200 - The top 200 proposals"
-echo " - PassedReview - The 455 proposals that passed wisehead review"
-echo " - AllColumns - All the available columns"
-echo " - NonReviewColumns - All the available columns except the ones having to do with technical reviews"
-echo " - ApiColumns - Columns set up for initial API"
-echo ""
-echo "There's also an mwiki.j2 file in this directory that was the first version"
-echo "of the proposal template used."
-echo ""
-echo "Done creating config."
