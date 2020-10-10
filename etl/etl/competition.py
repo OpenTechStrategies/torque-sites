@@ -8,15 +8,13 @@ import re
 class Competition:
     """A Competition of proposals"""
 
-    def __init__(self, proposals_location, name, key_column_name, project_column_name):
+    def __init__(self, proposals_location, name, key_column_name):
         """Initializes the competition form the source spreadsheet in
         PROPOSALS_LOCATION (a file location).  Loads up the CSV and processes
         it.
 
         NAME refers to the name of the competition, KEY_COLUMN_NAME
-        is which column in the base csv holds the identifier for the proposal.
-        PROJECT_TITLE_COLUMN_NAME is the title, which is used in generated MediaWiki
-        page titles."""
+        is which column in the base csv holds the identifier for the proposal."""
         try:
             proposals_reader = csv.reader(
                 open(proposals_location, encoding="utf-8"), delimiter=",", quotechar='"'
@@ -40,7 +38,11 @@ class Competition:
             self.sorted_proposal_keys.append(key)
             self.proposals[key] = proposal
 
-        self.add_supplemental_information(MediaWikiTitleAdder(project_column_name))
+    def process_all_cells_special(self, processor):
+        """For all cells in the competition, apply the PROCESSOR
+        (an object of the CellProcessor type) to them"""
+        for column_name in self.columns:
+            self.process_cells_special(column_name, processor)
 
     def process_cells_special(self, column_name, processor):
         """For cells in the competition at COLUMN_NAME,
@@ -136,15 +138,8 @@ class Proposal:
         KEY_COLUMN_NAME is used to later get the key of this proposal.
 
         This sets up the proposal by processing the initial row"""
-        self.data = {}
-        self.num_fixed_cells = 0
+        self.data = dict(zip(column_names, row))
         self.key_column_name = key_column_name
-
-        for column_name, cell in zip(column_names, row):
-            fixed_cell = utils.fix_cell(cell)
-            if fixed_cell != cell:
-                self.num_fixed_cells += 1
-            self.data[column_name] = fixed_cell
 
     def add_cell(self, column_name, cell):
         """Adds a new value CELL to the place held by COLUMN_NAME"""
@@ -214,7 +209,34 @@ class CellProcessor:
     def process_cell(self, proposal, column_name):
         """Transforms the PROPOSAL, in COLUMN_NAME, to some other value, and
         returns it."""
-        pass
+        return proposal.cell(column_name)
+
+
+class FixCellProcessor(CellProcessor):
+    """A CellProcessor that calls utils.fix_cell on the cells affected.
+    That function cleans up irregular data"""
+
+    def __init__(self):
+        self.processed_cells = {}
+
+    def process_cell(self, proposal, column_name):
+        key = proposal.key()
+        if key not in self.processed_cells:
+            self.processed_cells[key] = {"cols": 0, "fixed": 0}
+
+        cell = proposal.cell(column_name)
+        fixed_cell = utils.fix_cell(cell)
+        self.processed_cells[key]["cols"] += 1
+        if fixed_cell != cell:
+            self.processed_cells[key]["fixed"] += 1
+        return fixed_cell
+
+    def report(self):
+        for key, report in self.processed_cells.items():
+            print(
+                "Sanitized row %s (%d cols, %d fixed)."
+                % (key, report["cols"], report["fixed"])
+            )
 
 
 class MultiLineProcessor(CellProcessor):
@@ -349,6 +371,18 @@ class CorrectionData(CellProcessor):
             return self.correction_data[key][column_name]
 
         return proposal.cell(column_name)
+
+
+class ColumnTypeUpdater(CellProcessor):
+    """This doesn't actually process the cell, but adds a column type
+    of COLUMN_TYPE passed in, so that for cells that are already processed
+    completely, we can add the type for the column"""
+
+    def __init__(self, col_type):
+        self.col_type = col_type
+
+    def column_type(self):
+        return self.col_type
 
 
 class InformationAdder:

@@ -76,7 +76,7 @@ class ProcessedSpreadsheet:
         self.competition = competition
 
     def generate(self, config_dir):
-        with open(os.path.join(config_dir, "etl-processed"), "w") as f:
+        with open(os.path.join(config_dir, "etl-processed.csv"), "w") as f:
             self.competition.to_csv(f)
 
         print("etl-processed.csv written to TDC config dir")
