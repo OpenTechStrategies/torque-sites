@@ -78,12 +78,7 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    comp = competition.Competition(
-        proposals_csv,
-        "proposals",
-        "Review Number",
-        "Project Title",
-    )
+    comp = competition.Competition(proposals_csv, "proposals", "Review Number")
 
     my_wiki = wiki.WikiSession(
         config.username, config.password, comp.name, config.wiki_url

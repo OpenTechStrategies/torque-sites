@@ -80,12 +80,7 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    comp = competition.Competition(
-        proposals_csv,
-        "LFC100Change2017",
-        "Review_Number",
-        "Registered Organization Name",
-    )
+    comp = competition.Competition(proposals_csv, "LFC100Change2017", "Review_Number")
 
     my_wiki = wiki.WikiSession(
         config.username, config.password, comp.name, config.wiki_url

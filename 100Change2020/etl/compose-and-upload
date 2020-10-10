@@ -419,9 +419,12 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    comp = competition.Competition(
-        proposals_csv, "proposals", "Review Number", "Project Title"
-    )
+    comp = competition.Competition(proposals_csv, "proposals", "Review Number")
+    comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
+
+    fix_cell_processor = competition.FixCellProcessor()
+    comp.process_all_cells_special(fix_cell_processor)
+    fix_cell_processor.report()
 
     ots_metadata = process_ots_metadata(ots_metadata_csv)
     sdgconfig_data = process_sdgconfig_data(sdgconfig_csv)

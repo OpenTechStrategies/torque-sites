@@ -308,9 +308,12 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    comp = competition.Competition(
-        proposals_csv, "EO2020", "Application #", "Project Title"
-    )
+    comp = competition.Competition(proposals_csv, "EO2020", "Application #")
+    comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
+
+    fix_cell_processor = competition.FixCellProcessor()
+    comp.process_all_cells_special(fix_cell_processor)
+    fix_cell_processor.report()
 
     attachments = competition.RegexSpecifiedAttachments(
         comp.sorted_proposal_keys, attachments_dir
