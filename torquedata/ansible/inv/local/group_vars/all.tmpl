@@ -11,17 +11,8 @@
 # in main.yml.
 deployment_user: __USERNAME__
 
-# torquedata configuration follows
+# Where torquedata installs itself
 torquedata_install_directory: __INSTALLATION_DIRECTORY__
-
-# The location for the proposals spreadsheet.  This will go away
-# after torquedata becomes more configured as it runs, but for now
-# the fact that this spreadsheet exists and looks like it does
-# is logic in the code.
-#
-# Also note that ansible won't be installing the spreadsheet, just
-# the configuration torquedata needs.
-torquedata_spreadsheet_location: __SPREADSHEET_LOCATION__
 
 # The port the flask server listens on
 torquedata_port: 5000

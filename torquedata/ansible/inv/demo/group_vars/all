@@ -1,6 +1,5 @@
 ---
 torquedata_install_directory: /home/deploy/torquedata-demo/
-torquedata_spreadsheet_location: /home/deploy/spreadsheets-demo/
 
 deployment_user: deploy
 torquedata_port: 5001
