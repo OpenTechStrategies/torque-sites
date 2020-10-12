@@ -220,10 +220,10 @@ class GeographicToc(Toc):
 
 class RegionAwareGeographicToc(GeographicToc):
     """A special case of the GeographicToc that adds region and subregion data
-    to the geographic data.  This data doesn't belong in the spreadsheet, so it's
-    just added to this data.
+    to the geographic data.  This region data doesn't belong in the spreadsheet,
+    so it's just added to the toc adjacent json file.
 
-    The assumption is that the highest level location data is going to be a country,
+    The assumption is that the highest level location value is going to be a country,
     and that's the key to look into the region data."""
 
     def process_competition(self, competition):

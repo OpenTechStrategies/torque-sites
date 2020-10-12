@@ -6,7 +6,7 @@ import re
 
 
 class Competition:
-    """A Competition of proposals"""
+    """A Competition, encapsulating a set of Proposal objects"""
 
     def __init__(
         self,
@@ -16,18 +16,18 @@ class Competition:
         type_row_included=False,
         pare=None,
     ):
-        """Initializes the competition form the source spreadsheet in
+        """Initializes the competition from the source spreadsheet in
         PROPOSALS_LOCATION (a file location).  Loads up the CSV and processes
         it.
 
         NAME refers to the name of the competition, KEY_COLUMN_NAME
         is which column in the base csv holds the identifier for the proposal.
 
-        TYPE_ROW_INCLUDED indicates whether the second row is a list of torque
+        Boolean TYPE_ROW_INCLUDED indicates whether the second row is a list of torque
         column types.  This is useful when the incoming spreadsheet was previously
         generated for torque.
 
-        PARE, when passed in, restricts the number of items by the factor PARE"""
+        Int PARE, when passed in, restricts the number of items by the factor PARE"""
         try:
             proposals_reader = csv.reader(
                 open(proposals_location, encoding="utf-8"), delimiter=",", quotechar='"'
@@ -63,8 +63,8 @@ class Competition:
             self.proposals[key] = proposal
 
     def process_all_cells_special(self, processor):
-        """For all cells in the competition, apply the PROCESSOR
-        (an object of the CellProcessor type) to them"""
+        """For all cells in the competition, apply CellProcessor PROCESSOR
+        to them"""
         for column_name in self.columns:
             self.process_cells_special(column_name, processor)
 
@@ -122,7 +122,8 @@ class Competition:
         return [self.proposals[k] for k in self.sorted_proposal_keys]
 
     def to_csv(self, output):
-        """Writes a csv out to OUTPUT designed to be uploaded to a torque instance"""
+        """Writes a csv out to stream OUTPUT designed to be uploaded to a
+        torque instance"""
         csv_writer = csv.writer(
             output, delimiter=",", quotechar='"', lineterminator="\n"
         )
@@ -158,7 +159,7 @@ class Proposal:
 
     def __init__(self, column_names, row, key_column_name):
         """COLUMN_NAMES are the list of columns that came from the
-        initial spradsheet, while ROW is the value for this proposal.
+        initial spreadsheet, while ROW is the value for this proposal.
         KEY_COLUMN_NAME is used to later get the key of this proposal.
 
         This sets up the proposal by processing the initial row"""
@@ -198,7 +199,7 @@ class ProposalFilter:
 
 
 class ColumnEqualsProposalFilter(ProposalFilter):
-    """A basic filter for when a the value in a given column matches
+    """A basic filter for when the value in a given column matches
     the setup value"""
 
     def __init__(self, column_name, value):
@@ -210,7 +211,7 @@ class ColumnEqualsProposalFilter(ProposalFilter):
 
 
 class ColumnNotEqualsProposalFilter(ProposalFilter):
-    """A basic filter for when a the value in a given column fails to match
+    """A basic filter for when the value in a given column fails to match
     the setup value"""
 
     def __init__(self, column_name, value):

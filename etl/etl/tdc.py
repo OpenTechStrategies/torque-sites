@@ -2,6 +2,16 @@
 # directory, that while aren't directly used by etl pipelines to
 # upload anything, provide extra contextual information for
 # people running the pipelines.
+#
+# For instance, AllProposals will dump out a file meant to go
+# in the TorqueConfig on the wiki, like AllColumns.  These would
+# represent permission for all the proposals, and all the columns,
+# respectively.  Another utility here is a dump out of the entire
+# spreadsheet after the etl pipeline is run.
+#
+# None of these are used by the pipeline, but all may be useful to
+# the uploader for debugging and setup of the wikis.
+
 import os
 import csv
 from etl import competition
