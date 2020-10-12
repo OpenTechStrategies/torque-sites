@@ -2,7 +2,7 @@
 
 # Load all the 100&Change proposals into a wiki, and along the way
 # create a 'processed-100andchangeExport-all-judges.csv' file 
-# to give to MacFound.
+# to give to LFC.
 #
 # Copyright (C) 2017  Open Tech Strategies, LLC
 #
@@ -19,19 +19,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-##########################################################################
-#                                                                        #
-#   NOTE: This code is highly specific to the particular filenames and   #
-#   working environment used by Open Tech Strategies on a project for    #
-#   the MacArthur Foundation.  For our own convenience, we have left     #
-#   those assumptions in place.  That means this script won't work if    #
-#   someone else tries to run it; we publish it just as an example.      #
-#   It is open source software, so please modify it to suit your needs.  #
-#                                                                        #
-##########################################################################
-
 COMPETITION="100Change2017"
-MACFOUND_DIR=`dirname "${0}"`
+LFC_DIR=`dirname "${0}"`
 BASE_DATA_DIR="${1}"
 
 function check_for_bin {
@@ -60,8 +49,8 @@ check_for_bin csvgrep
 check_for_bin gunzip
 csvgrep --version 2&>/dev/null || { echo "csvkit needs to be a recent version. Please upgrade to version 1.0.2+"; exit 1; }
 
-SANITIZER="${MACFOUND_DIR}"/fix-csv
-RUNNER="${MACFOUND_DIR}"/compose-and-upload
+SANITIZER="${LFC_DIR}"/fix-csv
+RUNNER="${LFC_DIR}"/compose-and-upload
 
 MASTER_CSV="100andchangeExport-all-judges.csv"
 PRINCIPAL_CONTACT_CSV="Principal-contact-join-20170716-utf8.csv"
@@ -202,7 +191,7 @@ echo "Done with Stage 2 (filtering excluded Review Numbers)."
 echo ""
 
 
-### Splice (join) in two columns from supplemental CSVs supplied by MacFound.
+### Splice (join) in two columns from supplemental CSVs supplied by LFC.
 #
 # We're going to add a "Participant_Email" column and supplant the old
 # "Reason_For_Turndown" column with the new Reason_For_Turndown.
@@ -249,7 +238,7 @@ csvjoin --left -c Review_Number                                       \
 # Principal-contact-join-20170716-utf8.csv.  That's okay.  Three's a
 # pretty low integer -- we can just handle them manually.  Note that
 # we *could* figure them out on the fly here, and if we ever get
-# updated supplemental data from MacFound, then we should probably
+# updated supplemental data from LFC, then we should probably
 # dynamicize this code.  But for now, we just know 8002, 8005, 8009.
 for num in 8002 8005 8009; do
   grep -E "^${num}," "${DATA_DIR}"/reason-for-turndown-tmp.csv        \
@@ -315,7 +304,7 @@ csvjoin --snifflimit=0 --delimiter=',' --quotechar='"'                \
 echo "Done with Stage 3 (joining CSVs to add supplemental data)."
 echo ""
 
-# Give the processed CSV its final name, for delivery to MacFound.
+# Give the processed CSV its final name, for delivery to LFC.
 cp "${DATA_DIR}"/"${STAGE_3_CSV}" "${DATA_DIR}"/"${STAGE_FINAL_CSV}"
 
 ### Upload the spreadsheet and TOCs to a running instance of torquedata

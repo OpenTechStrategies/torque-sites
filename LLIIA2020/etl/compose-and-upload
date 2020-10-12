@@ -17,7 +17,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 __doc__ = """\
-Compose all of the MacArthur Foundation 2020 Larsen Lam CSV files.
+Compose all of the Lever for Change 2020 Larsen Lam CSV files.
 
 Usage:
 
@@ -154,7 +154,7 @@ class BudgetDataAdder(competition.InformationAdder):
 
 
 def main():
-    """Compose the MacFound input and emit it as html-ized csv."""
+    """Compose the LFC input and emit it as html-ized csv."""
     try:
         opts, args = getopt.getopt(
             sys.argv[1:],

@@ -35,7 +35,7 @@ import os
 
 
 def main():
-    """Compose the MacFound input and emit it as html-ized csv."""
+    """Compose the LFC input and emit it as html-ized csv."""
     try:
         opts, args = getopt.getopt(
             sys.argv[1:],

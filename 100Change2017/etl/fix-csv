@@ -17,7 +17,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 __doc__ = """\
-Perform some one-time fixes to the MacArthur Foundation 100&Change CSV file.
+Perform some one-time fixes to the Lever for Change 100&Change CSV file.
 
 Usage:
 
@@ -209,7 +209,7 @@ def fix_csv(
                     # correct.  It might be that a given org submitted
                     # multiple proposals, and that "Select" or "Other"
                     # is the value of its Topic column in more than
-                    # one of those proposals, and that the MacFound
+                    # one of those proposals, and that the LFC
                     # staff reclassifier only meant to reclassify one
                     # of those proposals.  I suppose we could see if
                     # the same org gets reclassified multiple times,
@@ -358,7 +358,7 @@ def fix_csv(
 
 
 def main():
-    """Sanitize the MacFound input and emit it as html-ized csv."""
+    """Sanitize the LFC input and emit it as html-ized csv."""
     try:
         opts, args = getopt.getopt(
             sys.argv[1:], "", ["pare=", "reclassifications=", "show-table-problem"]

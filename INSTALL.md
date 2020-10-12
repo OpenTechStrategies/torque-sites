@@ -108,7 +108,7 @@ prerequisite steps.
 ### System setup
 
 First, set up your `$OTS_DIR` (see onboarding for more information).
-Then you need to check out the macfound torque-sites
+Then you need to check out the LFC torque-sites repository
 
 ```
 $ mkdir -p $OTS_DIR/clients/lever-for-change
