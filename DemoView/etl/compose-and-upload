@@ -158,39 +158,8 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    comp = competition.Competition(proposals_csv, "DemoView", "Application #")
+    comp = competition.Competition(proposals_csv, "DemoView", "Application #", True)
 
-    comp.process_cells_special(
-        "Priority Populations", competition.ColumnTypeUpdater("list")
-    )
-    comp.process_cells_special(
-        "Judge Likelihood of Success Comments", competition.ColumnTypeUpdater("list")
-    )
-    comp.process_cells_special(
-        "Judge Likelihood of Success Comment Scores Normalized",
-        competition.ColumnTypeUpdater("list"),
-    )
-    comp.process_cells_special(
-        "Judge Magnitude of Impact Comments", competition.ColumnTypeUpdater("list")
-    )
-    comp.process_cells_special(
-        "Judge Magnitude of Impact Comment Scores Normalized",
-        competition.ColumnTypeUpdater("list"),
-    )
-    comp.process_cells_special(
-        "Judge Potential for Scale Comments", competition.ColumnTypeUpdater("list")
-    )
-    comp.process_cells_special(
-        "Judge Potential for Scale Comment Scores Normalized",
-        competition.ColumnTypeUpdater("list"),
-    )
-    comp.process_cells_special(
-        "Judge Strength of Evidence Comments", competition.ColumnTypeUpdater("list")
-    )
-    comp.process_cells_special(
-        "Judge Strength of Evidence Comment Scores Normalized",
-        competition.ColumnTypeUpdater("list"),
-    )
     comp.add_supplemental_information(LFCAnalysisAdder())
 
     attachments = DemoAttachments(example_mou, example_financials)
@@ -198,7 +167,8 @@ def main():
 
     comp.sort("Judge Overall Score Rank Normalized", True)
     comp.add_toc(toc.ListToc("AllProposals"))
-    comp.add_toc(toc.GenericToc("Topic_TOC", "Primary Subject Area"))
+    comp.add_toc(toc.GenericMultiLineToc("Population", "Priority Populations"))
+    comp.add_toc(toc.GenericToc("Topic", "Primary Subject Area"))
 
     comp.add_toc(
         toc.RegionAwareGeographicToc(

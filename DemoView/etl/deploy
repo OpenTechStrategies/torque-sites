@@ -55,22 +55,26 @@ EXAMPLE_MOU="example-mou.pdf"
 EXAMPLE_FINANCIALS="example-financials.pdf"
 RUNNER="${MACFOUND_DIR}"/compose-and-upload
 
+if [ ! -f "$TORQUE_DIR/example/$PROPOSALS_CSV" ] ; then
+  echo "ERROR: $PROPOSALS_CSV doesn't exist yet"
+  echo ""
+  echo "You probably need to run ./deploy in $TORQUE_DIR/example/100Change2017"
+  exit 1
+fi
+
 if [ ! -d "${DATA_DIR}" ] ; then
   echo "Stage 0: Setting up data directory..."
 
   mkdir -p $DATA_DIR
 
-  # We remove the second row here, because the example includes the types
-  # row, that we will be adding again after more processing.
-  sed -e '2d' $TORQUE_DIR/example/$PROPOSALS_CSV > $DATA_DIR/$PROPOSALS_CSV
-
+  cp $TORQUE_DIR/example/$PROPOSALS_CSV $DATA_DIR/$PROPOSALS_CSV
   cp $TORQUE_DIR/example/$EXAMPLE_MOU $DATA_DIR/$EXAMPLE_MOU
   cp $TORQUE_DIR/example/$EXAMPLE_FINANCIALS $DATA_DIR/$EXAMPLE_FINANCIALS
 
   mkdir -p $TDC_CONFIG_DIR
 fi
 
-if ! echo "6258015666128dd2f4e2d312d4eb6c96e92bb6ab  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
+if ! echo "975e32bbf02cc0fb66df4adc1aefdc5c0e17a3dd  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
   echo "ERROR: SHA of PROPOSALS_CSV did not match expectation!"
   exit 1
 fi
