@@ -17,7 +17,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 __doc__ = """\
-Compose all of the MacArthur Foundation 2019 Proposal CSV files.
+Compose all of the MacArthur Foundation Climate 2030 Proposal CSV files.
 
 Usage:
 
