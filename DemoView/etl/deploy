@@ -58,7 +58,7 @@ RUNNER="${MACFOUND_DIR}"/compose-and-upload
 if [ ! -f "$TORQUE_DIR/example/$PROPOSALS_CSV" ] ; then
   echo "ERROR: $PROPOSALS_CSV doesn't exist yet"
   echo ""
-  echo "You probably need to run ./deploy in $TORQUE_DIR/example/100Change2017"
+  echo "You probably need to run ./deploy in $TORQUE_DIR/example/"
   exit 1
 fi
 
