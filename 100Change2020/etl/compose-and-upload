@@ -485,6 +485,7 @@ def main():
     attachments = competition.RegexSpecifiedAttachments(
         comp.sorted_proposal_keys, attachments_dir
     )
+
     attachments.specify_new_column("Financial Attachment", "Financials Attachment")
     attachments.specify_new_column("Tech Review Attachment", "Tech Review Attachment")
     attachments.specify_new_column(
@@ -498,6 +499,32 @@ def main():
         "Other Attachment Display Names",
         "Other Attachments",
     ]
+    for attachment in attachments.attachments:
+        if (
+            ots_metadata.get(attachment.key, {}).get("Financial Attachment", "")
+            == attachment.file
+        ):
+            attachment.column_name = "Financials Attachment"
+        elif (
+            ots_metadata.get(attachment.key, {}).get("MOU Attachment", "")
+            == attachment.file
+        ):
+            attachment.column_name = "MOU Attachment"
+        elif (
+            ots_metadata.get(attachment.key, {}).get("Tech Review Attachment", "")
+            == attachment.file
+        ):
+            attachment.column_name = "Tech Review Attachment"
+        elif (
+            ots_metadata.get(attachment.key, {}).get("Two Page Fact Sheet", "")
+            == attachment.file
+        ):
+            attachment.column_name = "Fact Sheet Attachment"
+        elif (
+            ots_metadata.get(attachment.key, {}).get("Application Attachment", "")
+            == attachment.file
+        ):
+            attachment.column_name = "Application Attachment"
     comp.add_supplemental_information(attachments)
 
     comp.sort("Wise Head Overall Score Rank Normalized", True)
@@ -536,7 +563,7 @@ def main():
         )
     )
     comp.add_toc(
-        toc.GenericToc(
+        toc.GenericMultiLineToc(
             "SDG_TOC",
             "Sustainable Development Goals",
             [sdg["name"] for sdg in sdgconfig_data],
