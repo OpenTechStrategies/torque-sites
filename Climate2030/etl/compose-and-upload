@@ -27,7 +27,7 @@ Usage:
        --tdc-config-dir=TDC_CONFIG_DIR
 
 Command-line options:
-  --proposals-csv FILE            FILE is a csv FILE representing the bulk
+  --proposals-csv FILE            FILE is a CSV file representing the bulk
                                   of the proposal information
 
   --attachments-dir DIR           DIR is a directory for compose-csvs to look in for what attachments

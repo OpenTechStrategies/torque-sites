@@ -22,7 +22,7 @@ Usage:
   $ compose-and-upload --proposals-csv=PROPOSALS_CSV
 
 Command-line options:
-  --proposals-csv FILE            FILE is a csv FILE representing the bulk
+  --proposals-csv FILE            FILE is a CSV file representing the bulk
                                   of the proposal information.  This is the csv
                                   that came from 100Changs2017
 """

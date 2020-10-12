@@ -31,23 +31,23 @@ Usage:
        --tdc-config-dir=TDC_CONFIG_DIR
 
 Command-line options:
-  --proposals-csv FILE            FILE is a csv FILE representing the bulk
+  --proposals-csv FILE            FILE is a CSV file representing the bulk
                                   of the proposal information
 
-  --admin-review-csv FILE         FILE is a csv FILE representing which applications
+  --admin-review-csv FILE         FILE is a CSV file representing which applications
                                   in PROPOSALS_CSV should be included
 
-  --judge-evaluation-csv FILE     FILE is a csv FILE with a many to one relationshp
+  --judge-evaluation-csv FILE     FILE is a CSV file with a many to one relationshp
                                   between judges and the proposals they evaluated,
                                   with the extra data being their evaluation
 
-  --lfc-evaluation-csv FILE       FILE is a csv FILE with the LFC evaluation data,
+  --lfc-evaluation-csv FILE       FILE is a CSV file with the LFC evaluation data,
                                   keyed by application #.
 
-  --thematic-areas-csv FILE       FILE is a csv FILE with thematic areas declared by
+  --thematic-areas-csv FILE       FILE is a CSV file with thematic areas declared by
                                   LFC for more user friendly groupings.
 
-  --bridgespan-data-csv FILE      FILE is a csv FILE with extra data, provided by bridgespan.
+  --bridgespan-data-csv FILE      FILE is a CSV file with extra data, provided by bridgespan.
 
   --bridgespan-overview-folder D  D is the directory with the financial overview spreadsheets
                                   for the bridgespan data.

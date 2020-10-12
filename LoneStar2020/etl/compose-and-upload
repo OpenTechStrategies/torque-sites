@@ -28,14 +28,14 @@ Usage:
        --tdc-config-dir=TDC_CONFIG_DIR
 
 Command-line options:
-  --proposals-csv FILE            FILE is a csv FILE representing the bulk
+  --proposals-csv FILE            FILE is a CSV file representing the bulk
                                   of the proposal information
 
   --attachments-dir DIR           DIR is a directory for compose-csvs to look in for what attachments
                                   will be uploaded to the torque wiki.  It needs to have subdirectories
                                   by proposal number.
 
-  --judge-evaluation-csv FILE     FILE is a csv FILE with a many to one relationshp
+  --judge-evaluation-csv FILE     FILE is a CSV file with a many to one relationshp
                                   between judges and the proposals they evaluated,
                                   with the extra data being their evaluation
 

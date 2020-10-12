@@ -32,17 +32,17 @@ Usage:
        --tdc-config-dir=TDC_CONFIG_DIR
 
 Command-line options:
-  --proposals-csv FILE            FILE is a csv FILE representing the bulk
+  --proposals-csv FILE            FILE is a CSV file representing the bulk
                                   of the proposal information
 
-  --admin-review-csv FILE         FILE is a csv FILE representing which applications
+  --admin-review-csv FILE         FILE is a CSV file representing which applications
                                   in PROPOSALS_CSV should be included
 
-  --judge-evaluation-csv FILE     FILE is a csv FILE with a many to one relationshp
+  --judge-evaluation-csv FILE     FILE is a CSV file with a many to one relationshp
                                   between judges and the proposals they evaluated,
                                   with the extra data being their evaluation
 
-  --wisehead-evaluation-csv FILE  FILE is a csv FILE with a many to one relationship
+  --wisehead-evaluation-csv FILE  FILE is a CSV file with a many to one relationship
                                   between wisehead judges and the proposals they
                                   evaluated, like the judge-evaluation-csv
 
