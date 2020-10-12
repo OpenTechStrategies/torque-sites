@@ -477,12 +477,12 @@
   file:
     state: link
     src: "{{ mediawiki_install_directory }}/mediawiki-1.33.0"
-    path: /var/www/html/EO2020
+    path: "{{ html_directory }}/EO2020"
 
 - name: Set permissions on attachments directory
   become_user: root
   file:
-    path: "/var/www/html/EO2020/images/"
+    path: "{{ html_directory }}/EO2020/images/"
     owner: www-data
     group: www-data
 
