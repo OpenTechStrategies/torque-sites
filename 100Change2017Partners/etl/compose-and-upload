@@ -81,6 +81,9 @@ def main():
         sys.exit(1)
 
     comp = competition.Competition(proposals_csv, "LFC100Change2017", "Review_Number")
+    comp.add_supplemental_information(
+        competition.MediaWikiTitleAdder("Registered Organization Name")
+    )
 
     my_wiki = wiki.WikiSession(
         config.username, config.password, comp.name, config.wiki_url
