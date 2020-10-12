@@ -585,12 +585,12 @@
   file:
     state: link
     src: "{{ mediawiki_install_directory }}/mediawiki-1.33.0"
-    path: /var/www/html/Climate2030
+    path: "{{ html_directory }}/Climate2030"
 
 - name: Set permissions on attachments directory
   become_user: root
   file:
-    path: "/var/www/html/Climate2030/images"
+    path: "{{ html_directory }}/Climate2030/images"
     owner: www-data
     group: www-data
 
