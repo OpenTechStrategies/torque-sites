@@ -344,13 +344,13 @@ def main():
                 proposal = comp.proposals[key]
                 my_wiki.create_page(
                     "LFC Analysis of %s" % proposal.cell("MediaWiki Title"),
-                    "{{ #tdcrender:LLIIA2020/" + key + ".mwiki|LFCAnalysis }}",
+                    "{{ #tdcrender:LLIIA2020/id/" + key + ".mwiki|LFCAnalysis }}"
                 )
 
-    for proplosal in comp.proposals.values():
+    for proposal in comp.proposals.values():
         my_wiki.create_page(
             "Evaluations of %s" % proposal.cell("MediaWiki Title"),
-            "{{ #tdcrender:LLIIA2020/" + key + ".mwiki|Evaluations }}",
+            "{{ #tdcrender:LLIIA2020/id/" + key + ".mwiki|Evaluations }}"
         )
 
 

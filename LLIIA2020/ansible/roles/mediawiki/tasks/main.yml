@@ -70,7 +70,7 @@
   git:
     repo: https://github.com/OpenTechStrategies/torque
     dest: "{{ mediawiki_install_directory }}/torque/"
-    version: 93a8e44
+    version: e9e787b
 
 - name: Link TorqueDataConnect
   file:
@@ -516,12 +516,12 @@
   file:
     state: link
     src: "{{ mediawiki_install_directory }}/mediawiki-1.33.0"
-    path: /var/www/html/LLIIA2020
+    path: "{{ html_directory }}/LLIIA2020"
 
 - name: Set permissions on attachments directory
   become_user: root
   file:
-    path: "/var/www/html/LLIIA2020/images"
+    path: "{{ html_directory }}/LLIIA2020/images"
     owner: www-data
     group: www-data
 
