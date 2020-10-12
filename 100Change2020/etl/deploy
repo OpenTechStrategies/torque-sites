@@ -100,9 +100,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   gpg -o ${DATA_DIR}/${OTS_METADATA} --decrypt ${ENCRYPTED_DIR}/${OTS_METADATA}.gpg || exit 1
 
   mkdir -p ${TDC_CONFIG_DIR}
-fi
 
-if [ ! -d "${ATTACHMENTS_DIR}" ] && [ -z "${SKIP_ATTACHMENTS}" ] ; then
   gpg -o ${DATA_DIR}/${BASE_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg || exit 1
   gpg -o ${DATA_DIR}/${TECH_REVIEW_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${TECH_REVIEW_ATTACHMENTS}.gpg || exit 1
   gpg -o ${DATA_DIR}/${EDITED_TECH_REVIEW_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${EDITED_TECH_REVIEW_ATTACHMENTS}.gpg || exit 1
