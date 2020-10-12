@@ -62,7 +62,8 @@ class GenericToc(Toc):
             self.data[grouping].append(proposal.key())
 
     def template_file(self):
-        template = ""
+        template = "__TOC__"
+        template += ""
         template += "{% for group_name, proposal_ids in groups.items() %}\n"
         template += "    {%- set proposals_in_group = [] %}\n"
         template += "    {%- for proposal_id in proposal_ids %}\n"
@@ -179,7 +180,8 @@ class GeographicToc(Toc):
         return {"groups": self.data}
 
     def template_file(self):
-        template = ""
+        template = "__TOC__"
+        template += ""
         template += "{%- for subcolumn_name_0, subcolumn_data_0 in groups.items() %}\n"
         for i in range(1, self.num_levels):
             template += (

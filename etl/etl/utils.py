@@ -13,6 +13,15 @@ intertag_nbsp_re = re.compile("(?m)(</?[a-z]+>)&nbsp;(<[a-z]+>)")
 bullets_re = re.compile("^•", re.MULTILINE)
 
 
+def commize_number(number):
+    try:
+        retn = floor(float(number))
+        retn = "{:,}".format(retn)
+        return retn
+    except Exception as e:
+        return number
+
+
 def collapse_replace(string, old, new):
     "Return STRING, with OLD repeatedly replaced by NEW until no more OLD."
     while string.find(old) != -1:

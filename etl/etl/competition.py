@@ -8,13 +8,26 @@ import re
 class Competition:
     """A Competition of proposals"""
 
-    def __init__(self, proposals_location, name, key_column_name):
+    def __init__(
+        self,
+        proposals_location,
+        name,
+        key_column_name,
+        type_row_included=False,
+        pare=None,
+    ):
         """Initializes the competition form the source spreadsheet in
         PROPOSALS_LOCATION (a file location).  Loads up the CSV and processes
         it.
 
         NAME refers to the name of the competition, KEY_COLUMN_NAME
-        is which column in the base csv holds the identifier for the proposal."""
+        is which column in the base csv holds the identifier for the proposal.
+
+        TYPE_ROW_INCLUDED indicates whether the second row is a list of torque
+        column types.  This is useful when the incoming spreadsheet was previously
+        generated for torque.
+
+        PARE, when passed in, restricts the number of items by the factor PARE"""
         try:
             proposals_reader = csv.reader(
                 open(proposals_location, encoding="utf-8"), delimiter=",", quotechar='"'
@@ -32,7 +45,18 @@ class Competition:
         self.proposals = {}
         self.sorted_proposal_keys = []
         self.tocs = []
+
+        if type_row_included:
+            type_row = next(proposals_reader)
+            for column_name, column_type in zip(self.columns, type_row):
+                self.column_types[column_name] = column_type
+
+        row_num = 0
         for row in proposals_reader:
+            row_num = row_num + 1
+            if pare is not None and (row_num % pare) != 0:
+                continue
+
             proposal = Proposal(self.columns, row, key_column_name)
             key = proposal.key()
             self.sorted_proposal_keys.append(key)
@@ -281,8 +305,7 @@ class MultiLineFromListProcessor(CellProcessor):
 
             cell = cell.strip()
 
-        new_cell.strip()
-        return new_cell
+        return new_cell.strip()
 
 
 class BudgetTableProcessor(CellProcessor):
@@ -299,7 +322,7 @@ class BudgetTableProcessor(CellProcessor):
         budget_row_data = []
         for budget_row in budget_rows:
             budget_items = budget_row.split("|")
-            budget_amount = NumberCommaizer().process_cell(budget_items[1])
+            budget_amount = utils.commaize_number(budget_items[1])
             budget_row_data.append(
                 {"description": budget_items[0], "amount": budget_amount}
             )
@@ -317,13 +340,7 @@ class NumberCommaizer(CellProcessor):
         """Return the CELL with commas as if it were a large number,
         or do nothing if not parseable as a number"""
 
-        cell = proposal.cell(column_name)
-        try:
-            retn = floor(float(number))
-            retn = "{:,}".format(retn)
-            return retn
-        except Exception as e:
-            return cell
+        return utils.commaize_number(proposal.cell(column_name))
 
 
 class CorrectionData(CellProcessor):

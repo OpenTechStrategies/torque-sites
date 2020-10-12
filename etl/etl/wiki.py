@@ -96,7 +96,10 @@ class WikiSession:
                 % (self.competition_name, proposal.key()),
             )
 
-    def create_page(self, page_title, body):
+    def create_page(self, page_title, body, create_if_exists=False):
+        if not page_title:
+            return
+
         p = self.site.pages[page_title]
-        if not p.exists:
+        if not p.exists or create_if_exists:
             p.save(body)
