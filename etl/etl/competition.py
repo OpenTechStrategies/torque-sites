@@ -3,6 +3,7 @@ import csv
 import json
 import os
 import re
+from functools import total_ordering
 
 
 class Competition:
@@ -467,13 +468,14 @@ class MediaWikiTitleAdder(InformationAdder):
         return unidecode.unidecode_expect_nonascii(title).strip()
 
 
+@total_ordering
 class Attachment:
     """Represents an attachment on the file system, and handles special cases
     about display names to make sure things show up correctly"""
 
-    def __init__(self, key, filename, rank, column_name, path):
+    def __init__(self, key, filename, column_name, path):
         self.file = filename
-        self.rank = rank
+        self.rank = None
         self.key = key
         self.path = path
         self.column_name = column_name
@@ -481,6 +483,25 @@ class Attachment:
         self.name = re.sub("\.pdf$", "", self.name)
         if len(self.name) > 33:
             self.name = self.name[0:15] + "..." + self.name[(len(self.name) - 15) :]
+
+    def __eq__(self, other):
+        return self.rank == other.rank and self.name == other.name
+
+    def __ne__(self, other):
+        return self.rank != other.rank or self.name != other.name
+
+    def __gt__(self, other):
+        if self.rank is other.rank:
+            return self.name > other.name
+
+        # Sort unranked things to the bottom
+        if self.rank is None:
+            return True
+
+        if other.rank is None:
+            return False
+
+        return self.rank > other.rank
 
 
 class BasicAttachments(InformationAdder):
@@ -496,8 +517,7 @@ class BasicAttachments(InformationAdder):
     The column names can be variable based on what attachments are important
     for the competition.
 
-    The rank for all attachments is set to 99 for default.  This is used for
-    sorting later."""
+    When rank is unset, attachments move to the end."""
 
     defined_column_names = ["Attachment Display Names", "Attachments"]
 
@@ -528,7 +548,6 @@ class BasicAttachments(InformationAdder):
                         Attachment(
                             key,
                             attachment_file,
-                            99,
                             BasicAttachments.defined_column_names[1],
                             os.path.join(
                                 full_application_attachment_dir, attachment_file
@@ -547,9 +566,7 @@ class BasicAttachments(InformationAdder):
 
     def cell(self, proposal, column_name):
         attachments = [a for a in self.attachments if a.key == proposal.key()]
-
-        # Sort first by rank, then by name
-        attachments.sort(key=lambda a: str(a.rank) + " " + a.name)
+        attachments.sort()
 
         attachments_by_column_name = {name: [] for name in self.defined_column_names}
         for attachment in attachments:
@@ -591,17 +608,17 @@ class RegexSpecifiedAttachments(BasicAttachments):
     def column_names(self):
         return BasicAttachments.defined_column_names + self.extra_columns
 
-    def specify_by_regex(self, regex, name, rank=99):
+    def specify_by_regex(self, regex, name, rank=None):
         """Matches the REGEX against the filename, and then updates the display
-        name to NAME, and the rank to RANK (default of 99) if it matches."""
+        name to NAME, and the rank to RANK (default of None, or last) if it matches."""
         for attachment in self.attachments:
             if re.search(regex, attachment.file, flags=re.I):
                 attachment.name = name
                 attachment.rank = rank
 
-    def specify_new_column(self, regex, column_name, rank=99):
+    def specify_new_column(self, regex, column_name, rank=None):
         """Matches the REGEX against the filename, and then updates the display
-        name to COLUMN_NAME, and the rank to RANK (default of 99) if it matches.
+        name to COLUMN_NAME, and the rank to RANK (default of None, or last) if it matches.
 
         Also adds COLUMN_NAME as a a column to the spreadsheet and links the
         attachments specified to that column"""

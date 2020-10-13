@@ -105,7 +105,7 @@ class DemoAttachments(competition.InformationAdder):
         filename = proposal.key() + "_" + os.path.basename(location)
 
         self.attachments.append(
-            competition.Attachment(proposal.key(), filename, 99, column_name, location)
+            competition.Attachment(proposal.key(), filename, column_name, location)
         )
 
         return filename
