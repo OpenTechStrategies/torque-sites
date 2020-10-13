@@ -77,11 +77,6 @@ if [ ! -d "${DATA_DIR}" ] ; then
   mkdir -p $TDC_CONFIG_DIR
 fi
 
-if ! echo "ddb802d1ceae7125cc4c89dc4bc4f32335216ccc  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
-  echo "ERROR: SHA of PROPOSALS_CSV did not match expectation!"
-  exit 1
-fi
-
 ### Compose the spreadsheets into one cohesive whole.
 #
 # Use --pare to convert only 1% of the entries, to save time while testing. 
