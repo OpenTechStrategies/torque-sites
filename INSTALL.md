@@ -108,7 +108,7 @@ prerequisite steps.
 ### System setup
 
 First, set up your `$OTS_DIR` (see onboarding for more information).
-Then you need to check out the macfound torque-sites
+Then you need to check out the LFC torque-sites repository
 
 ```
 $ mkdir -p $OTS_DIR/clients/lever-for-change
@@ -133,10 +133,9 @@ Install necessary system libraries
 $ sudo apt-get gpg unzip install python3-pip ansible acl
 ```
 
-Install csv2wiki using pip
+Install the main etl pipeline using pip
 ```
-$ git checkout https://github.com/OpenTechStrategies/csv2wiki
-$ cd csv2wiki ; pip3 install -e .
+$ cd etl ; pip3 install -e .
 ```
 
 Lastly, set up a directory where you want the encrypted data to go
@@ -154,8 +153,8 @@ First, you need to configure it to the target wiki.
 
 ```
 $ cd <competition>/etl
-$ cp csv2wiki-config.tmpl csv2wiki-config
-$ $EDITOR csv2wiki-config
+$ cp config.py.tmpl config.py
+$ $EDITOR config.py
 ```
 
 And run the script

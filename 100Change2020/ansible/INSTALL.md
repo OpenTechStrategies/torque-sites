@@ -77,9 +77,7 @@ Look in that file for information about the variables and how you can set them
 
 While ansible does have the ability to encrypt secrets so they can be checked in,
 OTS has decided not to do that, and instead uses opass to hold the pertinent
-information.  There has been a script added in the svn location for the macfound
-project called `setup_ansible.sh` that will install the inventory files from
-opass for you.
+information. 
 
 After that, you can run:
 

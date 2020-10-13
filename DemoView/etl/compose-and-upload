@@ -1,0 +1,252 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2017, 2019, 2020 Open Tech Strategies, LLC
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+__doc__ = """\
+Compose all of the Demo View 2019 Proposal CSV files.
+
+Usage:
+
+  $ compose-and-upload \\
+       --proposals-csv=PROPOSALS_CSV \\
+       --tdc-config-dir=TDC_CONFIG_DIR \\
+       --example-mou=EXAMPLE_MOU \\
+       --example-financials=EXAMPLE_FINANCIALS \\
+       --pare=PARE \\
+       --csv-only
+
+Command-line options:
+  --proposals-csv FILE            FILE is a CSV file representing the bulk
+                                  of the proposal information
+
+  --tdc-config-dir DIR            DIR is the location for files that are the base configuration files
+                                  needed by TorqueDataConnect, and can be optionally, manually, put on
+                                  the torque wiki.  We don't automatically do that because we want to
+                                  overwrite the configuration out there.
+
+  --example-mou FILE              FILE is an example MOU statement to be uploaded and attached to
+                                  the proposal
+
+  --example-financials FILE       FILE is an example Financials document to be uploaded and attached to
+                                  the proposal
+
+  --pare N                        Reduce the number of items to 1/N rows, for quick
+                                  testing and development
+
+  --csv-only                      Only upload the created CSV file.  Don't upload attachments or
+                                  create wiki pages.  For use to speed up process when wiki has been
+                                  created already.
+"""
+
+from etl import competition, wiki, toc, tdc, utils
+import config
+import getopt
+import sys
+import os
+import json
+
+
+class LFCAnalysisAdder(competition.InformationAdder):
+    """Adds the columns for the LFC Analysis, all empty because these
+    cells are there to be edited upon later"""
+
+    def column_names(self):
+        return [
+            "LFC Analysis: Recommendation",
+            "LFC Analysis: Short Description",
+            "LFC Analysis: Likelihood of Success Summary",
+            "LFC Analysis: Magnitude of Impact Summary",
+            "LFC Analysis: Potential for Scale Summary",
+            "LFC Analysis: Strength of Evidence Summary",
+            "LFC Analysis: Overview",
+            "LFC Analysis: Strength of Approach",
+            "LFC Analysis: Risks and Challenges",
+            "LFC Analysis: Internet Scan",
+            "LFC Analysis: Diversity, Equity and Inclusion",
+            "LFC Analysis: Observations",
+            "LFC Analysis: Financial Overview",
+        ]
+
+    def cell(self, proposal, column_name):
+        return ""
+
+
+class DemoAttachments(competition.InformationAdder):
+    """Adds the demo MOU and Financials statements to each proposal"""
+
+    def __init__(self, mou, financials):
+        self.mou = mou
+        self.financials = financials
+        self.attachments = []
+
+    def column_names(self):
+        return ["MOU Attachment", "Financials Attachment"]
+
+    def cell(self, proposal, column_name):
+        if column_name == "MOU Attachment":
+            location = self.mou
+        else:
+            location = self.financials
+
+        filename = proposal.key() + "_" + os.path.basename(location)
+
+        self.attachments.append(
+            competition.Attachment(proposal.key(), filename, column_name, location)
+        )
+
+        return filename
+
+
+def main():
+    """Compose the LFC input and emit it as html-ized csv."""
+    try:
+        opts, args = getopt.getopt(
+            sys.argv[1:],
+            "",
+            [
+                "proposals-csv=",
+                "tdc-config-dir=",
+                "example-mou=",
+                "example-financials=",
+                "pare=",
+                "csv-only",
+            ],
+        )
+    except getopt.GetoptError as err:
+        sys.stderr.write("ERROR: '%s'\n" % err)
+        sys.exit(2)
+
+    proposals_csv = None
+    tdc_config_dir = None
+    example_mou = None
+    example_financials = None
+    pare = None
+    csv_only = False
+    for o, a in opts:
+        if o == "--proposals-csv":
+            proposals_csv = a
+        elif o == "--pare":
+            pare = int(a)
+        elif o == "--csv-only":
+            csv_only = True
+        elif o == "--tdc-config-dir":
+            tdc_config_dir = a
+        elif o == "--example-mou":
+            example_mou = a
+        elif o == "--example-financials":
+            example_financials = a
+        else:
+            sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
+            sys.exit(2)
+
+    if proposals_csv is None:
+        sys.stderr.write("ERROR: need --proposals-csv.\n\n")
+        sys.stderr.write(__doc__)
+        sys.exit(1)
+
+    comp = competition.Competition(
+        proposals_csv, "DemoView", "Application #", pare, True
+    )
+
+    comp.add_supplemental_information(LFCAnalysisAdder())
+
+    attachments = DemoAttachments(example_mou, example_financials)
+    comp.add_supplemental_information(attachments)
+
+    comp.sort("Judge Overall Score Rank Normalized", True)
+    comp.add_toc(toc.ListToc("AllProposals"))
+    comp.add_toc(toc.GenericMultiLineToc("Population", "Priority Populations"))
+    comp.add_toc(toc.GenericToc("Topic", "Primary Subject Area"))
+
+    comp.add_toc(
+        toc.RegionAwareGeographicToc(
+            "Geographic_TOC",
+            [
+                [
+                    "Location of Current Work #1 Nation",
+                    "Location of Current Work #1 State / Province",
+                ],
+                [
+                    "Location of Current Work #2 Nation",
+                    "Location of Current Work #2 State / Province",
+                ],
+                [
+                    "Location of Current Work #3 Nation",
+                    "Location of Current Work #3 State / Province",
+                ],
+                [
+                    "Location of Current Work #4 Nation",
+                    "Location of Current Work #4 State / Province",
+                ],
+                [
+                    "Location of Current Work #5 Nation",
+                    "Location of Current Work #5 State / Province",
+                ],
+                [
+                    "Location of Future Work #1 Nation",
+                    "Location of Future Work #1 State / Province",
+                ],
+                [
+                    "Location of Future Work #2 Nation",
+                    "Location of Future Work #2 State / Province",
+                ],
+                [
+                    "Location of Future Work #3 Nation",
+                    "Location of Future Work #3 State / Province",
+                ],
+                [
+                    "Location of Future Work #4 Nation",
+                    "Location of Future Work #4 State / Province",
+                ],
+                [
+                    "Location of Future Work #5 Nation",
+                    "Location of Future Work #5 State / Province",
+                ],
+            ],
+        )
+    )
+
+    comp.process_tocs()
+
+    if tdc_config_dir is not None:
+        tdc.AllProposals(comp).generate(tdc_config_dir)
+        tdc.ValidProposals(comp, "Valid", "Valid").generate(tdc_config_dir)
+        tdc.AllColumns(comp).generate(tdc_config_dir)
+        tdc.ProcessedSpreadsheet(comp).generate(tdc_config_dir)
+
+    my_wiki = wiki.WikiSession(
+        config.username, config.password, comp.name, config.wiki_url
+    )
+    my_wiki.csv_only = csv_only
+    my_wiki.upload_sheet(comp)
+    my_wiki.upload_attachments(attachments.attachments)
+
+    for proposal in comp.ordered_proposals()[0:16]:
+        my_wiki.create_page(
+            "LFC Analysis of %s" % proposal.cell("MediaWiki Title"),
+            "{{ #tdcrender:DemoView/" + proposal.key() + ".mwiki|LFCAnalysis }}",
+        )
+
+    for proposal in comp.proposals.values():
+        my_wiki.create_page(
+            "Evaluations of %s" % proposal.cell("MediaWiki Title"),
+            "{{ #tdcrender:DemoView/" + proposal.key() + ".mwiki|Evaluations }}",
+        )
+
+
+if __name__ == "__main__":
+    main()

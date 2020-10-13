@@ -1,0 +1,237 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2017, 2019, 2020 Open Tech Strategies, LLC
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+__doc__ = """\
+Compose all of the Lever for Change Climate 2030 Proposal CSV files.
+
+Usage:
+
+  $ compose-and-upload \\
+       --proposals-csv=PROPOSALS_CSV \\
+       --attachments-dir=ATTACHMENTS_DIR \\
+       --tdc-config-dir=TDC_CONFIG_DIR \\
+       --pare=PARE \\
+       --csv-only
+
+Command-line options:
+  --proposals-csv FILE            FILE is a CSV file representing the bulk
+                                  of the proposal information
+
+  --attachments-dir DIR           DIR is a directory for compose-csvs to look in for what attachments
+                                  will be uploaded to the torque wiki.  It needs to have subdirectories
+                                  by proposal number.
+
+  --tdc-config-dir DIR            DIR is the location for files that are the base configuration files
+                                  needed by TorqueDataConnect, and can be optionally, manually, put on
+                                  the torque wiki.  We don't automatically do that because we want to
+                                  overwrite the configuration out there.
+
+  --pare N                        Reduce the number of items to 1/N rows, for quick
+                                  testing and development
+
+  --csv-only                      Only upload the created CSV file.  Don't upload attachments or
+                                  create wiki pages.  For use to speed up process when wiki has been
+                                  created already.
+"""
+
+from etl import competition, wiki, toc, tdc
+import config
+import getopt
+import sys
+import os
+
+
+def main():
+    """Compose the LFC input and emit it as html-ized csv."""
+    try:
+        opts, args = getopt.getopt(
+            sys.argv[1:],
+            "",
+            [
+                "proposals-csv=",
+                "tdc-config-dir=",
+                "attachments-dir=",
+                "pare=",
+                "csv-only",
+            ],
+        )
+    except getopt.GetoptError as err:
+        sys.stderr.write("ERROR: '%s'\n" % err)
+        sys.exit(2)
+
+    proposals_csv = None
+    attachments_dir = None
+    tdc_config_dir = None
+    pare = None
+    csv_only = False
+    for o, a in opts:
+        if o == "--proposals-csv":
+            proposals_csv = a
+        elif o == "--pare":
+            pare = int(a)
+        elif o == "--csv-only":
+            csv_only = True
+        elif o == "--tdc-config-dir":
+            tdc_config_dir = a
+        elif o == "--attachments-dir":
+            attachments_dir = a
+        else:
+            sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
+            sys.exit(2)
+
+    if proposals_csv is None:
+        sys.stderr.write("ERROR: need --proposals-csv option.\n\n")
+        sys.stderr.write(__doc__)
+        sys.exit(1)
+
+    comp = competition.Competition(proposals_csv, "Climate2030", "Application #", pare)
+    comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
+
+    fix_cell_processor = competition.FixCellProcessor()
+    comp.process_all_cells_special(fix_cell_processor)
+    fix_cell_processor.report()
+
+    comp.filter_proposals(
+        competition.ColumnEqualsProposalFilter("Admin Review Status", "Not submitted")
+    )
+    comp.process_cells_special("Priority Populations", competition.MultiLineProcessor())
+    comp.process_cells_special("Project Focus", competition.MultiLineProcessor())
+    comp.process_cells_special("Total Projected Costs", competition.NumberCommaizer())
+    comp.process_cells_special("Budget data", competition.BudgetTableProcessor())
+
+    attachments = competition.BasicAttachments(
+        comp.sorted_proposal_keys, attachments_dir
+    )
+    comp.add_supplemental_information(attachments)
+    comp.sort("Organization Name")
+
+    comp.add_toc(toc.ListToc("All_Proposals"))
+    comp.add_toc(toc.GenericMultiLineToc("Populations", "Priority Populations"))
+    comp.add_toc(toc.GenericMultiLineToc("Project_Focus", "Project Focus"))
+
+    comp.add_toc(
+        toc.GenericToc(
+            "Annual_Budgets",
+            "Annual Operating Budget",
+            [
+                "Less than $1 Million",
+                "$1.0 to 5.0 Million",
+                "$5.1 to 10 Million",
+                "$10.1 to 25 Million",
+                "$25.1 to 50 Million",
+                "$50.1 to 100 Million",
+                "$100.1 to 500 Million",
+                "$500.1 Million to $1 Billion",
+                "$1 Billion +",
+            ],
+        )
+    )
+
+    comp.add_toc(
+        toc.GenericToc(
+            "Number_of_Employees",
+            "Number of Employees",
+            [
+                "Fewer than 10 Full-time Employees",
+                "10 to 25 Full-time Employees",
+                "26 to 50 Full-time Employees",
+                "51 to 100 Full-time Employees",
+                "101 to 300 Full-time Employees",
+                "301 to 500 Full-time Employees",
+                "501 to 1,000 Full-time Employees",
+                "1,000+ Full-time Employees",
+            ],
+        )
+    )
+
+    comp.add_toc(
+        toc.GeographicToc(
+            "Current_Work_Locations",
+            [
+                [
+                    "Location of Current Work #1 Country",
+                    "Location of Current Work #1 State /Province",
+                ],
+                [
+                    "Location of Current Work #2 Country",
+                    "Location of Current Work #2 State /Province",
+                ],
+                [
+                    "Location of Current Work #3 Country",
+                    "Location of Current Work #3 State /Province",
+                ],
+                [
+                    "Location of Current Work #4 Country",
+                    "Location of Current Work #4 State /Province",
+                ],
+                [
+                    "Location of Current Work #5 Country",
+                    "Location of Current Work #5 State /Province",
+                ],
+            ],
+        )
+    )
+
+    comp.add_toc(
+        toc.GeographicToc(
+            "Future_Work_Locations",
+            [
+                [
+                    "Location of Future Work #1 Country",
+                    "Location of Future Work #1 State / Province",
+                ],
+                [
+                    "Location of Future Work #2 Country",
+                    "Location of Future Work #2 State /Province",
+                ],
+                [
+                    "Location of Future Work #3 Country",
+                    "Location of Future Work #3 State /Province",
+                ],
+                [
+                    "Location of Future Work #4 Country",
+                    "Location of Future Work #4 State /Province",
+                ],
+                [
+                    "Location of Future Work #5 Country",
+                    "Location of Future Work #5 State /Province",
+                ],
+            ],
+        )
+    )
+
+    comp.process_tocs()
+
+    if tdc_config_dir is not None:
+        tdc.AllProposals(comp).generate(tdc_config_dir)
+        tdc.ValidProposals(comp, "Admin Review Status", "Valid").generate(
+            tdc_config_dir
+        )
+        tdc.AllColumns(comp).generate(tdc_config_dir)
+        tdc.ProcessedSpreadsheet(comp).generate(tdc_config_dir)
+
+    my_wiki = wiki.WikiSession(
+        config.username, config.password, comp.name, config.wiki_url
+    )
+    my_wiki.csv_only = csv_only
+    my_wiki.upload_sheet(comp)
+    my_wiki.upload_attachments(attachments.attachments)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,358 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2017, 2019, 2020 Open Tech Strategies, LLC
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+__doc__ = """\
+Compose all of the Lever for Change 2020 Larsen Lam CSV files.
+
+Usage:
+
+  $ compose-csvs \\
+       --proposals-csv=PROPOSALS_CSV \\
+       --admin-review-csv=ADMIN_REVIEW_CSV \\
+       --judge-evaluation-csv=JUDGE_EVALUATION_CSV \\
+       --panel-evaluation-csv=PANEL_EVALUATION_CSV \\
+       --attachments-dir=ATTACHMENTS_DIR \\
+       --tdc-config-dir=TDC_CONFIG_DIR \\
+       --pare=PARE \\
+       --csv-only
+
+Command-line options:
+  --proposals-csv FILE            FILE is a CSV file representing the bulk
+                                  of the proposal information
+
+  --admin-review-csv FILE         FILE is a CSV file representing which applications
+                                  in PROPOSALS_CSV should be included
+
+  --judge-evaluation-csv FILE     FILE is a CSV file with a many to one relationshp
+                                  between judges and the proposals they evaluated,
+                                  with the extra data being their evaluation
+
+  --panel-evaluation-csv FILE     FILE is a CSV file with a many to one relationshp
+                                  between a judge panel and the proposals they evaluated,
+                                  with the extra data being their evaluation. This differs
+                                  from judge-evalutation-csv because it's different judges
+
+  --budget-csv FILE               FILE is a csv with the budget data in the specific format
+                                  where lines are separated by || and columns are separated
+                                  by |
+
+  --attachments-dir DIR           DIR is a directory for compose-csvs to look in for what attachments
+                                  will be uploaded to the torque wiki.  It needs to have subdirectories
+                                  by proposal number.
+
+  --tdc-config-dir DIR            DIR is the location for files that are the base configuration files
+                                  needed by TorqueDataConnect, and can be optionally, manually, put on
+                                  the torque wiki.  We don't automatically do that because we want to
+                                  overwrite the configuration out there.
+
+  --pare N                        Reduce the number of items to 1/N rows, for quick
+                                  testing and development
+
+  --csv-only                      Only upload the created CSV file.  Don't upload attachments or
+                                  create wiki pages.  For use to speed up process when wiki has been
+                                  created already.
+"""
+
+from etl import competition, wiki, toc, tdc, utils
+import config
+import getopt
+import sys
+import os
+import csv
+import json
+
+
+class LFCAnalysisAdder(competition.InformationAdder):
+    """Adds the columns for the LFC Analysis, all empty because these
+    cells are there to be edited upon later"""
+
+    def column_names(self):
+        return [
+            "LFC Analysis: Recommendation",
+            "LFC Analysis: Short Description",
+            "LFC Analysis: COMMUNITY-INFORMED Summary",
+            "LFC Analysis: EVIDENCE-BASED Summary",
+            "LFC Analysis: FEASIBLE Summary",
+            "LFC Analysis: IMPACTFUL Summary",
+            "LFC Analysis: Overview",
+            "LFC Analysis: Strength of Approach",
+            "LFC Analysis: Risks and Challenges",
+            "LFC Analysis: Internet Scan",
+            "LFC Analysis: Diversity, Equity and Inclusion",
+            "LFC Analysis: Observations",
+            "LFC Analysis: Financial Overview",
+        ]
+
+    def cell(self, proposal, column_name):
+        return ""
+
+
+def create_column_types_row(header_row):
+    """Declaration of the types different columns in the spreadsheet have,
+    expressed as a row of strings that torque understands."""
+
+    column_types = {
+        "Priority Populations": "list",
+        "Key Words and Phrases": "list",
+        "Budget Data": "json",
+    }
+
+
+class BudgetDataAdder(competition.InformationAdder):
+    """Takes a BUDGET_CSV which represents a csv with budget information.
+    The information is in column 7, while the application number to match
+    is in column 3.
+
+    It adds that as a json field to
+    """
+
+    def __init__(self, budget_csv):
+        budget_reader = csv.reader(
+            open(budget_csv, encoding="utf-8"), delimiter=",", quotechar='"'
+        )
+        from math import floor
+
+        self.budget_data = {}
+        next(budget_reader)
+        for row in budget_reader:
+            application_id = row[3]
+            budget_text = row[7]
+            budget_rows = budget_text.split("||")
+
+            budget_row_data = []
+            for budget_row in budget_rows:
+                budget_items = budget_row.split("|")
+                budget_amount = budget_items[1]
+                try:
+                    budget_amount = floor(float(budget_amount))
+                    budget_amount = "{:,}".format(budget_amount)
+                except Exception as e:
+                    pass
+                budget_row_data.append(
+                    {"description": budget_items[0], "amount": budget_amount}
+                )
+
+            self.budget_data[application_id] = budget_row_data
+
+    def column_type(self, column_name):
+        return "list"
+
+    def column_names(self):
+        return ["Budget Data"]
+
+    def cell(self, proposal, column_name):
+        if proposal.key() in self.budget_data:
+            return json.dumps(self.budget_data[proposal.key()])
+        else:
+            return json.dumps({})
+
+
+def main():
+    """Compose the LFC input and emit it as html-ized csv."""
+    try:
+        opts, args = getopt.getopt(
+            sys.argv[1:],
+            "",
+            [
+                "proposals-csv=",
+                "admin-review-csv=",
+                "judge-evaluation-csv=",
+                "panel-evaluation-csv=",
+                "budget-csv=",
+                "top16-data-file=",
+                "tdc-config-dir=",
+                "attachments-dir=",
+                "pare=",
+                "csv-only",
+            ],
+        )
+    except getopt.GetoptError as err:
+        sys.stderr.write("ERROR: '%s'\n" % err)
+        sys.exit(2)
+
+    pare = None
+    proposals_csv = None
+    admin_review_csv = None
+    judge_evaluation_csv = None
+    panel_evaluation_csv = None
+    budget_csv = None
+    regionconfig_csv = None
+    attachments_dir = None
+    top16_data_file = None
+    toc_dir = None
+    tdc_config_dir = None
+    pare = None
+    csv_only = False
+    for o, a in opts:
+        if o == "--proposals-csv":
+            proposals_csv = a
+        elif o == "--pare":
+            pare = int(a)
+        elif o == "--csv-only":
+            csv_only = True
+        elif o == "--admin-review-csv":
+            admin_review_csv = a
+        elif o == "--judge-evaluation-csv":
+            judge_evaluation_csv = a
+        elif o == "--panel-evaluation-csv":
+            panel_evaluation_csv = a
+        elif o == "--budget-csv":
+            budget_csv = a
+        elif o == "--top16-data-file":
+            top16_data_file = a
+        elif o == "--tdc-config-dir":
+            tdc_config_dir = a
+        elif o == "--attachments-dir":
+            attachments_dir = a
+        else:
+            sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
+            sys.exit(2)
+
+    if proposals_csv is None:
+        sys.stderr.write("ERROR: need --proposals-csv\n\n")
+        sys.stderr.write(__doc__)
+        sys.exit(1)
+
+    comp = competition.Competition(proposals_csv, "LLIIA2020", "Application #", pare)
+    comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
+
+    fix_cell_processor = competition.FixCellProcessor()
+    comp.process_all_cells_special(fix_cell_processor)
+    fix_cell_processor.report()
+
+    if judge_evaluation_csv is not None:
+        comp.add_supplemental_information(
+            competition.EvaluationAdder(
+                "Judge",
+                judge_evaluation_csv,
+                app_col_name="Application #",
+                score_rank_normalized_col_name="OverallScoreRankNormalized",
+                sum_of_scores_normalized_col_name="SumOfScoresNormalized",
+                trait_col_name="Trait",
+                score_normalized_col_name="TraitScoreNormalized",
+                comments_col_name="TraitJudgeComment",
+                comments_score_normalized_col_name="TraitScoreNormalized",
+            )
+        )
+
+    if panel_evaluation_csv is not None:
+        comp.add_supplemental_information(
+            competition.EvaluationAdder(
+                "Panel",
+                panel_evaluation_csv,
+                app_col_name="Application #",
+                score_rank_normalized_col_name="OverallScoreRankNormalized",
+                sum_of_scores_normalized_col_name="SumOfScoresNormalized",
+                trait_col_name="Trait",
+                score_normalized_col_name="TraitScoreNormalized",
+                comments_col_name="TraitJudgeComment",
+                comments_score_normalized_col_name="TraitScoreNormalized",
+            )
+        )
+
+    admin_review = competition.AdminReview(admin_review_csv, "Application #", "Status")
+    comp.add_supplemental_information(admin_review)
+    comp.filter_proposals(admin_review)
+    comp.add_supplemental_information(LFCAnalysisAdder())
+    if budget_csv is not None:
+        comp.add_supplemental_information(BudgetDataAdder(budget_csv))
+
+    comp.process_cells_special("Priority Populations", competition.MultiLineProcessor())
+    comp.process_cells_special(
+        "Key Words and Phrases", competition.MultiLineProcessor()
+    )
+
+    attachments = competition.BasicAttachments(
+        comp.sorted_proposal_keys, attachments_dir
+    )
+    comp.add_supplemental_information(attachments)
+
+    comp.sort("Panel Overall Score Rank Normalized", True)
+
+    comp.add_toc(toc.ListToc("All_Proposals"))
+    comp.add_toc(toc.GenericMultiLineToc("Population_TOC", "Priority Populations"))
+    comp.add_toc(toc.GenericMultiLineToc("Keyword_TOC", "Key Words and Phrases"))
+
+    comp.add_toc(
+        toc.GenericToc(
+            "Annual_Budgets",
+            "Annual Operating Budget",
+            [
+                "Less than $1 Million",
+                "$1.0 to 5 Million",
+                "$5.1 to 10 Million",
+                "$10.1 to 25 Million",
+                "$25.1 to 50 Million",
+                "$50.1 to 100 Million",
+                "$100.1 to 500 Million",
+                "$500.1 Million to $1 Billion",
+                "$1 Billion +",
+            ],
+        )
+    )
+
+    comp.add_toc(
+        toc.RegionAwareGeographicToc(
+            "Geographic_TOC",
+            [
+                ["Location of Current Work #1 Country"],
+                ["Location of Current Work #2 Country"],
+                ["Location of Current Work #3 Country"],
+                ["Location of Current Work #4 Country"],
+                ["Location of Current Work #5 Country"],
+                ["Location of Future Work #1 Country"],
+                ["Location of Future Work #2 Country"],
+                ["Location of Future Work #3 Country"],
+                ["Location of Future Work #4 Country"],
+                ["Location of Future Work #5 Country"],
+            ],
+        )
+    )
+
+    comp.process_tocs()
+
+    if tdc_config_dir is not None:
+        tdc.AllProposals(comp).generate(tdc_config_dir)
+        tdc.AllColumns(comp).generate(tdc_config_dir)
+        tdc.ProcessedSpreadsheet(comp).generate(tdc_config_dir)
+
+    my_wiki = wiki.WikiSession(
+        config.username, config.password, comp.name, config.wiki_url
+    )
+    my_wiki.csv_only = csv_only
+    my_wiki.upload_sheet(comp)
+    my_wiki.upload_attachments(attachments.attachments)
+
+    with open(top16_data_file) as f:
+        for key in f.read().splitlines():
+            if key in comp.proposals:
+                proposal = comp.proposals[key]
+                my_wiki.create_page(
+                    "LFC Analysis of %s" % proposal.cell("MediaWiki Title"),
+                    "{{ #tdcrender:LLIIA2020/id/" + key + ".mwiki|LFCAnalysis }}",
+                )
+
+    for proposal in comp.proposals.values():
+        my_wiki.create_page(
+            "Evaluations of %s" % proposal.cell("MediaWiki Title"),
+            "{{ #tdcrender:LLIIA2020/id/" + key + ".mwiki|Evaluations }}",
+        )
+
+
+if __name__ == "__main__":
+    main()

@@ -29,7 +29,7 @@
     owner: www-data
     group: www-data
     src: "{{ simplesaml_install_directory }}/simplesamlphp-1.18.4/www/"
-    path: /var/www/html/simplesaml
+    path: "{{ html_directory }}/simplesaml"
 
 - name: Add simplesaml salt
   lineinfile:

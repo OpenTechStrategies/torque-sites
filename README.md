@@ -20,8 +20,9 @@ See [INSTALL.md](INSTALL.md) and [DESIGN.md](DESIGN.md) for more information.
 Each subdirectory falls into one of three categories:
 
 1. A support system for torque-sites
-2. Supporting files
-3. A site (competition) 
+2. Generalized ETL Pipeline
+3. Supporting files
+4. A site (competition)
 
 Because each adheres to the standards set out in these top level
 documents, most of the information needed is here.  However, each
@@ -51,6 +52,15 @@ The current set includes:
 * torquedata - Ansible scripts to install the
   [torque system](https://github.com/opentechstrategies/torque/)
   mentioned above.
+
+### Generalized ETL Pipeline
+
+The etl pipelines in the competitions use this code to actually do the
+csv composition and uploading.  See [INSTALL.md](INSTALL.md) for more
+information on how to get it installed on your system.
+
+The individual competitions etl pipelines are mainly configurations on
+this package.
 
 ### Supporting files
 

@@ -1,4 +1,8 @@
 ---
+# Root web directory (where symlinks to the mediawiki instances
+# are installed)
+html_directory: /var/www/html
+
 # We need to know what user we're deploying as, but the reason
 # here is complex.  At the base level, we need to know what
 # user torquedata should be running as.  But more than that,
@@ -32,7 +36,7 @@ mediawiki_mwlib_username: __MEDIAWIKI_MWLIB_USERNAME__
 mediawiki_mwlib_password: __MEDIAWIKI_MWLIB_PASSWORD__
 
 # The user and password for loading the wiki externally
-# using csv2wiki in coordination with the macfound repository
+# using csv2wiki in coordination with the LFC repository
 mediawiki_csv2wiki_username: __MEDIAWIKI_CSV2WIKI_USERNAME__
 mediawiki_csv2wiki_password: __MEDIAWIKI_CSV2WIKI_PASSWORD__
 

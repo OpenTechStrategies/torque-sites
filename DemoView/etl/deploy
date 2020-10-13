@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Load all the submission  proposals into a wiki.
-#
 # Copyright (C) 2017, 2019, 2020  Open Tech Strategies, LLC
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,27 +15,34 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-##########################################################################
-#                                                                        #
-#   NOTE: This code is highly specific to the particular filenames and   #
-#   working environment used by Open Tech Strategies on a project for    #
-#   the MacArthur Foundation.  For our own convenience, we have left     #
-#   those assumptions in place.  That means this script won't work if    #
-#   someone else tries to run it; we publish it just as an example.      #
-#   It is open source software, so please modify it to suit your needs.  #
-#                                                                        #
-##########################################################################
+CSV_ONLY=""
+PARE=""
+while getopts "cp:" opt; do
+  case $opt in
+    c) CSV_ONLY="--csv-only" ;;
+    p) PARE="--pare=$OPTARG" ;;
+  esac
+done
+shift $((OPTIND -1))
 
 COMPETITION="DemoView"
-MACFOUND_DIR=`dirname "${0}"`
+LFC_DIR=`dirname "${0}"`
 BASE_DATA_DIR="${1}"
+TORQUE_DIR="${2}"
 
-if [ "${BASE_DATA_DIR}" = "" ]; then
-  echo "ERROR: BASE_DATA_DIRECTORY argument required."
+if [[ "${BASE_DATA_DIR}" = "" || "${TORQUE_DIR}" == "" ]] ; then
+  echo "ERROR: BASE_DATA_DIRECTORY and TORQUE_DIRECTORY argument required."
   echo ""
-  echo "Usage: '${0} BASE_DATA_DIRECTORY'"
+  echo "Usage: '${0} [-a] [-p number] BASE_DATA_DIRECTORY TORQUE_DIRECTORY'"
   echo ""
-  echo "BASE_DATA_DIRECTORY/EO2020 is where all the work is done."
+  echo "Options:"
+  echo ""
+  echo "  -c                  Uploads CSV only.  Skips creating pages and"
+  echo "                      uploading attachments."
+  echo "  -p <pare>           Pares by factor of PARE"
+  echo ""
+  echo "BASE_DATA_DIRECTORY/DemoView is where all the work is done,"
+  echo "TORQUE_DIRECTORY is where the example spreadsheet lives."
   echo ""
   exit 1
 fi
@@ -47,203 +52,48 @@ DATA_DIR="${BASE_DATA_DIR}/${COMPETITION}"
 # Make sure we have python3
 python3 -V > /dev/null 2>&1 || { echo "python3 required, aborting" ; exit 1; }
 
-PROPOSALS_CSV="EOC_registration_and_application_data.csv"
-ADMIN_REVIEW_CSV="AdminReviewEP_eoc2019_03102020.csv"
-JUDGE_EVALUATION_CSV="EconomicOpportunityChallenge_Evaluation_Panel_Data_anon_judge.csv"
-LFC_EVALUATION_CSV="lfcrecommendations.csv"
-REGIONCONFIG_CSV="regionconfig.csv"
-TOP13_DATA_FILE="top13.dat"
-THEMATIC_AREAS_CSV="EOC_Applications_Thematic_Areas.csv"
-BASE_ATTACHMENTS="Registration_and_Application_data_exports_EOC.zip"
-TOP13_SUPPLEMENTAL_ATTACHMENTS="EOC_Docs_for_Upload.zip"
-TOP13_SYNTHESIS_MEMO_ATTACHMENTS="EOC_Synthesis_Memos.zip"
-BRIDGESPAN_ANALYSIS_ZIP="200601-Bridgespan-data.zip"
-BRIDGESPAN_ANALYSIS_CSV="200601-Bridgespan-data-for-Wiki-v1.csv"
-BRIDGESPAN_ANALYSIS_FOLDER="${DATA_DIR}/Bridgespan-data"
-ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
-TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
-TOC_DIR="${DATA_DIR}/tocs"
+PROPOSALS_CSV="Example_Spreadsheet.csv"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
-CSV2WIKI_CONFIG="${MACFOUND_DIR}"/csv2wiki-config
-OUTPUT_CSV="etl-processed.csv"
-COMPOSER="${MACFOUND_DIR}"/compose-csvs
-UPLOADER="${MACFOUND_DIR}"/upload-csv
+EXAMPLE_MOU="example-mou.pdf"
+EXAMPLE_FINANCIALS="example-financials.pdf"
+RUNNER="${LFC_DIR}"/compose-and-upload
 
-if [ ! -f "${CSV2WIKI_CONFIG}" ]; then
-  echo "ERROR: No csv2wiki-config file found."
+if [ ! -f "$TORQUE_DIR/example/$PROPOSALS_CSV" ] ; then
+  echo "ERROR: $PROPOSALS_CSV doesn't exist yet"
   echo ""
-  echo "Try doing 'cp csv2wiki-config.tmpl csv2wiki-config' and"
-  echo "then editing csv2wiki-config as needed."
-  echo ""
+  echo "You probably need to run ./deploy in $TORQUE_DIR/example/"
   exit 1
 fi
 
 if [ ! -d "${DATA_DIR}" ] ; then
   echo "Stage 0: Setting up data directory..."
 
-  if [ "${OTS_DIR}" = "" ] ; then
-    echo "ERROR: \$OTS_DIR is not set up"
-    echo ""
-    echo "See bureaucracy/onboarding about setting the OTS_DIR environment variable up"
-    exit 1
-  fi
-
-  ENCRYPTED_DIR="${OTS_DIR}/clients/lever-for-change/torque-sites/EO2020/data/bigdata"
-  if [ ! -d "${ENCRYPTED_DIR}" ] ; then
-    echo "ERROR: it looks like your encrypted dir isn't checked out"
-    echo ""
-    echo "It was expected to be in:"
-    echo "  $ENCRYPTED_DIR"
-    echo ""
-    echo "You will need to check out the subversion torque-sites data, and then"
-    echo "run get-bigdata from ${OTS_DIR}/clients/lever-for-change/torque-sites/EO2020/data/"
-    exit 1
-  fi
-
   mkdir -p $DATA_DIR
-  echo "Decrypting..."
 
-  gpg -o ${DATA_DIR}/${ADMIN_REVIEW_CSV} --decrypt ${ENCRYPTED_DIR}/${ADMIN_REVIEW_CSV}.gpg || exit 1
-  gpg -o ${DATA_DIR}/${THEMATIC_AREAS_CSV} --decrypt ${ENCRYPTED_DIR}/${THEMATIC_AREAS_CSV}.gpg || exit 1
-  gpg -o ${DATA_DIR}/${JUDGE_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${JUDGE_EVALUATION_CSV}.gpg || exit 1
-  gpg -o ${DATA_DIR}/${TOP13_DATA_FILE} --decrypt ${ENCRYPTED_DIR}/${TOP13_DATA_FILE}.gpg || exit 1
-  gpg -o ${DATA_DIR}/${LFC_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${LFC_EVALUATION_CSV}.gpg || exit 1
-  gpg -o ${DATA_DIR}/${BASE_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg || exit 1
-  gpg -o "${DATA_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}" --decrypt "${ENCRYPTED_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}.gpg" || exit 1
-  gpg -o "${DATA_DIR}/${TOP13_SYNTHESIS_MEMO_ATTACHMENTS}" --decrypt "${ENCRYPTED_DIR}/${TOP13_SYNTHESIS_MEMO_ATTACHMENTS}.gpg" || exit 1
-  gpg -o "${DATA_DIR}/${BRIDGESPAN_ANALYSIS_ZIP}" --decrypt "${ENCRYPTED_DIR}/${BRIDGESPAN_ANALYSIS_ZIP}.gpg" || exit 1
+  cp $TORQUE_DIR/example/$PROPOSALS_CSV $DATA_DIR/$PROPOSALS_CSV
+  cp $TORQUE_DIR/example/$EXAMPLE_MOU $DATA_DIR/$EXAMPLE_MOU
+  cp $TORQUE_DIR/example/$EXAMPLE_FINANCIALS $DATA_DIR/$EXAMPLE_FINANCIALS
 
-  mkdir -p ${TOC_DIR}
-  mkdir -p ${TDC_CONFIG_DIR}
-
-  echo "Setting up attachments..."
-  unzip -d ${DATA_DIR} ${DATA_DIR}/${BASE_ATTACHMENTS}
-  mv "${DATA_DIR}/Registration_and_Application_forms_PDFs_EOC" $ATTACHMENTS_DIR
-
-  mkdir -p $TMP_ATTACHMENTS_DIR
-  unzip -d $TMP_ATTACHMENTS_DIR "${DATA_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}"
-  ls $TMP_ATTACHMENTS_DIR | grep "[[:digit:]]\+_" | while read dir ; do
-    cp -v "$TMP_ATTACHMENTS_DIR/$dir/"*.pdf ${ATTACHMENTS_DIR}/${dir/_*/} ;
-  done
-  rm -rf $TMP_ATTACHMENTS_DIR
-
-  mkdir -p $TMP_ATTACHMENTS_DIR
-  unzip -d $TMP_ATTACHMENTS_DIR "${DATA_DIR}/${TOP13_SYNTHESIS_MEMO_ATTACHMENTS}"
-  ls $TMP_ATTACHMENTS_DIR | while read file ; do
-    dir=${file/_*}
-    cp -v "$TMP_ATTACHMENTS_DIR/$file" ${ATTACHMENTS_DIR}/$dir/ ;
-  done
-  rm -rf $TMP_ATTACHMENTS_DIR
-
-  mkdir -p $BRIDGESPAN_ANALYSIS_FOLDER
-  unzip -d $BRIDGESPAN_ANALYSIS_FOLDER "${DATA_DIR}/${BRIDGESPAN_ANALYSIS_ZIP}"
-
-  # Clean up large zips to save disk space
-  rm ${DATA_DIR}/${BASE_ATTACHMENTS}
-  rm "${DATA_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}"
-  rm "${DATA_DIR}/${TOP13_SYNTHESIS_MEMO_ATTACHMENTS}"
-  rm "${DATA_DIR}/${BRIDGESPAN_ANALYSIS_ZIP}"
+  mkdir -p $TDC_CONFIG_DIR
 fi
 
-if ! echo "fcc64efaf84cb0d10497bac4b1e9750e9f866faf  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
+if ! echo "975e32bbf02cc0fb66df4adc1aefdc5c0e17a3dd  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
   echo "ERROR: SHA of PROPOSALS_CSV did not match expectation!"
-  echo "This means that we most likely got a new file, which may have the old"
-  echo "errors in it (specifically the organization proposal 829)."
-  echo "If we got a new file and there are no further errors, you"
-  echo "can remove this check from torque-refresh!  If not, please"
-  echo "make adjustments in a new file and update the sha."
   exit 1
 fi
-
-# We want to make sure there's no lingering old TOCs if we change how
-# compose-csv creates them
-mkdir -p $TOC_DIR
-rm $TOC_DIR/*
-cp tocs/generic.j2 $TOC_DIR/Population_TOC.j2
-cp tocs/thematic.j2 $TOC_DIR/Topic_TOC.j2
-cp tocs/thematic.j2 $TOC_DIR/Top25_Topic_TOC.j2
-cp tocs/list.j2 $TOC_DIR/AllProposals.j2
-cp tocs/list.j2 $TOC_DIR/Top25.j2
-cp tocs/list.j2 $TOC_DIR/Top13.j2
-cp tocs/Geographic_TOC.j2 $TOC_DIR/
-
-mkdir -p $TDC_CONFIG_DIR
 
 ### Compose the spreadsheets into one cohesive whole.
 #
 # Use --pare to convert only 1% of the entries, to save time while testing. 
 echo "Stage 1: Composing..."
-${COMPOSER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
-            --admin-review-csv="${DATA_DIR}/${ADMIN_REVIEW_CSV}" \
-            --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
-            --lfc-evaluation-csv="${DATA_DIR}/${LFC_EVALUATION_CSV}" \
-            --thematic-areas-csv="${DATA_DIR}/${THEMATIC_AREAS_CSV}" \
-            --bridgespan-data-csv="${BRIDGESPAN_ANALYSIS_FOLDER}/${BRIDGESPAN_ANALYSIS_CSV}" \
-            --bridgespan-overview-folder="${BRIDGESPAN_ANALYSIS_FOLDER}" \
-            --regionconfig-csv="${MACFOUND_DIR}/${REGIONCONFIG_CSV}" \
-            --top13-data-file="${DATA_DIR}/${TOP13_DATA_FILE}" \
-            --attachments-dir=${ATTACHMENTS_DIR} \
-            --tdc-config-dir="${TDC_CONFIG_DIR}" \
-            --toc-dir="${TOC_DIR}" \
-            > "${DATA_DIR}/${OUTPUT_CSV}"
+${RUNNER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
+          $PARE \
+          $CSV_ONLY \
+          --tdc-config-dir="${TDC_CONFIG_DIR}" \
+          --example-mou="${DATA_DIR}/${EXAMPLE_MOU}" \
+          --example-financials="${DATA_DIR}/${EXAMPLE_FINANCIALS}"
 if [ $? -ne 0 ]; then
 		echo Composition failure!
 		exit 1
 fi
-echo "Done with Stage 1 (Composing)."
-echo ""
-
-### Upload the spreadsheet and TOCs to a running instance of torquedata
-#
-# There's a dependency on a running version of mediawiki
-# with a torquedata service running behind it, and a version of
-# the TorqueDataConnect running on the mediawiki
-#
-# Because attachments take a bit of time to upload, and we have no current
-# method to see if they have been uploaded, we just use a simple environment
-# variable to test if someone wants to.
-echo "Stage 2: Uploading csv and attachments..."
-echo "  If you want to skip attachments, set SKIP_ATTACHMENTS in your environment"
-if [ -z "${SKIP_ATTACHMENTS}" ] ; then
-  ATTACHMENT_ARG="--attachments-dir=${ATTACHMENTS_DIR}"
-else
-  ATTACHMENT_ARG=""
-fi
-${UPLOADER} --csv="${DATA_DIR}/${OUTPUT_CSV}" \
-            --toc-dir="${TOC_DIR}" \
-            $ATTACHMENT_ARG \
-            --config="${CSV2WIKI_CONFIG}"
-if [ $? -ne 0 ]; then
-		echo Upload failure!
-		exit 1
-fi
-echo "Done with Stage 2 (Uploading csv)."
-echo ""
-
-# This pages are the template callers hosted on the wiki, as opposed to
-# the data/jinja files that are processed by torquedata
-TOC_PAGES=""
-for file in $TOC_DIR/*.mwiki ; do
-  TOC_PAGES="$TOC_PAGES --helper-page=$file"
-done
-
-# See note in README about how we're not really using csv2wiki as it's
-# intended to be used...
-echo "Stage 3: Creating wiki..."
-python3 -m csv2wiki -c ${CSV2WIKI_CONFIG}      \
-            --make-non-editable \
-            --skip-rows=1 \
-            ${TOC_PAGES} \
-            --csv="${DATA_DIR}/${OUTPUT_CSV}"
 echo "Done creating wiki."
-
-echo "Stage 4: Creating config (optional)..."
-echo ""
-echo "We do not automatically upload the config because it's a living document."
-echo "However, the following v1 files were placed in $TDC_CONFIG_DIR for you to"
-echo "upload:"
-echo " - AllProposals - All the proposals generated"
-echo " - ValidProposals - The Valid proposals according to Admin Review"
-echo " - AllColumns - All the available columns"
-echo ""
-echo "Done creating config."

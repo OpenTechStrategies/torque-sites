@@ -57,7 +57,7 @@
   get_url:
     url: https://getcomposer.org/installer
     dest: "{{ mediawiki_install_directory }}/composer-setup.php"
-    checksum: "sha384:e5325b19b381bfd88ce90a5ddb7823406b2a38cff6bb704b0acc289a09c8128d4a8ce2bbafcd1fcbdc38666422fe2806"
+    checksum: "sha384:795f976fe0ebd8b75f26a6dd68f78fd3453ce79f32ecb33e7fd087d39bfeb978342fb73ac986cd4f54edd0dc902601dc"
 
 - name: Make wiki bin directory
   file:
@@ -650,12 +650,12 @@
   file:
     state: link
     src: "{{ mediawiki_install_directory }}/mediawiki-1.33.0"
-    path: /var/www/html/lfc
+    path: "{{ html_directory }}/lfc"
 
 - name: Set permissions on attachments directory
   become_user: root
   file:
-    path: "/var/www/html/lfc/images/"
+    path: "{{ html_directory }}/lfc/images/"
     owner: www-data
     group: www-data
 

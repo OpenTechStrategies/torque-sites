@@ -1,15 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Perform some one-time fixes to the MacArthur Foundation 100&Change CSV file
-#
-# This is necessary because not everything can be addressed with the
-# 'sanitize' script.  The 'sanitize' script isn't aware of CSV rows or
-# columns; it just treats the whole CSV file as a normal text file.
-# But for, e.g., fixing the YouTube links (see features.org for more),
-# we really need a one-time transformation that knows what cell it's
-# operating on.
-#
 # Copyright (C) 2017 Open Tech Strategies, LLC
 #
 # This program is free software: you can redistribute it and/or modify
@@ -25,16 +16,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-##########################################################################
-#                                                                        #
-#   NOTE: This code is highly specific to the needs of the MacArthur     #
-#   Foundation and is unlikely to be correct for your CSV.  It is        #
-#   open source software, so please modify it to suit your needs.        #
-#                                                                        #
-##########################################################################
-
 __doc__ = """\
-Perform some one-time fixes to the MacArthur Foundation 100&Change CSV file.
+Perform some one-time fixes to the Lever for Change 100&Change CSV file.
 
 Usage:
 
@@ -56,11 +39,13 @@ import warnings
 import string
 from bs4 import BeautifulSoup
 
+
 def collapse_replace(string, old, new):
     "Return STRING, with OLD repeatedly replaced by NEW until no more OLD."
-    while string.find(old) != -1: 
+    while string.find(old) != -1:
         string = string.replace(old, new)
     return string
+
 
 def weaken_the_strong(html):
     """Strip any meaningless <strong>...</strong> tags from HTML.
@@ -73,7 +58,7 @@ def weaken_the_strong(html):
     # If there's no strength here, move on.
     if not "<strong>" in html:
         return html
-    
+
     # Remove the stuff inside strong tags
     soup = BeautifulSoup(html, "html.parser")
     while "<strong>" in str(soup):
@@ -90,68 +75,26 @@ def weaken_the_strong(html):
     # bold and non-bold text.  Better to leave it alone.
     return html
 
+
 def form_well(html):
     """Return a well-formed version of HTML with dangling tags closed.
     Some of the input includes tables that cut off without closing
     tags; some entries leave <td> tags open too."""
     # Parse html and suppress warnings about urls in the text
-    warnings.filterwarnings("ignore",
-                            category=UserWarning, module='bs4')
+    warnings.filterwarnings("ignore", category=UserWarning, module="bs4")
     soup = BeautifulSoup(html, "html.parser")
 
     # Return well-formed html as a soup object
     return soup
 
-def wiki_escape_page_title(s):
-    import unidecode
-    """Return a wiki-escaped version of STRING."""
-    for c in ["#", "<", ">", "[", "]", "{", "|", "}",]:
-        if s.find(c) != -1:
-            s = s.replace(c, "-")
-    while len(bytes(s, "UTF-8")) > 255:
-        s = s[:-1]
 
-    # Also convert non unicode because we do this with titles on the other side
-    return unidecode.unidecode_expect_nonascii(s).strip()
-
-def create_tdc_config(tdc_config_dir, header_row, new_rows):
-    import os
-    """Helper method to write out base config files to TDC_CONFIG_DIR.
-
-    Needs HEADER_ROW and NEW_ROWS to generate the column and proposal
-    data.  Generates the following:
-
-      - AllProposals - All the proposals generated
-      - ValidProposals - The ~150 proposals that were marked valid
-      - AllColumns - All the available columns
-      """
-
-    def row_to_title_line(row):
-        return "* {14}: ".format(*row) + "[[" + row[90] + "]]\n"
-
-    with open(os.path.join(tdc_config_dir, "AllProposals"), 'w') as f:
-        f.writelines([row_to_title_line(row) for row in new_rows])
-
-    with open(os.path.join(tdc_config_dir, "AllColumns"), 'w') as f:
-        for column in header_row:
-            f.writelines("* %s\n" % column)
-
-def generate_generic_toc(toc_dir, grouped_review_numbers, toc_name):
-    """Generates a TOC mwiki and TOC data file in TOC_DIR for the given data,
-    which is a dict where the proposals are all grouped by some key.
-    Then put into TOC_DIR/TOC_NAME.json.
-
-    Notably, this doesn't create the jinja template file, as that doesn't
-    need to be dynamically generated."""
-    with open(os.path.join(toc_dir, toc_name + ".json"), 'w') as f:
-        f.writelines(json.dumps({"groups": grouped_review_numbers}))
-
-    with open(os.path.join(toc_dir, toc_name + ".mwiki"), 'w') as f:
-        f.writelines(toc_name + "\n")
-        f.writelines("{{ #tdcrender:LFC100Change2017/toc/" + toc_name + ".mwiki }}")
-
-def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False, tdc_config_dir=None, toc_dir=None, attachments_dir=None,
-            reclassifications_csv=None):
+def fix_csv(
+    fname_in,
+    fname_out=None,
+    pare=None,
+    show_table_problem=False,
+    reclassifications_csv=None,
+):
     """Write a sanitized version of FNAME_IN (a CSV file) to FNAME_OUT.
 
     FNAME_IN is a filename.  FNAME_OUT is either a filename or None.
@@ -170,31 +113,29 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False, tdc_c
     organization name in column A (1)."""
     reclass_csv_reader = None
     try:
-        csv_reader = csv.reader(open(fname_in, encoding='utf-8'),
-                                delimiter=',', quotechar='"')
+        csv_reader = csv.reader(
+            open(fname_in, encoding="utf-8"), delimiter=",", quotechar='"'
+        )
         if reclassifications_csv is not None:
-            reclass_csv_reader = csv.reader(open(reclassifications_csv,
-                                                 encoding='utf-8'),
-                                            delimiter=',', quotechar='"')
+            reclass_csv_reader = csv.reader(
+                open(reclassifications_csv, encoding="utf-8"),
+                delimiter=",",
+                quotechar='"',
+            )
     except UnicodeDecodeError:
-        sys.stderr.write("fix-csv expects utf-8-encoded unicode, not whatever is in this csv file.\n")
+        sys.stderr.write(
+            "fix-csv expects utf-8-encoded unicode, not whatever is in this csv file.\n"
+        )
         sys.exit(-1)
 
     if fname_out:
-        out = open(fname_out, 'w', encoding="utf-8")
+        out = open(fname_out, "w", encoding="utf-8")
     else:
         out = io.StringIO()
-    csv_writer = csv.writer(out,
-                            delimiter=',', quotechar='"', lineterminator="\n")
-    header_row = next(csv_reader)
-    header_row.append("MediaWiki Title")
-    header_row.append("MOU Attachment")
-    header_row.append("Team Attachment")
-    header_row.append("Financials Attachment")
-    csv_writer.writerow(header_row)
+    csv_writer = csv.writer(out, delimiter=",", quotechar='"', lineterminator="\n")
 
-    # Types row, empty because everything is just a string
-    csv_writer.writerow(["" for col in header_row])
+    header_row = next(csv_reader)
+    csv_writer.writerow(header_row)
 
     # Keys are organization names; values are tuples of this form:
     #
@@ -216,28 +157,31 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False, tdc_c
             if row[0] in reclassifications:
                 reclassifications[row[0]] = None
             else:
-                reclassifications[row[0]] = (row[1], row[3],)
+                reclassifications[row[0]] = (
+                    row[1],
+                    row[3],
+                )
 
     # Convert "<foo>&nbsp;<bar>" and "</foo>&nbsp;<bar>" to
     # to "<foo> <bar>" and "</foo> <bar>" respectively.  This is
     # because those particular instances of "&nbsp;" in the data are
     # not very convincing, and they create noise when we're looking
     # for unnecessary escaping elsewhere.
-    intertag_nbsp_re = re.compile('(?m)(</?[a-z]+>)&nbsp;(<[a-z]+>)')
+    intertag_nbsp_re = re.compile("(?m)(</?[a-z]+>)&nbsp;(<[a-z]+>)")
 
     # Actually, some invalid identifiers would still match this,
     # because this regular expression doesn't check the length.
     # That's okay; we check length manually at the call site.
-    youtube_id_re = re.compile('^[-_a-zA-Z0-9]+$')
+    youtube_id_re = re.compile("^[-_a-zA-Z0-9]+$")
 
     bullets_re = re.compile("^•", re.MULTILINE)
 
     attachments_to_upload = {}
-    
+
     row_num = 0
     new_rows = []
     for row in csv_reader:
-        row_num += 1  # first row here is row 1 (the header row was row 0) 
+        row_num += 1  # first row here is row 1 (the header row was row 0)
         if pare is not None and row_num % pare != 0:
             continue
 
@@ -256,21 +200,23 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False, tdc_c
                 # "other" appears in the original spreadsheet is
                 # bogus, and those proposals actually have some
                 # random different classification.
-                if (found_old_class == old
+                if (
+                    found_old_class == old
                     or (found_old_class == "select" and old == "other")
-                    or (found_old_class == ""       and old == "other")):
+                    or (found_old_class == "" and old == "other")
+                ):
                     # NOTE: This is not absolutely guaranteed to be
                     # correct.  It might be that a given org submitted
                     # multiple proposals, and that "Select" or "Other"
                     # is the value of its Topic column in more than
-                    # one of those proposals, and that the MacFound
+                    # one of those proposals, and that the LFC
                     # staff reclassifier only meant to reclassify one
                     # of those proposals.  I suppose we could see if
                     # the same org gets reclassified multiple times,
                     # but want to ask Jeff about this first.
                     row[11] = new
         new_row = []
-        org_name = None   # used only for debugging output
+        org_name = None  # used only for debugging output
         cell_num = 0
         for cell in row:
             new_cell = cell
@@ -278,21 +224,21 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False, tdc_c
             # (i.e., new_cell = html_parser.unescape(new_cell) below)
             # in the long run, but for now, let's do the same limited
             # set of unescapings the original 'sanitize' script did:
-            new_cell = new_cell.replace('&amp;', '&')
-            new_cell = new_cell.replace('&lt;', '<')
-            new_cell = new_cell.replace('&gt;', '>')
+            new_cell = new_cell.replace("&amp;", "&")
+            new_cell = new_cell.replace("&lt;", "<")
+            new_cell = new_cell.replace("&gt;", ">")
             # The rest should be recursively collapsing replacements:
-            new_cell = collapse_replace(new_cell, '&nbsp;&nbsp;', '&nbsp;')
-            new_cell = collapse_replace(new_cell, '&nbsp; ', ' ')
-            new_cell = collapse_replace(new_cell, ' &nbsp;', ' ')
-            new_cell = collapse_replace(new_cell, '&nbsp;</', '</')
+            new_cell = collapse_replace(new_cell, "&nbsp;&nbsp;", "&nbsp;")
+            new_cell = collapse_replace(new_cell, "&nbsp; ", " ")
+            new_cell = collapse_replace(new_cell, " &nbsp;", " ")
+            new_cell = collapse_replace(new_cell, "&nbsp;</", "</")
             new_cell = collapse_replace(new_cell, '\\"', '"')
-            new_cell = re.sub(intertag_nbsp_re, '\\1 \\2', new_cell)
+            new_cell = re.sub(intertag_nbsp_re, "\\1 \\2", new_cell)
             if org_name is None:
                 org_name = new_cell
             soup = form_well(new_cell)
             new_cell = weaken_the_strong(str(soup))
-            
+
             # The parsing for lists requires an asterisk at the start
             # of the line, but some entries use bullets. This regex
             # swaps the bullets for asterisks.
@@ -322,21 +268,22 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False, tdc_c
                 # string.capwords() doesn't treat a word immediately
                 # following a hyphen as a separate word, so we need
                 # to special-case the two known instances of that.
-                new_cell = new_cell.replace("Well-being", 
-                                            "Well-Being")
-                new_cell = new_cell.replace("Non-communicable", 
-                                            "Non-Communicable")
+                new_cell = new_cell.replace("Well-being", "Well-Being")
+                new_cell = new_cell.replace("Non-communicable", "Non-Communicable")
                 # Often a comma was used to delimit the common prefix
                 # "Health and Well-Being", but sometimes a colon was
                 # used.  The colon probably makes more sense, so let's
                 # just switch them all to that.
-                new_cell = new_cell.replace("Health and Well-Being,", 
-                                            "Health and Well-Being:")
+                new_cell = new_cell.replace(
+                    "Health and Well-Being,", "Health and Well-Being:"
+                )
                 # And a couple of judgement calls:
                 if re.match("^Resilience Against Climate Change$", new_cell):
                     # The shorter name only had 18 members, compared
                     # with 170 for the longer name.
-                    new_cell = "Resilience Against Climate Change and Environmental Damage"
+                    new_cell = (
+                        "Resilience Against Climate Change and Environmental Damage"
+                    )
                 if re.match("^Crime and Punishment$", new_cell):
                     # The shorter name only had 9 members, compared
                     # with 54 for the longer name.
@@ -347,13 +294,15 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False, tdc_c
                     # Cannot use special formatting here because this
                     # will be used as a category, not just as a value.
                     new_cell = "No Primary Thematic Area Selected"
-            if (show_table_problem
-                and new_cell.find('<table') != -1
-                and new_cell.find('</table') == -1):
-                sys.stderr.write("DEBUG: unclosed <table>: row %d, col %d (%s): '%s':\n'%s'\n\n"
-                                 % (row_num, cell_num,
-                                    header_row[cell_num - 1],
-                                    org_name, new_cell))
+            if (
+                show_table_problem
+                and new_cell.find("<table") != -1
+                and new_cell.find("</table") == -1
+            ):
+                sys.stderr.write(
+                    "DEBUG: unclosed <table>: row %d, col %d (%s): '%s':\n'%s'\n\n"
+                    % (row_num, cell_num, header_row[cell_num - 1], org_name, new_cell)
+                )
             if cell_num == 89:  # The pitch video cell may need fixing.
                 # They all contain just an ID like "iIrGUi95ko4", not a URL
                 # like "https://www.youtube.com/watch?v=iIrGUi95ko4".
@@ -370,97 +319,50 @@ def fix_csv(fname_in, fname_out=None, pare=None, show_table_problem=False, tdc_c
                 # "/JO7Eg6Kc-qk" kept their leading slash:
                 if new_cell.find("/") == 0:
                     new_cell = new_cell[1:]
-                if ((len(new_cell) == 11 and youtube_id_re.match(new_cell))
+                if (
+                    (len(new_cell) == 11 and youtube_id_re.match(new_cell))
                     # One valid ID had "&feature" tacked on to the
                     # end, and two had time markers in the URL.
                     # Since we know they're valid, just say yes.
                     or new_cell.find("&feature") != -1
-                    or new_cell.find("?t=") != -1):
+                    or new_cell.find("?t=") != -1
+                ):
                     # Okay, any of the above can become a video URL:
                     video_id = new_cell
                     # Note that the "#ev" embed code below requires
                     # the EmbedVideo MediaWiki extension.  See issue
                     # #26 for details.
-                    new_cell = "https://www.youtube.com/watch?v="   \
-                              + video_id                            \
-                              + "\n\n"                              \
-                              + "{{#ev:youtube|" + video_id + "}}"
-                else: # There were 8 with no video that we could find:
-                    new_cell = ('<span style='
-                            + '"color: red; font-family: monospace;" >'
-                            + 'Could not convert "'
-                            + new_cell
-                            + '" to a YouTube video URL.'
-                            + '</span>')
+                    new_cell = (
+                        "https://www.youtube.com/watch?v="
+                        + video_id
+                        + "\n\n"
+                        + "{{#ev:youtube|"
+                        + video_id
+                        + "}}"
+                    )
+                else:  # There were 8 with no video that we could find:
+                    new_cell = (
+                        "<span style="
+                        + '"color: red; font-family: monospace;" >'
+                        + 'Could not convert "'
+                        + new_cell
+                        + '" to a YouTube video URL.'
+                        + "</span>"
+                    )
             new_row.append(new_cell)
 
             cell_num += 1
-
-        new_row.append(wiki_escape_page_title("{0} ({14})".format(*new_row)))
-
-        attachments_to_upload[row[14]] = {}
-        if attachments_dir is not None:
-            mou = None
-            team = None
-            financials = None
-
-            application_attachment_dir = os.path.join(attachments_dir, row[14])
-            for attachment_file in os.listdir(application_attachment_dir):
-                if re.search("^\\d*_mou", attachment_file, flags=re.I):
-                    # This must match the row header above
-                    attachments_to_upload[row[14]]["MOU Attachment"] = attachment_file
-                    mou = attachment_file
-                elif re.search("^\\d*_team", attachment_file, flags=re.I):
-                    # This must match the row header above
-                    attachments_to_upload[row[14]]["Team Attachment"] = attachment_file
-                    team = attachment_file
-                elif re.search("financial", attachment_file, flags=re.I):
-                    # This must match the row header above
-                    attachments_to_upload[row[14]]["Financials Attachment"] = attachment_file
-                    financials = attachment_file
-
-            new_row.append(mou)
-            new_row.append(team)
-            new_row.append(financials)
-
         csv_writer.writerow(new_row)
-        new_rows.append(new_row)
-        print("Sanitized row %d." % row_num)
-
-    if toc_dir is not None:
-        # Topic
-        orderable_topic_data = {}
-        for new_row in new_rows:
-            if new_row[11] not in orderable_topic_data:
-                orderable_topic_data[new_row[11]] = []
-            orderable_topic_data[new_row[11]].append([new_row[14], new_row[90]])
-
-        topic_data = {}
-        for topic, group in orderable_topic_data.items():
-            group.sort(key=lambda pair: pair[1])
-            topic_data[topic] = [pair[0] for pair in group]
-
-        generate_generic_toc(toc_dir, topic_data, "Topic_TOC")
-
-    if tdc_config_dir is not None:
-        create_tdc_config(tdc_config_dir, header_row, new_rows)
-
-    if attachments_dir is not None:
-        with open(os.path.join(attachments_dir, "attachments_to_upload"), 'wb') as f:
-            pickle.dump(attachments_to_upload, f)
 
     return out
 
+
 def main():
-    """Sanitize the MacFound input and emit it as html-ized csv."""
+    """Sanitize the LFC input and emit it as html-ized csv."""
     try:
-        opts, args = getopt.getopt(sys.argv[1:], '',
-                                   ["pare=",
-                                    "reclassifications=",
-                                    "toc-dir=",
-                                    "tdc-config-dir=",
-                                    "attachments-dir=",
-                                    "show-table-problem"])
+        opts, args = getopt.getopt(
+            sys.argv[1:], "", ["pare=", "reclassifications=", "show-table-problem"]
+        )
     except getopt.GetoptError as err:
         sys.stderr.write("ERROR: '%s'\n" % err)
         sys.exit(2)
@@ -468,9 +370,6 @@ def main():
     show_table_problem = False
     reclassifications_csv = None
     pare = None
-    toc_dir = None
-    tdc_config_dir = None
-    attachments_dir = None
     for o, a in opts:
         if o in ("--show-table-problem",):
             show_table_problem = True
@@ -478,23 +377,22 @@ def main():
             reclassifications_csv = a
         elif o == "--pare":
             pare = int(a)
-        elif o == "--toc-dir":
-            toc_dir = a
-        elif o == "--tdc-config-dir":
-            tdc_config_dir = a
-        elif o == "--attachments-dir":
-            attachments_dir = a
         else:
             sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
             sys.exit(2)
 
     if len(args) != 2:
-        sys.stderr.write(
-            "ERROR: need CSV_INPUT and NEW_CSV_OUTPUT arguments.\n\n")
+        sys.stderr.write("ERROR: need CSV_INPUT and NEW_CSV_OUTPUT arguments.\n\n")
         sys.stderr.write(__doc__)
         sys.exit(1)
-    fix_csv(args[0], args[1], pare, show_table_problem, tdc_config_dir, toc_dir, attachments_dir,
-            reclassifications_csv=reclassifications_csv)
+    fix_csv(
+        args[0],
+        args[1],
+        pare,
+        show_table_problem,
+        reclassifications_csv=reclassifications_csv,
+    )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
