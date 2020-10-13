@@ -13,8 +13,8 @@ class Competition:
         proposals_location,
         name,
         key_column_name,
-        type_row_included=False,
         pare=None,
+        type_row_included=False,
     ):
         """Initializes the competition from the source spreadsheet in
         PROPOSALS_LOCATION (a file location).  Loads up the CSV and processes
