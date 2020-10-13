@@ -366,6 +366,7 @@
       $wgGroupPermissions['sysop']['generated'] = true;
       $wgGroupPermissions['sysop']['edittorqueconfig'] = true;
       $wgGroupPermissions['sysop']['torquedataconnect-admin'] = true;
+      $wgGroupPermissions['sysop']['torquedataconnect-edit'] = true;
 
       # Groups requested specifically by LFC.
       $wgGroupPermissions['LFCResearchPartners']['read'] = true;
