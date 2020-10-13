@@ -238,13 +238,13 @@ def main():
     for proposal in comp.ordered_proposals()[0:16]:
         my_wiki.create_page(
             "LFC Analysis of %s" % proposal.cell("MediaWiki Title"),
-            "{{ #tdcrender:DemoView/" + proposal.key() + ".mwiki|LFCAnalysis }}",
+            "{{ #tdcrender:DemoView/id/" + proposal.key() + ".mwiki|LFCAnalysis }}",
         )
 
     for proposal in comp.proposals.values():
         my_wiki.create_page(
             "Evaluations of %s" % proposal.cell("MediaWiki Title"),
-            "{{ #tdcrender:DemoView/" + proposal.key() + ".mwiki|Evaluations }}",
+            "{{ #tdcrender:DemoView/id/" + proposal.key() + ".mwiki|Evaluations }}",
         )
 
 
