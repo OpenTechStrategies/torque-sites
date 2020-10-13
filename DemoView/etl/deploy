@@ -77,7 +77,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   mkdir -p $TDC_CONFIG_DIR
 fi
 
-if ! echo "975e32bbf02cc0fb66df4adc1aefdc5c0e17a3dd  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
+if ! echo "ddb802d1ceae7125cc4c89dc4bc4f32335216ccc  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
   echo "ERROR: SHA of PROPOSALS_CSV did not match expectation!"
   exit 1
 fi
