@@ -60,8 +60,10 @@ Command-line options:
                                   the torque wiki.  We don't automatically do that because we want to
                                   overwrite the configuration out there.
 
-  --pare N                        Reduce the number of items to 1/N rows, for quick
-                                  testing and development
+  --pare ARG                      If ARG is a number, reduce the number of items to 1/ARG.  If
+                                  ARG begins with +, then ARG is a comma separated list of
+                                  keys to include.  If ARG begins with @, then ARG is a
+                                  file with a list of keys to include.
 
   --csv-only                      Only upload the created CSV file.  Don't upload attachments or
                                   create wiki pages.  For use to speed up process when wiki has been
