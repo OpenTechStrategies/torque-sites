@@ -19,6 +19,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+CSV_ONLY=""
+PARE=""
+while getopts "cp:" opt; do
+  case $opt in
+    c) CSV_ONLY="--csv-only" ;;
+    p) PARE="--pare=$OPTARG" ;;
+  esac
+done
+shift $((OPTIND -1))
+
 COMPETITION="100Change2017"
 LFC_DIR=`dirname "${0}"`
 BASE_DATA_DIR="${1}"
@@ -30,7 +40,13 @@ function check_for_bin {
 if [ "${BASE_DATA_DIR}" = "" ]; then
   echo "ERROR: BASE_DATA_DIRECTORY argument required."
   echo ""
-  echo "Usage: '${0} BASE_DATA_DIRECTORY'"
+  echo "Usage: '${0} [-a] [-p number] BASE_DATA_DIRECTORY'"
+  echo ""
+  echo "Options:"
+  echo ""
+  echo "  -c                  Uploads CSV only.  Skips creating pages and"
+  echo "                      uploading attachments."
+  echo "  -p <pare>           Pares by factor of PARE"
   echo ""
   echo "BASE_DATA_DIRECTORY/100Change2017 is where all the work is done."
   echo ""
@@ -319,6 +335,8 @@ cp "${DATA_DIR}"/"${STAGE_3_CSV}" "${DATA_DIR}"/"${STAGE_FINAL_CSV}"
 echo "Stage 4: Uploading csv and attachments..."
 echo "  If you want to skip attachments, set SKIP_ATTACHMENTS in your environment"
 ${RUNNER} --proposals-csv="${DATA_DIR}/${STAGE_FINAL_CSV}" \
+          $PARE \
+          $CSV_ONLY \
           --tdc-config-dir="${TDC_CONFIG_DIR}" \
           --attachments-dir=${ATTACHMENTS_DIR}
 if [ $? -ne 0 ]; then

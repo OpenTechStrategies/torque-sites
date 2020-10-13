@@ -29,7 +29,9 @@ Usage:
        --sdgconfig-csv=SDGCONFIG_CSV \\
        --attachments-dir=ATTACHMENTS_DIR \\
        --correction-file=COORECTION_FILE \\
-       --tdc-config-dir=TDC_CONFIG_DIR
+       --tdc-config-dir=TDC_CONFIG_DIR \\
+       --pare=PARE \\
+       --csv-only
 
 Command-line options:
   --proposals-csv FILE            FILE is a CSV file representing the bulk
@@ -72,6 +74,14 @@ Command-line options:
                                   needed by TorqueDataConnect, and can be optionally, manually, put on
                                   the torque wiki.  We don't automatically do that because we want to
                                   overwrite the configuration out there.
+
+  --pare N                        Reduce the number of items to 1/N rows, for quick
+                                  testing and development
+
+  --csv-only                      Only upload the created CSV file.  Don't upload attachments or
+                                  create wiki pages.  For use to speed up process when wiki has been
+                                  created already.
+
 """
 
 from etl import competition, wiki, toc, tdc, utils
@@ -356,13 +366,14 @@ def main():
                 "tdc-config-dir=",
                 "attachments-dir=",
                 "correction-file=",
+                "pare=",
+                "csv-only",
             ],
         )
     except getopt.GetoptError as err:
         sys.stderr.write("ERROR: '%s'\n" % err)
         sys.exit(2)
 
-    pare = None
     proposals_csv = None
     admin_review_csv = None
     judge_evaluation_csv = None
@@ -374,9 +385,15 @@ def main():
     ots_metadata_csv = None
     tdc_config_dir = None
     correction_files = []
+    pare = None
+    csv_only = False
     for o, a in opts:
         if o == "--proposals-csv":
             proposals_csv = a
+        elif o == "--pare":
+            pare = int(a)
+        elif o == "--csv-only":
+            csv_only = True
         elif o == "--admin-review-csv":
             admin_review_csv = a
         elif o == "--judge-evaluation-csv":
@@ -402,7 +419,7 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    comp = competition.Competition(proposals_csv, "proposals", "Review Number")
+    comp = competition.Competition(proposals_csv, "proposals", "Review Number", pare)
     comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
 
     fix_cell_processor = competition.FixCellProcessor()
@@ -561,9 +578,9 @@ def main():
     my_wiki = wiki.WikiSession(
         config.username, config.password, comp.name, config.wiki_url
     )
+    my_wiki.csv_only = csv_only
     my_wiki.upload_sheet(comp)
-    if os.environ.get("SKIP_ATTACHMENTS") is None:
-        my_wiki.upload_attachments(attachments.attachments)
+    my_wiki.upload_attachments(attachments.attachments)
 
 
 if __name__ == "__main__":

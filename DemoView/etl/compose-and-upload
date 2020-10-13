@@ -25,7 +25,9 @@ Usage:
        --proposals-csv=PROPOSALS_CSV \\
        --tdc-config-dir=TDC_CONFIG_DIR \\
        --example-mou=EXAMPLE_MOU \\
-       --example-financials=EXAMPLE_FINANCIALS
+       --example-financials=EXAMPLE_FINANCIALS \\
+       --pare=PARE \\
+       --csv-only
 
 Command-line options:
   --proposals-csv FILE            FILE is a CSV file representing the bulk
@@ -41,6 +43,13 @@ Command-line options:
 
   --example-financials FILE       FILE is an example Financials document to be uploaded and attached to
                                   the proposal
+
+  --pare N                        Reduce the number of items to 1/N rows, for quick
+                                  testing and development
+
+  --csv-only                      Only upload the created CSV file.  Don't upload attachments or
+                                  create wiki pages.  For use to speed up process when wiki has been
+                                  created already.
 """
 
 from etl import competition, wiki, toc, tdc, utils
@@ -113,6 +122,8 @@ def main():
                 "tdc-config-dir=",
                 "example-mou=",
                 "example-financials=",
+                "pare=",
+                "csv-only",
             ],
         )
     except getopt.GetoptError as err:
@@ -123,9 +134,15 @@ def main():
     tdc_config_dir = None
     example_mou = None
     example_financials = None
+    pare = None
+    csv_only = False
     for o, a in opts:
         if o == "--proposals-csv":
             proposals_csv = a
+        elif o == "--pare":
+            pare = int(a)
+        elif o == "--csv-only":
+            csv_only = True
         elif o == "--tdc-config-dir":
             tdc_config_dir = a
         elif o == "--example-mou":
@@ -141,7 +158,9 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    comp = competition.Competition(proposals_csv, "DemoView", "Application #", True)
+    comp = competition.Competition(
+        proposals_csv, "DemoView", "Application #", pare, True
+    )
 
     comp.add_supplemental_information(LFCAnalysisAdder())
 
@@ -212,10 +231,9 @@ def main():
     my_wiki = wiki.WikiSession(
         config.username, config.password, comp.name, config.wiki_url
     )
+    my_wiki.csv_only = csv_only
     my_wiki.upload_sheet(comp)
-
-    if os.environ.get("SKIP_ATTACHMENTS") is None:
-        my_wiki.upload_attachments(attachments.attachments)
+    my_wiki.upload_attachments(attachments.attachments)
 
     for proposal in comp.ordered_proposals()[0:16]:
         my_wiki.create_page(
