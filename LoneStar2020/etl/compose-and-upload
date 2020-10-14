@@ -61,6 +61,60 @@ import sys
 import os
 
 
+class LFCAnalysisAdder(competition.InformationAdder):
+    """Adds the columns for the LFC Analysis, all empty because these
+    cells are there to be edited upon later"""
+
+    def column_names(self):
+        return [
+            "LFC Analysis: Recommendation",
+            "LFC Analysis: Short Description",
+            "LFC Analysis: LHP Relationship History",
+            "LFC Analysis: TRANSFORMATIVE Summary",
+            "LFC Analysis: EVIDENCE-BASED Summary",
+            "LFC Analysis: FEASIBLE Summary",
+            "LFC Analysis: SCALABLE Summary",
+            "LFC Analysis: Overview",
+            "LFC Analysis: Strength of Approach",
+            "LFC Analysis: Risks and Challenges",
+            "LFC Analysis: Internet Scan",
+            "LFC Analysis: Diversity, Equity and Inclusion",
+            "LFC Analysis: Observations",
+            "LFC Analysis: Financial Overview",
+            "LFC Analysis: Funding Overview",
+        ]
+
+    def cell(self, proposal, column_name):
+        return ""
+
+
+class SolutionCategoryRankAdder(competition.InformationAdder):
+    """Adds a column for the rank within the solution category."""
+
+    def __init__(self, proposals):
+        self.grouped_and_ranked = {}
+        for proposal in proposals:
+            solution_cat = proposal.cell("Solution category")
+            if solution_cat not in self.grouped_and_ranked:
+                self.grouped_and_ranked[solution_cat] = []
+            self.grouped_and_ranked[solution_cat].append(proposal)
+
+        for proposal_set in self.grouped_and_ranked.values():
+            proposal_set.sort(
+                key=lambda p: int(p.cell("Judge Overall Score Rank Normalized"))
+            )
+
+    def column_names(self):
+        return ["Solution Category Ranking"]
+
+    def cell(self, proposal, column_name):
+        if proposal.cell("Judge Overall Score Rank Normalized") is "9999":
+            return "9999"
+        return self.grouped_and_ranked[proposal.cell("Solution category")].index(
+            proposal
+        ) + 1
+
+
 def main():
     """Compose the LFC input and emit it as html-ized csv."""
     try:
@@ -143,6 +197,8 @@ def main():
                 comments_score_normalized_col_name="TraitScoreNormalized",
             )
         )
+    comp.add_supplemental_information(LFCAnalysisAdder())
+    comp.add_supplemental_information(SolutionCategoryRankAdder(comp.proposals.values()))
 
     comp.sort("Judge Overall Score Rank Normalized", True)
 
@@ -257,6 +313,19 @@ def main():
     my_wiki.csv_only = csv_only
     my_wiki.upload_sheet(comp)
     my_wiki.upload_attachments(attachments.attachments)
+
+    for proposal in comp.ordered_proposals()[0:16]:
+        my_wiki.create_page(
+            "LFC Analysis of %s" % proposal.cell("MediaWiki Title"),
+            "{{ #tdcrender:LoneStar2020/id/" + proposal.key() + ".mwiki|LFCAnalysis }}",
+        )
+
+    for proposal in comp.proposals.values():
+        my_wiki.create_page(
+            "Evaluations of %s" % proposal.cell("MediaWiki Title"),
+            "{{ #tdcrender:LoneStar2020/id/" + proposal.key() + ".mwiki|Evaluations }}",
+        )
+
 
 
 if __name__ == "__main__":
