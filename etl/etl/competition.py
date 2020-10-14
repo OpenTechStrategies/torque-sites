@@ -28,7 +28,7 @@ class Competition:
         column types.  This is useful when the incoming spreadsheet was previously
         generated for torque.
 
-        PARE, when passed in, restricts the number of items as defined by utils.pare_pare"""
+        PARE, when passed in, restricts the number of items as defined by utils.parse_pare"""
         try:
             proposals_reader = csv.reader(
                 open(proposals_location, encoding="utf-8"), delimiter=",", quotechar='"'

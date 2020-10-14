@@ -170,11 +170,12 @@ Note, running `deploy` with no arguments will give you the list of args availabl
 or required.  In some projects, more than just the `data` directory is needed.
 
 For most scripts, both `-c` and `-p` options are available.  The former uploads
-the spreadsheet only, not uploading attachments or creating wiki pages.  For the
-latter, allows you to include a paring option.  This option, if a number, reduces
+the spreadsheet only, not uploading attachments or creating wiki pages.  The
+latter allows you to include a paring option.  This option, if a number, reduces
 the set of keys to `1/NUMBER`.  If it starts with a `+`, you can add a number of
-comma separated keys to pare two, and if it starts with an `@`, then it is a file
-with a new line separated list of keys.
+comma separated keys to pare to, and if it starts with an `@`, then it is a file
+with a new line separated list of keys, both of which will reduce it to only
+the included keys.
 
 # Installing the system
 

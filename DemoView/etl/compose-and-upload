@@ -47,7 +47,8 @@ Command-line options:
   --pare ARG                      If ARG is a number, reduce the number of items to 1/ARG.  If
                                   ARG begins with +, then ARG is a comma separated list of
                                   keys to include.  If ARG begins with @, then ARG is a
-                                  file with a list of keys to include.
+                                  file with a list of keys to include.  For both + and @,
+                                  the list of keys will be limited to only the ones provided.
 
   --csv-only                      Only upload the created CSV file.  Don't upload attachments or
                                   create wiki pages.  For use to speed up process when wiki has been

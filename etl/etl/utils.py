@@ -127,8 +127,8 @@ def parse_pare(pare_option):
     """Parses the PARE_OPTION and returns a tuple of
     (PARE_FACTOR, KEYS_TO_INCLUDE) where PARE_FACTOR is an int
     by which proposals should be reduced, and KEYS_TO_INCLUDE
-    is a list of proposals to include by key.  Only one of the
-    two will ever be returned."""
+    is a list of proposals to include by key.  Exactly one of the
+    two will be a value, with the other being None."""
 
     pare_factor = None
     keys_to_include = None
@@ -142,6 +142,6 @@ def parse_pare(pare_option):
     else:
         try:
             pare_factor = int(pare_option)
-        except Exception:
+        except:
             raise Exception("Pare option not a number: " + pare_option)
     return (pare_factor, keys_to_include)
