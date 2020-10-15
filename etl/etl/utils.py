@@ -121,3 +121,27 @@ def commaize_number(number):
         return retn
     except Exception as e:
         return number
+
+
+def parse_pare(pare_option):
+    """Parses the PARE_OPTION and returns a tuple of
+    (PARE_FACTOR, KEYS_TO_INCLUDE) where PARE_FACTOR is an int
+    by which proposals should be reduced, and KEYS_TO_INCLUDE
+    is a list of proposals to include by key.  Exactly one of the
+    two will be a value, with the other being None."""
+
+    pare_factor = None
+    keys_to_include = None
+    if pare_option is None:
+        pass
+    elif pare_option.startswith("@"):
+        with open(pare_option[1:]) as pare_file:
+            keys_to_include = [l.strip().split(' ')[0] for l in pare_file.readlines() if l.strip()]
+    elif pare_option.startswith("+"):
+        keys_to_include = pare_option[1:].split(",")
+    else:
+        try:
+            pare_factor = int(pare_option)
+        except:
+            raise Exception("Pare option not a number: " + pare_option)
+    return (pare_factor, keys_to_include)

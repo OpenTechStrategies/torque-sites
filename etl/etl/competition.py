@@ -28,7 +28,7 @@ class Competition:
         column types.  This is useful when the incoming spreadsheet was previously
         generated for torque.
 
-        Int PARE, when passed in, restricts the number of items by the factor PARE"""
+        PARE, when passed in, restricts the number of items as defined by utils.parse_pare"""
         try:
             proposals_reader = csv.reader(
                 open(proposals_location, encoding="utf-8"), delimiter=",", quotechar='"'
@@ -53,9 +53,14 @@ class Competition:
                 self.column_types[column_name] = column_type
 
         row_num = 0
+        key_column_idx = self.columns.index(key_column_name)
+        pare_factor, keys_to_include = utils.parse_pare(pare)
         for row in proposals_reader:
             row_num = row_num + 1
-            if pare is not None and (row_num % pare) != 0:
+            if pare_factor is not None and (row_num % pare_factor) != 0:
+                continue
+
+            if keys_to_include is not None and row[key_column_idx] not in keys_to_include:
                 continue
 
             proposal = Proposal(self.columns, row, key_column_name)
