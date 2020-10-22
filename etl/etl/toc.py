@@ -14,6 +14,9 @@ class Toc:
     def __init__(self):
         self.proposals = None
 
+        # Defaults to the simple list for groups of proposals
+        self.proposal_formatter = WikiListTocProposalFormatter()
+
     def process_competition(self, competition):
         """Processes a COMPETITION after it has been built.  This
         is separate from the initializer because we want to
@@ -35,6 +38,106 @@ class Toc:
         """Returns a dictionary that should be uploaded alongside
         the template to be handled by torque with rendering the Toc"""
         return {}
+
+
+class TocProposalFormatter:
+    """Base class for formatters for how TOC lists are built.  For instance,
+    in grouped TOCs, this formatter will be applied to each section that has
+    a list of proposals."""
+
+    def prefix(self):
+        """The PREFIX of the section containing a list of proposals.  To be
+        added out before each list is done."""
+        return ""
+
+    def format_proposal(self, group_var_name, id_var_name):
+        """The formatting line for a proposal.  Because the proposals are handed
+        to the TOC at run time of the torque server, not of a etl pipeline, two
+        pieces of information are needed.  The first is the GROUP_VAR_NAME, naming
+        what the group is called in the template (usually the competition name).
+        The second is the ID_VAR_NAME which holds the variable name of the id
+        for the given proposal.  Usually this is proposal_id for most templates
+        created in this file, but it can be different.  Between these, the template,
+        and therefore the formatted, can get at the proposal information."""
+        return ""
+
+    def suffix(self):
+        """The SUFFIX of the section containing a list of proposals.  To be
+        added out after each list is done."""
+        return ""
+
+
+class WikiListTocProposalFormatter(TocProposalFormatter):
+    """A TocProposalFormatter for simple wiki lists, meaning a new line separated
+    list of values that start with '*'.  These proposals are then rendered
+    according to the torque configured TOC template (via the 'toc_lines' variable)."""
+
+    def format_proposal(self, group_var_name, id_var_name):
+        return "* {{ toc_lines[%s] }}\n" % id_var_name
+
+
+class WikiTableTocProposalFormatter(TocProposalFormatter):
+    """A TocProposalFormatter for wiki tables.  The columns and column_headings
+    must be passed in at the beginning, to build a list, and it's assumed that
+    people viewing these proposals will have access to those columns, as no
+    conditional check on permissions is made.
+
+    The wiki tables themselves are sortable and styled."""
+
+    def __init__(self, column_definitions):
+        """Initializes with COLUMN_DEFINITIONS, which is an array of
+        the following dictionaries:
+
+        {
+            name: String (required),
+            heading: String (required),
+            link: Boolean (defaults to false),
+            right_aligned: Boolean (defaults to false)
+        }
+
+        Where NAME is the name of the column in the proposals,
+        HEADING is the heading for that column in the table, LINK
+        notes that this column should link against the proposal pages,
+        and RIGHT_ALIGNED is whether the data in this column should be
+        right aligned.
+        """
+        self.column_definitions = column_definitions
+
+    def prefix(self):
+        template = '{| class="wikitable sortable" style="border-style: solid; border-color: gray; border-width: 5px;"\n'
+        for column_def in self.column_definitions:
+            template += "! %s\n" % column_def["heading"]
+        return template
+
+    def format_proposal(self, group_var_name, id_var_name):
+        from etl import competition
+
+        template = "|-\n"
+        for column_def in self.column_definitions:
+            name = column_def["name"]
+            heading = column_def["heading"]
+            link = column_def.get("link", False)
+            right_aligned = column_def.get("right_aligned", False)
+
+            template += "| "
+            if right_aligned:
+                template += " style='text-align:right' |"
+
+            if link:
+                template += "[[{{ %s[%s]['%s'] }}|" % (
+                    group_var_name,
+                    id_var_name,
+                    competition.MediaWikiTitleAdder.title_column_name,
+                )
+            template += "{{ %s[%s]['%s'] }}" % (group_var_name, id_var_name, name)
+            if link:
+                template += "]]"
+
+            template += "\n"
+        return template
+
+    def suffix(self):
+        return "|}\n"
 
 
 class GenericToc(Toc):
@@ -78,9 +181,13 @@ class GenericToc(Toc):
         # This line is so that we can have counts and still link into it
         template += "<div id='{{ group_name }}'></div>\n"
         template += "= {{ group_name }} ({{ proposals_in_group|length }}) =\n"
+        template += self.proposal_formatter.prefix()
         template += "        {%- for proposal_id in proposals_in_group %}\n"
-        template += "* {{ toc_lines[proposal_id] }}\n"
+        template += self.proposal_formatter.format_proposal(
+            self.competition_name, "proposal_id"
+        )
         template += "        {%- endfor %}\n"
+        template += self.proposal_formatter.suffix()
         template += "    {%- endif %}\n"
         template += "{%- endfor %}\n"
         return template
@@ -126,13 +233,17 @@ class ListToc(Toc):
         self.keys = [p.key() for p in self.proposals]
 
     def template_file(self):
-        template = "{% for proposal_id in proposal_ids %}\n"
+        template = self.proposal_formatter.prefix()
+        template += "{% for proposal_id in proposal_ids %}\n"
         template += (
             "    {%%- if proposal_id in %s.keys() -%%}\n" % self.competition_name
         )
-        template += "* {{ toc_lines[proposal_id] }}\n"
+        template += self.proposal_formatter.format_proposal(
+            self.competition_name, "proposal_id"
+        )
         template += "{% endif -%}\n"
         template += "{% endfor %}\n"
+        template += self.proposal_formatter.suffix()
         return template
 
     def grouped_data(self):
@@ -208,10 +319,15 @@ class GeographicToc(Toc):
                 "=" * (i + 1),
             )
 
+        template += self.proposal_formatter.prefix()
+
         template += "{% endif -%}\n"
-        template += "* {{ toc_lines[proposal_id] }}\n"
+        template += self.proposal_formatter.format_proposal(
+            self.competition_name, "proposal_id"
+        )
         template += "{% endif -%}\n"
         template += "{% endfor %}\n"
+        template += self.proposal_formatter.suffix()
         for _ in range(self.num_levels):
             template += "{%- endfor %}\n"
 

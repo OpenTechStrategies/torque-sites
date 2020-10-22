@@ -136,7 +136,9 @@ def parse_pare(pare_option):
         pass
     elif pare_option.startswith("@"):
         with open(pare_option[1:]) as pare_file:
-            keys_to_include = [l.strip().split(' ')[0] for l in pare_file.readlines() if l.strip()]
+            keys_to_include = [
+                l.strip().split(" ")[0] for l in pare_file.readlines() if l.strip()
+            ]
     elif pare_option.startswith("+"):
         keys_to_include = pare_option[1:].split(",")
     else:

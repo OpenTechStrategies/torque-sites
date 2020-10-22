@@ -60,7 +60,10 @@ class Competition:
             if pare_factor is not None and (row_num % pare_factor) != 0:
                 continue
 
-            if keys_to_include is not None and row[key_column_idx] not in keys_to_include:
+            if (
+                keys_to_include is not None
+                and row[key_column_idx] not in keys_to_include
+            ):
                 continue
 
             proposal = Proposal(self.columns, row, key_column_name)
