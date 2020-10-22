@@ -24,6 +24,7 @@ Usage:
   $ compose-and-upload \\
        --proposals-csv=PROPOSALS_CSV \\
        --attachments-dir=ATTACHMENTS_DIR \\
+       --judge-evaluation-csv=JUDGE_EVALUATION_CSV \\
        --tdc-config-dir=TDC_CONFIG_DIR \\
        --pare=PARE \\
        --csv-only
@@ -35,6 +36,10 @@ Command-line options:
   --attachments-dir DIR           DIR is a directory for compose-csvs to look in for what attachments
                                   will be uploaded to the torque wiki.  It needs to have subdirectories
                                   by proposal number.
+
+  --judge-evaluation-csv FILE     FILE is a CSV file with a many to one relationshp
+                                  between judges and the proposals they evaluated,
+                                  with the extra data being their evaluation
 
   --tdc-config-dir DIR            DIR is the location for files that are the base configuration files
                                   needed by TorqueDataConnect, and can be optionally, manually, put on
@@ -67,6 +72,7 @@ def main():
             "",
             [
                 "proposals-csv=",
+                "judge-evaluation-csv=",
                 "tdc-config-dir=",
                 "attachments-dir=",
                 "pare=",
@@ -78,6 +84,7 @@ def main():
         sys.exit(2)
 
     proposals_csv = None
+    judge_evaluation_csv = None
     attachments_dir = None
     tdc_config_dir = None
     pare = None
@@ -89,6 +96,8 @@ def main():
             pare = int(a)
         elif o == "--csv-only":
             csv_only = True
+        elif o == "--judge-evaluation-csv":
+            judge_evaluation_csv = a
         elif o == "--tdc-config-dir":
             tdc_config_dir = a
         elif o == "--attachments-dir":
@@ -121,7 +130,21 @@ def main():
         comp.sorted_proposal_keys, attachments_dir
     )
     comp.add_supplemental_information(attachments)
-    comp.sort("Organization Name")
+    if judge_evaluation_csv is not None:
+        comp.add_supplemental_information(
+            competition.EvaluationAdder(
+                "Judge",
+                judge_evaluation_csv,
+                app_col_name="Application #",
+                score_rank_normalized_col_name="OverallScoreRankNormalized",
+                sum_of_scores_normalized_col_name="SumOfScoresNormalized",
+                trait_col_name="Trait",
+                score_normalized_col_name="TraitScoreNormalized",
+                comments_col_name="TraitJudgeComment",
+                comments_score_normalized_col_name="TraitScoreNormalized",
+            )
+        )
+    comp.sort("Judge Overall Score Rank Normalized", True)
 
     comp.add_toc(toc.ListToc("All_Proposals"))
     comp.add_toc(toc.GenericMultiLineToc("Populations", "Priority Populations"))
@@ -234,6 +257,12 @@ def main():
     my_wiki.csv_only = csv_only
     my_wiki.upload_sheet(comp)
     my_wiki.upload_attachments(attachments.attachments)
+
+    for proposal in comp.proposals.values():
+        my_wiki.create_page(
+            "Evaluations of %s" % proposal.cell("MediaWiki Title"),
+            "{{ #tdcrender:Climate2030/id/" + proposal.key() + ".mwiki|Evaluations }}",
+        )
 
 
 if __name__ == "__main__":
