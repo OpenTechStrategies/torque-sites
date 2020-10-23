@@ -144,7 +144,7 @@ def main():
                 comments_score_normalized_col_name="TraitScoreNormalized",
             )
         )
-    comp.sort("Judge Overall Score Rank Normalized", True)
+    comp.sort("Organization Name")
 
     list_toc = toc.ListToc("All_Proposals")
     list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
