@@ -61,9 +61,11 @@ JUDGE_EVALUATION_CSV="EconomicOpportunityChallenge_Evaluation_Panel_Data_anon_ju
 ADMIN_REVIEW_CSV="AdminReviewEP_eoc2019_03102020.csv"
 LFC_EVALUATION_CSV="lfcrecommendations.csv"
 REGIONCONFIG_CSV="regionconfig.csv"
+TOP5_DATA_FILE="top5.dat"
 TOP13_DATA_FILE="top13.dat"
 THEMATIC_AREAS_CSV="EOC_Applications_Thematic_Areas.csv"
 TOP13_SUPPLEMENTAL_ATTACHMENTS="EOC_Docs_for_Upload.zip"
+TOP5_SUPPLEMENTAL_ATTACHMENTS="EOC_Docs_for_Upload_20201023.zip"
 TOP13_SYNTHESIS_MEMO_ATTACHMENTS="EOC_Synthesis_Memos.zip"
 BRIDGESPAN_ANALYSIS_ZIP="200601-Bridgespan-data.zip"
 BRIDGESPAN_ANALYSIS_CSV="200601-Bridgespan-data-for-Wiki-v1.csv"
@@ -100,10 +102,12 @@ if [ ! -d "${DATA_DIR}" ] ; then
   gpg -o ${DATA_DIR}/${ADMIN_REVIEW_CSV} --decrypt ${ENCRYPTED_DIR}/${ADMIN_REVIEW_CSV}.gpg || exit 1
   gpg -o ${DATA_DIR}/${THEMATIC_AREAS_CSV} --decrypt ${ENCRYPTED_DIR}/${THEMATIC_AREAS_CSV}.gpg || exit 1
   gpg -o ${DATA_DIR}/${JUDGE_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${JUDGE_EVALUATION_CSV}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${TOP5_DATA_FILE} --decrypt ${ENCRYPTED_DIR}/${TOP5_DATA_FILE}.gpg || exit 1
   gpg -o ${DATA_DIR}/${TOP13_DATA_FILE} --decrypt ${ENCRYPTED_DIR}/${TOP13_DATA_FILE}.gpg || exit 1
   gpg -o ${DATA_DIR}/${LFC_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${LFC_EVALUATION_CSV}.gpg || exit 1
   gpg -o ${DATA_DIR}/${BASE_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg || exit 1
   gpg -o "${DATA_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}" --decrypt "${ENCRYPTED_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}.gpg" || exit 1
+  gpg -o "${DATA_DIR}/${TOP5_SUPPLEMENTAL_ATTACHMENTS}" --decrypt "${ENCRYPTED_DIR}/${TOP5_SUPPLEMENTAL_ATTACHMENTS}.gpg" || exit 1
   gpg -o "${DATA_DIR}/${TOP13_SYNTHESIS_MEMO_ATTACHMENTS}" --decrypt "${ENCRYPTED_DIR}/${TOP13_SYNTHESIS_MEMO_ATTACHMENTS}.gpg" || exit 1
   gpg -o "${DATA_DIR}/${BRIDGESPAN_ANALYSIS_ZIP}" --decrypt "${ENCRYPTED_DIR}/${BRIDGESPAN_ANALYSIS_ZIP}.gpg" || exit 1
 
@@ -116,6 +120,17 @@ if [ ! -d "${DATA_DIR}" ] ; then
 
   mkdir -p $TMP_ATTACHMENTS_DIR
   unzip -d $TMP_ATTACHMENTS_DIR "${DATA_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}"
+  ls $TMP_ATTACHMENTS_DIR | grep "[[:digit:]]\+_" | while read dir ; do
+    cp -v "$TMP_ATTACHMENTS_DIR/$dir/"*.pdf ${ATTACHMENTS_DIR}/${dir/_*/} ;
+  done
+  rm -rf $TMP_ATTACHMENTS_DIR
+
+  mkdir -p $TMP_ATTACHMENTS_DIR
+  unzip -d $TMP_ATTACHMENTS_DIR "${DATA_DIR}/${TOP5_SUPPLEMENTAL_ATTACHMENTS}"
+  cat ${DATA_DIR}/${TOP13_DATA_FILE} | while read key ; do
+    cp -v "$TMP_ATTACHMENTS_DIR/${key}_*/*.pdf" ${ATTACHMENTS_DIR}/$key
+  done
+
   ls $TMP_ATTACHMENTS_DIR | grep "[[:digit:]]\+_" | while read dir ; do
     cp -v "$TMP_ATTACHMENTS_DIR/$dir/"*.pdf ${ATTACHMENTS_DIR}/${dir/_*/} ;
   done
@@ -135,6 +150,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   # Clean up large zips to save disk space
   rm ${DATA_DIR}/${BASE_ATTACHMENTS}
   rm "${DATA_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}"
+  rm "${DATA_DIR}/${TOP5_SUPPLEMENTAL_ATTACHMENTS}"
   rm "${DATA_DIR}/${TOP13_SYNTHESIS_MEMO_ATTACHMENTS}"
   rm "${DATA_DIR}/${BRIDGESPAN_ANALYSIS_ZIP}"
 fi

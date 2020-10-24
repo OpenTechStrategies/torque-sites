@@ -321,11 +321,18 @@ def main():
     attachments = competition.RegexSpecifiedAttachments(
         comp.sorted_proposal_keys, attachments_dir
     )
+    attachments.specify_new_column(".*Finalist Memo.*", "Finalist Memo Attachment", 1)
+    attachments.specify_new_column(".*Technical Review.*", "Technical Review Attachment", 2)
+    attachments.specify_new_column(".*Site Visit Notes.*", "Site Visit Notes Attachment", 3)
+    attachments.specify_new_column(".*CAF Financial Review.*", "CAF: Financial Review Attachment", 4)
+    attachments.specify_new_column(".*KHA DEI Review.*", "KHA: DEI Review Attachment", 5)
+    attachments.specify_new_column(".*MIUSA Accessibility Review.*", "MIUSA: Accessibility Review Attachment", 6)
+    attachments.specify_new_column(".*Prospectus.*", "Prospectus Attachment", 7)
+    attachments.specify_by_regex(".*Synthesis Memo", "Synthesis Memo", 8)
+    attachments.specify_by_regex(".*Supplemental Documents", "Financials and MoUs", 9)
     attachments.specify_by_regex(
-        ".*Response to Questions", "Responses to Follow Up Questions", 3
+        ".*Response to Questions", "Responses to Follow Up Questions", 10
     )
-    attachments.specify_by_regex(".*Synthesis Memo", "Synthesis Memo", 1)
-    attachments.specify_by_regex(".*Supplemental Documents", "Financials and MoUs", 2)
     comp.add_supplemental_information(attachments)
 
     if judge_evaluation_csv is not None:
