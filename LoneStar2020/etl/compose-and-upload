@@ -121,83 +121,10 @@ class SolutionCategoryRankAdder(competition.InformationAdder):
     def cell(self, proposal, column_name):
         if proposal.cell("Panel Overall Score Rank Normalized") is "9999":
             return "9999"
-        return self.grouped_and_ranked[proposal.cell("Solution category")].index(
-            proposal
-        ) + 1
-
-
-class ExpertPanelRankAdder(competition.InformationAdder):
-    """Quick and dirty adder for placeholder for incoming expert
-    panel evaluation sheet.  The sheet this is based off just has
-    the scores and ranks in a spreadsheet, without the many to
-    one relationship we usually get with comments."""
-    def __init__(self, csv_location):
-        csv_reader = csv.reader(
-            open(csv_location, encoding="utf-8"), delimiter=",", quotechar='"'
+        return (
+            self.grouped_and_ranked[proposal.cell("Solution category")].index(proposal)
+            + 1
         )
-
-        header = next(csv_reader)
-        self.data = {}
-
-        for row in csv_reader:
-            key = row[header.index("Application #")]
-            rank = row[header.index("Overall Rank")]
-            score = row[header.index("Score Total")]
-            transform = row[header.index("TRANSFORMATIVE")]
-            scalable = row[header.index("SCALABLE ")]
-            feasible = row[header.index(" FEASIBLE ")]
-            evidence_based = row[header.index("EVIDENCE-BASED")]
-
-            self.data[key] = {
-                "Panel Overall Score Rank Normalized": rank,
-                "Panel Sum of Scores Normalized": score,
-                "Panel EVIDENCE-BASED": "EVIDENCE-BASED",
-                "Panel FEASIBLE": "FEASIBLE",
-                "Panel SCALABLE": "SCALABLE",
-                "Panel TRANSFORMATIVE": "TRANSFORMATIVE",
-                "Panel EVIDENCE-BASED Score Normalized": evidence_based,
-                "Panel FEASIBLE Score Normalized": feasible,
-                "Panel SCALABLE Score Normalized": scalable,
-                "Panel TRANSFORMATIVE Score Normalized": transform,
-                "Panel EVIDENCE-BASED Comments": "",
-                "Panel FEASIBLE Comments": "",
-                "Panel SCALABLE Comments": "",
-                "Panel TRANSFORMATIVE Comments": "",
-                "Panel EVIDENCE-BASED Comment Scores Normalized": "",
-                "Panel FEASIBLE Comment Scores Normalized": "",
-                "Panel SCALABLE Comment Scores Normalized": "",
-                "Panel TRANSFORMATIVE Comment Scores Normalized": "",
-                    }
-
-
-    def column_names(self):
-        return [
-            "Panel Overall Score Rank Normalized",
-            "Panel Sum of Scores Normalized",
-            "Panel EVIDENCE-BASED",
-            "Panel FEASIBLE",
-            "Panel SCALABLE",
-            "Panel TRANSFORMATIVE",
-            "Panel EVIDENCE-BASED Score Normalized",
-            "Panel FEASIBLE Score Normalized",
-            "Panel SCALABLE Score Normalized",
-            "Panel TRANSFORMATIVE Score Normalized",
-            "Panel EVIDENCE-BASED Comments",
-            "Panel FEASIBLE Comments",
-            "Panel SCALABLE Comments",
-            "Panel TRANSFORMATIVE Comments",
-            "Panel EVIDENCE-BASED Comment Scores Normalized",
-            "Panel FEASIBLE Comment Scores Normalized",
-            "Panel SCALABLE Comment Scores Normalized",
-            "Panel TRANSFORMATIVE Comment Scores Normalized",
-        ]
-
-    def cell(self, proposal, column_name):
-        if proposal.key() not in self.data:
-            if column_name == "Panel Overall Score Rank Normalized":
-                return "9999"
-            return ""
-        return self.data[proposal.key()][column_name]
 
 
 def main():
@@ -290,9 +217,24 @@ def main():
                 comments_score_normalized_col_name="TraitScoreNormalized",
             )
         )
-    comp.add_supplemental_information(ExpertPanelRankAdder(expert_panel_evaluation_csv))
+    if expert_panel_evaluation_csv is not None:
+        comp.add_supplemental_information(
+            competition.EvaluationAdder(
+                "Panel",
+                expert_panel_evaluation_csv,
+                app_col_name="Application #",
+                score_rank_normalized_col_name="OverallScoreRankNormalized",
+                sum_of_scores_normalized_col_name="SumOfScoresNormalized",
+                trait_col_name="Trait",
+                score_normalized_col_name="TraitScoreNormalized",
+                comments_col_name="TraitJudgeComment",
+                comments_score_normalized_col_name="TraitScoreNormalized",
+            )
+        )
     comp.add_supplemental_information(LFCAnalysisAdder())
-    comp.add_supplemental_information(SolutionCategoryRankAdder(comp.proposals.values()))
+    comp.add_supplemental_information(
+        SolutionCategoryRankAdder(comp.proposals.values())
+    )
 
     comp.sort("Panel Overall Score Rank Normalized", True)
 
@@ -422,7 +364,6 @@ def main():
             "Evaluations of %s" % proposal.cell("MediaWiki Title"),
             "{{ #tdcrender:LoneStar2020/id/" + proposal.key() + ".mwiki|Evaluations }}",
         )
-
 
 
 if __name__ == "__main__":
