@@ -1,0 +1,234 @@
+---
+  
+- name: Setup installation directory
+  file:
+    path: "{{ mediawiki_install_directory }}"
+    state: directory
+
+- name: Download MediaWiki
+  get_url:
+    url: https://releases.wikimedia.org/mediawiki/1.33/mediawiki-1.33.0.tar.gz
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0.tar.gz"
+    checksum: sha256:8335a2d8740c5dd5919a480b74c3d8e19f23a68b396df48c2d77646272fdcd67
+
+- name: Extract MediaWiki tarball
+  unarchive:
+    src: "{{ mediawiki_install_directory }}/mediawiki-1.33.0.tar.gz"
+    dest: "{{ mediawiki_install_directory }}/"
+    remote_src: yes
+    creates: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/"
+
+- name: Install MW with Composer
+  command: composer install --no-dev
+  args:
+    chdir: "{{ mediawiki_install_directory }}/mediawiki-1.33.0"
+
+- name: Create Wiki
+  command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/install.php --dbtype=mysql --dbserver=localhost --dbuser=wikiuser --dbpass=\"{{ db_password }}\" --dbname={{ competition_name }}  --scriptpath=\"/{{ competition_name }}\" --lang=en --pass=\"{{ mediawiki_admin_password }}\" \"{{ competition_name }}\" \"admin\""
+  args:
+    creates: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+
+- name: Enable Uploading
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} UPLOAD CONFIG"
+    block: |
+      $wgEnableUploads = true;
+      $wgFileExtensions = array_merge($wgFileExtensions, array('doc', 'docx', 'html', 'pdf', 'xlsx'));
+      $wgFileBlacklist = array();
+      $wgMimeTypeBlacklist = array();
+      $wgStrictFileExtensions = false;
+      $wgTrustedMediaFormats = array('application/zip', 'text/html');
+      $wgVerifyMimeType = false;
+      $wgAllowJavaUploads = true;
+      $wgCheckFileExtensions = false;
+      $wgGroupPermissions['bot']['edit'] = true;
+      $wgGroupPermissions['bot']['upload'] = true;
+      $wgGroupPermissions['bot']['torquedataconnect-admin'] = true;
+      $wgGroupPermissions['autoconfirmed']['reupload'] = true;
+
+- name: Set TOC depth
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    line: $wgMaxTocLevel = 2;
+
+- name: Disable MediaWiki Cache
+  # When the cache is enabled, on AWS, with the default setting,
+  # the following createAndPromote.php command fails due to cache timeout.
+  # The reason isn't clear, but for now, this will fix it.
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    line: $wgMainCacheType = CACHE_NONE;
+
+- name: Create mwlib user
+  command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/createAndPromote.php --force --dbuser=wikiuser --dbpass=\"{{ db_password }}\" \"{{ mediawiki_mwlib_username }}\" \"{{ mediawiki_mwlib_password }}\""
+
+- name: Create csv2wiki user
+  command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/createAndPromote.php --bot --force --dbuser=wikiuser --dbpass=\"{{ db_password }}\" \"{{ mediawiki_csv2wiki_username }}\" \"{{ mediawiki_csv2wiki_password }}\""
+
+- name: Create LFC Analysis page rule
+  blockinfile:
+    marker: "## {mark} ANSIBLE LFC EVALUATOR CONFIG"
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    block: |
+      $wgHooks['SkinTemplateNavigation'][] = function ( $template, &$links ) {
+        $currentTitle = $template->getTitle()->getFullText();
+        $lfc_prepend = "LFC Analysis of ";
+        $eval_prepend = "Evaluations of ";
+
+        $isAnalysisPage = (strlen($currentTitle) > strlen($lfc_prepend) && substr($currentTitle, 0, strlen($lfc_prepend)) === $lfc_prepend);
+        $isEvalPage = (strlen($currentTitle) > strlen($eval_prepend) && substr($currentTitle, 0, strlen($eval_prepend)) === $eval_prepend);
+
+        $originalPageTitle = $currentTitle;
+        if($isAnalysisPage) {
+          $originalPageTitle = substr($currentTitle, strlen($lfc_prepend));
+          $links['namespaces']['main']['class'] = '';
+          $links['namespaces']['main']['href'] = Title::newFromText($originalPageTitle)->getLocalUrl();
+        } else if($isEvalPage) {
+          $originalPageTitle = substr($currentTitle, strlen($eval_prepend));
+          $links['namespaces']['main']['class'] = '';
+          $links['namespaces']['main']['href'] = Title::newFromText($originalPageTitle)->getLocalUrl();
+        }
+        $lfcAnalysisTitle = Title::newFromText($lfc_prepend . $originalPageTitle);
+        $evalTitle = Title::newFromText($eval_prepend . $originalPageTitle);
+        if($isAnalysisPage || $lfcAnalysisTitle->exists()) {
+          $links['namespaces']['main']['text'] = 'Proposal';
+          $links['namespaces']['lfcanalysis'] = [
+           'class' => ($isAnalysisPage ? 'selected' : ''),
+           'href' => ($isAnalysisPage ? $template->getTitle()->getLocalUrl() : $lfcAnalysisTitle->getLocalUrl()),
+           'text' => 'LFC Analysis',
+          ];
+        }
+        if($isEvalPage || $evalTitle->exists()) {
+          $links['namespaces']['main']['text'] = 'Proposal';
+          $links['namespaces']['evaluations'] = [
+           'class' => ($isEvalPage ? 'selected' : ''),
+           'href' => ($isEvalPage ? $template->getTitle()->getLocalUrl() : $evalTitle->getLocalUrl()),
+           'text' => 'Evaluations',
+          ];
+        }
+
+        unset($links['namespaces']['talk']);
+      };
+
+- name: Disable Special:Log for groups that don't have view-special-log
+  blockinfile:
+    marker: "## {mark} ANSIBLE SPECIAL LOG PERMISSIONS CONFIG"
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    block: |
+      $wgHooks['SpecialPage_initList'][] = function ( &$list ) {
+        global $wgUser;
+
+        if(!$wgUser->isAllowed('view-special-log')) {
+          unset( $list['Log'] );
+        }
+        return true;
+      };
+
+- name: Create Special:Log name overrides
+  blockinfile:
+    marker: "## {mark} ANSIBLE SPECIAL LOG NAME OVERRIDES CONFIG"
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    block: |
+      $logTitlesOverrideMessages = [
+        "picksomelogpage" => "Selection",
+        "activitylogpage" => "Misc. Activity (page views, login, logout, etc)",
+        "simplefavoriteslog" => "Favorites",
+        "log-name-create" => "Page Creation",
+        "movelogpage" => "Page Rename",
+        "uploadlogpage" => "File Upload",
+        "dellogpage" => "Page Deletion",
+        "newuserlogpage" => "User Creation",
+        "log-name-teamcomments" => "Comments",
+        "torquedataconnect-apiaccesslog" => "API Accesses",
+        "torquedataconnect-datachangeslog" => "Data Changes",
+        "rightslog" => "Changes to Access Control / Permissions"
+      ];
+
+      $wgHooks['MessagesPreLoad'][] = function($title, &$message, $code) {
+              global $logTitlesOverrideMessages;
+        if(array_key_exists(strtolower($title), $logTitlesOverrideMessages)) {
+          $message = $logTitlesOverrideMessages[strtolower($title)];
+        }
+      };
+
+
+- name: Disable Special:Log types that aren't of interest
+  blockinfile:
+    marker: "## {mark} ANSIBLE DISABLE SPECIAL LOG TYPES CONFIG"
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    block: |
+      $logTypesBlacklist = ["block", "contentmodel", "import", "managetags", "merge", "patrol", "protect", "rights", "tag"];
+
+      $wgHooks['SetupAfterCache'][] = function () {
+        global $wgLogTypes, $logTypesBlacklist;
+        foreach($logTypesBlacklist as $logType) {
+          unset($wgLogTypes[array_search($logType, $wgLogTypes)]);
+        }
+
+        return true;
+      };
+
+- name: Change Special:Log format slightly
+  blockinfile:
+    marker: "## {mark} ANSIBLE CHANGE SPECIAL LOG FORMAT CONFIG"
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    block: |
+      # This is a little brittle, based on how the lines are rendered by the skin currently used
+      # but should work for the foreseeable future.
+      $wgHooks['LogEventsListLineEnding'][] = function ($page, &$line, &$entry, &$classes, &$attribs){
+        $line = preg_replace('/(\d\d\d\d)/', '\1 &mdash;', $line, 1);
+      };
+
+- name: Enable Common.css on Login Page
+  blockinfile:
+    marker: "## {mark} ANSIBLE ENABLE CSS ON LOGIN"
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    block: |
+      $wgAllowSiteCSSOnRestrictedPages = true;
+
+- name: Transfer Common group css
+  copy:
+    src: Common.css
+    dest: "{{ mediawiki_install_directory }}/Common.css"
+
+- name: Install Common group css
+  raw: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/edit.php -b MediaWiki:Common.css < {{ mediawiki_install_directory }}/Common.css"
+
+- name: Remove Common group css
+  file:
+    path: "{{ mediawiki_install_directory }}/Common.css"
+    state: absent
+
+- name: Transfer htaccess
+  copy:
+    src: .htaccess
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/.htaccess"
+
+- name: Transfer wiki cheat sheet
+  copy:
+    src: Wiki_Markup_Cheat_Sheet
+    dest: "{{ mediawiki_install_directory }}/Wiki_Markup_Cheat_Sheet"
+
+- name: Install wiki cheat sheet
+  raw: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/edit.php -b Wiki_Markup_Cheat_Sheet < {{ mediawiki_install_directory }}/Wiki_Markup_Cheat_Sheet"
+
+- name: Transfer wiki cheat sheet
+  file:
+    path: "{{ mediawiki_install_directory }}/Wiki_Markup_Cheat_Sheet"
+    state: absent
+
+# Handle Apache changes
+- name: Symlink to webserver directory
+  become_user: root
+  file:
+    state: link
+    src: "{{ mediawiki_install_directory }}/mediawiki-1.33.0"
+    path: "{{ html_directory }}/{{ competition_name }}"
+
+- name: Set permissions on attachments directory
+  become_user: root
+  file:
+    path: "{{ html_directory }}/{{ competition_name }}/images"
+    owner: www-data
+    group: www-data

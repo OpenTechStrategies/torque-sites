@@ -1,0 +1,78 @@
+---
+
+- name: Set Group Permissions
+  blockinfile:
+    marker: "## {mark} ANSIBLE GROUP PERMISSIONS CONFIG"
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    block: |
+      $wgGroupPermissions['*']['read'] = false;
+      $wgGroupPermissions['bot']['protect'] = true;
+      $wgRestrictionLevels[] = 'generated';
+      $wgGroupPermissions['bot']['generated'] = true;
+
+      # Permissions that we want sysops/admins to have that
+      # but not for staff go here
+      $wgGroupPermissions['sysop']['generated'] = true;
+      $wgGroupPermissions['sysop']['edittorqueconfig'] = true;
+      $wgGroupPermissions['sysop']['torquedataconnect-admin'] = true;
+
+      # Groups requested specifically by LFC.
+      $wgGroupPermissions['LFCConsultingPartners']['read'] = true;
+      $wgGroupPermissions['LFCConsultingPartners']['torquedataconnect-edit'] = true;
+      $wgGroupPermissions['LFCResearchPartners']['read'] = true;
+      $wgGroupPermissions['LFCEvaluators']['read'] = true;
+
+      # These are OTS Torque Standard Groups
+      $wgGroupPermissions['OutsideReviewers']['read'] = true;
+      $wgGroupPermissions['Staff']['read'] = true;
+      $wgGroupPermissions['PseudoDecisionMakers']['read'] = true;
+      $wgGroupPermissions['DecisionMakers']['read'] = true;
+
+      # Disable teamcomments for users on this wiki by default.
+      $wgGroupPermissions['*']['teamcomment'] = false;
+      $wgGroupPermissions['*']['teamcommentseeusernames'] = false;
+
+      # Then enable teamcomments for the groups that should be leaving comments
+      $wgGroupPermissions['Staff']['teamcomment'] = true;
+      $wgGroupPermissions['PseudoDecisionMakers']['teamcomment'] = true;
+      $wgGroupPermissions['DecisionMakers']['teamcomment'] = true;
+      $wgGroupPermissions['sysop']['teamcomment'] = true;
+      $wgGroupPermissions['LFCResearchPartners']['teamcomment'] = true;
+      $wgGroupPermissions['LFCEvaluators']['teamcomment'] = true;
+
+      # Allow some groups to see usernames
+      $wgGroupPermissions['Staff']['teamcommentseeusernames'] = true;
+      $wgGroupPermissions['PseudoDecisionMakers']['teamcommentseeusernames'] = true;
+      $wgGroupPermissions['DecisionMakers']['teamcommentseeusernames'] = true;
+      $wgGroupPermissions['sysop']['teamcommentseeusernames'] = true;
+
+      # PickSome permissions
+      $wgGroupPermissions['DecisionMakers']['picksome'] = true;
+      $wgGroupPermissions['DecisionMakers']['picksome-write'] = true;
+      $wgGroupPermissions['sysop']['picksome'] = true;
+      $wgGroupPermissions['sysop']['picksome-admin'] = true;
+
+      # Log permissions (ability to see Special:Log)
+      $wgAvailableRights[] = 'view-special-log';
+      $wgGroupPermissions['*']['view-special-log'] = false;
+      $wgGroupPermissions['sysop']['view-special-log'] = true;
+
+- name: Transfer DecisionMakers group css
+  copy:
+    src: Group-DecisionMakers.css
+    dest: "{{ mediawiki_install_directory }}/Group-DecisionMakers.css"
+
+- name: Install DecisionMakers group css
+  raw: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/edit.php -b MediaWiki:Group-{{ item }}.css < {{ mediawiki_install_directory }}/Group-DecisionMakers.css"
+  loop:
+    - PseudoDecisionMakers
+    - DecisionMakers
+    - LFCEvaluators
+    - LFCResearchPartners
+    - LFCConsultingPartners
+
+- name: Remove DecisionMakers group css
+  file:
+    path: "{{ mediawiki_install_directory }}/Group-DecisionMakers.css"
+    state: absent
+
