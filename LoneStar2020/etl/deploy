@@ -60,6 +60,7 @@ ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
 JUDGE_EVALUATION_CSV="LSP_Peer_Review_Data.csv"
 EXPERT_PANEL_EVALUATION_CSV="Shane Eggerman - LSP_Evaluation_Panel_Data.csv"
 LFC_ANALYSIS_PAGES="lfc_analysis_proposals.dat"
+CORRECTION_FILE="OTS_Corrections.csv"
 TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
 RUNNER="${LFC_DIR}"/compose-and-upload
@@ -93,6 +94,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   gpg -o "${DATA_DIR}/${JUDGE_EVALUATION_CSV}" --decrypt "${ENCRYPTED_DIR}/${JUDGE_EVALUATION_CSV}.gpg" || exit 1
   gpg -o "${DATA_DIR}/${EXPERT_PANEL_EVALUATION_CSV}" --decrypt "${ENCRYPTED_DIR}/${EXPERT_PANEL_EVALUATION_CSV}.gpg" || exit 1
   gpg -o "${DATA_DIR}/${LFC_ANALYSIS_PAGES}" --decrypt "${ENCRYPTED_DIR}/${LFC_ANALYSIS_PAGES}.gpg" || exit 1
+  gpg -o "${DATA_DIR}/${CORRECTION_FILE}" --decrypt "${ENCRYPTED_DIR}/${CORRECTION_FILE}.gpg" || exit 1
 
   mkdir -p ${TDC_CONFIG_DIR}
 
@@ -123,6 +125,7 @@ ${RUNNER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
           --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
           --expert-panel-evaluation-csv="${DATA_DIR}/${EXPERT_PANEL_EVALUATION_CSV}" \
           --lfc-analysis-pages="${DATA_DIR}/${LFC_ANALYSIS_PAGES}" \
+          --correction-file="${DATA_DIR}/${CORRECTION_FILE}" \
           --attachments-dir=${ATTACHMENTS_DIR} \
           $PARE \
           $CSV_ONLY \

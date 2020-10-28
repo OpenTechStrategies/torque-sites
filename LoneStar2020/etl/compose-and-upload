@@ -26,6 +26,7 @@ Usage:
        --attachments-dir=ATTACHMENTS_DIR \\
        --judge-evaluation-csv=JUDGE_EVALUATION_CSV \\
        --tdc-config-dir=TDC_CONFIG_DIR \\
+       --correction-file=CORRECTION_FILE \\
        --pare=PARE \\
        --csv-only
 
@@ -40,6 +41,15 @@ Command-line options:
   --judge-evaluation-csv FILE     FILE is a CSV file with a many to one relationshp
                                   between judges and the proposals they evaluated,
                                   with the extra data being their evaluation
+
+  --correction-file FILE          FILE is a csv of corrections to the main data.  The header
+                                  must match the header of the original proposals file, and any
+                                  one of the columns must contain the review number.  Then
+                                  the data from the correction file will override the
+                                  source data for output.  There can be multiple correction
+                                  files, and each one overwrites the previous.
+
+                                  If the data cells have the empty string, no correction is applied.
 
   --expert-panel-evaluation-csv FILE    FILE is a CSV file with a row for each proposal
                                   that includes the rank and scoring for the expert panel
@@ -138,6 +148,7 @@ def main():
                 "judge-evaluation-csv=",
                 "tdc-config-dir=",
                 "attachments-dir=",
+                "correction-file=",
                 "pare=",
                 "csv-only",
                 "expert-panel-evaluation-csv=",
@@ -154,6 +165,7 @@ def main():
     lfc_analysis_pages = None
     attachments_dir = None
     tdc_config_dir = None
+    correction_file = None
     pare = None
     csv_only = False
     for o, a in opts:
@@ -171,6 +183,8 @@ def main():
             lfc_analysis_pages = a
         elif o == "--tdc-config-dir":
             tdc_config_dir = a
+        elif o == "--correction-file":
+            correction_file = a
         elif o == "--attachments-dir":
             attachments_dir = a
         else:
@@ -183,11 +197,21 @@ def main():
         sys.exit(1)
 
     comp = competition.Competition(proposals_csv, "LoneStar2020", "Application #", pare)
+
+    correction_processor = competition.CorrectionData("Application #", correction_file)
+    for column in correction_processor.columns_affected():
+        comp.process_cells_special(column, correction_processor)
+
     comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
 
     fix_cell_processor = competition.FixCellProcessor()
     comp.process_all_cells_special(fix_cell_processor)
     fix_cell_processor.report()
+
+    # Some new lines snuck into some descriptions, and those should all be single lines
+    comp.process_cells_special(
+        "Project Description", competition.RemoveHTMLBRsProcessor()
+    )
 
     comp.filter_proposals(
         competition.ColumnNotEqualsProposalFilter("Admin Review Status", "Valid")
