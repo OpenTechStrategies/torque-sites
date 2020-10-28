@@ -313,7 +313,7 @@
       # Then enable teamcomments for the groups that should be leaving comments
       $wgGroupPermissions['Staff']['teamcomment'] = true;
       $wgGroupPermissions['PseudoDecisionMakers']['teamcomment'] = true;
-      $wgGroupPermissions['DecisionMakers']['teamcomment'] = true;
+      $wgGroupPermissions['DecisionMakers']['teamcomment'] = false;
       $wgGroupPermissions['sysop']['teamcomment'] = true;
       $wgGroupPermissions['LFCResearchPartners']['teamcomment'] = true;
       $wgGroupPermissions['LFCEvaluators']['teamcomment'] = true;
