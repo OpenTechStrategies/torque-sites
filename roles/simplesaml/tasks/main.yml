@@ -1,0 +1,85 @@
+---
+
+- name: Add okta account to autoconfig
+  lineinfile:
+    path: "{{ simplesaml_install_directory }}/simplesamlphp-1.18.4/saml-autoconfig.php"
+    insertafter: '\$metadata_url_for = array\('
+    line: "'{{ simplesaml_okta_metadata_name }}' => '{{ simplesaml_okta_metadata_url }}',"
+
+- name: Install PluggableAuth
+  unarchive:
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/PluggableAuth-REL1_33-a69f626.tar.gz"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+
+- name: Install SimpleSAML extension
+  unarchive:
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/SimpleSAMLphp-REL1_33-7d91f27.tar.gz"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+
+- name: Enable PluggableAuth
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE PLUGABLE AUTH CONFIG"
+    block: |
+      wfLoadExtension( 'PluggableAuth' );
+      $wgPluggableAuth_EnableAutoLogin = true;
+      $wgPluggableAuth_EnableLocalLogin = true;
+      $wgPluggableAuth_EnableLocalProperties = false;
+      $wgPluggableAuth_ButtonLabel = "Log In Using MacArthur SSO";
+      $wgInvalidUsernameCharacters = "";
+
+- name: Enable SimpleSAMLphp extension
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE SIMPLE SAML PHP CONFIG"
+    block: |
+      wfLoadExtension( 'SimpleSAMLphp' );
+      $wgSimpleSAMLphp_SyncAllGroups_LocallyManaged = ["sysop", "DecisionMakers"];
+      $wgSimpleSAMLphp_InstallDir = '{{ simplesaml_install_directory }}/simplesamlphp-1.18.4';
+      $wgSimpleSAMLphp_AuthSourceId = '{{ simplesaml_okta_metadata_name }}';
+      $wgSimpleSAMLphp_RealNameAttribute = ['firstName', 'lastName'];
+      $wgSimpleSAMLphp_EmailAttribute = 'email';
+      $wgSimpleSAMLphp_UsernameAttribute = 'username';
+      $wgSimpleSAMLphp_GroupMap = [
+        'sysop' => ['groups' => ['LFC Torque Admin', 'LFC Staff']],
+        'DecisionMakers' => ['groups' => ['LFC Decision Makers']]
+      ];
+
+      $wgSimpleSAMLphp_SyncAllGroups_GroupNameModificationCallback = function($origGroupName){
+        # Remove spaces
+        return preg_replace('/\s/', '', $origGroupName);
+      };
+      $wgSimpleSAMLphp_AttributeProcessorFactories = [
+        "MediaWiki\\Extension\\SimpleSAMLphp\\AttributeProcessor\\SyncAllGroups::factory"
+      ];
+
+- name: Rearrange Login Page
+  blockinfile:
+    marker: "## {mark} ANSIBLE CHANGE LOGIN ORDERING"
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    block: |
+      $wgHooks['AuthChangeFormFields'][] = function ($requests, $fieldInfo, &$formDescriptor, $action) {
+        if($action != \MediaWiki\Auth\AuthManager::ACTION_LOGIN) {
+          return;
+        }
+
+        $formDescriptor['username']['weight'] = 200;
+        $formDescriptor['password']['weight'] = 201;
+        $formDescriptor['rememberMe']['weight'] = 202;
+        $formDescriptor['loginattempt']['weight'] = 203;
+        $formDescriptor['break'] = [
+          'type' => 'info',
+          'weight' => 150,
+          'cssclass' => 'mw-htmlform-login-or',
+          'default' => "or"
+        ];
+
+        unset($formDescriptor['linkcontainer']);
+        unset($formDescriptor['passwordReset']);
+        unset($formDescriptor['createOrLogin']);
+
+        if ( isset( $formDescriptor['pluggableauthlogin'] ) ) {
+          $formDescriptor['pluggableauthlogin']['weight'] = -1;
+        }
+      };
+
