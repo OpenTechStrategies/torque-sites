@@ -40,7 +40,7 @@ class Competition:
             sys.exit(-1)
 
         self.name = name
-        self.columns = next(proposals_reader)
+        self.columns = [col.strip() for col in next(proposals_reader)]
         self.key_column_name = key_column_name
         self.column_types = {}
         self.proposals = {}
@@ -273,6 +273,14 @@ class FixCellProcessor(CellProcessor):
             )
 
 
+class RemoveHTMLBRsProcessor(CellProcessor):
+    """A CellProcessor that removes any HTML BR's that were added
+    as part of the cleanup process, usually by the FixCellProcessor"""
+
+    def process_cell(self, proposal, column_name):
+        return proposal.cell(column_name).replace("<br/>\n", "")
+
+
 class MultiLineProcessor(CellProcessor):
     """A CellProcessor that splits a cell on comma (',') into a newline
     separate list, for torque to represent as a list"""
@@ -471,6 +479,9 @@ class MediaWikiTitleAdder(InformationAdder):
         while len(bytes(title, "UTF-8")) > 255:
             title = title[:-1]
         title = title.replace("\n", " ")
+
+        # All mediawiki titles are capitalized, so we lean into that
+        title = title[0].upper() + title[1:]
 
         # Also convert non unicode because we do this with titles on the other side
         return unidecode.unidecode_expect_nonascii(title).strip()
@@ -777,7 +788,7 @@ class EvaluationAdder(InformationAdder):
                 "%s %s Score Normalized" % (self.name, trait_name)
             ] += float(row[score_normalized_col])
             evaluation_datum["%s %s Comments" % (self.name, trait_name)] += (
-                row[comments_col] + "\n"
+                utils.fix_cell(row[comments_col]) + "\n"
             )
             evaluation_datum[
                 "%s %s Comment Scores Normalized" % (self.name, trait_name)

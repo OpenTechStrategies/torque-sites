@@ -87,6 +87,7 @@ def fix_cell(cell):
     cell = collapse_replace(cell, " &nbsp;", " ")
     cell = collapse_replace(cell, "&nbsp;</", "</")
     cell = collapse_replace(cell, '\\"', '"')
+    cell = collapse_replace(cell, "''", '"')
     cell = cell.replace("\n", "<br/>\n")
     cell = re.sub(intertag_nbsp_re, "\\1 \\2", cell)
 
