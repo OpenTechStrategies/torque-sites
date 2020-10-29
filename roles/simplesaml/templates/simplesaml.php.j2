@@ -10,16 +10,11 @@ $wgInvalidUsernameCharacters = "";
 
 # Enable SimpleSAMLphp
 wfLoadExtension( 'SimpleSAMLphp' );
-$wgSimpleSAMLphp_SyncAllGroups_LocallyManaged = ["sysop", "DecisionMakers"];
 $wgSimpleSAMLphp_InstallDir = '{{ simplesaml_install_directory }}/simplesamlphp-1.18.4';
 $wgSimpleSAMLphp_AuthSourceId = '{{ simplesaml_okta_metadata_name }}';
 $wgSimpleSAMLphp_RealNameAttribute = ['firstName', 'lastName'];
 $wgSimpleSAMLphp_EmailAttribute = 'email';
 $wgSimpleSAMLphp_UsernameAttribute = 'username';
-$wgSimpleSAMLphp_GroupMap = [
-  'sysop' => ['groups' => ['LFC Torque Admin', 'LFC Staff']],
-  'DecisionMakers' => ['groups' => ['LFC Decision Makers']]
-];
 
 $wgSimpleSAMLphp_SyncAllGroups_GroupNameModificationCallback = function($origGroupName){
 # Remove spaces
