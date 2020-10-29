@@ -5,32 +5,17 @@
     src: "{{ playbook_dir }}/../../thirdparty/extensions/Collection-REL1_33-8566dd1.tar.gz"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
+- name: Transfer Config
+  template:
+    src: collection.php.j2
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/torque-sites-config/collection.php"
+
 - name: Enable Collection
   blockinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     marker: "## {mark} ANSIBLE COLLECTION CONFIG"
     block: |
-      require_once "$IP/extensions/Collection/Collection.php";
-      $wgCollectionMWServeURL = "http://127.0.0.1:8899";
-      $wgCollectionMaxArticles = 250;
-      $wgEnableApi = true;
-      $wgCollectionFormats = array( 'rl' => 'PDF',);
-      $wgCollectionPortletFormats = [];
-      $wgCollectionDisableDownloadSection = false;
-      $wgHooks['ApiBeforeMain'][] = function($main) {
-        global $wgTorqueDataConnectGroup, $wgTorqueDataConnectRenderToHTML, $wgTorqueDataConnectView;
-        if($main->getUser() && strtolower($main->getUser()->getName()) == "{{ mediawiki_mwlib_username }}") {
-          $wgTorqueDataConnectRenderToHTML = false;
-          $tdcinfo = $main->getRequest()->getText("tdcinfo", false);
-          list($wgTorqueDataConnectGroup, $wgTorqueDataConnectView) = explode("|", $tdcinfo);
-        }
-      };
-      $wgHooks['BeforeInitialize'][] = function(&$title, &$article = null, &$output, &$user, $request, $mediaWiki) {
-        global $wgCollectionMWServeCredentials;
-        $group = TorqueDataConnectConfig::getValidGroup($user);
-        $view = TorqueDataConnectConfig::getCurrentView();
-        $wgCollectionMWServeCredentials = "{{ mediawiki_mwlib_username }}:${group}|${view}:{{ mediawiki_mwlib_password }}";
-      };
+      include "{{ mediawiki_install_directory }}/mediawiki-1.33.0/torque-sites-config/collection.php";
 
 - name: Disable Collection Warning 1
   replace:
