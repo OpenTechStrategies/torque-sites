@@ -1,0 +1,12 @@
+<?php
+define("TORQUE_CONFIG", 4000);
+define("TORQUE_CONFIG_TALK", 4001);
+$wgExtraNamespaces[TORQUE_CONFIG] = "TorqueConfig";
+$wgExtraNamespaces[TORQUE_CONFIG_TALK] = "TorqueConfig_talk";
+$wgNamespaceProtection[TORQUE_CONFIG] = array("edittorqueconfig");
+$wgTorqueDataConnectSheetName = "{{ competition_name }}";
+$wgTorqueDataConnectWikiKey = "{{ competition_name }}";
+$wgTorqueDataConnectConfigPage = "TorqueConfig:MainConfig";
+$wgTorqueDataConnectNotFoundMessage = "This proposal has been disqualified in admin, peer, or expert review.";
+wfLoadExtension('TorqueDataConnect');
+?>
