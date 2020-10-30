@@ -61,7 +61,7 @@ $wgSimpleSAMLphp_SyncAllGroups_LocallyManaged = [
   "sysop",
   "bureaucrat",
   "interface-admin",
-  "DecisionMakers"
+  "DecisionMakers",
   "LFCConsultingPartners",
   "LFCResearchPartners",
   "LFCEvaluators",
@@ -72,7 +72,8 @@ $wgSimpleSAMLphp_GroupMap = [
   'sysop' => ['groups' => ['LFC Torque Admin', 'LFC Staff']],
   'interface-admin' => ['groups' => ['LFC Torque Admin', 'LFC Staff']],
   'bureaucrat' => ['groups' => ['LFC Torque Admin', 'LFC Staff']],
-  'DecisionMakers' => ['groups' => ['LFC Decision Makers']]
+  'DecisionMakers' => ['groups' => ['LFC Decision Makers']],
+  'LFCEvaluators' => ['groups' => ['LFC Consultants']]
 ];
 
 ?>
