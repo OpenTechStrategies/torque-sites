@@ -1,4 +1,5 @@
 ---
+competition_name: 100Change2017
 html_directory: /var/www/html
 mediawiki_install_directory: /home/deploy/100Change2017/
 mediawiki_mwlib_username: mwlib
