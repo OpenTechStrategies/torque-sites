@@ -1,4 +1,6 @@
 ---
+competition_name: DemoView
+torquedataconnect_sheet_name: DemoView
 html_directory: /var/www/html
 mediawiki_install_directory: /home/deploy/DemoView/
 mediawiki_mwlib_username: mwlib
