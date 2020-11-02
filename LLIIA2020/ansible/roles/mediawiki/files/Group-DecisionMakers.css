@@ -1,7 +1,0 @@
-#p-views ul li:not(.simplefavorite-icon):not(#ca-view):not(#ca-edit) { display:none!important; }
-#p-cactions { display:none!important; }
-#pt-mytalk { display:none!important; }
-#pt-watchlist { display:none!important; }
-#pt-mycontris { display:none!important; }
-.mw-editsection { display:none!important; }
-#p-tb { display:none!important; }
