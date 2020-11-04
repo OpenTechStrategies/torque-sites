@@ -4,10 +4,22 @@
   become: true
   become_user: "{{ deployment_user }}"
   roles:
-  - mediawiki
+    - mediawiki
+    - activitylog
+    - collection
+    - embed_video
+    - permissions
+    - simplefavorites
+    - simplesaml
+    - teamcomments
+    - torquedataconnect
+    # This should come after permissions because of overrides of defaults
+    - LoneStar2020
+    # This should always go last, to run db updates and restart
+    - finishmediawiki
 
 - hosts: simplesaml
   become: true
   become_user: "{{ deployment_user }}"
   roles:
-  - simplesaml
+    - simplesaml
