@@ -9,10 +9,14 @@
 $wgHooks['SidebarBeforeOutput'][] = 'PickSomeHooks::onSidebarBeforeOutput';
 wfLoadExtension('PickSome');
 $wgPickSomeNumberOfPicks = 15;
+
+$wgLFCPickSomeEligiblePage = "TorqueConfig:ValidProposals";
+
 # This may not be performant and require caching if number of users/page hits
 # becomes large.
 $wgPickSomePage = function($title) {
-  $eligibleWildCardsTitle = Title::newFromText("TorqueConfig:ValidProposals");
+  global $wgLFCPickSomeEligiblePage;
+  $eligibleWildCardsTitle = Title::newFromText($wgLFCPickSomeEligiblePage);
   if($eligibleWildCardsTitle->exists()) {
     $page = new WikiPage($eligibleWildCardsTitle);
     $valid_pages = [];

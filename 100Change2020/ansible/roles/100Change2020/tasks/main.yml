@@ -1,0 +1,46 @@
+---
+
+# Because the overrides MUST come after the originals in LocalSettings, we
+# delete it from the file, and then re-insert it to ensure that it comes at the
+# end of the LocalSettings file
+- name: Clear pluggable auth override config
+  blockinfile:
+    marker: "## {mark} ANSIBLE PLUGABLE AUTH OVERRIDE CONFIG"
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+
+- name: Clear picksome override config
+  blockinfile:
+    marker: "## {mark} ANSIBLE PICKSOME OVERRIDE CONFIG"
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+
+# This override needs to be set before loading the pluggable auth stuff,
+# or else it overwrites the variable that may be set by the localloggin override.
+- name: Override base pluggable auth config
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    insertbefore: "## BEGIN ANSIBLE PLUGGABLEAUTH/SIMPLSAML CONFIG"
+    marker: "## {mark} ANSIBLE PLUGABLE AUTH OVERRIDE CONFIG"
+    block: |
+      # We only potentially set to false if coming in from the web
+      if(array_key_exists('REQUEST_URI', $_SERVER)) {
+        $wgPluggableAuth_EnableLocalLogin = (substr($_SERVER['REQUEST_URI'], 0, 13) == "/lfc/api.php");
+      }
+
+- name: Override some PickSome Variables
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE PICKSOME OVERRIDE CONFIG"
+    block: |
+      $wgPickSomeNumberOfPicks = 5;
+      $wgLFCPickSomeEligiblePage = "TorqueConfig:FinalistCandidates";
+
+- name: Transfer LFC Logo
+  copy:
+    src: LeverForChange_Logo.png
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/resources/assets/LeverForChange_Logo.png"
+
+- name: Install LFC Logo
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    regexp: ^\$wgLogo = .*
+    line: $wgLogo = "$wgResourceBasePath/resources/assets/LeverForChange_Logo.png";
