@@ -17,6 +17,10 @@ $wgGroupPermissions['bot']['generated'] = true;
 $wgGroupPermissions['*']['teamcomment'] = false;
 $wgGroupPermissions['*']['teamcommentseeusernames'] = false;
 
+# API Users
+$wgGroupPermissions['torqueapi']['read'] = true;
+$wgGroupPermissions['ForumOne']['read'] = true;
+
 # Log permissions (ability to see Special:Log)
 $wgAvailableRights[] = 'view-special-log';
 $wgGroupPermissions['*']['view-special-log'] = false;
@@ -73,7 +77,9 @@ $wgSimpleSAMLphp_GroupMap = [
   'interface-admin' => ['groups' => ['LFC Torque Admin', 'LFC Staff']],
   'bureaucrat' => ['groups' => ['LFC Torque Admin', 'LFC Staff']],
   'DecisionMakers' => ['groups' => ['LFC Decision Makers', 'Board Members']],
-  'LFCEvaluators' => ['groups' => ['LFC Consultants']]
+  'PseudoDecisionMakers' => ['groups' => ['Pseudo Board Members']],
+  'LFCEvaluators' => ['groups' => ['LFC Consultants', 'LFC Evaluators']],
+  'LFCResearchPartners' => ['groups' => ['LFC Research Partners']]
 ];
 
 ?>

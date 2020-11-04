@@ -19,7 +19,7 @@
 - name: Transfer Config
   template:
     src: simplesaml.php.j2
-    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/torque-sites-config/"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/torque-sites-config/simplesaml.php"
 
 - name: Enable PluggableAuth/SimpleSAML
   blockinfile:
