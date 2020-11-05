@@ -189,20 +189,25 @@ class Competition:
                                            raw_proposal[app_number_key],
                                            org_name, org_web_site, org_id))
 
-    def print_proposals(self):
+    def print_proposals(self, dest=sys.stdout):
         """
-        Print this competition's proposals in some friendly way.
+        Print this competition's proposals to DEST in some friendly way.
+        DEST defaults to stdout.
         """
-        print("*** Competition \"%s\":" % self)
+        print("*** Competition \"%s\":" % self, file=dest)
         for proposal in self.proposals:
-            print("  • %s" % proposal.title)
-            print("    - Application #:   %s" % proposal.app_number)
+            print("  • %s" % proposal.title, file=dest)
+            print("    - Application #:   %s" 
+                  % proposal.app_number, file=dest)
             if proposal.org_name is not None:
-                print("    - Org name:        %s" % proposal.org_name)
+                print("    - Org name:        %s" % proposal.org_name, 
+                      file=dest)
             if proposal.org_web_site is not None:
-                print("    - Org web site:    %s" % proposal.org_web_site)
+                print("    - Org web site:    %s" % proposal.org_web_site, 
+                      file=dest)
             if proposal.org_id is not None:
-                print("    - Org ID:          %s" % proposal.org_id)
+                print("    - Org ID:          %s" % proposal.org_id,
+                      file=dest)
 
     def __str__(self):
         return self.name
@@ -475,7 +480,7 @@ def main():
         competitions.append(competition)
         # To see all the proposals in this competition listed in a
         # reasonably human-readable way, uncomment the next line.
-        # competition.print_proposals()
+        # competition.print_proposals(dest=sys.stderr)
 
     ### Figure out unique organizations across all competitions. ###
 
