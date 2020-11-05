@@ -37,6 +37,25 @@ UX isn't quite right.  Instead, we use a system explicitly adapted
 for commenting in our style; see our
 [extenstion](https://github.com/opentechstrategies/TeamComments).
 
+## Which proposals to include.
+
+LFC Torque competitions should include all proposals that made it to
+the administrative review stage -- whether they passed that review or
+not.  In other words, we don't include proposals where the registrant
+never submitted it or where it somehow got disqualified before even
+getting to admin review, but other than that we include everything
+(and the result of admin review, that is, the proposal's valid/invalid
+status, is always one of the fields in a proposal's data).
+
+(Note that as of 2020-11-05, we may not meet the above requirements
+for all competitions currently on the production site, and
+furthermore, the name of the validity column is not even the same
+across the competitions that do have it.  See issues
+[#79](https://github.com/OpenTechStrategies/torque-sites/issues/79)
+and
+[#80](https://github.com/OpenTechStrategies/torque-sites/issues/80)
+for more.)
+
 ## Users and their capabilities.
 
 Every user of the system is authenticated; there is no anonymous
