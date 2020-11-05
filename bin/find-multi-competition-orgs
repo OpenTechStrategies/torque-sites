@@ -151,7 +151,17 @@ class Competition:
           (such as EIN), or None if there is no key for org ID.
         """
         self.name = name
+        # The list of Proposal objects.
         self.proposals = [ ]
+        # Each competition has a set of fields that is the same across
+        # all proposals.  While our Proposal class doesn't hold all of
+        # the information in all those fields (because we don't need
+        # most of it), it is often useful for development purposes to
+        # have the complete list of field names in a given competition
+        # -- for example, because you're considering capturing a new
+        # field and storing it in the Proposal class.
+        self.fields = proposals[0].keys() if len(proposals) > 0 else None
+
         for raw_proposal in proposals:
             org_name = None
             org_web_site = None
@@ -194,7 +204,7 @@ class Competition:
         Print this competition's proposals to DEST in some friendly way.
         DEST defaults to stdout.
         """
-        print("*** Competition \"%s\":" % self, file=dest)
+        print("*** Competition \"%s\" proposals:" % self, file=dest)
         for proposal in self.proposals:
             print("  • %s" % proposal.title, file=dest)
             print("    - Application #:   %s" 
@@ -208,6 +218,14 @@ class Competition:
             if proposal.org_id is not None:
                 print("    - Org ID:          %s" % proposal.org_id,
                       file=dest)
+
+    def print_fields(self, dest=sys.stdout):
+        """
+        Print this competition's field names to DEST (defaults to stdout).
+        """
+        print("*** Competition \"%s\" fields:" % self, file=dest)
+        for field in self.fields:
+            print("  • %s" % field, file=dest)
 
     def __str__(self):
         return self.name
@@ -479,8 +497,14 @@ def main():
                                   org_name_key, org_web_site_key, org_id_key)
         competitions.append(competition)
         # To see all the proposals in this competition listed in a
-        # reasonably human-readable way, uncomment the next line.
+        # reasonably human-readable way, uncomment this:
+        #
         # competition.print_proposals(dest=sys.stderr)
+        #
+        # To see all the fields available in this competition's
+        # proposals, uncomment this:
+        #
+        # competition.print_fields(dest=sys.stderr)
 
     ### Figure out unique organizations across all competitions. ###
 
