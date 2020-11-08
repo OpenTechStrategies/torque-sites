@@ -1,18 +1,21 @@
 <?php
-# While this next line should be taken care of in extenions, and indeed
-# it is, because this extension is loaded via wfLoadExtension, and because
-# Collection is loaded the old way, the sidebar before output is called
-# preferring Collection, placing it higher on the siderbar than PickSome.
+# While this next line, adding the hook to the system, should be taken care
+# of in the picksome Extension (and indeed it is).  However, this extension is
+# loaded via wfLoadExtension, and the Collection Extension is loaded the old way.
+# The means that the the SidebarBeforeOutput hook is called # preferring Collection,
+# placing it higher on the sidebar than PickSome.
 #
-# This was requested to be changed, and the most straightforward way is
-# to add it to the hook directly when loaded by LocalSettings
+# This was requested to be changed, to have the PickSome sidebar section come after
+# the Collection links, and the most straightforward way is to add it to the hook
+# directly when loaded by LocalSettings (as opposed to in extension.json), overriding
+# the normal way mediawiki loads things.
 $wgHooks['SidebarBeforeOutput'][] = 'PickSomeHooks::onSidebarBeforeOutput';
 wfLoadExtension('PickSome');
 $wgPickSomeNumberOfPicks = 15;
 
 $wgLFCPickSomeEligiblePage = "TorqueConfig:ValidProposals";
 
-# This may not be performant and require caching if number of users/page hits
+# This may not be performant, and it may require caching if number of users/page hits
 # becomes large.
 $wgPickSomePage = function($title) {
   global $wgLFCPickSomeEligiblePage;
@@ -41,7 +44,8 @@ $wgPickSomeSortFunction = function($t1, $t2) {
   return $text1 > $text2;
 };
 
-# These are defaults for competitions, and probably will be overridden at some point
+# These are defaults for competitions as specified by LFC, but will probably be overridden
+# on a competition by competition basis
 $picksomeOverrideMessage = [
   "picksome-all" => "Everyone's Finalist Candidates",
   "picksome-title" => "Finalist Candidates",

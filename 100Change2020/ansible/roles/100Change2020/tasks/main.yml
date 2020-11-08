@@ -1,8 +1,8 @@
 ---
 
-# Because the overrides MUST come after the originals in LocalSettings, we
-# delete it from the file, and then re-insert it to ensure that it comes at the
-# end of the LocalSettings file
+# Because the overrides MUST come after the originals (loaded from include statements)
+# in LocalSettings, we delete the overrides from the file, and then re-insert them to
+# ensure that they comes at the end of the LocalSettings file
 - name: Clear pluggable auth override config
   blockinfile:
     marker: "## {mark} ANSIBLE PLUGABLE AUTH OVERRIDE CONFIG"
@@ -13,8 +13,8 @@
     marker: "## {mark} ANSIBLE PICKSOME OVERRIDE CONFIG"
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
 
-# This override needs to be set before loading the pluggable auth stuff,
-# or else it overwrites the variable that may be set by the localloggin override.
+# Contrary to above, THIS override needs to be set before loading the pluggable
+# auth stuff, or else it overwrites the variable that may be set by the localloggin override.
 - name: Override base pluggable auth config
   blockinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
