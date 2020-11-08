@@ -55,6 +55,10 @@ Command-line options:
                                   that includes the rank and scoring for the expert panel
                                   review, but none of the comments.
 
+  --financial-sheets-dir DIR      DIR is the location for financial data csvs in a very specific
+                                  format that's handled by FinancialDataAdder.  They get
+                                  transformed into json and then displayed on ont he LFC Analysis pages.
+
   --lfc-analysis-pages FILE       FILE is a simle newline separated list of proposal keys
                                   for which LFC Analysis pages should be generated.
 
@@ -74,12 +78,83 @@ Command-line options:
                                   created already.
 """
 
-from etl import competition, wiki, toc, tdc
+from etl import competition, wiki, toc, tdc, utils
 import config
 import getopt
 import sys
 import os
 import csv
+import json
+import re
+
+
+class FinancialDataAdder(competition.InformationAdder):
+    """Very specific adder that takes a distinct financial data spreadsheet
+    gotten from LFC and turns it into a generic json that can be displayed.  This
+    is unique to LoneStar2020, and will probably not be duplicated.
+
+    Each sheet has a table of financials per year, and then a section for footnotes."""
+
+    def __init__(self, financial_sheets_dir):
+        self.financial_data = {}
+
+        for financial_csv_name in os.listdir(financial_sheets_dir):
+            key = re.sub("\.csv$", "", financial_csv_name)
+            financial_csv_file = os.path.join(financial_sheets_dir, financial_csv_name)
+
+            proposal_financial_data = {}
+
+            reader = csv.reader(
+                open(financial_csv_file),
+                delimiter=",",
+                quotechar='"',
+                lineterminator="\n",
+            )
+
+            header = next(reader)
+            proposal_financial_data["years"] = header[1:]
+
+            proposal_financial_data["line_items"] = []
+            for row in reader:
+                if len(row) == 0 or not row[0]:
+                    break
+
+                # This is some serious special casing to recreate the formatting in xlsx
+                items = []
+                for item in row[1:]:
+                    try:
+                        float_item = float(item)
+                        if "As percent" in row[0] or "Magnitude of" in row[0]:
+                            float_item_str = "{:.2f}%".format(abs(float_item) * 100)
+                        else:
+                            float_item_str = "{:.2f}".format(abs(float_item))
+
+                        if float_item < 0:
+                            items.append("({})".format(float_item_str))
+                        else:
+                            items.append(float_item_str)
+                    except:
+                        items.append(item)
+
+                line_item = {"name": row[0], "items": items}
+                proposal_financial_data["line_items"].append(line_item)
+
+            for row in reader:
+                if len(row) > 0 and row[0] == "Footnotes":
+                    break
+
+            proposal_financial_data["footnotes"] = utils.fix_cell(next(reader)[0])
+
+            self.financial_data[key] = proposal_financial_data
+
+    def column_type(self, column_name):
+        return "json"
+
+    def column_names(self):
+        return ["LFC Financial Data"]
+
+    def cell(self, proposal, column_name):
+        return json.dumps(self.financial_data.get(proposal.key(), {}))
 
 
 class LFCAnalysisAdder(competition.InformationAdder):
@@ -148,6 +223,7 @@ def main():
                 "judge-evaluation-csv=",
                 "tdc-config-dir=",
                 "attachments-dir=",
+                "financial-sheets-dir=",
                 "correction-file=",
                 "pare=",
                 "csv-only",
@@ -164,6 +240,7 @@ def main():
     expert_panel_evaluation_csv = None
     lfc_analysis_pages = None
     attachments_dir = None
+    financial_sheets_dir = None
     tdc_config_dir = None
     correction_file = None
     pare = None
@@ -187,6 +264,8 @@ def main():
             correction_file = a
         elif o == "--attachments-dir":
             attachments_dir = a
+        elif o == "--financial-sheets-dir":
+            financial_sheets_dir = a
         else:
             sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
             sys.exit(2)
@@ -259,6 +338,7 @@ def main():
     comp.add_supplemental_information(
         SolutionCategoryRankAdder(comp.proposals.values())
     )
+    comp.add_supplemental_information(FinancialDataAdder(financial_sheets_dir))
 
     comp.sort("Panel Overall Score Rank Normalized", True)
 

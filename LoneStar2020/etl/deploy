@@ -54,6 +54,8 @@ DATA_DIR="${BASE_DATA_DIR}/${COMPETITION}"
 # Make sure we have python3
 python3 -V > /dev/null 2>&1 || { echo "python3 required, aborting" ; exit 1; }
 
+command -v xlsx2csv 2>&1 >> /dev/null || { echo >&2 "xls2csv required but it's not available.  Aborting."; exit 1; }
+
 PROPOSALS_CSV="LSP_Registration_Application_data.csv"
 BASE_ATTACHMENTS="LSP_Registration_Application_data.zip"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
@@ -61,6 +63,9 @@ JUDGE_EVALUATION_CSV="LSP_Peer_Review_Data.csv"
 EXPERT_PANEL_EVALUATION_CSV="Shane Eggerman - LSP_Evaluation_Panel_Data.csv"
 LFC_ANALYSIS_PAGES="lfc_analysis_proposals.dat"
 CORRECTION_FILE="OTS_Corrections.csv"
+FINANCIAL_DATA="FinancialTablesForWiki.xlsx"
+FINANCIAL_DATA_DAT="FinancialTablesForWiki.dat"
+FINANCIAL_SHEETS_DIR="${DATA_DIR}/financial-sheets/"
 TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
 RUNNER="${LFC_DIR}"/compose-and-upload
@@ -95,6 +100,8 @@ if [ ! -d "${DATA_DIR}" ] ; then
   gpg -o "${DATA_DIR}/${EXPERT_PANEL_EVALUATION_CSV}" --decrypt "${ENCRYPTED_DIR}/${EXPERT_PANEL_EVALUATION_CSV}.gpg" || exit 1
   gpg -o "${DATA_DIR}/${LFC_ANALYSIS_PAGES}" --decrypt "${ENCRYPTED_DIR}/${LFC_ANALYSIS_PAGES}.gpg" || exit 1
   gpg -o "${DATA_DIR}/${CORRECTION_FILE}" --decrypt "${ENCRYPTED_DIR}/${CORRECTION_FILE}.gpg" || exit 1
+  gpg -o "${DATA_DIR}/${FINANCIAL_DATA}" --decrypt "${ENCRYPTED_DIR}/${FINANCIAL_DATA}.gpg" || exit 1
+  gpg -o "${DATA_DIR}/${FINANCIAL_DATA_DAT}" --decrypt "${ENCRYPTED_DIR}/${FINANCIAL_DATA_DAT}.gpg" || exit 1
 
   mkdir -p ${TDC_CONFIG_DIR}
 
@@ -106,7 +113,12 @@ if [ ! -d "${DATA_DIR}" ] ; then
 
   # Clean up large zips to save disk space
   rm ${DATA_DIR}/${BASE_ATTACHMENTS}
-  #rm -rf ${DATA_DIR}/${TMP_ATTACHMENTS_DIR}
+  rm -rf ${DATA_DIR}/${TMP_ATTACHMENTS_DIR}
+
+  mkdir -p "${FINANCIAL_SHEETS_DIR}"
+  cat "${DATA_DIR}/${FINANCIAL_DATA_DAT}" | while read APP_NUMBER ; do
+    xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n $APP_NUMBER > ${FINANCIAL_SHEETS_DIR}/$APP_NUMBER.csv
+  done
 fi
 
 if ! echo "3645633f683f603178c17a8b682d5ed0405d340f  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
@@ -127,6 +139,7 @@ ${RUNNER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
           --lfc-analysis-pages="${DATA_DIR}/${LFC_ANALYSIS_PAGES}" \
           --correction-file="${DATA_DIR}/${CORRECTION_FILE}" \
           --attachments-dir=${ATTACHMENTS_DIR} \
+          --financial-sheets-dir=${FINANCIAL_SHEETS_DIR} \
           $PARE \
           $CSV_ONLY \
           --tdc-config-dir="${TDC_CONFIG_DIR}"
