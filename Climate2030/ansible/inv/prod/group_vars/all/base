@@ -1,4 +1,7 @@
 ---
+competition_name: Climate2030
+torquedataconnect_sheet_name: Climate2030
+
 html_directory: /var/www/html
 mediawiki_install_directory: /home/deploy/Climate2030/
 mediawiki_mwlib_username: mwlib

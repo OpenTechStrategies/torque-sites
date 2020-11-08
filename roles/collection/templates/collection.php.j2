@@ -1,0 +1,23 @@
+<?php
+require_once "$IP/extensions/Collection/Collection.php";
+$wgCollectionMWServeURL = "http://127.0.0.1:8899";
+$wgCollectionMaxArticles = 250;
+$wgEnableApi = true;
+$wgCollectionFormats = array( 'rl' => 'PDF',);
+$wgCollectionPortletFormats = [];
+$wgCollectionDisableDownloadSection = false;
+$wgHooks['ApiBeforeMain'][] = function($main) {
+  global $wgTorqueDataConnectGroup, $wgTorqueDataConnectRenderToHTML, $wgTorqueDataConnectView;
+  if($main->getUser() && strtolower($main->getUser()->getName()) == "{{ mediawiki_mwlib_username }}") {
+    $wgTorqueDataConnectRenderToHTML = false;
+    $tdcinfo = $main->getRequest()->getText("tdcinfo", false);
+    list($wgTorqueDataConnectGroup, $wgTorqueDataConnectView) = explode("|", $tdcinfo);
+  }
+};
+$wgHooks['BeforeInitialize'][] = function(&$title, &$article = null, &$output, &$user, $request, $mediaWiki) {
+  global $wgCollectionMWServeCredentials;
+  $group = TorqueDataConnectConfig::getValidGroup($user);
+  $view = TorqueDataConnectConfig::getCurrentView();
+  $wgCollectionMWServeCredentials = "{{ mediawiki_mwlib_username }}:${group}|${view}:{{ mediawiki_mwlib_password }}";
+};
+?>

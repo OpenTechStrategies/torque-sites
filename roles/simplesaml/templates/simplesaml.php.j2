@@ -1,0 +1,82 @@
+<?php
+
+# When including this file, a competition needs to override $wgPluggableAuth_EnableLocalLogin
+# before this file is loaded.  That's because this file takes care of the local login code
+# that needs to happen after everything is set up.
+#
+# A possible refactor is to put the local login code in an event that fires after LocalSettings
+# is set up, but there will have to be testing into when PluggableAuth ends up using that variable
+# to make sure the override honored.
+
+# Enable PluggableAuth
+wfLoadExtension( 'PluggableAuth' );
+$wgPluggableAuth_EnableAutoLogin = true;
+
+if(!isset($wgPluggableAuth_EnableLocalLogin)) {
+  $wgPluggableAuth_EnableLocalLogin = true;
+}
+
+# This is for competitions that have disabled local logins so people
+# like developers can still access the wiki without SSO.
+#
+# We hijack at the top level if someone who knows what they are doing
+# puts in a get arg before the first redirect even happens
+if(array_key_exists('locallogin', $_GET)) {
+  setcookie('locallogin', $_GET['locallogin'], time() + 3600, '/');
+  $wgPluggableAuth_EnableLocalLogin = $_GET['locallogin'] == "on";
+}
+if(array_key_exists('locallogin', $_COOKIE)) {
+  $wgPluggableAuth_EnableLocalLogin = $_COOKIE['locallogin'] == "on";
+}
+
+$wgPluggableAuth_EnableLocalProperties = false;
+$wgPluggableAuth_ButtonLabel = "Log In Using MacArthur SSO";
+$wgInvalidUsernameCharacters = "";
+
+# Enable SimpleSAMLphp
+wfLoadExtension( 'SimpleSAMLphp' );
+$wgSimpleSAMLphp_InstallDir = '{{ simplesaml_install_directory }}/simplesamlphp-1.18.4';
+$wgSimpleSAMLphp_AuthSourceId = '{{ simplesaml_okta_metadata_name }}';
+$wgSimpleSAMLphp_RealNameAttribute = ['firstName', 'lastName'];
+$wgSimpleSAMLphp_EmailAttribute = 'email';
+$wgSimpleSAMLphp_UsernameAttribute = 'username';
+
+$wgSimpleSAMLphp_SyncAllGroups_GroupNameModificationCallback = function($origGroupName){
+# Remove spaces
+  return preg_replace('/\s/', '', $origGroupName);
+};
+$wgSimpleSAMLphp_AttributeProcessorFactories = [
+  "MediaWiki\\Extension\\SimpleSAMLphp\\AttributeProcessor\\SyncAllGroups::factory"
+];
+
+# Rearrange Login Page
+$wgHooks['AuthChangeFormFields'][] = function ($requests, $fieldInfo, &$formDescriptor, $action) {
+  if($action != \MediaWiki\Auth\AuthManager::ACTION_LOGIN) {
+    return;
+  }
+
+  global $wgPluggableAuth_EnableLocalLogin;
+  if(!$wgPluggableAuth_EnableLocalLogin) {
+    return;
+  }
+
+  $formDescriptor['username']['weight'] = 200;
+  $formDescriptor['password']['weight'] = 201;
+  $formDescriptor['rememberMe']['weight'] = 202;
+  $formDescriptor['loginattempt']['weight'] = 203;
+  $formDescriptor['break'] = [
+    'type' => 'info',
+    'weight' => 150,
+    'cssclass' => 'mw-htmlform-login-or',
+    'default' => "or"
+  ];
+
+  unset($formDescriptor['linkcontainer']);
+  unset($formDescriptor['passwordReset']);
+  unset($formDescriptor['createOrLogin']);
+
+  if ( isset( $formDescriptor['pluggableauthlogin'] ) ) {
+    $formDescriptor['pluggableauthlogin']['weight'] = -1;
+  }
+};
+?>

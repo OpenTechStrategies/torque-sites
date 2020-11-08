@@ -15,7 +15,7 @@
     path: "{{ torquedata_install_directory }}"
     state: directory
 
-- name: Checkout Torque
+- name: Check out Torque
   git:
     repo: https://github.com/OpenTechStrategies/torque
     dest: "{{ torquedata_install_directory }}/torque/"

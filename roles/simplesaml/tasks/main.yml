@@ -1,0 +1,44 @@
+---
+
+- name: Add okta account to autoconfig
+  lineinfile:
+    path: "{{ simplesaml_install_directory }}/simplesamlphp-1.18.4/saml-autoconfig.php"
+    insertafter: '\$metadata_url_for = array\('
+    line: "'{{ simplesaml_okta_metadata_name }}' => '{{ simplesaml_okta_metadata_url }}',"
+
+- name: Install PluggableAuth
+  unarchive:
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/PluggableAuth-REL1_33-a69f626.tar.gz"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+
+- name: Install SimpleSAML extension
+  unarchive:
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/SimpleSAMLphp-REL1_33-7d91f27.tar.gz"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+
+- name: Transfer Config
+  template:
+    src: simplesaml.php.j2
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/torque-sites-config/simplesaml.php"
+
+- name: Enable PluggableAuth/SimpleSAML
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE PLUGGABLEAUTH/SIMPLSAML CONFIG"
+    block: |
+      include "{{ mediawiki_install_directory }}/mediawiki-1.33.0/torque-sites-config/simplesaml.php";
+
+- name: Remove Enable PluggableAuth Block
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE PLUGABLE AUTH CONFIG"
+
+- name: Enable SimpleSAMLphp extension Block
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE SIMPLE SAML PHP CONFIG"
+
+- name: Rearrange Login Page Block
+  blockinfile:
+    marker: "## {mark} ANSIBLE CHANGE LOGIN ORDERING"
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"

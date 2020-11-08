@@ -1,4 +1,6 @@
 ---
+competition_name: LLIIA2020
+torquedataconnect_sheet_name: LLIIA2020
 html_directory: /var/www/html
 mediawiki_install_directory: /home/deploy/LLIIA2020/
 mediawiki_mwlib_username: mwlib

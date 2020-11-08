@@ -1,4 +1,6 @@
 ---
+competition_name: lfc
+torquedataconnect_sheet_name: proposals
 html_directory: /var/www/html
 mediawiki_install_directory: /home/deploy/lfc/
 mediawiki_mwlib_username: mwlib

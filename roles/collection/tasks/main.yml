@@ -1,0 +1,37 @@
+---
+
+- name: Install Collection
+  unarchive:
+    src: "{{ playbook_dir }}/../../thirdparty/extensions/Collection-REL1_33-8566dd1.tar.gz"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
+
+- name: Transfer Config
+  template:
+    src: collection.php.j2
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/torque-sites-config/collection.php"
+
+- name: Enable Collection
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE COLLECTION CONFIG"
+    block: |
+      include "{{ mediawiki_install_directory }}/mediawiki-1.33.0/torque-sites-config/collection.php";
+
+- name: Disable Collection Warning 1
+  replace:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/Collection/Collection.body.php"
+    regexp: '^(\t.*MessageBoxHelper::renderWarningBoxes.*)$'
+    replace: '#\1'
+
+- name: Disable Collection Warning 2
+  replace:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/Collection/templates/CollectionPageTemplate.php"
+    regexp: '^(\t.*MessageBoxHelper::renderWarningBoxes.*)$'
+    replace: '#\1'
+
+- name: Remove Collection Book Text
+  replace:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/Collection/i18n/en.json"
+    regexp: '\t"coll-book_creator_intro": "<big>With the ''''book creator'''' you can create a book containing wiki pages of your choice. You can export the book in different formats \(for example PDF or ODF\) or order a printed copy.</big>",'
+    replace: '\t"coll-book_creator_intro": "<big>With the ''''book creator'''' you can create a book containing wiki pages of your choice. You can export the book in different formats (for example PDF or ODF).</big>",'
+

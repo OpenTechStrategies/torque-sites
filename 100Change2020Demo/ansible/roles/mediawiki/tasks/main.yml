@@ -37,7 +37,7 @@
     path: "{{ mediawiki_install_directory }}/bin"
     state: directory
 
-- name: Checkout Torque
+- name: Check out Torque
   git:
     repo: https://github.com/OpenTechStrategies/torque
     dest: "{{ mediawiki_install_directory }}/torque/"

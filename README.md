@@ -21,8 +21,9 @@ Each subdirectory falls into one of three categories:
 
 1. A support system for torque-sites
 2. Generalized ETL Pipeline
-3. Supporting files
-4. A site (competition)
+3. Centralized set of ansible roles for competitions
+4. Supporting files
+5. A site (competition)
 
 Because each adheres to the standards set out in these top level
 documents, most of the information needed is here.  However, each
@@ -61,6 +62,18 @@ information on how to get it installed on your system.
 
 The individual competitions etl pipelines are mainly configurations on
 this package.
+
+### Centralized set of ansible roles
+
+This contains all the roles that are used in multiple competitions.  Each
+competition can include these roles in their top level `.yml` file, and then
+add on their own customizations after as needed.  Generally, these roles
+should be included before customizations, and there may be an order that
+they need to be run in in order to run correctly (for example, mediawiki
+must be run before a role installing an extension).
+
+See [INSTALL.md](INSTALL.md) for more information on how to configure your
+system to pick up these roles.
 
 ### Supporting files
 

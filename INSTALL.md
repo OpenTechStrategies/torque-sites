@@ -15,13 +15,19 @@ layout.
 
 * `<projectname>.yml` - the main playbook file
 * `inv/` - the inventory files
-* `roles/` - the ansible scripts and support
+* `roles/` - the ansible scripts for customizations specific to this competition
 
 Before you get started, you need to get ansible on your system.  This
 is probably easiest through package management.
 
 ```
 $ sudo apt-get install ansible
+```
+
+Then, you need to tell ansible where to find the general torque-sites roles
+
+```
+$ export ANSIBLE_ROLES_PATH=$ANSIBLE_ROLES_PATH:/path/to/torque-sites/roles
 ```
 
 #### Apache configuration for large files
