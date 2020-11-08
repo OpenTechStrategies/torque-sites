@@ -1,0 +1,21 @@
+---
+
+- name: Transfer LFC Logo
+  copy:
+    src: LeverForChange_Logo.png
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/resources/assets/LeverForChange_Logo.png"
+
+- name: Install LFC Logo
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    regexp: ^\$wgLogo = .*
+    line: $wgLogo = "$wgResourceBasePath/resources/assets/LeverForChange_Logo.png";
+
+- name: Install TorqueDataConnect GlobalView Variables
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE PICKSOME OVERRIDE CONFIG"
+    block: |
+      $wgTorqueDataConnectMultiWikiConfig = [];
+      $wgTorqueDataConnectMultiWikiConfig["GVLLIIA2020"] = "LLIIA2020";
+      $wgTorqueDataConnectMultiWikiConfig["GVLoneStar2020"] = "LoneStar2020";

@@ -1,6 +1,12 @@
 # This file is generated from the ansible setup script
 # 
 # If it needs to be customized differently, you should do the customizations there.
+#
+# Database configuration for torquedata
+POSTGRES_DB_NAME="{{ supervisor_torquedata_name }}"
+POSTGRES_DB_USER="torquedata_rw"
+POSTGRES_DB_PASSWORD="{{ db_password }}"
 
-SPREADSHEET_FOLDER = "{{ torquedata_install_directory }}/spreadsheets"
-
+# Secret key as needed by django.  See
+# https://docs.djangoproject.com/en/3.1/ref/settings/#std:setting-SECRET_KEY
+SECRET_KEY="{{ secret_key }}"

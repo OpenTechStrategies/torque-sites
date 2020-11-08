@@ -9,6 +9,24 @@
     state: present
   loop:
     - pipenv
+    - postgresql
+    - python-psycopg2
+
+- name: Create database user
+  become: true
+  become_user: postgres
+  postgresql_user:
+    name: torquedata_rw
+    password: "{{ db_password }}"
+    state: present
+
+- name: create postgresql db
+  become: true
+  become_user: postgres
+  postgresql_db:
+    name: "{{ supervisor_torquedata_name }}"
+    state: present
+    owner: torquedata_rw
 
 - name: Setup installation directory
   file:
@@ -27,12 +45,6 @@
     dest: "{{ torquedata_install_directory }}/server"
     state: link
 
-- name: Install torquedata supervisor
-  become_user: root
-  template:
-    src: supervisor-torquedata.conf.j2
-    dest: /etc/supervisor/conf.d/{{ supervisor_torquedata_name}}.conf
-
 - name: Run pipenv install
   command: "pipenv install"
   args:
@@ -43,10 +55,16 @@
     src: config.py.j2
     dest: "{{ torquedata_install_directory }}/server/config.py"
 
-- name: Create Spreadsheet Directory
-  file:
-    state: directory
-    path: "{{ torquedata_install_directory }}/spreadsheets"
+- name: Run Migrations
+  command: "pipenv run python manage.py migrate"
+  args:
+    chdir: "{{ torquedata_install_directory }}/server"
+
+- name: Install torquedata supervisor
+  become_user: root
+  template:
+    src: supervisor-torquedata.conf.j2
+    dest: /etc/supervisor/conf.d/{{ supervisor_torquedata_name}}.conf
 
 - name: Restart supervisor for torquedata
   become_user: root
