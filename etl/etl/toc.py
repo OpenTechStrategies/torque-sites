@@ -144,12 +144,27 @@ class GenericToc(Toc):
     """A Toc that prints a grouped set of proposals with each group
     being a heading in the eventual wiki page."""
 
-    def __init__(self, name, column, initial_groupings=[]):
+    def __init__(self, name, column, initial_groupings=None, sort=None):
+        """Set up the Toc by giving a NAME for the Toc and a COLUMN which
+        it's based on.
+
+        INITIAL_GROUPINGS is an optional Array of different specified groupings,
+        which gives it an order as groups (the value of the specified COLUMN for
+        various proposals) get added to the end when not found.
+
+        If INITIAL_GROUPINGS is missing, then the groups are sorted alphabetically,
+        unless SORT is passed, which overrides that determiniation (either for
+        sorting or against)."""
+
         super().__init__()
         self.name = name
         self.column = column
-        self.groupings = initial_groupings
-        self.data = {x: [] for x in initial_groupings}
+        self.groupings = initial_groupings if initial_groupings is not None else []
+        if sort is not None:
+            self.sort = sort
+        else:
+            self.sort = (initial_groupings is None)
+        self.data = {x: [] for x in self.groupings}
 
     def process_competition(self, competition):
         self.competition_name = competition.name
@@ -163,6 +178,9 @@ class GenericToc(Toc):
                 self.groupings.append(grouping)
                 self.data[grouping] = []
             self.data[grouping].append(proposal.key())
+
+        if self.sort:
+            self.data = { grouping: self.data[grouping] for grouping in sorted(self.groupings) }
 
     def template_file(self):
         template = "__TOC__"
@@ -215,6 +233,9 @@ class GenericMultiLineToc(GenericToc):
                     self.groupings.append(grouping)
                     self.data[grouping] = []
                 self.data[grouping].append(proposal.key())
+
+        if self.sort:
+            self.data = { grouping: self.data[grouping] for grouping in sorted(self.groupings) }
 
 
 class ListToc(Toc):
