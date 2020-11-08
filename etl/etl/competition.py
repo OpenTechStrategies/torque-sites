@@ -459,9 +459,11 @@ class MediaWikiTitleAdder(InformationAdder):
         return [self.title_column_name]
 
     def cell(self, proposal, column_name):
-        import unidecode
-
         title = "%s (%s)" % (proposal.cell(self.project_column_name), proposal.key())
+        return self.sanitize_title(title)
+
+    def sanitize_title(self, title):
+        import unidecode
 
         # Project titles sometimes have characters that lead to malformed
         # mediawiki titles so this code cleans that up.
@@ -610,6 +612,26 @@ class FinancialDataAdder(InformationAdder):
 
     def cell(self, proposal, column_name):
         return json.dumps(self.financial_data.get(proposal.key(), {}))
+
+
+class GlobalViewMediaWikiTitleAdder(MediaWikiTitleAdder):
+    """A MediaWikiTitleAdder that has a different title layout because it's tailored
+    to GlobalView, so that it contains the independent competition sheet name."""
+
+    def __init__(self, wiki_key, project_column_name):
+        self.project_column_name = project_column_name
+        self.wiki_key = wiki_key
+
+    def column_names(self):
+        return ["GlobalView MediaWiki Title"]
+
+    def cell(self, proposal, column_name):
+        title = "%s (%s: %s)" % (
+                proposal.cell(self.project_column_name),
+                self.wiki_key,
+                proposal.key()
+        )
+        return self.sanitize_title(title)
 
 
 @total_ordering

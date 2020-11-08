@@ -1,0 +1,184 @@
+#!/usr/bin/env python3
+
+__doc__ = """\
+Compose all of the Lever for Change Climate 2030 Proposal CSV files.
+
+Usage:
+
+  $ populate-wiki \\
+          --tdc-config-dir=TDC_CONFIG_DIR \\
+          --competition=NAME --competition-csv=FILE \\
+          --competition=NAME2 --competition-csv=FILE2 \\
+          ...
+
+Command-line options:
+  --competition NAME              NAME is the name of a competition that lines up
+                                  one to one with competition-csv below
+
+  --competition-csv FILE          FILE is a CSV file representing the output of
+                                  a competition's etl pipeline.
+
+  --tdc-config-dir DIR            DIR is the location for files that are the base configuration files
+                                  needed by TorqueDataConnect, and can be optionally, manually, put on
+                                  the torque wiki.  We don't automatically do that because we want to
+                                  overwrite the configuration out there.
+"""
+
+from etl import competition, wiki, toc, tdc
+import config
+import getopt
+import sys
+import os
+import csv
+
+
+competition_configs = {
+    "LoneStar2020": {
+        "key": "Application #",
+        "title": "Project Title",
+        "sheet_name": "LoneStar2020",
+        "wiki_key": "GVLoneStar2020",
+        "priority_populations": "Priority Populations",
+        "organization_name": "Organization Name",
+    },
+    "LLIIA2020": {
+        "key": "Application #",
+        "title": "Project Title",
+        "sheet_name": "LLIIA2020",
+        "wiki_key": "GVLLIIA2020",
+        "priority_populations": "Priority Populations",
+        "organization_name": "Organization Name",
+    },
+}
+
+
+class GlobalViewMediaWikiOverride(competition.MediaWikiTitleAdder):
+    """A MediaWikiTitleAdder that has a different title layout because it's tailored
+    to GlobalView, so that it contains the independent competition sheet name.  This
+    one takes over the MediaWiki Title place in the spreadsheet for uploading."""
+
+    def __init__(self):
+        pass
+
+    def cell(self, proposal, column_name):
+        title = "%s (%s: %s)" % (
+                proposal.cell("Project Title"),
+                proposal.cell("Wiki Key"),
+                proposal.cell("Competition Application #")
+        )
+        return self.sanitize_title(title)
+
+
+def main():
+    """Compose the LFC input and emit it as html-ized csv."""
+    try:
+        opts, args = getopt.getopt(
+            sys.argv[1:],
+            "",
+            [
+                "competition-csv=",
+                "competition=",
+                "tdc-config-dir=",
+            ],
+        )
+    except getopt.GetoptError as err:
+        sys.stderr.write("ERROR: '%s'\n" % err)
+        sys.exit(2)
+
+    competition_names = []
+    competition_csvs = []
+    tdc_config_dir = None
+    for o, a in opts:
+        if o == "--competition":
+            if a not in competition_configs:
+                sys.stderr.write("ERROR: competition '%s' is not in our competition_configs\n" % a)
+                sys.exit(2)
+            competition_names.append(a)
+        elif o == "--competition-csv":
+            competition_csvs.append(a)
+        elif o == "--tdc-config-dir":
+            tdc_config_dir = a
+        else:
+            sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
+            sys.exit(2)
+
+    if tdc_config_dir is None:
+        sys.stderr.write("ERROR: need --tdc-config-dir option.\n\n")
+        sys.stderr.write(__doc__)
+        sys.exit(1)
+
+    if len(competition_names) is 0 or len(competition_csvs) is 0:
+        sys.stderr.write("ERROR: need at least one --competition and --competition-csv option.\n\n")
+        sys.stderr.write(__doc__)
+        sys.exit(1)
+
+    if len(competition_names) is not len(competition_csvs):
+        sys.stderr.write("ERROR: number of --competition and --competition-csv options needs to be the same.\n\n")
+        sys.stderr.write(__doc__)
+        sys.exit(1)
+
+    csv_location = os.path.join(tdc_config_dir, "multi-competition-generated.csv")
+
+    with open(csv_location, "w") as writer:
+        csv_writer = csv.writer(writer, delimiter=",", quotechar='"', lineterminator="\n")
+        csv_writer.writerow([
+            "Global Application #",
+            "Competition Name",
+            "Competition Application #",
+            "Project Title",
+            "Organization Name",
+            "Wiki Key",
+            "Priority Populations"
+            ])
+
+        for name, comp_csv in zip(competition_names, competition_csvs):
+            csv_reader = csv.reader(open(comp_csv, encoding="utf-8"), delimiter=",", quotechar='"')
+            comp = competition.Competition(comp_csv, name, competition_configs[name]["key"], None, True)
+
+            for proposal in comp.ordered_proposals():
+                csv_writer.writerow([
+                    "%s_%s" % (name, proposal.key()),
+                    name,
+                    proposal.key(),
+                    proposal.cell(competition_configs[name]["title"]),
+                    proposal.cell(competition_configs[name]["organization_name"]),
+                    competition_configs[name]["wiki_key"],
+                    proposal.cell(competition_configs[name]["priority_populations"])
+            ])
+
+    comp = competition.Competition(csv_location, "GlobalView", "Global Application #")
+    comp.process_cells_special("Priority Populations", competition.ColumnTypeUpdater("list"))
+    comp.add_supplemental_information(GlobalViewMediaWikiOverride())
+
+    list_toc = toc.ListToc("All_Proposals")
+    comp.add_toc(list_toc)
+    comp.add_toc(toc.GenericMultiLineToc("Populations", "Priority Populations"))
+    comp.sort("Organization Name")
+    comp.process_tocs()
+
+    if tdc_config_dir is not None:
+        tdc.AllProposals(comp).generate(tdc_config_dir)
+        tdc.AllColumns(comp).generate(tdc_config_dir)
+        tdc.ProcessedSpreadsheet(comp).generate(tdc_config_dir)
+
+    my_wiki = wiki.WikiSession(
+        config.username, config.password, comp.name, config.wiki_url
+    )
+
+    my_wiki.csv_only = True
+    my_wiki.upload_sheet(comp)
+
+    for proposal in comp.proposals.values():
+        my_wiki.create_page(
+            proposal.cell("MediaWiki Title"),
+            "{{ #tdcrender:%s/id/%s.mwiki|false|%s }}" % (
+                proposal.cell("Competition Name"),
+                proposal.cell("Competition Application #"),
+                proposal.cell("Wiki Key")
+            ),
+            True
+        )
+
+
+if __name__ == "__main__":
+    main()
