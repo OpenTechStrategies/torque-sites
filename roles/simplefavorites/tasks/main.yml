@@ -1,6 +1,6 @@
 ---
 
-- name: Checkout SimpleFavorites
+- name: Check out SimpleFavorites
   git:
     repo: https://github.com/OpenTechStrategies/SimpleFavorites
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/SimpleFavorites/"

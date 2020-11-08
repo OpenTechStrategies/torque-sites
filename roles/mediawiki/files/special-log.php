@@ -1,6 +1,6 @@
 <?php
 
-# Make it so names of log types are more amenable to LFC users
+# Make it so names of log types are more amenable to LFC staff
 $logTitlesOverrideMessages = [
   "picksomelogpage" => "Selection",
   "activitylogpage" => "Misc. Activity (page views, login, logout, etc)",

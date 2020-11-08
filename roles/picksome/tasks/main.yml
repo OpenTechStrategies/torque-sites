@@ -1,6 +1,6 @@
 ---
 
-- name: Checkout PickSome
+- name: Check out PickSome
   git:
     repo: https://github.com/OpenTechStrategies/PickSome
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/PickSome/"
