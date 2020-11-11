@@ -1,0 +1,5 @@
+[mediawiki]
+localhost  ansible_connection=local
+
+[simplesaml]
+localhost  ansible_connection=local
