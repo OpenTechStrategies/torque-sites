@@ -89,17 +89,24 @@ class WikiTableTocProposalFormatter(TocProposalFormatter):
         the following dictionaries:
 
         {
-            name: String (required),
+            name: String (required if processor omitted),
+            processor: Function (required if name omitted),
             heading: String (required),
             link: Boolean (defaults to false),
             right_aligned: Boolean (defaults to false)
         }
 
         Where NAME is the name of the column in the proposals,
-        HEADING is the heading for that column in the table, LINK
-        notes that this column should link against the proposal pages,
-        and RIGHT_ALIGNED is whether the data in this column should be
+        PROCESSOR is a function taking a the group_var and id_var as arguments
+        (as those are necessary to find the information at template render
+        time) and returning a String, HEADING is the heading for that column in
+        the table, LINK notes that this column should link against the proposal
+        pages, and RIGHT_ALIGNED is whether the data in this column should be
         right aligned.
+
+        For NAME vs PROCESSOR, only one can be present, because either
+        the column is looked up directly, or the proposal is sent to
+        the PROCESSOR.  If both are included, NAME will be used.
         """
         self.column_definitions = column_definitions
 
@@ -114,14 +121,16 @@ class WikiTableTocProposalFormatter(TocProposalFormatter):
 
         template = "|-\n"
         for column_def in self.column_definitions:
-            name = column_def["name"]
             heading = column_def["heading"]
             link = column_def.get("link", False)
             right_aligned = column_def.get("right_aligned", False)
 
             template += "| "
+
+            template += " style='vertical-align:top;"
             if right_aligned:
-                template += " style='text-align:right' |"
+                template += "text-align:right;"
+            template += "' |"
 
             if link:
                 template += "[[{{ %s[%s]['%s'] }}|" % (
@@ -129,7 +138,14 @@ class WikiTableTocProposalFormatter(TocProposalFormatter):
                     id_var_name,
                     competition.MediaWikiTitleAdder.title_column_name,
                 )
-            template += "{{ %s[%s]['%s'] }}" % (group_var_name, id_var_name, name)
+
+            if "name" in column_def:
+                template += "{{ %s[%s]['%s'] }}" % (group_var_name, id_var_name, column_def["name"])
+            elif "processor" in column_def:
+                template += column_def["processor"](group_var_name, id_var_name)
+            else:
+                raise Exception ("Neither name nor processor was present in column definition for {}".format(heading))
+
             if link:
                 template += "]]"
 
