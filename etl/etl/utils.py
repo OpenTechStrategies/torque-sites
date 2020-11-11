@@ -1,5 +1,6 @@
 import re
 import warnings
+from math import floor
 from bs4 import BeautifulSoup
 
 # Used in converting "<foo>&nbsp;<bar>" and "</foo>&nbsp;<bar>"
@@ -11,15 +12,6 @@ intertag_nbsp_re = re.compile("(?m)(</?[a-z]+>)&nbsp;(<[a-z]+>)")
 # Matches Unicode 8226 (U+2022) at the beginning of a line,
 # which is something that applicants do in a lot of fields.
 bullets_re = re.compile("^•", re.MULTILINE)
-
-
-def commize_number(number):
-    try:
-        retn = floor(float(number))
-        retn = "{:,}".format(retn)
-        return retn
-    except Exception as e:
-        return number
 
 
 def collapse_replace(string, old, new):
