@@ -10,6 +10,11 @@
 # directly when loaded by LocalSettings (as opposed to in extension.json), overriding
 # the normal way mediawiki loads things.
 $wgHooks['SidebarBeforeOutput'][] = 'PickSomeHooks::onSidebarBeforeOutput';
+
+# And then, because we want to check in the Collection loadup config that
+# picksome was not loaded, we include a global here
+$wgPickSomeLoaded = true;
+
 wfLoadExtension('PickSome');
 $wgPickSomeNumberOfPicks = 15;
 
