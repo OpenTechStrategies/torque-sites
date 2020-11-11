@@ -1,5 +1,10 @@
 <?php
 require_once "$IP/extensions/Collection/Collection.php";
+
+if(isset($wgPickSomeLoaded)) {
+  echo "PickSome Loaded before Collection, so bombing out";
+  throw new RunTimeException("Collection being loaded after PickSome");
+}
 $wgCollectionMWServeURL = "http://127.0.0.1:8899";
 $wgCollectionMaxArticles = 250;
 $wgEnableApi = true;
