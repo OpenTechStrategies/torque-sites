@@ -679,6 +679,100 @@ class AdminReview(InformationAdder, ProposalFilter):
         return proposal.key() not in self.data
 
 
+class EvaluationRankingsAdder(InformationAdder):
+    """Represents the first pass of review data we get that has just the scores
+    avaliable, without the comments.  Usually superseded later by using the
+    EvaluationAdder with a sheet that has all the comments and score breakdowns as
+    well.
+
+    Each row represents a proposal with the scores in their own columns"""
+
+    def __init__(
+        self,
+        csv_location,
+        name,
+        app_col_name,
+        overall_rank_col_name,
+        score_total_col_name,
+        trait_defs,
+    ):
+        """Takes a CSV_LOCATION, reading the data about proposal based on
+        APP_COL_NAME, and associating with the data in OVERALL_RANK_COL_NAME,
+        and SOCRE_TOTAL_NAME.
+
+        The NAME represents the type of evaluation data (Judge, Peer Review, etc).
+
+        TRAIT_DEFS is an array of dictionaries of the form:
+
+        TRAIT_DEF = {
+          NAME: string, the name of the trait as it will appear in the output
+          SOURCE_COL_NAME: string, representing the column name in the source spreadsheet
+        }"""
+
+        csv_reader = csv.reader(
+            open(csv_location, encoding="utf-8"), delimiter=",", quotechar='"'
+        )
+
+        self.name = name
+        self.traits = []
+        self.evaluation_data = {}
+
+        header_row = next(csv_reader)
+
+        app_col = header_row.index(app_col_name)
+        overall_rank_col = header_row.index(overall_rank_col_name)
+        score_total_col = header_row.index(score_total_col_name)
+
+        for trait_def in trait_defs:
+            self.traits.append(trait_def["name"])
+            trait_def["col"] = header_row.index(trait_def["source_col_name"])
+
+        for row in csv_reader:
+            application_id = row[app_col]
+
+            evaluation_datum = {
+                "{} Overall Score Rank Normalized".format(self.name): row[
+                    overall_rank_col
+                ],
+                "{} Sum of Scores Normalized".format(self.name): row[score_total_col],
+            }
+
+            for trait_def in trait_defs:
+                evaluation_datum[
+                    "{} {}".format(self.name, trait_def["name"])
+                ] = trait_def["name"]
+                evaluation_datum[
+                    "{} {} Score Normalized".format(self.name, trait_def["name"])
+                ] = row[trait_def["col"]]
+
+            self.evaluation_data[application_id] = evaluation_datum
+
+    def column_names(self):
+        names = [
+            "{} Overall Score Rank Normalized".format(self.name),
+            "{} Sum of Scores Normalized".format(self.name),
+        ]
+        names.extend(["{} {}".format(self.name, trait) for trait in self.traits])
+        names.extend(
+            ["{} {} Score Normalized".format(self.name, trait) for trait in self.traits]
+        )
+
+        return names
+
+    def cell(self, proposal, column_name):
+        if proposal.key() not in self.evaluation_data:
+            if column_name == "%s Overall Score Rank Normalized" % self.name:
+                return "9999"
+            return ""
+
+        val = self.evaluation_data[proposal.key()][column_name]
+
+        if isinstance(val, float):
+            return "{0:.1f}".format(val)
+        else:
+            return val
+
+
 class EvaluationAdder(InformationAdder):
     """Reperesents the evaluation data that comes in from a many to one relationship
     to the proposals.  There are N traits, and M judges per trait, with things like
