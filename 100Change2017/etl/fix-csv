@@ -376,7 +376,7 @@ def main():
         elif o in ("--reclassifications",):
             reclassifications_csv = a
         elif o == "--pare":
-            pare = int(a)
+            pare = a
         else:
             sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
             sys.exit(2)

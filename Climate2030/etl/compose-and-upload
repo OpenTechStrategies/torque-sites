@@ -93,7 +93,7 @@ def main():
         if o == "--proposals-csv":
             proposals_csv = a
         elif o == "--pare":
-            pare = int(a)
+            pare = a
         elif o == "--csv-only":
             csv_only = True
         elif o == "--judge-evaluation-csv":
