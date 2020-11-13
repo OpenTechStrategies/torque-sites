@@ -56,6 +56,7 @@ python3 -V > /dev/null 2>&1 || { echo "python3 required, aborting" ; exit 1; }
 
 PROPOSALS_CSV="ECWC_Registration_Application_data.csv"
 BASE_ATTACHMENTS="Shane Eggerman - ECWC_Registration_Application_datа copy 2.zip"
+PEER_REVIEW_RANKINGS_CSV="Peer-to-Peer Results ECW.csv"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
 TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
@@ -86,6 +87,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   mkdir -p $DATA_DIR
   echo "Decrypting..."
 
+  gpg -o "${DATA_DIR}/${PEER_REVIEW_RANKINGS_CSV}" --decrypt "${ENCRYPTED_DIR}/${PEER_REVIEW_RANKINGS_CSV}.gpg" || exit 1
   gpg -o "${DATA_DIR}/${BASE_ATTACHMENTS}" --decrypt "${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg" || exit 1
 
   mkdir -p ${TDC_CONFIG_DIR}
@@ -115,6 +117,7 @@ mkdir -p $TDC_CONFIG_DIR
 
 ${RUNNER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
           --attachments-dir=${ATTACHMENTS_DIR} \
+          --peer-review-rankings="${DATA_DIR}/${PEER_REVIEW_RANKINGS_CSV}" \
           $PARE \
           $CSV_ONLY \
           --tdc-config-dir="${TDC_CONFIG_DIR}"
