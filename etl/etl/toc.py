@@ -140,11 +140,19 @@ class WikiTableTocProposalFormatter(TocProposalFormatter):
                 )
 
             if "name" in column_def:
-                template += "{{ %s[%s]['%s'] }}" % (group_var_name, id_var_name, column_def["name"])
+                template += "{{ %s[%s]['%s'] }}" % (
+                    group_var_name,
+                    id_var_name,
+                    column_def["name"],
+                )
             elif "processor" in column_def:
                 template += column_def["processor"](group_var_name, id_var_name)
             else:
-                raise Exception ("Neither name nor processor was present in column definition for {}".format(heading))
+                raise Exception(
+                    "Neither name nor processor was present in column definition for {}".format(
+                        heading
+                    )
+                )
 
             if link:
                 template += "]]"
@@ -179,7 +187,7 @@ class GenericToc(Toc):
         if sort is not None:
             self.sort = sort
         else:
-            self.sort = (initial_groupings is None)
+            self.sort = initial_groupings is None
         self.data = {x: [] for x in self.groupings}
 
     def process_competition(self, competition):
@@ -196,7 +204,9 @@ class GenericToc(Toc):
             self.data[grouping].append(proposal.key())
 
         if self.sort:
-            self.data = { grouping: self.data[grouping] for grouping in sorted(self.groupings) }
+            self.data = {
+                grouping: self.data[grouping] for grouping in sorted(self.groupings)
+            }
 
     def template_file(self):
         template = "__TOC__"
@@ -251,7 +261,9 @@ class GenericMultiLineToc(GenericToc):
                 self.data[grouping].append(proposal.key())
 
         if self.sort:
-            self.data = { grouping: self.data[grouping] for grouping in sorted(self.groupings) }
+            self.data = {
+                grouping: self.data[grouping] for grouping in sorted(self.groupings)
+            }
 
 
 class ListToc(Toc):
