@@ -8,12 +8,12 @@
 
 - name: Install PluggableAuth
   unarchive:
-    src: "{{ playbook_dir }}/../../thirdparty/extensions/PluggableAuth-REL1_33-a69f626.tar.gz"
+    src: "{{ playbook_dir }}/../../../thirdparty/extensions/PluggableAuth-REL1_33-a69f626.tar.gz"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
 - name: Install SimpleSAML extension
   unarchive:
-    src: "{{ playbook_dir }}/../../thirdparty/extensions/SimpleSAMLphp-REL1_33-7d91f27.tar.gz"
+    src: "{{ playbook_dir }}/../../../thirdparty/extensions/SimpleSAMLphp-REL1_33-7d91f27.tar.gz"
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
 - name: Transfer Config
