@@ -158,7 +158,7 @@ will always be in the `deploy` script.
 First, you need to configure it to the target wiki.
 
 ```
-$ cd <competition>/etl
+$ cd competitions/<competition>/etl
 $ cp config.py.tmpl config.py
 $ $EDITOR config.py
 ```
@@ -166,7 +166,7 @@ $ $EDITOR config.py
 And run the script
 
 ```
-$ cd <competition>/etl
+$ cd competitions/<competition>/etl
 
 # Whatever data directory you set up above
 $ ./deploy ~/data
@@ -188,9 +188,9 @@ the included keys.
 In order to get the base system up and running, you need to use the install
 from ansible instructions above for the following:
 
-* mwlib
-* torque
-* simplesaml
+* base/mwlib
+* base/torque
+* base/simplesaml
 
 ## NOTE about simplesaml secrets in other environments
 
@@ -199,7 +199,7 @@ normal place in opass.  Instead, you need to edit the secret file and
 put in the values from `opass show clients/lever-for-change/torque-sites/simplesamlsalt`
 
 ```
-$ $EDITOR simplesaml/inv/<environment>/group_vars/all/secret
+$ $EDITOR base/simplesaml/inv/<environment>/group_vars/all/secret
 ```
 
 # Installing a competition
@@ -287,7 +287,7 @@ For the competition you're working with, run the instructions from
 ### Post-installation checklist for new competition instances
 
 (Note: Many of the items in this checklist come from looking over
-`<competition>/ansible/roles/mediawiki/tasks/main.yml`, as 
+`competition/<competition>/ansible/roles/mediawiki/tasks/main.yml`, as 
 [suggested by Frank](https://chat.opentechstrategies.com/#narrow/stream/45-Lever-for.20Change/topic/data/near/82255).)
 
 1. Replace the default Mediawiki logo block ("`$wg_logo`" etc) with the right logo(s):
