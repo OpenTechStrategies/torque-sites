@@ -315,7 +315,8 @@ class GeographicToc(Toc):
             else:
                 if val not in data:
                     data[val] = {"shown": False, "proposals": []}
-                data[val]["proposals"].append(proposal.key())
+                if proposal.key() not in data[val]["proposals"]:
+                    data[val]["proposals"].append(proposal.key())
 
         if self.proposals is None:
             self.proposals = competition.ordered_proposals()
@@ -323,6 +324,15 @@ class GeographicToc(Toc):
         for proposal in self.proposals:
             for column_set in self.column_sets:
                 add_proposal_to_data(proposal, self.data, column_set)
+
+        def sort_data(data):
+            for key in sorted(data.keys()):
+                if "subcolumn" in data[key]:
+                    data[key]["subcolumn"] = sort_data(data[key]["subcolumn"])
+
+            return {key: data[key] for key in sorted(data.keys())}
+
+        self.data = sort_data(self.data)
 
     def grouped_data(self):
         return {"groups": self.data}
