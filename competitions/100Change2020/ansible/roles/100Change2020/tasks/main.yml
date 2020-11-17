@@ -23,7 +23,7 @@
     block: |
       # We only potentially set to false if coming in from the web
       if(array_key_exists('REQUEST_URI', $_SERVER)) {
-        $wgPluggableAuth_EnableLocalLogin = (substr($_SERVER['REQUEST_URI'], 0, 13) == "/lfc/api.php");
+        $wgPluggableAuth_EnableLocalLogin = (substr($_SERVER['REQUEST_URI'], 0, 22) == "/100Change2020/api.php");
       }
 
 - name: Override some PickSome Variables
