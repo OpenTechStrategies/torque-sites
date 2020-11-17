@@ -13,7 +13,7 @@ At this time, certain things are assumed and can later be configured.
 * www-data is the user for apache
 * apache uses /var/www/html for it's root directory
 * The installed system is Debian or Ubuntu
-* lfc is the name of the wiki, so http://domain.tld/lfc/ is the location of the wiki
+* 100Change2020 is the name of the wiki, so http://domain.tld/100Change2020/ is the location of the wiki
 * All four groups are installed on the same machine
   * mediawiki config assumes that mysql and mwlib are running locally
 
@@ -95,4 +95,4 @@ The one liner to run the playbook:
 
 # Viewing the mediawiki instance
 
-You should, at this time, be able to go to http://<host>/lfc/ and see mediawiki.
+You should, at this time, be able to go to http://<host>/100Change2020/ and see mediawiki.

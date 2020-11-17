@@ -1,8 +1,8 @@
 ---
-competition_name: lfc
-torquedataconnect_sheet_name: proposals
+competition_name: 100Change2020
+torquedataconnect_sheet_name: LFC100Change2020
 html_directory: /var/www/html
-mediawiki_install_directory: /home/deploy/lfc/
+mediawiki_install_directory: /home/deploy/100Change2020/
 mediawiki_mwlib_username: mwlib
 mediawiki_csv2wiki_username: csv2wiki
 simplesaml_install_directory: /home/deploy/simplesaml/

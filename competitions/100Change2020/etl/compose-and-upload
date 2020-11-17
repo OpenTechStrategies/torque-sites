@@ -422,7 +422,7 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    comp = competition.Competition(proposals_csv, "proposals", "Review Number", pare)
+    comp = competition.Competition(proposals_csv, "LFC100Change2020", "Review Number", pare)
     comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
 
     fix_cell_processor = competition.FixCellProcessor()
