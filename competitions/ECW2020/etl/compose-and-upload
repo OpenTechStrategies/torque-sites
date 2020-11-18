@@ -42,9 +42,9 @@ Command-line options:
                                   the torque wiki.  We don't automatically do that because we want to
                                   overwrite the configuration out there.
 
-  --peer-review-rankings FILE     FILE is a CSV with Peer Review Rankings in it. This is the same set
-                                  as the judge data coming later, but without comments or individual
-                                  judge scores.
+  --judge-evaluation-csv FILE     FILE is a CSV file with a many to one relationshp
+                                  between judges and the proposals they evaluated,
+                                  with the extra data being their evaluation
 
   --pare ARG                      If ARG is a number, reduce the number of items to 1/ARG.  If
                                   ARG begins with +, then ARG is a comma separated list of
@@ -73,7 +73,7 @@ def main():
             [
                 "proposals-csv=",
                 "tdc-config-dir=",
-                "peer-review-rankings=",
+                "judge-evaluation-csv=",
                 "attachments-dir=",
                 "pare=",
                 "csv-only",
@@ -86,7 +86,7 @@ def main():
     proposals_csv = None
     attachments_dir = None
     tdc_config_dir = None
-    peer_review_rankings = None
+    judge_evaluation_csv = None
     pare = None
     csv_only = False
     for o, a in opts:
@@ -98,8 +98,8 @@ def main():
             csv_only = True
         elif o == "--tdc-config-dir":
             tdc_config_dir = a
-        elif o == "--peer-review-rankings":
-            peer_review_rankings_csv = a
+        elif o == "--judge-evaluation-csv":
+            judge_evaluation_csv = a
         elif o == "--attachments-dir":
             attachments_dir = a
         else:
@@ -126,18 +126,16 @@ def main():
     comp.process_cells_special("Budget data", competition.BudgetTableProcessor())
 
     comp.add_supplemental_information(
-        competition.EvaluationRankingsAdder(
-            peer_review_rankings_csv,
+        competition.EvaluationAdder(
             "Judge",
-            "\ufeffApplication #",
-            "Overall Rank",
-            "Score Total",
-            [
-                {"name": "Transformative", "source_col_name": "Trait 1 Score"},
-                {"name": "Equitable", "source_col_name": "Trait 2 Score"},
-                {"name": "Innovative", "source_col_name": "Trait 3 Score"},
-                {"name": "Feasible", "source_col_name": "Trait 4 Score"},
-            ],
+            judge_evaluation_csv,
+            app_col_name="Application #",
+            score_rank_normalized_col_name="OverallScoreRankNormalized",
+            sum_of_scores_normalized_col_name="SumOfScoresNormalized",
+            trait_col_name="Trait",
+            score_normalized_col_name="TraitScoreNormalized",
+            comments_col_name="TraitJudgeComment",
+            comments_score_normalized_col_name="TraitScoreNormalized",
         )
     )
 
