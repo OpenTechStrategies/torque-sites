@@ -12,21 +12,28 @@
 wfLoadExtension( 'PluggableAuth' );
 $wgPluggableAuth_EnableAutoLogin = true;
 
+# If the EnableLocalLogin flag is set out in the competition LocalSettings file, we will
+# do nothing, and just trust that you know what you're doing.
 if(!isset($wgPluggableAuth_EnableLocalLogin)) {
+  # This must be set to true in order to allow mediawiki to do things like create
+  # users from the commandline, or access things in the ETL pipeline and log in from
+  # outside sources
   $wgPluggableAuth_EnableLocalLogin = true;
-}
 
-# This is for competitions that have disabled local logins so people
-# like developers can still access the wiki without SSO.
-#
-# We hijack at the top level if someone who knows what they are doing
-# puts in a get arg before the first redirect even happens
-if(array_key_exists('locallogin', $_GET)) {
-  setcookie('locallogin', $_GET['locallogin'], time() + 3600, '/');
-  $wgPluggableAuth_EnableLocalLogin = $_GET['locallogin'] == "on";
-}
-if(array_key_exists('locallogin', $_COOKIE)) {
-  $wgPluggableAuth_EnableLocalLogin = $_COOKIE['locallogin'] == "on";
+  # But if the user is coming from web, as in, not from the API and the REQUEST URI exists,
+  # then force the local login
+  if(array_key_exists('REQUEST_URI', $_SERVER)) {
+    $wgPluggableAuth_EnableLocalLogin = (substr($_SERVER['REQUEST_URI'], 0, strlen("/{{ competition_name }}/api.php")) == "/{{ competition_name }}/api.php");
+  }
+
+  # When there are accounts that need to use local logins, in extreme circumstances,
+  # they will be given a link to the a page that sets this cookie.  Also useful for
+  # developers who want to sign in as a local test acocunt for UI evaluation
+  #
+  # This cookie is set by the locallogin.php file
+  if(array_key_exists('locallogin', $_COOKIE)) {
+    $wgPluggableAuth_EnableLocalLogin = $_COOKIE['locallogin'] == "on";
+  }
 }
 
 $wgPluggableAuth_EnableLocalProperties = false;

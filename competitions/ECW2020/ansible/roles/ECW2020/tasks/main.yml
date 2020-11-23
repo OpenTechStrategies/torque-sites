@@ -28,15 +28,8 @@
     block: |
       $wgPickSomeNumberOfPicks = 10;
 
-# Contrary to above, THIS override needs to be set before loading the pluggable
-# auth stuff, or else it overwrites the variable that may be set by the localloggin override.
+# Remove old legacy config
 - name: Override base pluggable auth config
   blockinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
-    insertbefore: "## BEGIN ANSIBLE PLUGGABLEAUTH/SIMPLSAML CONFIG"
     marker: "## {mark} ANSIBLE PLUGABLE AUTH OVERRIDE CONFIG"
-    block: |
-      # We only potentially set to false if coming in from the web
-      if(array_key_exists('REQUEST_URI', $_SERVER)) {
-        $wgPluggableAuth_EnableLocalLogin = (substr($_SERVER['REQUEST_URI'], 0, 17) == "/ECW2020/api.php");
-      }

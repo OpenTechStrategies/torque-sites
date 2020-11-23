@@ -1,30 +1,17 @@
 ---
 
-# Because the overrides MUST come after the originals (loaded from include statements)
-# in LocalSettings, we delete the overrides from the file, and then re-insert them to
-# ensure that they comes at the end of the LocalSettings file
 - name: Clear pluggable auth override config
   blockinfile:
     marker: "## {mark} ANSIBLE PLUGABLE AUTH OVERRIDE CONFIG"
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
 
+# Because the overrides MUST come after the originals (loaded from include statements)
+# in LocalSettings, we delete the overrides from the file, and then re-insert them to
+# ensure that they comes at the end of the LocalSettings file
 - name: Clear picksome override config
   blockinfile:
     marker: "## {mark} ANSIBLE PICKSOME OVERRIDE CONFIG"
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
-
-# Contrary to above, THIS override needs to be set before loading the pluggable
-# auth stuff, or else it overwrites the variable that may be set by the localloggin override.
-- name: Override base pluggable auth config
-  blockinfile:
-    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
-    insertbefore: "## BEGIN ANSIBLE PLUGGABLEAUTH/SIMPLSAML CONFIG"
-    marker: "## {mark} ANSIBLE PLUGABLE AUTH OVERRIDE CONFIG"
-    block: |
-      # We only potentially set to false if coming in from the web
-      if(array_key_exists('REQUEST_URI', $_SERVER)) {
-        $wgPluggableAuth_EnableLocalLogin = (substr($_SERVER['REQUEST_URI'], 0, 22) == "/100Change2020/api.php");
-      }
 
 - name: Override some PickSome Variables
   blockinfile:

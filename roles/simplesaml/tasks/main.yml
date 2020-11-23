@@ -42,3 +42,8 @@
   blockinfile:
     marker: "## {mark} ANSIBLE CHANGE LOGIN ORDERING"
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+
+- name: Transfer locallogin.php
+  template:
+    src: locallogin.php.j2
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/locallogin.php"
