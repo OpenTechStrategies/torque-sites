@@ -10,3 +10,10 @@
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     regexp: ^\$wgLogo = .*
     line: $wgLogo = "$wgResourceBasePath/resources/assets/100Change-logo150.png";
+
+- name: Override base pluggable auth config
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE PLUGABLE AUTH OVERRIDE CONFIG"
+    block: |
+      $wgPluggableAuth_EnableLocalLogin = true;

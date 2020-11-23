@@ -4,20 +4,20 @@
   become: true
   become_user: "{{ deployment_user }}"
   roles:
-    #    - mediawiki
-    #    - activitylog
-    #    - collection
-    #    - embed_video
-    #    - permissions
-    #    # PickSome has to come after collection so the left menu bar is correct
-    #    - picksome
-    #    - simplefavorites
-    #    - simplesaml
-    #    - teamcomments
-    #    - torquedataconnect
+    - mediawiki
+    - activitylog
+    - collection
+    - embed_video
+    - permissions
+    # PickSome has to come after collection so the left menu bar is correct
+    - picksome
+    - simplefavorites
+    - simplesaml
+    - teamcomments
+    - torquedataconnect
     - ECW2020
-    #    # This should always go last, to run db updates and restart
-    #    - finishmediawiki
+    # This should always go last, to run db updates and restart
+    - finishmediawiki
 
 - hosts: simplesaml
   become: true

@@ -1,0 +1,7 @@
+<?php
+  # Set this cookie to expire in a year, as anyone who is using local login will
+  # probably want to use it forever.
+  setcookie('locallogin', "on", time() + (60 * 60 * 24 * 365), '/{{ competition_name }}/');
+
+  header("Location: index.php");
+?>
