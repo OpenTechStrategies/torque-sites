@@ -19,3 +19,15 @@
       $wgTorqueDataConnectMultiWikiConfig = [];
       $wgTorqueDataConnectMultiWikiConfig["GVLLIIA2020"] = "LLIIA2020";
       $wgTorqueDataConnectMultiWikiConfig["GVLoneStar2020"] = "LoneStar2020";
+
+- name: Install Team Comments Disabler
+  copy:
+    src: disableteamcomments.php
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/torque-sites-config/"
+
+- name: Enable Team Comments Disabler
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE DISABLE TEAM COMMENTS"
+    block: |
+      include "{{ mediawiki_install_directory }}/mediawiki-1.33.0/torque-sites-config/disableteamcomments.php";
