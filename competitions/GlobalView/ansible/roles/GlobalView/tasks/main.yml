@@ -17,8 +17,8 @@
     marker: "## {mark} ANSIBLE PICKSOME OVERRIDE CONFIG"
     block: |
       $wgTorqueDataConnectMultiWikiConfig = [];
-      $wgTorqueDataConnectMultiWikiConfig["GVLLIIA2020"] = "LLIIA2020";
-      $wgTorqueDataConnectMultiWikiConfig["GVLoneStar2020"] = "LoneStar2020";
+      $wgTorqueDataConnectMultiWikiConfig["LLIIA2020"] = "GVLLIIA2020";
+      $wgTorqueDataConnectMultiWikiConfig["LoneStar2020"] = "GVLoneStar2020";
 
 - name: Install Team Comments Disabler
   copy:
