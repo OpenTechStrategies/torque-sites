@@ -24,6 +24,9 @@
   border-bottom:2px solid black;
   margin:auto 0.25em;
 }
+.torque-wrapper .mw-editsection {
+  display:none;
+}
 @media print {
   .firstHeading {
     display:none;
