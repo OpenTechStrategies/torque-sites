@@ -25,6 +25,7 @@ Usage:
        --proposals-csv=PROPOSALS_CSV \\
        --attachments-dir=ATTACHMENTS_DIR \\
        --judge-evaluation-csv=JUDGE_EVALUATION_CSV \\
+       --expert-panel-evaluation-csv=EXPERT_PANEL_EVALUATION_CSV \\
        --tdc-config-dir=TDC_CONFIG_DIR \\
        --pare=PARE \\
        --csv-only
@@ -40,6 +41,10 @@ Command-line options:
   --judge-evaluation-csv FILE     FILE is a CSV file with a many to one relationshp
                                   between judges and the proposals they evaluated,
                                   with the extra data being their evaluation
+
+  --expert-panel-evaluation-csv FILE    FILE is a CSV file with a row for each proposal
+                                  that includes the rank and scoring for the expert panel
+                                  review, but none of the comments.
 
   --tdc-config-dir DIR            DIR is the location for files that are the base configuration files
                                   needed by TorqueDataConnect, and can be optionally, manually, put on
@@ -73,6 +78,7 @@ def main():
             [
                 "proposals-csv=",
                 "judge-evaluation-csv=",
+                "expert-panel-evaluation-csv=",
                 "tdc-config-dir=",
                 "attachments-dir=",
                 "pare=",
@@ -85,6 +91,7 @@ def main():
 
     proposals_csv = None
     judge_evaluation_csv = None
+    expert_panel_evaluation_csv = None
     attachments_dir = None
     tdc_config_dir = None
     pare = None
@@ -98,6 +105,8 @@ def main():
             csv_only = True
         elif o == "--judge-evaluation-csv":
             judge_evaluation_csv = a
+        elif o == "--expert-panel-evaluation-csv":
+            expert_panel_evaluation_csv = a
         elif o == "--tdc-config-dir":
             tdc_config_dir = a
         elif o == "--attachments-dir":
@@ -144,7 +153,21 @@ def main():
                 comments_score_normalized_col_name="TraitScoreNormalized",
             )
         )
-    comp.sort("Organization Name")
+    if expert_panel_evaluation_csv is not None:
+        comp.add_supplemental_information(
+            competition.EvaluationAdder(
+                "Panel",
+                expert_panel_evaluation_csv,
+                app_col_name="Application #",
+                score_rank_normalized_col_name="OverallScoreRankNormalized",
+                sum_of_scores_normalized_col_name="SumOfScoresNormalized",
+                trait_col_name="Trait",
+                score_normalized_col_name="TraitScoreNormalized",
+                comments_col_name="TraitJudgeComment",
+                comments_score_normalized_col_name="TraitScoreNormalized",
+            )
+        )
+    comp.sort("Panel Overall Score Rank Normalized", True)
 
     list_toc = toc.ListToc("All_Proposals")
 
@@ -175,7 +198,7 @@ def main():
                 "right_aligned": True,
             },
             {
-                "name": "Judge Overall Score Rank Normalized",
+                "name": "Panel Overall Score Rank Normalized",
                 "heading": "Rank",
                 "right_aligned": True,
             },
