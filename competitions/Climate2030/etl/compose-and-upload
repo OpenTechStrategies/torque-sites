@@ -26,6 +26,7 @@ Usage:
        --attachments-dir=ATTACHMENTS_DIR \\
        --judge-evaluation-csv=JUDGE_EVALUATION_CSV \\
        --expert-panel-evaluation-csv=EXPERT_PANEL_EVALUATION_CSV \\
+       --lfc-analysis-pages=LFC_ANALYSIS_APGES_DAT \\
        --tdc-config-dir=TDC_CONFIG_DIR \\
        --pare=PARE \\
        --csv-only
@@ -51,6 +52,9 @@ Command-line options:
                                   the torque wiki.  We don't automatically do that because we want to
                                   overwrite the configuration out there.
 
+  --lfc-analysis-pages FILE       FILE is a simle newline separated list of proposal keys
+                                  for which LFC Analysis pages should be generated.
+
   --pare ARG                      If ARG is a number, reduce the number of items to 1/ARG.  If
                                   ARG begins with +, then ARG is a comma separated list of
                                   keys to include.  If ARG begins with @, then ARG is a
@@ -69,6 +73,32 @@ import sys
 import os
 
 
+class LFCAnalysisAdder(competition.InformationAdder):
+    """Adds the columns for the LFC Analysis, all empty because these
+    cells are there to be edited upon later"""
+
+    def column_names(self):
+        return [
+            "LFC Analysis: Recommendation",
+            "LFC Analysis: Short Description",
+            "LFC Analysis: Overview",
+            "LFC Analysis: IMPACTFUL Summary",
+            "LFC Analysis: FEASIBLE Summary",
+            "LFC Analysis: SCALABILITY Summary",
+            "LFC Analysis: DURABLE Summary",
+            "LFC Analysis: Strength of Approach",
+            "LFC Analysis: Risks and Challenges",
+            "LFC Analysis: Internet Scan",
+            "LFC Analysis: Diversity, Equity and Inclusion",
+            "LFC Analysis: Observations",
+            "LFC Analysis: Financial Overview",
+            "LFC Analysis: Funding Overview",
+        ]
+
+    def cell(self, proposal, column_name):
+        return ""
+
+
 def main():
     """Compose the LFC input and emit it as html-ized csv."""
     try:
@@ -79,6 +109,7 @@ def main():
                 "proposals-csv=",
                 "judge-evaluation-csv=",
                 "expert-panel-evaluation-csv=",
+                "lfc-analysis-pages=",
                 "tdc-config-dir=",
                 "attachments-dir=",
                 "pare=",
@@ -92,6 +123,7 @@ def main():
     proposals_csv = None
     judge_evaluation_csv = None
     expert_panel_evaluation_csv = None
+    lfc_analysis_pages = None
     attachments_dir = None
     tdc_config_dir = None
     pare = None
@@ -107,6 +139,8 @@ def main():
             judge_evaluation_csv = a
         elif o == "--expert-panel-evaluation-csv":
             expert_panel_evaluation_csv = a
+        elif o == "--lfc-analysis-pages":
+            lfc_analysis_pages = a
         elif o == "--tdc-config-dir":
             tdc_config_dir = a
         elif o == "--attachments-dir":
@@ -167,6 +201,7 @@ def main():
                 comments_score_normalized_col_name="TraitScoreNormalized",
             )
         )
+    comp.add_supplemental_information(LFCAnalysisAdder())
     comp.sort("Panel Overall Score Rank Normalized", True)
 
     list_toc = toc.ListToc("All_Proposals")
@@ -322,6 +357,15 @@ def main():
             "Evaluations of %s" % proposal.cell("MediaWiki Title"),
             "{{ #tdcrender:Climate2030/id/" + proposal.key() + ".mwiki|Evaluations }}",
         )
+
+    with open(lfc_analysis_pages) as f:
+        for key in f.read().splitlines():
+            if key in comp.proposals:
+                proposal = comp.proposals[key]
+                my_wiki.create_page(
+                    "LFC Analysis of %s" % proposal.cell("MediaWiki Title"),
+                    "{{ #tdcrender:Climate2030/id/" + key + ".mwiki|LFCAnalysis }}",
+                )
 
 
 if __name__ == "__main__":
