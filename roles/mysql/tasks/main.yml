@@ -14,7 +14,7 @@
   become_user: root
   mysql_user:
     login_password: "{{ mysql_root_password }}"
-    name: wikiuser
+    name: "{{ db_username }}"
     password: "{{ db_password }}"
     state: present
-    priv: "*.*:ALL"
+    priv: "{{ competition_name }}.*:ALL"

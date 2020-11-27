@@ -13,7 +13,7 @@
   become_user: postgres
   postgresql_user:
     login_password: "{{ postgres_root_password }}"
-    name: wikiuser
+    name: "{{ db_username }}"
     password: "{{ db_password }}"
     state: present
 
@@ -21,6 +21,6 @@
   become: true
   become_user: postgres
   postgresql_db:
-    name: 100Change2017
+    name: "{{ competition_name }}"
     state: present
-    owner: wikiuser
+    owner: "{{ db_username }}"

@@ -1,4 +1,30 @@
 ---
+- name: install prerequisites
+  become_user: root
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+    state: present
+  loop:
+    # These are MariaDB in Debian, and Oracle's MySQL in Ubuntu
+    - default-mysql-server
+    - default-mysql-client
+    - python-mysqldb # This is needed for ansible
+
+- name: Create a new database
+  become_user: root
+  mysql_db:
+    name: simplesamlphp
+    state: present
+
+- name: Create database user
+  become_user: root
+  mysql_user:
+    login_password: "{{ mysql_root_password }}"
+    name: "{{ db_username }}"
+    password: "{{ db_password }}"
+    state: present
+    priv: "simplesamlphp.*:ALL"
 
 - name: install prerequisites
   become_user: root
@@ -80,13 +106,13 @@
   lineinfile:
     path: "{{ simplesaml_install_directory }}/simplesamlphp-1.18.4/config/config.php"
     regexp: "'store.sql.dsn' *=> *'.*',"
-    line: "    'store.sql.dsn' => 'mysql:host=localhost;dbname=lfc',"
+    line: "    'store.sql.dsn' => 'mysql:host=localhost;dbname=simplesamlphp',"
 
 - name: Change db username
   lineinfile:
     path: "{{ simplesaml_install_directory }}/simplesamlphp-1.18.4/config/config.php"
     regexp: "'store.sql.username' *=> .*,"
-    line: "    'store.sql.username' => 'wikiuser',"
+    line: "    'store.sql.username' => '{{ db_username }}',"
 
 - name: Change db password
   lineinfile:

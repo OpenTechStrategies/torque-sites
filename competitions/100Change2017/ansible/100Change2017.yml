@@ -20,9 +20,3 @@
     - 100Change2017
     # This should always go last, to run db updates and restart
     - finishmediawiki
-
-- hosts: simplesaml
-  become: true
-  become_user: "{{ deployment_user }}"
-  roles:
-    - simplesaml

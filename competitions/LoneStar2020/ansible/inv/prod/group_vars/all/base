@@ -1,5 +1,6 @@
 ---
 competition_name: LoneStar2020
+db_username: LoneStar2020_rw
 torquedataconnect_sheet_name: LoneStar2020
 html_directory: /var/www/html
 mediawiki_install_directory: /home/deploy/LoneStar2020/
