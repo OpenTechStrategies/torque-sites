@@ -18,8 +18,11 @@ $wgGroupPermissions['*']['teamcomment'] = false;
 $wgGroupPermissions['*']['teamcommentseeusernames'] = false;
 
 # API Users
-$wgGroupPermissions['torqueapi']['read'] = true;
-$wgGroupPermissions['ForumOne']['read'] = true;
+$wgGroupPermissions['API_Candid']['read'] = true;
+$wgGroupPermissions['API_ForumOne']['read'] = true;
+$wgGroupPermissions['API_ScalingScience']['read'] = true;
+$wgGroupPermissions['API_KFG']['read'] = true;
+$wgGroupPermissions['API_OTS']['read'] = true;
 
 # Log permissions (ability to see Special:Log)
 $wgAvailableRights[] = 'view-special-log';
