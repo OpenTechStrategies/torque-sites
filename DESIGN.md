@@ -183,7 +183,7 @@ describes a similar situation with SimpleSamlPHP.
 
 Currently, book creation in torque is done through a now-obsolete
 system that is what Wikipedia itself formerly used: the
-[Collection](ansible/thirdparty/extensions/Collection-REL1_33-8566dd1.tar.gz)
+[Collection](https://www.mediawiki.org/wiki/Extension:Collection)
 extension.  It depends on (among other things) mwlib, which uses
 Python 2.x not 3.x.  Wikipedia itself has temporarily disabled its
 Book Creator, which formerly used this extension, and posted a

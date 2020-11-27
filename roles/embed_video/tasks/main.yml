@@ -2,7 +2,7 @@
   
 - name: Install EmbedVideo
   unarchive:
-    src: "{{ playbook_dir }}/../../../thirdparty/extensions/EmbedVideo-v2.8.0.zip"
+    src: EmbedVideo-v2.8.0.zip
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
 - name: Patch EmbedVideo

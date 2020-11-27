@@ -22,7 +22,6 @@ The following is the subdirectories
 1. [base/](base/) - The base support systems needed for a torque-sites server
 2. [etl/](etl/) - Generalized ETL Pipeline
 3. [roles/](roles/) - Centralized set of ansible roles for competitions
-4. [thirdparty/](thirdparty/) - Supporting files
 5. [competitions/](competitions/) - The deployed competitions
 6. [scripts/](scripts/) - Miscellaneous scripts for use in conjunction with the project
 
