@@ -2,7 +2,7 @@
 
 - name: Install Collection
   unarchive:
-    src: "{{ playbook_dir }}/../../../thirdparty/extensions/Collection-REL1_33-8566dd1.tar.gz"
+    src: Collection-REL1_33-8566dd1.tar.gz
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/extensions/"
 
 - name: Transfer Config
