@@ -2,3 +2,4 @@
 html_directory: /var/www/html
 simplesaml_install_directory: /home/deploy/simplesaml/
 deployment_user: deploy
+db_username: simplesamlphp_rw

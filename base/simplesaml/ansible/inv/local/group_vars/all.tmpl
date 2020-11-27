@@ -22,7 +22,6 @@ simplesaml_install_directory: __INSTALLATION_DIRECTORY__
 # LC_CTYPE=C tr -c -d '0123456789abcdefghijklmnopqrstuvwxyz' </dev/urandom | dd bs=32 count=1 2>/dev/null;echo
 simplesaml_salt: __SALT__
 
-# The DB password for the wikiuser that the mediawiki instance users.
-# We shouldn't reuse it here, but that's some #techdebt we have to pay
-# in the future.
+# The DB credentials
+db_username: __YOUR_DB_USER_HERE__
 db_password: __YOUR_DB_PW_HERE__

@@ -74,7 +74,7 @@
     chdir: "{{ mediawiki_install_directory }}/mediawiki-1.33.0"
 
 - name: Create Wiki
-  command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/install.php --dbtype=mysql --dbserver=localhost --dbuser=wikiuser --dbpass=\"{{ db_password }}\" --dbname={{ competition_name }}  --scriptpath=\"/{{ competition_name }}\" --lang=en --pass=\"{{ mediawiki_admin_password }}\" \"{{ competition_name }}\" \"admin\""
+  command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/install.php --dbtype=mysql --dbserver=localhost --dbuser=\"{{ db_username }}\" --dbpass=\"{{ db_password }}\" --dbname={{ competition_name }}  --scriptpath=\"/{{ competition_name }}\" --lang=en --pass=\"{{ mediawiki_admin_password }}\" \"{{ competition_name }}\" \"admin\""
   args:
     creates: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
 
@@ -140,10 +140,10 @@
     line: $wgMainCacheType = CACHE_NONE;
 
 - name: Create mwlib user
-  command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/createAndPromote.php --force --dbuser=wikiuser --dbpass=\"{{ db_password }}\" \"{{ mediawiki_mwlib_username }}\" \"{{ mediawiki_mwlib_password }}\""
+  command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/createAndPromote.php --force --dbuser=\"{{ db_username }}\" --dbpass=\"{{ db_password }}\" \"{{ mediawiki_mwlib_username }}\" \"{{ mediawiki_mwlib_password }}\""
 
 - name: Create csv2wiki user
-  command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/createAndPromote.php --bot --force --dbuser=wikiuser --dbpass=\"{{ db_password }}\" \"{{ mediawiki_csv2wiki_username }}\" \"{{ mediawiki_csv2wiki_password }}\""
+  command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/createAndPromote.php --bot --force --dbuser=\"{{ db_username }}\" --dbpass=\"{{ db_password }}\" \"{{ mediawiki_csv2wiki_username }}\" \"{{ mediawiki_csv2wiki_password }}\""
 
 - name: Enable Common.css on Login Page
   blockinfile:

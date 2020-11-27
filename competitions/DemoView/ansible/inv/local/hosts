@@ -1,5 +1,5 @@
 [mediawiki]
 localhost  ansible_connection=local
 
-[simplesaml]
+[mysql]
 localhost  ansible_connection=local

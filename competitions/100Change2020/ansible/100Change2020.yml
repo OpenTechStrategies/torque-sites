@@ -1,5 +1,11 @@
 ---
 
+- hosts: mysql
+  become: true
+  become_user: "{{ deployment_user }}"
+  roles:
+    - mysql
+
 - hosts: mediawiki
   become: true
   become_user: "{{ deployment_user }}"
@@ -20,10 +26,3 @@
     - 100Change2020
     # This should always go last, to run db updates and restart
     - finishmediawiki
-
-- hosts: simplesaml
-  become: true
-  become_user: "{{ deployment_user }}"
-  roles:
-  - simplesaml
-
