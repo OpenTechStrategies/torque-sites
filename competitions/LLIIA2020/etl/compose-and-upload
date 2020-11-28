@@ -105,17 +105,6 @@ class LFCAnalysisAdder(competition.InformationAdder):
         return ""
 
 
-def create_column_types_row(header_row):
-    """Declaration of the types different columns in the spreadsheet have,
-    expressed as a row of strings that torque understands."""
-
-    column_types = {
-        "Priority Populations": "list",
-        "Key Words and Phrases": "list",
-        "Budget Data": "json",
-    }
-
-
 class BudgetDataAdder(competition.InformationAdder):
     """Takes a BUDGET_CSV which represents a csv with budget information.
     The information is in column 7, while the application number to match
@@ -153,7 +142,7 @@ class BudgetDataAdder(competition.InformationAdder):
             self.budget_data[application_id] = budget_row_data
 
     def column_type(self, column_name):
-        return "list"
+        return "json"
 
     def column_names(self):
         return ["Budget Data"]
@@ -275,6 +264,7 @@ def main():
     if budget_csv is not None:
         comp.add_supplemental_information(BudgetDataAdder(budget_csv))
 
+    comp.process_cells_special("Total Projected Costs", competition.NumberCommaizer())
     comp.process_cells_special("Priority Populations", competition.MultiLineProcessor())
     comp.process_cells_special(
         "Key Words and Phrases", competition.MultiLineProcessor()
