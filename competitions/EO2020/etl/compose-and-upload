@@ -366,9 +366,35 @@ def main():
 
     comp.add_toc(toc.GenericToc("Topic_TOC", "Thematic Area"))
     comp.add_toc(toc.GenericMultiLineToc("Population_TOC", "Priority Populations"))
-    comp.add_toc(toc.ListToc("AllProposals"))
+    proposal_formatter = toc.WikiTableTocProposalFormatter(
+        [
+            {
+                "name": "Organization Name",
+                "heading": "Organization",
+            },
+            {
+                "name": "Project Title",
+                "heading": "Title",
+                "link": True,
+            },
+            {
+                "name": "Application #",
+                "heading": "ID #",
+                "right_aligned": True,
+            },
+            {
+                "name": "Judge Overall Score Rank Normalized",
+                "heading": "Rank",
+                "right_aligned": True,
+            },
+        ]
+    )
+    all_proposals = toc.ListToc("AllProposals")
+    all_proposals.proposal_formatter = proposal_formatter
+    comp.add_toc(all_proposals)
 
-    top25 = toc.ListToc("Top25")
+    top25 = toc.ListToc("Top_25")
+    top25.proposal_formatter = proposal_formatter
     top25.proposals = comp.ordered_proposals()[0:25]
     comp.add_toc(top25)
 
@@ -378,7 +404,8 @@ def main():
 
     with open(top13_data_file) as f:
         top13_data = f.read().splitlines()
-        top13 = toc.ListToc("Top13")
+        top13 = toc.ListToc("Top_13")
+        top13.proposal_formatter = proposal_formatter
         top13.proposals = [comp.proposals[k] for k in top13_data]
         comp.add_toc(top13)
 

@@ -171,7 +171,31 @@ def main():
     comp.add_supplemental_information(attachments)
 
     comp.sort("Judge Overall Score Rank Normalized", True)
-    comp.add_toc(toc.ListToc("AllProposals"))
+    list_toc = toc.ListToc("AllProposals")
+    list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
+        [
+            {
+                "name": "Organization Name",
+                "heading": "Organization",
+            },
+            {
+                "name": "Project Title",
+                "heading": "Title",
+                "link": True,
+            },
+            {
+                "name": "Application #",
+                "heading": "ID #",
+                "right_aligned": True,
+            },
+            {
+                "name": "Judge Overall Score Rank Normalized",
+                "heading": "Rank",
+                "right_aligned": True,
+            },
+        ]
+    )
+    comp.add_toc(list_toc)
     comp.add_toc(toc.GenericMultiLineToc("Population", "Priority Populations"))
     comp.add_toc(toc.GenericToc("Topic", "Primary Subject Area"))
 
