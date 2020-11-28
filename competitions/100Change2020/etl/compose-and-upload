@@ -534,7 +534,34 @@ def main():
 
     comp.add_toc(toc.GenericToc("Topic_TOC", "Primary Subject Area Category"))
     comp.add_toc(toc.GenericMultiLineToc("Population_TOC", "Priority Populations"))
-    comp.add_toc(toc.ListToc("AllProposals"))
+
+    table_toc_formatter = toc.WikiTableTocProposalFormatter(
+        [
+            {
+                "name": "Organization Legal Name",
+                "heading": "Organization",
+            },
+            {
+                "name": "Project Title",
+                "heading": "Title",
+                "link": True,
+            },
+            {
+                "name": "Review Number",
+                "heading": "ID #",
+                "right_aligned": True,
+            },
+            {
+                "name": "Wise Head Overall Score Rank Normalized",
+                "heading": "Rank",
+                "right_aligned": True,
+            },
+        ]
+    )
+
+    all_proposals = toc.ListToc("AllProposals")
+    all_proposals.proposal_formatter = table_toc_formatter
+    comp.add_toc(all_proposals)
 
     finalist_candidates = toc.ListToc("Finalist_Candidates")
     finalist_candidates.proposals = [
@@ -546,6 +573,7 @@ def main():
         )
         and p.cell("TR Disqualified") != "TR Disqualified"
     ]
+    finalist_candidates.proposal_formatter = table_toc_formatter
     comp.add_toc(finalist_candidates)
 
     comp.add_toc(

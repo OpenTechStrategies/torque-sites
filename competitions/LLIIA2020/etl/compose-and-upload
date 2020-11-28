@@ -287,7 +287,32 @@ def main():
 
     comp.sort("Panel Overall Score Rank Normalized", True)
 
-    comp.add_toc(toc.ListToc("All_Proposals"))
+    list_toc = toc.ListToc("All_Proposals")
+    list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
+        [
+            {
+                "name": "Organization Name",
+                "heading": "Organization",
+            },
+            {
+                "name": "Project Title",
+                "heading": "Title",
+                "link": True,
+            },
+            {
+                "name": "Application #",
+                "heading": "ID #",
+                "right_aligned": True,
+            },
+            {
+                "name": "Panel Overall Score Rank Normalized",
+                "heading": "Rank",
+                "right_aligned": True,
+            },
+        ]
+    )
+    comp.add_toc(list_toc)
+
     comp.add_toc(toc.GenericMultiLineToc("Population_TOC", "Priority Populations"))
     comp.add_toc(toc.GenericMultiLineToc("Keyword_TOC", "Key Words and Phrases"))
 
