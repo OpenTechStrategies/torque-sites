@@ -45,9 +45,12 @@ class TocProposalFormatter:
     in grouped TOCs, this formatter will be applied to each section that has
     a list of proposals."""
 
-    def prefix(self):
+    def prefix(self, group_var_name):
         """The PREFIX of the section containing a list of proposals.  To be
-        added out before each list is done."""
+        added out before each list is done.  GROUP_VAR_NAME names the
+        what the group will be called in the template.  It's icnluded in the
+        prefix in case the prefix needs to collect general information about
+        the group."""
         return ""
 
     def format_proposal(self, group_var_name, id_var_name):
@@ -110,10 +113,24 @@ class WikiTableTocProposalFormatter(TocProposalFormatter):
         """
         self.column_definitions = column_definitions
 
-    def prefix(self):
+    def prefix(self, group_var_name):
         template = '{| class="wikitable sortable" style="border-style: solid; border-color: gray; border-width: 5px;"\n'
         for column_def in self.column_definitions:
+            # This conditional is whether the viewer has permissions to this column, which
+            # we ascertain by looking at the first proposal in the list
+            if "name" in column_def:
+                template += (
+                    "{%% if %s|length == 0 or '%s' in (%s.values()|list|first) -%%}\n"
+                    % (
+                        group_var_name,
+                        column_def["name"],
+                        group_var_name,
+                    )
+                )
             template += "! %s\n" % column_def["heading"]
+
+            if "name" in column_def:
+                template += "{% endif -%}\n"
         return template
 
     def format_proposal(self, group_var_name, id_var_name):
@@ -125,6 +142,12 @@ class WikiTableTocProposalFormatter(TocProposalFormatter):
             link = column_def.get("link", False)
             right_aligned = column_def.get("right_aligned", False)
 
+            if "name" in column_def:
+                template += "{%% if '%s' in %s[%s] -%%}\n" % (
+                    column_def["name"],
+                    group_var_name,
+                    id_var_name,
+                )
             template += "| "
 
             template += " style='vertical-align:top;"
@@ -158,6 +181,9 @@ class WikiTableTocProposalFormatter(TocProposalFormatter):
                 template += "]]"
 
             template += "\n"
+            if "name" in column_def:
+                template += "{% endif -%}\n"
+
         return template
 
     def suffix(self):
@@ -225,7 +251,7 @@ class GenericToc(Toc):
         # This line is so that we can have counts and still link into it
         template += "<div id='{{ group_name }}'></div>\n"
         template += "= {{ group_name }} ({{ proposals_in_group|length }}) =\n"
-        template += self.proposal_formatter.prefix()
+        template += self.proposal_formatter.prefix(self.competition_name)
         template += "        {%- for proposal_id in proposals_in_group %}\n"
         template += self.proposal_formatter.format_proposal(
             self.competition_name, "proposal_id"
@@ -282,7 +308,7 @@ class ListToc(Toc):
         self.keys = [p.key() for p in self.proposals]
 
     def template_file(self):
-        template = self.proposal_formatter.prefix()
+        template = self.proposal_formatter.prefix(self.competition_name)
         template += "{% for proposal_id in proposal_ids %}\n"
         template += (
             "    {%%- if proposal_id in %s.keys() -%%}\n" % self.competition_name
@@ -378,7 +404,7 @@ class GeographicToc(Toc):
                 "=" * (i + 1),
             )
 
-        template += self.proposal_formatter.prefix()
+        template += self.proposal_formatter.prefix(self.competition_name)
 
         template += "{% endif -%}\n"
         template += self.proposal_formatter.format_proposal(
