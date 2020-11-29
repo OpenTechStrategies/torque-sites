@@ -89,8 +89,10 @@ like this:
 
 We use the same authorization groups across competitions whenever
 possible, since access patterns tend to be the same.  The roles we've
-settled on are as follows (the "LFC" prefix helps MacFound IT track
-them in Okta):
+settled on are listed below (the "LFC" prefix helps MacFound IT track
+them in Okta).  See
+[roles/permissions/files/default-permissions.php](roles/permissions/files/default-permissions.php)
+for technical details of each role's access permissions.
 
 - **`LFC Evaluators`**
 

@@ -286,10 +286,6 @@ For the competition you're working with, run the instructions from
 
 ### Post-installation checklist for new competition instances
 
-(Note: Many of the items in this checklist come from looking over
-`competition/<competition>/ansible/roles/mediawiki/tasks/main.yml`, as 
-[suggested by Frank](https://chat.opentechstrategies.com/#narrow/stream/45-Lever-for.20Change/topic/data/near/82255).)
-
 1. Replace the default Mediawiki logo block ("`$wg_logo`" etc) with the right logo(s):
    - Put the competition-specific logo in place for logged-in users.
    - If the competition is not confidential, the same logo can be displayed to non-logged in users;
