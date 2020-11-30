@@ -70,6 +70,33 @@ import os
 import csv
 
 
+class LFCAnalysisAdder(competition.InformationAdder):
+    """Adds the columns for the LFC Analysis, all empty because these
+    cells are there to be edited upon later"""
+
+    def column_names(self):
+        return [
+            "LFC Analysis: Recommendation",
+            "LFC Analysis: Short Description",
+            "LFC Analysis: Overview",
+            "LFC Analysis: Funder Relationship History",
+            "LFC Analysis: Transformative Summary",
+            "LFC Analysis: Equitable Summary",
+            "LFC Analysis: Innovative Summary",
+            "LFC Analysis: Feasible Summary",
+            "LFC Analysis: Strength of Approach",
+            "LFC Analysis: Risks and Challenges",
+            "LFC Analysis: Internet Scan",
+            "LFC Analysis: Diversity, Equity and Inclusion",
+            "LFC Analysis: Observations",
+            "LFC Analysis: Financial Overview",
+            "LFC Analysis: Funding Overview",
+        ]
+
+    def cell(self, proposal, column_name):
+        return ""
+
+
 class ApplicationDataAdder(competition.InformationAdder):
     """Very specific adder that takes a spreadsheet with some extra
     application data, keyed by Application #, and adds it to the
@@ -184,6 +211,8 @@ def main():
             comments_score_normalized_col_name="TraitScoreNormalized",
         )
     )
+
+    comp.add_supplemental_information(LFCAnalysisAdder())
 
     attachments = competition.BasicAttachments(
         comp.sorted_proposal_keys, attachments_dir
