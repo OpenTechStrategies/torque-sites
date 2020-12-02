@@ -225,6 +225,21 @@ $ $EDITOR base/simplesaml/inv/<environment>/group_vars/all/secret
 
 * Okta vs local login?  Both?  Some other SSO service?
 
+* If Okta is used, what should the Okta chiclet's name for this competiton be?
+
+  The Okta chiclet should identify the competition unambiguously and
+  should be recognizable to any reasonably informed user.  Here are
+  some examples:
+
+    - "100&Change (2020)"
+    - "Larsen/Lam ICONIQ Impact Award (2020)"
+    - "Lone Star (2020)"
+
+  Usually we just put the date in parentheses after the full name.
+  But there can be exceptions: with "Climate2030", for example, we
+  didn't put "(2020)" after it because that would be confusing given
+  the presence of a date in the competition's actual name.
+
 * What groups/roles will be accessing this competition's data?
 
   What permissions do the groups need, especially regarding
