@@ -1,6 +1,6 @@
 ---
 competition_name: GVLLIIA2020
-db_username: LLIIA2020_rw
+db_username: GVLLIIA2020_rw
 torquedataconnect_sheet_name: LLIIA2020
 torquedata_server_port: 5003
 html_directory: /var/www/html
