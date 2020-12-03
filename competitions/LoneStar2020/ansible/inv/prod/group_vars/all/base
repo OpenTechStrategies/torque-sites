@@ -1,6 +1,6 @@
 ---
-competition_name: LoneStar2020
 competition_name: GVLoneStar2020
+db_username: GVLoneStar2020_rw
 torquedataconnect_sheet_name: LoneStar2020
 torquedata_server_port: 5003
 html_directory: /var/www/html

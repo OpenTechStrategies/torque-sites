@@ -1,6 +1,7 @@
 ---
 competition_name: GlobalView
 torquedataconnect_sheet_name: GlobalView
+db_username: GlobalView_rw
 torquedata_server_port: 5003
 
 html_directory: /var/www/html
