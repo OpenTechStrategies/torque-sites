@@ -88,75 +88,6 @@ import json
 import re
 
 
-class FinancialDataAdder(competition.InformationAdder):
-    """Very specific adder that takes a distinct financial data spreadsheet
-    gotten from LFC and turns it into a generic json that can be displayed.  This
-    is unique to LoneStar2020, and will probably not be duplicated.
-
-    Each sheet has a table of financials per year, and then a section for footnotes."""
-
-    def __init__(self, financial_sheets_dir):
-        self.financial_data = {}
-
-        for financial_csv_name in os.listdir(financial_sheets_dir):
-            key = re.sub("\.csv$", "", financial_csv_name)
-            financial_csv_file = os.path.join(financial_sheets_dir, financial_csv_name)
-
-            proposal_financial_data = {}
-
-            reader = csv.reader(
-                open(financial_csv_file),
-                delimiter=",",
-                quotechar='"',
-                lineterminator="\n",
-            )
-
-            header = next(reader)
-            proposal_financial_data["years"] = header[1:]
-
-            proposal_financial_data["line_items"] = []
-            for row in reader:
-                if len(row) == 0 or not row[0]:
-                    break
-
-                # This is some serious special casing to recreate the formatting in xlsx
-                items = []
-                for item in row[1:]:
-                    try:
-                        float_item = float(item)
-                        if "As percent" in row[0] or "Magnitude of" in row[0]:
-                            float_item_str = "{:.2f}%".format(abs(float_item) * 100)
-                        else:
-                            float_item_str = "{:.2f}".format(abs(float_item))
-
-                        if float_item < 0:
-                            items.append("({})".format(float_item_str))
-                        else:
-                            items.append(float_item_str)
-                    except:
-                        items.append(item)
-
-                line_item = {"name": row[0], "items": items}
-                proposal_financial_data["line_items"].append(line_item)
-
-            for row in reader:
-                if len(row) > 0 and row[0] == "Footnotes":
-                    break
-
-            proposal_financial_data["footnotes"] = utils.fix_cell(next(reader)[0])
-
-            self.financial_data[key] = proposal_financial_data
-
-    def column_type(self, column_name):
-        return "json"
-
-    def column_names(self):
-        return ["LFC Financial Data"]
-
-    def cell(self, proposal, column_name):
-        return json.dumps(self.financial_data.get(proposal.key(), {}))
-
-
 class LFCAnalysisAdder(competition.InformationAdder):
     """Adds the columns for the LFC Analysis, all empty because these
     cells are there to be edited upon later"""
@@ -338,7 +269,62 @@ def main():
     comp.add_supplemental_information(
         SolutionCategoryRankAdder(comp.proposals.values())
     )
-    comp.add_supplemental_information(FinancialDataAdder(financial_sheets_dir))
+    comp.add_supplemental_information(
+        competition.FinancialDataAdder(
+            financial_sheets_dir,
+            [
+                {"name": "revenues", "text": "Revenues"},
+                {"name": "expenses", "text": "Expenses (after depreciation)"},
+                {
+                    "name": "surplus",
+                    "text": "Unrestricted surplus (after depreciation)",
+                },
+                {
+                    "name": "surplus as percent",
+                    "text": "As percent of expenses",
+                    "percent": True,
+                },
+                {"name": "net assets", "text": "Unrestricted net assets"},
+                {
+                    "name": "months1",
+                    "text": "Months of liquid unrestricted net assets (LUNA)[1]",
+                },
+                {
+                    "name": "months2",
+                    "text": "Months of liquid unrestricted net assets (LUNA)[2]",
+                },
+                {
+                    "name": "months3",
+                    "text": "Months of liquid unrestricted net assets (LUNA)[3]",
+                },
+                {
+                    "name": "magnitude2",
+                    "text": "Magnitude of surplus / (deficits) [2] (change in unrestricted net assets / average expenses over time period)",
+                    "percent": True,
+                },
+                {
+                    "name": "magnitude2",
+                    "text": "Magnitude of surplus / (deficits)[2] (change in unrestricted net assets / average expenses over time period)",
+                    "percent": True,
+                },
+                {
+                    "name": "magnitude3",
+                    "text": "Magnitude of surplus / (deficits)[3] (change in unrestricted net assets / average expenses over time period)",
+                    "percent": True,
+                },
+                {
+                    "name": "magnitude3",
+                    "text": "Magnitude of surplus / (deficits)[3]  (change in unrestricted net assets / average expenses over time period)",
+                    "percent": True,
+                },
+                {
+                    "name": "magnitude4",
+                    "text": "Magnitude of surplus / (deficits)[4]  (change in unrestricted net assets / average expenses over time period)",
+                    "percent": True,
+                },
+            ],
+        )
+    )
 
     comp.sort("Panel Overall Score Rank Normalized", True)
 
