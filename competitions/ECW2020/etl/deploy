@@ -61,6 +61,8 @@ BASE_ATTACHMENTS="Shane Eggerman - ECWC_Registration_Application_datа copy 2.zi
 JUDGE_EVALUATION_CSV="Shane Eggerman - ECWC_Peer_Review_Data copy.csv"
 APPLICATION_DATA="ECW Application Data.xlsx"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
+FINANCIAL_DATA="ECW-BudgetTable.xlsx"
+FINANCIAL_SHEETS_DIR="${DATA_DIR}/financial-sheets/"
 TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
 RUNNER="${LFC_DIR}"/compose-and-upload
@@ -93,6 +95,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   gpg -o "${DATA_DIR}/${JUDGE_EVALUATION_CSV}" --decrypt "${ENCRYPTED_DIR}/${JUDGE_EVALUATION_CSV}.gpg" || exit 1
   gpg -o "${DATA_DIR}/${APPLICATION_DATA}" --decrypt "${ENCRYPTED_DIR}/${APPLICATION_DATA}.gpg" || exit 1
   gpg -o "${DATA_DIR}/${BASE_ATTACHMENTS}" --decrypt "${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg" || exit 1
+  gpg -o "${DATA_DIR}/${FINANCIAL_DATA}" --decrypt "${ENCRYPTED_DIR}/${FINANCIAL_DATA}.gpg" || exit 1
 
   xlsx2csv "$DATA_DIR/$APPLICATION_DATA" > "$DATA_DIR/${APPLICATION_DATA/xlsx/csv}"
 
@@ -107,6 +110,9 @@ if [ ! -d "${DATA_DIR}" ] ; then
   # Clean up large zips to save disk space
   rm "${DATA_DIR}/${BASE_ATTACHMENTS}"
   rm -rf ${DATA_DIR}/${TMP_ATTACHMENTS_DIR}
+
+  mkdir -p "${FINANCIAL_SHEETS_DIR}"
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n 943 > ${FINANCIAL_SHEETS_DIR}/943.csv
 fi
 
 if ! echo "9610a70406d9eb7d877f61435625b66449e5e2c6  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
@@ -125,6 +131,7 @@ ${RUNNER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
           --attachments-dir=${ATTACHMENTS_DIR} \
           --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
           --application-data="${DATA_DIR}/${APPLICATION_DATA/xlsx/csv}" \
+          --financial-sheets-dir=${FINANCIAL_SHEETS_DIR} \
           $PARE \
           $CSV_ONLY \
           --tdc-config-dir="${TDC_CONFIG_DIR}"

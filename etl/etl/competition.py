@@ -487,6 +487,130 @@ class MediaWikiTitleAdder(InformationAdder):
         return unidecode.unidecode_expect_nonascii(title).strip()
 
 
+class FinancialDataAdder(InformationAdder):
+    """Adder that takes a FINANCIAL_SHEETS_DIR, filled with csvs named
+    <Application #>.csv, as well as a DEFINITIONS dictionary that
+    determines how those are converted into a "LFC Financial Data"
+    field, of type json.  If the proposal number is not in the
+    FINANCIAL_SHEETS_DIR, then the empty object will be passed up.
+
+    The DEFINITIONS will be a list of definitions, of the form:
+
+    {
+        "name": String, the name in the eventual json
+        "text": String, the text of the first column to match against
+        "percent": Boolean, whether these numbers are percents or not.
+                   Defaults to False
+    }
+
+    The csv coming in should be of the type:
+
+    <ignored>,year1,year2,year3,...
+    <item1>,val,val,val,...
+    <item2>,val,val,val,...
+    <item3>,val,val,val,...
+    ,,,,
+    Footnotes
+    footnote1
+    footnote2
+    ...
+
+    Where the <item>s match the definition "text" exactly, and there are N
+    footnotes.
+
+    The exporting format is of the form:
+
+    {
+       "years": Array, list of years
+       "line_items": {
+           "name": name mathing the "name" field in the DEFINITIONS (above)
+           "data": Array of strings, list of Strings representing the data on those years
+       }
+       "footnoates": String, with a newline separated set of footnotes
+    }"""
+
+    def __init__(self, financial_sheets_dir, definitions):
+        self.financial_data = {}
+
+        for financial_csv_name in os.listdir(financial_sheets_dir):
+            key = re.sub("\.csv$", "", financial_csv_name)
+            financial_csv_file = os.path.join(financial_sheets_dir, financial_csv_name)
+
+            proposal_financial_data = {}
+
+            reader = csv.reader(
+                open(financial_csv_file),
+                delimiter=",",
+                quotechar='"',
+                lineterminator="\n",
+            )
+
+            header = next(reader)
+            proposal_financial_data["years"] = header[1:]
+
+            proposal_financial_data["line_items"] = []
+            hit_footnotes = False
+            for row in reader:
+                if len(row) == 0 or not row[0] or row[0].lower() == "footnotes":
+                    hit_footnotes = True
+                    break
+
+                item_string = row[0]
+                definition = None
+
+                for defi in definitions:
+                    if defi["text"] == item_string.strip():
+                        definition = defi
+
+                if definition is None:
+                    raise Exception(
+                        "Can't find definition for '%s'.  Aborting." % item_string
+                    )
+
+                # This is some serious special casing to recreate the formatting in xlsx
+                items = []
+                for item in row[1:]:
+                    try:
+                        float_item = float(item)
+                        if "percent" in definition and definition["percent"]:
+                            float_item_str = "{:.2f}%".format(abs(float_item) * 100)
+                        else:
+                            float_item_str = "{:.2f}".format(abs(float_item))
+
+                        if float_item < 0:
+                            items.append("({})".format(float_item_str))
+                        else:
+                            items.append(float_item_str)
+                    except ValueError:
+                        items.append(item)
+
+                line_item = {"name": definition["name"], "items": items}
+                proposal_financial_data["line_items"].append(line_item)
+
+            if not hit_footnotes:
+                for row in reader:
+                    if len(row) > 0 and row[0] == "Footnotes":
+                        break
+
+            footnotes = ""
+            for row in reader:
+                if len(row) > 0 and row[0]:
+                    footnotes += utils.fix_cell(row[0] + "\n")
+
+            proposal_financial_data["footnotes"] = footnotes
+
+            self.financial_data[key] = proposal_financial_data
+
+    def column_type(self, column_name):
+        return "json"
+
+    def column_names(self):
+        return ["LFC Financial Data"]
+
+    def cell(self, proposal, column_name):
+        return json.dumps(self.financial_data.get(proposal.key(), {}))
+
+
 @total_ordering
 class Attachment:
     """Represents an attachment on the file system, and handles special cases
