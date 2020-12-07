@@ -18,6 +18,8 @@ $wgGroupPermissions['*']['teamcomment'] = false;
 $wgGroupPermissions['*']['teamcommentseeusernames'] = false;
 
 # API-using groups
+# These are local login users (as that's required to use api.php) and so
+# will not have corresponding entries in the saml config
 $wgGroupPermissions['API_Candid']['read'] = true;
 $wgGroupPermissions['API_ForumOne']['read'] = true;
 $wgGroupPermissions['API_ScalingScience']['read'] = true;
@@ -77,11 +79,11 @@ $wgSimpleSAMLphp_SyncAllGroups_LocallyManaged = [
 ];
 
 $wgSimpleSAMLphp_GroupMap = [
-  'sysop' => ['groups' => ['LFC Torque Admin', 'LFC Staff']],
-  'interface-admin' => ['groups' => ['LFC Torque Admin', 'LFC Staff']],
-  'bureaucrat' => ['groups' => ['LFC Torque Admin', 'LFC Staff']],
+  'sysop' => ['groups' => ['LFC Torque Admin', 'LFC Staff', 'LFC Admins']],
+  'interface-admin' => ['groups' => ['LFC Torque Admin', 'LFC Staff', 'LFC Admins']],
+  'bureaucrat' => ['groups' => ['LFC Torque Admin', 'LFC Staff', 'LFC Admins']],
   'DecisionMakers' => ['groups' => ['LFC Decision Makers', 'Board Members']],
-  'PseudoDecisionMakers' => ['groups' => ['Pseudo Board Members']],
+  'PseudoDecisionMakers' => ['groups' => ['LFC Pseudo Decision Makers', 'Pseudo Board Members']],
   'LFCEvaluators' => ['groups' => ['LFC Consultants', 'LFC Evaluators']],
   'LFCResearchPartners' => ['groups' => ['LFC Research Partners']]
 ];
