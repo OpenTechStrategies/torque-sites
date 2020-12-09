@@ -17,7 +17,7 @@ $wgGroupPermissions['bot']['generated'] = true;
 $wgGroupPermissions['*']['teamcomment'] = false;
 $wgGroupPermissions['*']['teamcommentseeusernames'] = false;
 
-# API Users
+# API-using groups
 $wgGroupPermissions['API_Candid']['read'] = true;
 $wgGroupPermissions['API_ForumOne']['read'] = true;
 $wgGroupPermissions['API_ScalingScience']['read'] = true;
