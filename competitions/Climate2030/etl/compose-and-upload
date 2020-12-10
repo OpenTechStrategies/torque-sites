@@ -47,6 +47,10 @@ Command-line options:
                                   that includes the rank and scoring for the expert panel
                                   review, but none of the comments.
 
+  --financial-sheets-dir DIR      DIR is the location for financial data csvs in a very specific
+                                  format that's handled by FinancialDataAdder.  They get
+                                  transformed into json and then displayed on ont he LFC Analysis pages.
+
   --tdc-config-dir DIR            DIR is the location for files that are the base configuration files
                                   needed by TorqueDataConnect, and can be optionally, manually, put on
                                   the torque wiki.  We don't automatically do that because we want to
@@ -112,6 +116,7 @@ def main():
                 "lfc-analysis-pages=",
                 "tdc-config-dir=",
                 "attachments-dir=",
+                "financial-sheets-dir=",
                 "pare=",
                 "csv-only",
             ],
@@ -125,6 +130,7 @@ def main():
     expert_panel_evaluation_csv = None
     lfc_analysis_pages = None
     attachments_dir = None
+    financial_sheets_dir = None
     tdc_config_dir = None
     pare = None
     csv_only = False
@@ -145,6 +151,8 @@ def main():
             tdc_config_dir = a
         elif o == "--attachments-dir":
             attachments_dir = a
+        elif o == "--financial-sheets-dir":
+            financial_sheets_dir = a
         else:
             sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
             sys.exit(2)
@@ -202,19 +210,52 @@ def main():
             )
         )
     comp.add_supplemental_information(LFCAnalysisAdder())
+    comp.add_supplemental_information(
+        competition.FinancialDataAdder(
+            financial_sheets_dir,
+            [
+                {"name": "revenues", "text": "Revenues"},
+                {
+                    "name": "unrestricted2",
+                    "text": "% unrestricted [2]",
+                    "percent": True,
+                },
+                {"name": "expenses", "text": "Expenses (after depreciation)"},
+                {
+                    "name": "surplus",
+                    "text": "Unrestricted surplus (after depreciation)",
+                },
+                {
+                    "name": "months3",
+                    "text": "Months of liquid unrestricted net assets (LUNA) [3]",
+                },
+                {
+                    "name": "magnitudedeficits4",
+                    "text": "Magnitude of deficits  (change in unrestricted net assets / average expenses over time period) [4]",
+                    "percent": True,
+                },
+            ],
+        )
+    )
+
     comp.sort("Panel Overall Score Rank Normalized", True)
 
     list_toc = toc.ListToc("All_Proposals")
 
     def title_column(group_var_name, id_var_name):
         template = "[[{{ %s[%s]['%s'] }}|{{ %s[%s]['%s'] }}]]<br>" % (
-                group_var_name,
-                id_var_name,
-                competition.MediaWikiTitleAdder.title_column_name,
-                group_var_name,
-                id_var_name,
-                "Project Title")
-        template += "<div style='text-indent:20px'>{{ %s[%s]['%s'] }}</div>" % (group_var_name, id_var_name, "Project Description")
+            group_var_name,
+            id_var_name,
+            competition.MediaWikiTitleAdder.title_column_name,
+            group_var_name,
+            id_var_name,
+            "Project Title",
+        )
+        template += "<div style='text-indent:20px'>{{ %s[%s]['%s'] }}</div>" % (
+            group_var_name,
+            id_var_name,
+            "Project Description",
+        )
         return template
 
     list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
