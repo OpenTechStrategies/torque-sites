@@ -85,6 +85,54 @@ like this:
    applications section, with appropriate group set.
 2. Logins by that person will show up with Board member preferences.
 
+### "Local login" (i.e., regular, non-Okta MediaWiki login) is also possible.
+
+After
+[much](https://github.com/OpenTechStrategies/torque/wiki/Meeting-Notes#2020-11-20-10am-ct-meeting-about-printinguploads)
+[discussion](https://github.com/OpenTechStrategies/torque/wiki/Meeting-Notes#2020-11-19-11am-ct-regular-check-in-meeting),
+official policy is give normal wiki-using users Okta accounts, except
+maybe in the rarest of circumstances.
+
+However, regular MediaWiki logins can be created if necessary.  These
+are known as "local logins" (or "local-login" as the adjectival form:
+in case you were searching for it with the hyphen, congratulations,
+you found it).
+
+We sometimes use local-login accounts for testing, although now that
+OTS folks have Okta accounts that's less common.
+
+*Note that a local-login account must not have "@" in the username.*
+
+In other words, just make it a regular-looking MediaWiki username, not
+an email address the way Okta-based accounts are.  The reasons for
+this are described in [this
+conversation](https://chat.opentechstrategies.com/#narrow/stream/45-Lever-for.20Change/topic/Accounts/near/97563).
+
+Since someone can have both an Okta account and a local-login account,
+and since competition wikis typically redirect non-logged-in visitors
+straight to an Okta login page, you need ask for local login page
+explicitly, like this:
+
+      https://torque.leverforchange.org/COMPETITION/?locallogin=on
+
+(Note: The cookie will expire in an hour, and you can turn it off any
+time via `.../?locallogin=off`.)
+
+LFC Torque sites don't have a "logout" button, because normal users
+never need to log out -- Okta keeps them permanently logged in and
+re-prompts them for authentication information periodically.  But
+local-login users may need to log out explicitly (for example, to
+switch over to their Okta-based account).  Here's how to log out:
+
+      https://torque.leverforchange.org/COMPETITION/index.php/Special:UserLogout
+
+(Note that Frank Duncan [got a patch merged upstream into MediaWiki's
+PluggableAuth extension](https://gerrit.wikimedia.org/r/c/mediawiki/extensions/PluggableAuth/+/589849)
+so that MediaWiki will show a logout button when a user is locally
+logged in (there's an internal `LocalLogin` variable that tracks
+this).  So once we have deployed a new enough version of MediaWiki,
+the special logout instructions here will no longer be needed.)
+
 ### User Groups
 
 We use the same authorization groups across competitions whenever
