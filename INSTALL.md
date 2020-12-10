@@ -240,6 +240,9 @@ $ $EDITOR base/simplesaml/inv/<environment>/group_vars/all/secret
   didn't put "(2020)" after it because that would be confusing given
   the presence of a date in the competition's actual name.
 
+  (See also the section "Authentication, Authorization, and Okta"
+  in [DESIGN.md](DESIGN.md).)
+
 * What groups/roles will be accessing this competition's data?
 
   What permissions do the groups need, especially regarding
