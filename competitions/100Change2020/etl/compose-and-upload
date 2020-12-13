@@ -497,6 +497,7 @@ def main():
     attachments.specify_new_column("MOU Attachment", "MOU Attachment")
     attachments.specify_new_column("Application Attachment", "Application Attachment")
     attachments.specify_new_column("COVID_.*", "COVID Response Attachment")
+    attachments.specify_new_column(".*_RevisedProposal.*", "Revised Proposal Attachment")
     attachments.specify_new_column("Two Page Fact Sheet", "Fact Sheet Attachment")
     competition.BasicAttachments.defined_column_names = [
         "Other Attachment Display Names",

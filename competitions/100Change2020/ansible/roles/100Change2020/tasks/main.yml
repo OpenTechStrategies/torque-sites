@@ -31,3 +31,16 @@
     path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
     regexp: ^\$wgLogo = .*
     line: $wgLogo = "$wgResourceBasePath/resources/assets/LeverForChange_Logo.png";
+
+- name: Install additional tab configurations
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE ADDITIONAL TAB CONFIG"
+    block: |
+      # Overwrite the whole variable since 100&Change 2020 is unique in handling of tabs
+      $wgLFCExtraTabs = [
+        ["MacArthur Reviews of ",  "MacArthur Reviews", "macarthurreviews"],
+        ["External Reviews of ", "External Reviews", "externalreviews"],
+        ["Prospectus", "Prospectus", "main"],
+        ["Original Proposal for ", "Original Proposal", "originalproposal"]
+      ];

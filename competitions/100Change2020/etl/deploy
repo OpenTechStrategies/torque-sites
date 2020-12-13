@@ -65,6 +65,8 @@ TECH_REVIEW_ATTACHMENTS="Tech_Review_PDFs.zip"
 EDITED_TECH_REVIEW_ATTACHMENTS="Reviews_Edited_for_Applicants.zip"
 FACTSHEET_ATTACHMENTS="Two-page_Factsheets.zip"
 COVID_ATTACHMENTS="Covid-for-OTS-2020-04-25.zip"
+FINAL_6_ATTACHMENTS="Wiki_Stage2_OTS.zip"
+FINAL_6_ATTACHMENTS_CSV="Wiki_Stage2_OTS.csv"
 SDGCONFIG_CSV="sdgconfig.csv"
 CANDID_CORRECTION_FILE="Candid_Application_Data_Clean_for_OTS_2020_01_13_01.csv"
 OTS_CORRECTION_FILE="OTS_Corrections.csv"
@@ -113,6 +115,8 @@ if [ ! -d "${DATA_DIR}" ] ; then
   gpg -o ${DATA_DIR}/${EDITED_TECH_REVIEW_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${EDITED_TECH_REVIEW_ATTACHMENTS}.gpg || exit 1
   gpg -o ${DATA_DIR}/${FACTSHEET_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${FACTSHEET_ATTACHMENTS}.gpg || exit 1
   gpg -o ${DATA_DIR}/${COVID_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${COVID_ATTACHMENTS}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${FINAL_6_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${FINAL_6_ATTACHMENTS}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${FINAL_6_ATTACHMENTS_CSV} --decrypt ${ENCRYPTED_DIR}/${FINAL_6_ATTACHMENTS_CSV}.gpg || exit 1
 
   mkdir -p ${ATTACHMENTS_DIR}
   echo "Setting up attachments..."
@@ -152,11 +156,19 @@ if [ ! -d "${DATA_DIR}" ] ; then
   done
   rm -rf $TMP_ATTACHMENTS_DIR
 
+  mkdir -p $TMP_ATTACHMENTS_DIR
+  unzip -d $TMP_ATTACHMENTS_DIR ${DATA_DIR}/${FINAL_6_ATTACHMENTS}
+  while IFS=, read DIRECTORY_NAME APP_NUMBER ; do
+    cp -v "$TMP_ATTACHMENTS_DIR/Wiki_Stage2_OTS/$DIRECTORY_NAME/*RevisedProp*.pdf" "$ATTACHMENTS_DIR/$APP_NUMBER/"
+  done < ${DATA_DIR}/${FINAL_6_ATTACHMENTS_CSV}
+  rm -rf $TMP_ATTACHMENTS_DIR
+
   # Clean up large zips to save disk space
   rm ${DATA_DIR}/${BASE_ATTACHMENTS}
   rm ${DATA_DIR}/${TECH_REVIEW_ATTACHMENTS}
   rm ${DATA_DIR}/${FACTSHEET_ATTACHMENTS}
   rm ${DATA_DIR}/${COVID_ATTACHMENTS}
+  rm ${DATA_DIR}/${FINAL_6_ATTACHMENTS}
 fi
 
 if ! echo "bad31bbabd6b03ec5be834d3d87ec70361e8efa0  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
