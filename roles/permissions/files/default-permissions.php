@@ -65,8 +65,19 @@ $wgHooks['SpecialPage_initList'][] = function ( &$list ) {
   return true;
 };
 
-# This is the SimpleSAMLphp group mapping.  This is how incoming groups
-# from SSO map to mediawiki groups.
+# We have to convert incoming groups from SSO (e.g., MacFound Okta) to
+# Mediawiki (SimpleSAMLphp) groups.  The incoming groups often have
+# spaces in their names, to make them more readable to users, whereas
+# MediaWiki groups can't have spaces.  Also, in some cases there are
+# existing well-known MediaWiki groups (e.g., "sysop") that map pretty
+# well to an incoming SSO group, even though the two names are
+# unrelated, so in those cases we just convert the incoming group to
+# the MediaWiki group.
+#
+# (For more information on SimpleSAML configuration in general, see
+# https://www.mediawiki.org/wiki/Extension:SimpleSAMLphp#Configuration.)
+# 
+# These are the MediaWiki Groups:
 $wgSimpleSAMLphp_SyncAllGroups_LocallyManaged = [
   "sysop",
   "bureaucrat",
@@ -77,7 +88,9 @@ $wgSimpleSAMLphp_SyncAllGroups_LocallyManaged = [
   "LFCEvaluators",
   "PseudoDecisionMakers",
 ];
-
+#
+# And this is the mapping (MediaWiki on left, incoming SSO on right):
+#
 $wgSimpleSAMLphp_GroupMap = [
   'sysop' => ['groups' => ['LFC Torque Admin', 'LFC Staff', 'LFC Admins']],
   'interface-admin' => ['groups' => ['LFC Torque Admin', 'LFC Staff', 'LFC Admins']],
