@@ -113,7 +113,7 @@ and since competition wikis typically redirect non-logged-in visitors
 straight to an Okta login page, you need ask for local login page
 explicitly, like this:
 
-      https://torque.leverforchange.org/COMPETITION/?locallogin=on
+      https://torque.leverforchange.org/COMPETITION/locallogin.php
 
 (Note: The cookie will expire in an hour, and you can turn it off any
 time via `.../?locallogin=off`.)
@@ -200,6 +200,48 @@ meanings.  For historical background, see [issue
 #62](https://github.com/OpenTechStrategies/torque-sites/issues/62) and
 the [2020-03-17 meeting
 notes](https://github.com/OpenTechStrategies/torque/wiki/Meeting-Notes#2020-03-17-frankkarl-discussion-re-eo-and-usergroup-permissions).
+
+### Granting API access
+
+API access is currently grated on a per-competition basis.  API users
+do not use SSO (Okta) authentication; they must be created with a
+["local-login"
+account](https://torque.leverforchange.org/COMPETITION/index.php/Special:CreateAccount)
+(see above for more about such accounts).
+
+To do the following steps, you should be logged in yourself as "Admin"
+via local-login.  (Even if your regular Okta-based account has
+permission to create new users, there could be
+[complications](https://chat.opentechstrategies.com/#narrow/stream/45-Lever-for.20Change/topic/API/near/97930)
+when you try to do some of the steps.  Trust us: it's better just to
+be 'Admin' from the start.)
+
+1) [Create the local-login user](https://torque.leverforchange.org/COMPETITION/index.php/Special:CreateAccount).
+   We typically use a username of the form `Jrandom.API`, though some
+   legacy usernames may not match that form.
+
+2) Send them their password by a secure channel.  (For OTS, record the
+   account creation in the appropriate `opass` file too please.)
+
+3) [Put the new user into the appropriate group](https://torque.leverforchange.org/COMPETITION/index.php/Special:UserRights).
+   For LFC staff, that group is usually `administrator` (i.e.,
+   sysop).  For non-LFC API users, it's usually a dedicated API
+   group that has been configured (as per below) to have access to
+   just certain columns and/or proposals.  For example, for the MIT
+   Knowledge Futures Group, we used `API_KFG` as the group.
+
+4) If necessary, [add permissions configuration for the group](https://torque.leverforchange.org/COMPETITION/index.php/TorqueConfig:MainConfig).
+   This involves creating or updating the appropriate row in the
+   Permissions table, and it may also involve creating a new Columns
+   or Proposals listing page, if the listing page you need doesn't
+   already exist.  (For example, the first time you grant a non-LFC
+   person API access to a competition, that competition might not
+   already have a Columns page that excludes comment fields.)
+
+We had a [long chat on 2020-12-15](https://chat.opentechstrategies.com/#narrow/stream/45-Lever-for.20Change/topic/API/near/97830)
+about API account creation.  If you run into a problem with any of the
+steps above, or if a step seems to be missing, take a look at that
+chat transcript and see if it offers any help.
 
 ## Automated deployment and content management
 
