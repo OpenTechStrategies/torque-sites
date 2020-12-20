@@ -170,7 +170,13 @@ for technical details of each role's access permissions.
 - **`LFC Admins`**
 
   Like "LFC Staff", but in addition can perform administrative tasks
-  such as viewing logs, creating new users, etc.
+  such as viewing logs, creating new users, etc.  (Note: There is a
+  legacy group **`LFC Torque Admin`** maintained by MacFound IT.  It
+  is [entirely coincident](https://github.com/OpenTechStrategies/torque-sites/blob/ac17a658d245de8d25e1865e341b5706ba2258d0/roles/permissions/files/default-permissions.php#L95)
+  with "LFC Admins".  Some day we should vet all of MacFound IT's
+  groups and make sure they match this list, but for now, just know
+  that these two groups have the same meaning.)
+
 
 - **`LFC Decision Makers`**
 
