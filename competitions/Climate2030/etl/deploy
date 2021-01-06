@@ -56,7 +56,7 @@ python3 -V > /dev/null 2>&1 || { echo "python3 required, aborting" ; exit 1; }
 
 command -v xlsx2csv 2>&1 >> /dev/null || { echo >&2 "xlsx2csv required but it's not available.  Aborting."; exit 1; }
 
-PROPOSALS_CSV="2030ClimateChallenge_Registration_Application_data.csv"
+PROPOSALS_CSV="Shane Eggerman - 2030ClimateChange_Registration_Application_data_updated.csv"
 BASE_ATTACHMENTS="2030ClimateChange_Registration_Application_data-20200915.zip"
 JUDGE_EVALUATION_CSV="Shane Eggerman - 2030ClimateChallenge_Peer_Review_Data.csv"
 EXPERT_PANEL_EVALUATION_CSV="2030CC_Evaluation_Panel_Data_AnonJudges.csv"
@@ -98,13 +98,13 @@ if [ ! -d "${DATA_DIR}" ] ; then
   gpg -o "${DATA_DIR}/${EXPERT_PANEL_EVALUATION_CSV}" --decrypt "${ENCRYPTED_DIR}/${EXPERT_PANEL_EVALUATION_CSV}.gpg" || exit 1
   gpg -o "${DATA_DIR}/${LFC_ANALYSIS_PAGES}" --decrypt "${ENCRYPTED_DIR}/${LFC_ANALYSIS_PAGES}.gpg" || exit 1
   gpg -o "${DATA_DIR}/${FINANCIAL_DATA}" --decrypt "${ENCRYPTED_DIR}/${FINANCIAL_DATA}.gpg" || exit 1
+  gpg -o "${DATA_DIR}/${PROPOSALS_CSV}" --decrypt "${ENCRYPTED_DIR}/${PROPOSALS_CSV}.gpg" || exit 1
 
   mkdir -p ${TDC_CONFIG_DIR}
 
   echo "Setting up attachments..."
   mkdir -p $TMP_ATTACHMENTS_DIR
   unzip -d ${TMP_ATTACHMENTS_DIR} ${DATA_DIR}/${BASE_ATTACHMENTS}
-  mv "${TMP_ATTACHMENTS_DIR}/${PROPOSALS_CSV}" $DATA_DIR
   mv "${TMP_ATTACHMENTS_DIR}/Valid" $ATTACHMENTS_DIR
 
   # Clean up large zips to save disk space
@@ -124,9 +124,12 @@ if [ ! -d "${DATA_DIR}" ] ; then
   xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n 554 > ${FINANCIAL_SHEETS_DIR}/554.csv
   xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n 26 > ${FINANCIAL_SHEETS_DIR}/26.csv
   xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n 461 > ${FINANCIAL_SHEETS_DIR}/461.csv
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n 433 > ${FINANCIAL_SHEETS_DIR}/433.csv
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n 96 > ${FINANCIAL_SHEETS_DIR}/96.csv
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n 42 > ${FINANCIAL_SHEETS_DIR}/42.csv
 fi
 
-if ! echo "15fdc38c3ba01f4372e6917ffeda176ca117d41f  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
+if ! echo "5fb209182029c369285ee3a9880f946849fa7427  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
   echo "ERROR: SHA of PROPOSALS_CSV did not match expectation!"
   echo "This means that we most likely got a new file, which may have the old"
   echo "errors in it (specifically the organization proposal 829)."
