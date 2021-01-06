@@ -307,7 +307,12 @@ def main():
             },
             {
                 "name": "Panel Overall Score Rank Normalized",
-                "heading": "Rank",
+                "heading": "Panel Rank",
+                "right_aligned": True,
+            },
+            {
+                "name": "Judge Overall Score Rank Normalized",
+                "heading": "Judge Rank",
                 "right_aligned": True,
             },
         ]
