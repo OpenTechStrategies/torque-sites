@@ -56,9 +56,10 @@ python3 -V > /dev/null 2>&1 || { echo "python3 required, aborting" ; exit 1; }
 
 command -v xlsx2csv 2>&1 >> /dev/null || { echo >&2 "xlsx2csv required but it's not available.  Aborting."; exit 1; }
 
-PROPOSALS_CSV="ECWC_Registration_Application_data.csv"
+PROPOSALS_CSV="Shane Eggerman - ECWC_Registration_Application_data_updated.csv"
 BASE_ATTACHMENTS="Shane Eggerman - ECWC_Registration_Application_datа copy 2.zip"
 JUDGE_EVALUATION_CSV="Shane Eggerman - ECWC_Peer_Review_Data copy.csv"
+EXPERT_PANEL_EVALUATION_CSV="Shane Eggerman - ECWC_Evaluation_Panel_Data_anon.csv"
 APPLICATION_DATA="ECW Application Data.xlsx"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
 FINANCIAL_DATA="ECW-BudgetTable.xlsx"
@@ -93,9 +94,11 @@ if [ ! -d "${DATA_DIR}" ] ; then
   echo "Decrypting..."
 
   gpg -o "${DATA_DIR}/${JUDGE_EVALUATION_CSV}" --decrypt "${ENCRYPTED_DIR}/${JUDGE_EVALUATION_CSV}.gpg" || exit 1
+  gpg -o "${DATA_DIR}/${EXPERT_PANEL_EVALUATION_CSV}" --decrypt "${ENCRYPTED_DIR}/${EXPERT_PANEL_EVALUATION_CSV}.gpg" || exit 1
   gpg -o "${DATA_DIR}/${APPLICATION_DATA}" --decrypt "${ENCRYPTED_DIR}/${APPLICATION_DATA}.gpg" || exit 1
   gpg -o "${DATA_DIR}/${BASE_ATTACHMENTS}" --decrypt "${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg" || exit 1
   gpg -o "${DATA_DIR}/${FINANCIAL_DATA}" --decrypt "${ENCRYPTED_DIR}/${FINANCIAL_DATA}.gpg" || exit 1
+  gpg -o "${DATA_DIR}/${PROPOSALS_CSV}" --decrypt "${ENCRYPTED_DIR}/${PROPOSALS_CSV}.gpg" || exit 1
 
   xlsx2csv "$DATA_DIR/$APPLICATION_DATA" > "$DATA_DIR/${APPLICATION_DATA/xlsx/csv}"
 
@@ -104,7 +107,6 @@ if [ ! -d "${DATA_DIR}" ] ; then
   echo "Setting up attachments..."
   mkdir -p $TMP_ATTACHMENTS_DIR
   unzip -d "${TMP_ATTACHMENTS_DIR}" "${DATA_DIR}/${BASE_ATTACHMENTS}"
-  mv "${TMP_ATTACHMENTS_DIR}/${PROPOSALS_CSV}" $DATA_DIR
   mv "${TMP_ATTACHMENTS_DIR}/Valid" $ATTACHMENTS_DIR
 
   # Clean up large zips to save disk space
@@ -115,7 +117,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n 943 > ${FINANCIAL_SHEETS_DIR}/943.csv
 fi
 
-if ! echo "9610a70406d9eb7d877f61435625b66449e5e2c6  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
+if ! echo "f87d28c2d30db1168c41d6977f153fd91d6e532f  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
   echo "ERROR: SHA of PROPOSALS_CSV did not match expectation!"
   echo "This means that we most likely got a new file, which may have the old"
   echo "errors in it (specifically the organization proposal 829)."
@@ -130,6 +132,7 @@ mkdir -p $TDC_CONFIG_DIR
 ${RUNNER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
           --attachments-dir=${ATTACHMENTS_DIR} \
           --judge-evaluation-csv="${DATA_DIR}/${JUDGE_EVALUATION_CSV}" \
+          --expert-panel-evaluation-csv="${DATA_DIR}/${EXPERT_PANEL_EVALUATION_CSV}" \
           --application-data="${DATA_DIR}/${APPLICATION_DATA/xlsx/csv}" \
           --financial-sheets-dir=${FINANCIAL_SHEETS_DIR} \
           $PARE \

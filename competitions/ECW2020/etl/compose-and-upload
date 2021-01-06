@@ -25,6 +25,7 @@ Usage:
        --proposals-csv=PROPOSALS_CSV \\
        --attachments-dir=ATTACHMENTS_DIR \\
        --judge-evaluation-csv=JUDGE_EVALUATION_CSV \\
+       --expert-panel-evaluation-csv=EXPERT_PANEL_EVALUATION_CSV \\
        --application-data=APPLICATION_DATA_CSV \\
        --tdc-config-dir=TDC_CONFIG_DIR \\
        --pare=PARE \\
@@ -46,6 +47,10 @@ Command-line options:
   --judge-evaluation-csv FILE     FILE is a CSV file with a many to one relationshp
                                   between judges and the proposals they evaluated,
                                   with the extra data being their evaluation
+
+  --expert-panel-evaluation-csv FILE    FILE is a CSV file with a row for each proposal
+                                  that includes the rank and scoring for the expert panel
+                                  review, but none of the comments.
 
   --application-data FILE         FILE is a CSV file that provides the Theme and the Region
                                   for different proposals.  There are other columns in the
@@ -126,8 +131,14 @@ class ApplicationDataAdder(competition.InformationAdder):
         region_col = header.index("Region")
 
         for row in reader:
+            theme = row[theme_col]
+
+            # Request from client
+            if theme == "Other (e.g xyz)":
+                theme = "Other"
+
             self.data[row[review_num_col]] = {
-                "Application Data Theme": row[theme_col],
+                "Application Data Theme": theme,
                 "Application Data Region": row[region_col],
             }
 
@@ -148,6 +159,7 @@ def main():
                 "proposals-csv=",
                 "tdc-config-dir=",
                 "judge-evaluation-csv=",
+                "expert-panel-evaluation-csv=",
                 "application-data=",
                 "financial-sheets-dir=",
                 "attachments-dir=",
@@ -163,6 +175,7 @@ def main():
     attachments_dir = None
     tdc_config_dir = None
     judge_evaluation_csv = None
+    expert_panel_evaluation_csv = None
     application_data_csv = None
     financial_sheets_dir = None
     pare = None
@@ -178,6 +191,8 @@ def main():
             tdc_config_dir = a
         elif o == "--judge-evaluation-csv":
             judge_evaluation_csv = a
+        elif o == "--expert-panel-evaluation-csv":
+            expert_panel_evaluation_csv = a
         elif o == "--application-data":
             application_data_csv = a
         elif o == "--financial-sheets-dir":
@@ -220,6 +235,20 @@ def main():
             comments_score_normalized_col_name="TraitScoreNormalized",
         )
     )
+    comp.add_supplemental_information(
+        competition.EvaluationAdder(
+            "Panel",
+            expert_panel_evaluation_csv,
+            app_col_name="Application #",
+            score_rank_normalized_col_name="OverallScoreRankNormalized",
+            sum_of_scores_normalized_col_name="SumOfScoresNormalized",
+            trait_col_name="Trait",
+            score_normalized_col_name="TraitScoreNormalized",
+            comments_col_name="TraitJudgeComment",
+            comments_score_normalized_col_name="TraitScoreNormalized",
+        )
+    )
+    comp.add_supplemental_information(LFCAnalysisAdder())
 
     comp.add_supplemental_information(
         competition.FinancialDataAdder(
@@ -257,7 +286,7 @@ def main():
     )
     comp.add_supplemental_information(attachments)
     comp.add_supplemental_information(ApplicationDataAdder(application_data_csv))
-    comp.sort("Judge Overall Score Rank Normalized", True)
+    comp.sort("Panel Overall Score Rank Normalized", True)
 
     list_toc = toc.ListToc("All_Proposals")
     list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
@@ -277,7 +306,7 @@ def main():
                 "right_aligned": True,
             },
             {
-                "name": "Judge Overall Score Rank Normalized",
+                "name": "Panel Overall Score Rank Normalized",
                 "heading": "Rank",
                 "right_aligned": True,
             },
