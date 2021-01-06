@@ -117,7 +117,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n 943 > ${FINANCIAL_SHEETS_DIR}/943.csv
 fi
 
-if ! echo "f87d28c2d30db1168c41d6977f153fd91d6e532f  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
+if ! echo "3437c7099afedbd9979691dc2730914371f43ff0  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
   echo "ERROR: SHA of PROPOSALS_CSV did not match expectation!"
   echo "This means that we most likely got a new file, which may have the old"
   echo "errors in it (specifically the organization proposal 829)."
