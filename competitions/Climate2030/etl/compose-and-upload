@@ -181,34 +181,32 @@ def main():
         comp.sorted_proposal_keys, attachments_dir
     )
     comp.add_supplemental_information(attachments)
-    if judge_evaluation_csv is not None:
-        comp.add_supplemental_information(
-            competition.EvaluationAdder(
-                "Judge",
-                judge_evaluation_csv,
-                app_col_name="Application #",
-                score_rank_normalized_col_name="OverallScoreRankNormalized",
-                sum_of_scores_normalized_col_name="SumOfScoresNormalized",
-                trait_col_name="Trait",
-                score_normalized_col_name="TraitScoreNormalized",
-                comments_col_name="TraitJudgeComment",
-                comments_score_normalized_col_name="TraitScoreNormalized",
-            )
+    comp.add_supplemental_information(
+        competition.EvaluationAdder(
+            "Judge",
+            judge_evaluation_csv,
+            app_col_name="Application #",
+            score_rank_normalized_col_name="OverallScoreRankNormalized",
+            sum_of_scores_normalized_col_name="SumOfScoresNormalized",
+            trait_col_name="Trait",
+            score_normalized_col_name="TraitScoreNormalized",
+            comments_col_name="TraitJudgeComment",
+            comments_score_normalized_col_name="TraitScoreNormalized",
         )
-    if expert_panel_evaluation_csv is not None:
-        comp.add_supplemental_information(
-            competition.EvaluationAdder(
-                "Panel",
-                expert_panel_evaluation_csv,
-                app_col_name="Application #",
-                score_rank_normalized_col_name="OverallScoreRankNormalized",
-                sum_of_scores_normalized_col_name="SumOfScoresNormalized",
-                trait_col_name="Trait",
-                score_normalized_col_name="TraitScoreNormalized",
-                comments_col_name="TraitJudgeComment",
-                comments_score_normalized_col_name="TraitScoreNormalized",
-            )
+    )
+    comp.add_supplemental_information(
+        competition.EvaluationAdder(
+            "Panel",
+            expert_panel_evaluation_csv,
+            app_col_name="Application #",
+            score_rank_normalized_col_name="OverallScoreRankNormalized",
+            sum_of_scores_normalized_col_name="SumOfScoresNormalized",
+            trait_col_name="Trait",
+            score_normalized_col_name="TraitScoreNormalized",
+            comments_col_name="TraitJudgeComment",
+            comments_score_normalized_col_name="TraitScoreNormalized",
         )
+    )
     comp.add_supplemental_information(LFCAnalysisAdder())
     comp.add_supplemental_information(
         competition.FinancialDataAdder(
