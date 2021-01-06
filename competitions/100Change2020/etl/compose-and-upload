@@ -92,6 +92,7 @@ import config
 import getopt
 import sys
 import os
+import re
 import csv
 
 
@@ -353,6 +354,30 @@ class TRDisqualifiedAdder(competition.InformationAdder):
         return self.ots_metadata.get(proposal.key(), {}).get("TR Disqualified", "")
 
 
+class AppendixDisplayNamesAdder(competition.InformationAdder):
+    """Adds a list matching the Prospectus Appendix Attachments for the names"""
+
+    def column_type(self, column_name):
+        return "list"
+
+    def column_names(self):
+        return ["Names of Prospectus Appendix Attachments"]
+
+    def clean(self, attachment):
+        retn = re.sub(".pdf", "", attachment)
+        retn = re.sub("^[^_]*_", "", retn)
+        retn = re.sub("_", " ", retn)
+        return retn
+
+    def cell(self, proposal, column_name):
+        return "\n".join(
+            [
+                self.clean(at)
+                for at in proposal.cell("Prospectus Appendix Attachments").split("\n")
+            ]
+        )
+
+
 def main():
     """Compose the LFC input and emit it as html-ized csv."""
     try:
@@ -422,7 +447,9 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    comp = competition.Competition(proposals_csv, "LFC100Change2020", "Review Number", pare)
+    comp = competition.Competition(
+        proposals_csv, "LFC100Change2020", "Review Number", pare
+    )
     comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
 
     fix_cell_processor = competition.FixCellProcessor()
@@ -497,7 +524,10 @@ def main():
     attachments.specify_new_column("MOU Attachment", "MOU Attachment")
     attachments.specify_new_column("Application Attachment", "Application Attachment")
     attachments.specify_new_column("COVID_.*", "COVID Response Attachment")
-    attachments.specify_new_column(".*_RevisedProposal.*", "Revised Proposal Attachment")
+    attachments.specify_new_column(".*_Prospectus.pdf", "Prospectus Attachment")
+    attachments.specify_new_column(
+        ".*_Appendix.*.pdf", "Prospectus Appendix Attachments", None, True
+    )
     attachments.specify_new_column("Two Page Fact Sheet", "Fact Sheet Attachment")
     competition.BasicAttachments.defined_column_names = [
         "Other Attachment Display Names",
@@ -530,6 +560,7 @@ def main():
         ):
             attachment.column_name = "Application Attachment"
     comp.add_supplemental_information(attachments)
+    comp.add_supplemental_information(AppendixDisplayNamesAdder())
 
     comp.sort("Wise Head Overall Score Rank Normalized", True)
 

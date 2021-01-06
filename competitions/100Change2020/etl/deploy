@@ -156,12 +156,18 @@ if [ ! -d "${DATA_DIR}" ] ; then
 
   mkdir -p $TMP_ATTACHMENTS_DIR
   unzip -d $TMP_ATTACHMENTS_DIR ${DATA_DIR}/${FINAL_6_ATTACHMENTS}
-  cp -v $TMP_ATTACHMENTS_DIR/Report\ for\ America/*RevisedProp*.pdf $ATTACHMENTS_DIR/7302/
-  cp -v $TMP_ATTACHMENTS_DIR/CHAI/*RevisedProp*.pdf $ATTACHMENTS_DIR/7794/
-  cp -v $TMP_ATTACHMENTS_DIR/Community\ Solutions/*RevisedProp*.pdf $ATTACHMENTS_DIR/4004/
-  cp -v $TMP_ATTACHMENTS_DIR/ECHO\ Institute/*RevisedProp*.pdf $ATTACHMENTS_DIR/1716/
-  cp -v $TMP_ATTACHMENTS_DIR/Monash\ University/*RevisedProp*.pdf $ATTACHMENTS_DIR/1085/
-  cp -v $TMP_ATTACHMENTS_DIR/NatGeo/*RevisedProp*.pdf $ATTACHMENTS_DIR/7392/
+  cp -v $TMP_ATTACHMENTS_DIR/Report\ for\ America/*Prospectus*.pdf $ATTACHMENTS_DIR/7302/
+  cp -v $TMP_ATTACHMENTS_DIR/Report\ for\ America/*Appendix*.pdf $ATTACHMENTS_DIR/7302/
+  cp -v $TMP_ATTACHMENTS_DIR/CHAI/*Prospectus*.pdf $ATTACHMENTS_DIR/7794/
+  cp -v $TMP_ATTACHMENTS_DIR/CHAI/*Appendix*.pdf $ATTACHMENTS_DIR/7794/
+  cp -v $TMP_ATTACHMENTS_DIR/Community\ Solutions/*Prospectus*.pdf $ATTACHMENTS_DIR/4004/
+  cp -v $TMP_ATTACHMENTS_DIR/Community\ Solutions/*Appendix*.pdf $ATTACHMENTS_DIR/4004/
+  cp -v $TMP_ATTACHMENTS_DIR/ECHO\ Institute/*Prospectus*.pdf $ATTACHMENTS_DIR/1716/
+  cp -v $TMP_ATTACHMENTS_DIR/ECHO\ Institute/*Appendix*.pdf $ATTACHMENTS_DIR/1716/
+  cp -v $TMP_ATTACHMENTS_DIR/Monash\ University/*Prospectus*.pdf $ATTACHMENTS_DIR/1085/
+  cp -v $TMP_ATTACHMENTS_DIR/Monash\ University/*Appendix*.pdf $ATTACHMENTS_DIR/1085/
+  cp -v $TMP_ATTACHMENTS_DIR/NatGeo/*Prospectus*.pdf $ATTACHMENTS_DIR/7392/
+  cp -v $TMP_ATTACHMENTS_DIR/NatGeo/*Appendix*.pdf $ATTACHMENTS_DIR/7392/
   rm -rf $TMP_ATTACHMENTS_DIR
 
   # Clean up large zips to save disk space
