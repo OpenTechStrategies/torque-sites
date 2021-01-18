@@ -278,7 +278,8 @@ class RemoveHTMLBRsProcessor(CellProcessor):
     as part of the cleanup process, usually by the FixCellProcessor"""
 
     def process_cell(self, proposal, column_name):
-        return proposal.cell(column_name).replace("<br/>\n", "")
+        # Because of how fix_cell works, we have to remove both the <br> and the \n separately
+        return proposal.cell(column_name).replace("<br/>", "").replace("\n", "")
 
 
 class MultiLineProcessor(CellProcessor):
