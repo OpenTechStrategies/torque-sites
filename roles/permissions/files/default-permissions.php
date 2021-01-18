@@ -97,7 +97,8 @@ $wgSimpleSAMLphp_GroupMap = [
   'bureaucrat' => ['groups' => ['LFC Torque Admin', 'LFC Staff', 'LFC Admins']],
   'DecisionMakers' => ['groups' => ['LFC Decision Makers', 'Board Members']],
   'PseudoDecisionMakers' => ['groups' => ['LFC Pseudo Decision Makers', 'Pseudo Board Members']],
-  'LFCEvaluators' => ['groups' => ['LFC Consultants', 'LFC Evaluators']],
+  'LFCEvaluators' => ['groups' => ['LFC Evaluators']],
+  'LFCConsultingPartners' => ['groups' => ['LFC Consultants']],
   'LFCResearchPartners' => ['groups' => ['LFC Research Partners']]
 ];
 
