@@ -316,7 +316,7 @@ def main():
             },
             {
                 "name": "Judge Overall Score Rank Normalized",
-                "heading": "Judge Rank",
+                "heading": "Peer Rank",
                 "right_aligned": True,
             },
         ]
@@ -439,6 +439,14 @@ def main():
         my_wiki.create_page(
             "Evaluations of %s" % proposal.cell("MediaWiki Title"),
             "{{ #tdcrender:ECW2020/id/" + proposal.key() + ".mwiki|Evaluations }}",
+        )
+
+    for key in comp.sorted_proposal_keys[0:19]:
+        proposal = comp.proposals[key]
+        my_wiki.create_page(
+            "LFC Analysis of %s" % proposal.cell("MediaWiki Title"),
+            "{{ #tdcrender:ECW2020/id/" + key + ".mwiki|LFCAnalysis }}",
+            True
         )
 
 
