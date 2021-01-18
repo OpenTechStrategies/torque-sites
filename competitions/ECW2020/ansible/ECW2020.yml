@@ -16,7 +16,7 @@
     - embed_video
     - permissions
     # PickSome has to come after collection so the left menu bar is correct
-    - picksome
+    #- picksome # disabled due to client request on Jan 14, 2021
     - simplefavorites
     - simplesaml
     - teamcomments
