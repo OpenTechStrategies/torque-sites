@@ -1,7 +1,8 @@
 ---
 # Root web directory (where symlinks to the mediawiki instances
 # are installed)
-html_directory: /var/www/html
+# e.g. /var/www/html
+html_directory: ${HTML_DIRECTORY}
 
 # We need to know what user we're deploying as, but the reason
 # here is complex.  At the base level, we need to know what
@@ -13,24 +14,24 @@ html_directory: /var/www/html
 # thereby overriding becoming root for tasks we need to.
 # So we store in a different variable and use at the top level
 # in main.yml.
-deployment_user: __USERNAME__
+deployment_user: ${DEPLOYMENT_USER}
 
 # The root password needed to install mysql users
-mysql_root_password: __PASSWORD__
+mysql_root_password: ${MYSQL_ROOT_PASSWORD}
 
 # The DB credentials
-db_username: __YOUR_DB_USER_HERE__
-db_password: __YOUR_DB_PW_HERE__
+db_username: ${DB_USERNAME}
+db_password: ${DB_PASSWORD}
 
 # Directory to install all of the mediawiki needs
 # This must be an absolute path because of weirdness with unarchive
-mediawiki_install_directory: __ABSOLUTE_INSTALLATION_DIRECTORY__
+mediawiki_install_directory: ${MEDIAWIKI_INSTALL_DIRECTORY}
 
 # The password for the mediawiki user admin to run automated
 # commands against wikis (such as csv2wiki, setup, etc)
-mediawiki_admin_password: __MEDIAWIKI_ADMIN_PASSWORD__
+mediawiki_admin_password: ${MEDIAWIKI_ADMIN_PASSWORD}
 
 # The user and password for loading the wiki externally
 # using csv2wiki in coordination with the LFC repository
 mediawiki_csv2wiki_username: csv2wiki
-mediawiki_csv2wiki_password: __MEDIAWIKI_CSV2WIKI_PASSWORD__
+mediawiki_csv2wiki_password: ${MEDIAWIKI_CSV2WIKI_PASSWORD}

@@ -10,7 +10,8 @@ torquedataconnect_sheet_name: LoneStar2020
 
 # Root web directory (where symlinks to the mediawiki instances
 # are installed)
-html_directory: /var/www/html
+# e.g. /var/www/html
+html_directory: ${HTML_DIRECTORY}
 
 # We need to know what user we're deploying as, but the reason
 # here is complex.  At the base level, we need to know what
@@ -22,36 +23,36 @@ html_directory: /var/www/html
 # thereby overriding becoming root for tasks we need to.
 # So we store in a different variable and use at the top level
 # in main.yml.
-deployment_user: __USERNAME__
+deployment_user: ${DEPLOYMENT_USER}
 
 # The root password needed to install mysql users
-mysql_root_password: __PASSWORD__
+mysql_root_password: ${MYSQL_ROOT_PASSWORD}
 
 # The DB credentials
-db_username: __YOUR_DB_USER_HERE__
-db_password: __YOUR_DB_PW_HERE__
+db_username: ${DB_USERNAME}
+db_password: ${DB_PASSWORD}
 
 # Directory to install all of the mediawiki needs
 # This must be an absolute path because of weirdness with unarchive
-mediawiki_install_directory: __ABSOLUTE_INSTALLATION_DIRECTORY__
+mediawiki_install_directory: ${MEDIAWIKI_INSTALL_DIRECTORY}
 
 # The password for the mediawiki user admin to run automated
 # commands against wikis (such as csv2wiki, setup, etc)
-mediawiki_admin_password: __MEDIAWIKI_ADMIN_PASSWORD__
+mediawiki_admin_password: ${MEDIAWIKI_ADMIN_PASSWORD}
 
 # The user and password for the mwlib pdf printing process
 #
 # The password must not have spaces.
 mediawiki_mwlib_username: mwlib
-mediawiki_mwlib_password: __MEDIAWIKI_MWLIB_PASSWORD__
+mediawiki_mwlib_password: ${MEDIAWIKI_MWLIB_PASSWORD}
 
 # The user and password for loading the wiki externally
 # using csv2wiki in coordination with the LFC repository
 mediawiki_csv2wiki_username: csv2wiki
-mediawiki_csv2wiki_password: __MEDIAWIKI_CSV2WIKI_PASSWORD__
+mediawiki_csv2wiki_password: ${MEDIAWIKI_CSV2WIKI_PASSWORD}
 
 # Directory to install simplesaml
-simplesaml_install_directory: /home/deploy/simplesaml/
+simplesaml_install_directory: ${SIMPLESAML_INSTALL_DIRECTORY}
 
 # The metadata declaration, in the form of key => location.  The METADATA_NAME should
 # correspond to the single sign on url you have set up in okta, which will be of the form
@@ -61,5 +62,5 @@ simplesaml_install_directory: /home/deploy/simplesaml/
 # your application settings for "Identity Provider metadata"
 #
 # See https://developer.okta.com/code/php/simplesamlphp/ for more information
-simplesaml_okta_metadata_name: __METADATA_NAME__
-simplesaml_okta_metadata_url: __METADATA_URL__
+simplesaml_okta_metadata_name: ${SIMPLESAML_OKTA_METADATA_NAME}
+simplesaml_okta_metadata_url: ${SIMPLESAML_OKTA_METADATA_URL}
