@@ -1,7 +1,8 @@
 ---
 # Root web directory (where symlinks to the mediawiki instances
 # are installed)
-html_directory: /var/www/html
+# e.g. /var/www/html
+html_directory: ${HTML_DIRECTORY}
 
 # We need to know what user we're deploying as, but the reason
 # here is complex.  At the base level, we need to know what
@@ -13,15 +14,15 @@ html_directory: /var/www/html
 # thereby overriding becoming root for tasks we need to.
 # So we store in a different variable and use at the top level
 # in main.yml.
-deployment_user: __USERNAME__
+deployment_user: ${DEPLOYMENT_USER}
 
 # Directory to install simplesaml
-simplesaml_install_directory: __INSTALLATION_DIRECTORY__
+simplesaml_install_directory: ${SIMPLESAML_INSTALL_DIRECTORY}
 
 # Salt for simplesaml, you can create easily via:
 # LC_CTYPE=C tr -c -d '0123456789abcdefghijklmnopqrstuvwxyz' </dev/urandom | dd bs=32 count=1 2>/dev/null;echo
-simplesaml_salt: __SALT__
+simplesaml_salt: ${SIMPLESAML_SALT}
 
 # The DB credentials
-db_username: __YOUR_DB_USER_HERE__
-db_password: __YOUR_DB_PW_HERE__
+db_username: ${DB_USERNAME}
+db_password: ${DB_PASSWORD}

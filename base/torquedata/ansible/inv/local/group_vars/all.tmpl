@@ -9,13 +9,14 @@
 # thereby overriding becoming root for tasks we need to.
 # So we store in a different variable and use at the top level
 # in main.yml.
-deployment_user: __USERNAME__
+deployment_user: ${DEPLOYMENT_USER}
 
 # Where torquedata installs itself
-torquedata_install_directory: __INSTALLATION_DIRECTORY__
+torquedata_install_directory: ${TORQUEDATA_INSTALL_DIRECTORY}
 
 # The port the flask server listens on
-torquedata_port: 5000
+# e.g. 5000
+torquedata_port: ${TORQUEDATA_PORT}
 
 # The name for starting, stopping, and logging from supervisor
 supervisor_torquedata_name: torquedata

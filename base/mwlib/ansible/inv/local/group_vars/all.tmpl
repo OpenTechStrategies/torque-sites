@@ -9,7 +9,7 @@
 # thereby overriding becoming root for tasks we need to.
 # So we store in a different variable and use at the top level
 # in main.yml.
-deployment_user: __USERNAME__
+deployment_user: ${DEPLOYMENT_USER}
 
 # Directory to install mwlib, and it's cache
 #
@@ -17,4 +17,4 @@ deployment_user: __USERNAME__
 # if there are two slashes with a really weird zip error
 # and how it passes arguments around, and we made the decision
 # to omit the slash in the supervisor template.
-mwlib_install_directory: __INSTALLATION_DIRECTORY__
+mwlib_install_directory: ${MWLIB_INSTALL_DIRECTORY}
