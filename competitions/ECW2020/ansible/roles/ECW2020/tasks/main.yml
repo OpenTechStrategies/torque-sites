@@ -29,3 +29,4 @@
     marker: "## {mark} ANSIBLE PERMISSIONS OVERRIDE CONFIG"
     block: |
       $wgGroupPermissions['LFCEvaluators']['teamcomment'] = false;
+      $wgGroupPermissions['DecisionMakers']['teamcomment'] = false;
