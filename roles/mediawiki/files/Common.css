@@ -27,6 +27,13 @@
 .torque-wrapper .mw-editsection {
   display:none;
 }
+/* This is required because usually there are long links, and when
+ * we use the flexbox layout for editing, the page starts taking over
+ * the left menu rather than creating a scrollbar at the bottom.
+ */
+body {
+  min-width:1400px;
+}
 @media print {
   .firstHeading {
     display:none;
