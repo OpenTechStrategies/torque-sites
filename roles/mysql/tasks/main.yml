@@ -18,3 +18,4 @@
     password: "{{ db_password }}"
     state: present
     priv: "{{ competition_name }}.*:ALL"
+    append_privs: yes

@@ -26,6 +26,7 @@
     password: "{{ db_password }}"
     state: present
     priv: "simplesamlphp.*:ALL"
+    append_privs: yes
 
 - name: install prerequisites
   become_user: root
