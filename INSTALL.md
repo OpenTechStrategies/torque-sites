@@ -67,6 +67,12 @@ $ $EDITOR inv/local/group_vars/all
 
 Each template file includes documentation about what the variables do.
 
+The templates are structured so that you can leverage the [envsubst](https://www.gnu.org/software/gettext/manual/html_node/envsubst-Invocation.html) utility to populate placeholder values if you prefer.  For instance:
+
+```
+$ envsubst < inv/local/group_vars/all.tmpl > inv/local/group_vars/all
+```
+
 Second, use ansible-playbook to run the installation
 
 ```
