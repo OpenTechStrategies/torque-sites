@@ -18,7 +18,7 @@ layout.
 * `roles/` - the ansible scripts for customizations specific to this competition
 
 Before you get started, you need to get ansible on your system.  This
-is probably easiest through package management.
+is probably easiest through package management.  We recommend you install ansible 2.9.x or above.
 
 ```
 $ sudo apt-get install ansible
