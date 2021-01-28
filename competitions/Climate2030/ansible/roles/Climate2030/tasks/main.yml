@@ -1,5 +1,20 @@
 ---
 
+# Because the permissions override MUST come after the original permissions, we
+# delete it from the file, and then re-insert it to ensure that it comes at the
+# end of the LocalSettings file
+- name: Clear Permissions Override
+  blockinfile:
+    marker: "## {mark} ANSIBLE GROUP PERMISSIONS OVERRIDE CONFIG"
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+
+- name: Add Permissions Override
+  blockinfile:
+    marker: "## {mark} ANSIBLE GROUP PERMISSIONS OVERRIDE CONFIG"
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    block: |
+      $wgGroupPermissions['LFCResearchPartners']['teamcomment'] = false;
+
 - name: Transfer Climate2030 Logo
   copy:
     src: Climate2030_Logo.png
