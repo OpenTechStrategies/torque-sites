@@ -62,7 +62,8 @@ JUDGE_EVALUATION_CSV="Shane Eggerman - ECWC_Peer_Review_Data copy.csv"
 EXPERT_PANEL_EVALUATION_CSV="Shane Eggerman - ECWC_Evaluation_Panel_Data_anon.csv"
 APPLICATION_DATA="ECW Application Data.xlsx"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
-FINANCIAL_DATA="ECW-BudgetTable.xlsx"
+FINANCIAL_DATA="ECW-BudgetTable Template for Wiki_vUpdated.xlsx"
+FINANCIAL_DATA_DAT="ECW-BudgetTable Template for Wiki_vUpdated.dat"
 FINANCIAL_SHEETS_DIR="${DATA_DIR}/financial-sheets/"
 TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
@@ -98,6 +99,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   gpg -o "${DATA_DIR}/${APPLICATION_DATA}" --decrypt "${ENCRYPTED_DIR}/${APPLICATION_DATA}.gpg" || exit 1
   gpg -o "${DATA_DIR}/${BASE_ATTACHMENTS}" --decrypt "${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg" || exit 1
   gpg -o "${DATA_DIR}/${FINANCIAL_DATA}" --decrypt "${ENCRYPTED_DIR}/${FINANCIAL_DATA}.gpg" || exit 1
+  gpg -o "${DATA_DIR}/${FINANCIAL_DATA_DAT}" --decrypt "${ENCRYPTED_DIR}/${FINANCIAL_DATA_DAT}.gpg" || exit 1
   gpg -o "${DATA_DIR}/${PROPOSALS_CSV}" --decrypt "${ENCRYPTED_DIR}/${PROPOSALS_CSV}.gpg" || exit 1
 
   xlsx2csv "$DATA_DIR/$APPLICATION_DATA" > "$DATA_DIR/${APPLICATION_DATA/xlsx/csv}"
@@ -114,7 +116,9 @@ if [ ! -d "${DATA_DIR}" ] ; then
   rm -rf ${DATA_DIR}/${TMP_ATTACHMENTS_DIR}
 
   mkdir -p "${FINANCIAL_SHEETS_DIR}"
-  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n 943 > ${FINANCIAL_SHEETS_DIR}/943.csv
+  while IFS=: read SHEET_NAME APP_NUMBER ; do
+    xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n "$SHEET_NAME" > ${FINANCIAL_SHEETS_DIR}/$APP_NUMBER.csv
+  done < "${DATA_DIR}/${FINANCIAL_DATA_DAT}"
 fi
 
 if ! echo "3437c7099afedbd9979691dc2730914371f43ff0  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then

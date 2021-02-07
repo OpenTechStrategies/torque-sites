@@ -275,8 +275,26 @@ def main():
                     "text": "Months of liquid unrestricted net assets (LUNA)",
                 },
                 {
+                    "name": "months2",
+                    "text": "Months of liquid unrestricted net assets (LUNA) [2]",
+                },
+                {
+                    "name": "months3",
+                    "text": "Months of liquid unrestricted net assets (LUNA) [3]",
+                },
+                {
                     "name": "magnitude",
                     "text": "Magnitude of surplus / (deficits) (change in unrestricted net assets / average expenses over time period)",
+                    "percent": True,
+                },
+                {
+                    "name": "magnitude3",
+                    "text": "Magnitude of surplus / (deficits) (change in unrestricted net assets / average expenses over time period) [3]",
+                    "percent": True,
+                },
+                {
+                    "name": "magnitude4",
+                    "text": "Magnitude of surplus / (deficits) (change in unrestricted net assets / average expenses over time period) [4]",
                     "percent": True,
                 },
             ],
