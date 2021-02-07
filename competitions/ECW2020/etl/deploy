@@ -62,7 +62,7 @@ JUDGE_EVALUATION_CSV="Shane Eggerman - ECWC_Peer_Review_Data copy.csv"
 EXPERT_PANEL_EVALUATION_CSV="Shane Eggerman - ECWC_Evaluation_Panel_Data_anon.csv"
 APPLICATION_DATA="ECW Application Data.xlsx"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
-FINANCIAL_DATA="ECW-BudgetTable.xlsx"
+FINANCIAL_DATA="ECW-BudgetTable Template for Wiki_vUpdated.xlsx"
 FINANCIAL_SHEETS_DIR="${DATA_DIR}/financial-sheets/"
 TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
@@ -114,7 +114,25 @@ if [ ! -d "${DATA_DIR}" ] ; then
   rm -rf ${DATA_DIR}/${TMP_ATTACHMENTS_DIR}
 
   mkdir -p "${FINANCIAL_SHEETS_DIR}"
-  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n 943 > ${FINANCIAL_SHEETS_DIR}/943.csv
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n "2167 Strengthen ND" > ${FINANCIAL_SHEETS_DIR}/2167.csv
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n "1388 Fdn for Black Entr" > ${FINANCIAL_SHEETS_DIR}/1388.csv
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n "1342 CARE" > ${FINANCIAL_SHEETS_DIR}/1342.csv
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n "1332 LULAC Institute" > ${FINANCIAL_SHEETS_DIR}/1332.csv
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n "1940 IGNITE" > ${FINANCIAL_SHEETS_DIR}/1940.csv
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n "882 Digital Harbor Foundation" > ${FINANCIAL_SHEETS_DIR}/882.csv
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n "2256 Catalyst, Inc." > ${FINANCIAL_SHEETS_DIR}/2256.csv
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n "556 Oxfam America" > ${FINANCIAL_SHEETS_DIR}/556.csv
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n "3095 Base 11" > ${FINANCIAL_SHEETS_DIR}/3095.csv
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n "899 Girls Inc" > ${FINANCIAL_SHEETS_DIR}/899.csv
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n "1629 NM Community Cap" > ${FINANCIAL_SHEETS_DIR}/1629.csv
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n "1418 Forterra" > ${FINANCIAL_SHEETS_DIR}/1418.csv
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n "1559 The 19th News" > ${FINANCIAL_SHEETS_DIR}/1559.csv
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n "3072 Women in Film" > ${FINANCIAL_SHEETS_DIR}/3072.csv
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n "2264 NIWRC" > ${FINANCIAL_SHEETS_DIR}/2264.csv
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n "1612 RCAC" > ${FINANCIAL_SHEETS_DIR}/1612.csv
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n "1220 YWE" > ${FINANCIAL_SHEETS_DIR}/1220.csv
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n "2262 Family Values at Work" > ${FINANCIAL_SHEETS_DIR}/2262.csv
+  xlsx2csv "$DATA_DIR/$FINANCIAL_DATA" -n "2425 NDWA" > ${FINANCIAL_SHEETS_DIR}/2425.csv
 fi
 
 if ! echo "3437c7099afedbd9979691dc2730914371f43ff0  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then

@@ -547,7 +547,7 @@ class FinancialDataAdder(InformationAdder):
             )
 
             header = next(reader)
-            proposal_financial_data["years"] = header[1:]
+            proposal_financial_data["years"] = [year for year in header[1:] if year]
 
             proposal_financial_data["line_items"] = []
             hit_footnotes = False
@@ -570,7 +570,7 @@ class FinancialDataAdder(InformationAdder):
 
                 # This is some serious special casing to recreate the formatting in xlsx
                 items = []
-                for item in row[1:]:
+                for item in row[1:len(proposal_financial_data["years"]) + 1]:
                     try:
                         float_item = float(item)
                         if "percent" in definition and definition["percent"]:
