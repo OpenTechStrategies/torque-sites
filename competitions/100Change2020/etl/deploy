@@ -6,21 +6,22 @@
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 CSV_ONLY=""
 PARE=""
-while getopts "cp:" opt; do
+while getopts "cpg:" opt; do
   case $opt in
     c) CSV_ONLY="--csv-only" ;;
     p) PARE="--pare=$OPTARG" ;;
+    g) GPG_PASSPHRASE="$OPTARG" ;;
   esac
 done
 shift $((OPTIND -1))
@@ -43,6 +44,7 @@ if [ "${BASE_DATA_DIR}" = "" ]; then
   echo "                      list of keys to include.  If ARG begins with @,"
   echo "                      then ARG is a file with a newline separated list"
   echo "                      of keys to include."
+  echo "  -g                  Accepts a GPG symmetric phassphrase to use when decrypting."
   echo ""
   echo "BASE_DATA_DIRECTORY/100Change2020 is where all the work is done."
   echo ""
@@ -74,6 +76,20 @@ OTS_METADATA="OTS_Metadata.csv"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
 RUNNER="${LFC_DIR}"/compose-and-upload
 
+decrypt () {
+  local output_location=${1}
+  local encrypted_location=${2}
+  local passphrase=${3}
+
+  if [ -z "${passphrase}" ]; then
+    echo 'NO PASSPHRASE'
+    gpg -o ${output_location} --decrypt ${encrypted_location} || exit 1
+  else
+    echo 'PASSPHRASE'
+    gpg --batch --passphrase "${passphrase}" -o ${output_location} --decrypt ${encrypted_location} || exit 1
+  fi
+}
+
 if [ ! -d "${DATA_DIR}" ] ; then
   echo "Stage 0: Setting up data directory..."
 
@@ -99,26 +115,26 @@ if [ ! -d "${DATA_DIR}" ] ; then
   mkdir -p $DATA_DIR
   echo "Decrypting..."
 
-  gpg -o ${DATA_DIR}/${PROPOSALS_CSV} --decrypt ${ENCRYPTED_DIR}/${PROPOSALS_CSV}.gpg || exit 1
-  gpg -o ${DATA_DIR}/${ADMIN_REVIEW_CSV} --decrypt ${ENCRYPTED_DIR}/${ADMIN_REVIEW_CSV}.gpg || exit 1
-  gpg -o ${DATA_DIR}/${JUDGE_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${JUDGE_EVALUATION_CSV}.gpg || exit 1
-  gpg -o ${DATA_DIR}/${WISEHEAD_EVALUATION_CSV} --decrypt ${ENCRYPTED_DIR}/${WISEHEAD_EVALUATION_CSV}.gpg || exit 1
-  gpg -o ${DATA_DIR}/${CANDID_CORRECTION_FILE} --decrypt ${ENCRYPTED_DIR}/${CANDID_CORRECTION_FILE}.gpg || exit 1
-  gpg -o ${DATA_DIR}/${OTS_CORRECTION_FILE} --decrypt ${ENCRYPTED_DIR}/${OTS_CORRECTION_FILE}.gpg || exit 1
-  gpg -o ${DATA_DIR}/${OTS_METADATA} --decrypt ${ENCRYPTED_DIR}/${OTS_METADATA}.gpg || exit 1
+  decrypt "${DATA_DIR}/${PROPOSALS_CSV}" "${ENCRYPTED_DIR}/${PROPOSALS_CSV}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${ADMIN_REVIEW_CSV}" "${ENCRYPTED_DIR}/${ADMIN_REVIEW_CSV}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${JUDGE_EVALUATION_CSV}" "${ENCRYPTED_DIR}/${JUDGE_EVALUATION_CSV}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${WISEHEAD_EVALUATION_CSV}" "${ENCRYPTED_DIR}/${WISEHEAD_EVALUATION_CSV}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${CANDID_CORRECTION_FILE}" "${ENCRYPTED_DIR}/${CANDID_CORRECTION_FILE}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${OTS_CORRECTION_FILE}" "${ENCRYPTED_DIR}/${OTS_CORRECTION_FILE}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${OTS_METADATA}" "${ENCRYPTED_DIR}/${OTS_METADATA}.gpg" "${GPG_PASSPHRASE}"
 
   mkdir -p ${TDC_CONFIG_DIR}
 
-  gpg -o ${DATA_DIR}/${BASE_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg || exit 1
-  gpg -o ${DATA_DIR}/${TECH_REVIEW_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${TECH_REVIEW_ATTACHMENTS}.gpg || exit 1
-  gpg -o ${DATA_DIR}/${EDITED_TECH_REVIEW_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${EDITED_TECH_REVIEW_ATTACHMENTS}.gpg || exit 1
-  gpg -o ${DATA_DIR}/${FACTSHEET_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${FACTSHEET_ATTACHMENTS}.gpg || exit 1
-  gpg -o ${DATA_DIR}/${COVID_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${COVID_ATTACHMENTS}.gpg || exit 1
-  gpg -o ${DATA_DIR}/${FINAL_6_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${FINAL_6_ATTACHMENTS}.gpg || exit 1
+  decrypt "${DATA_DIR}/${BASE_ATTACHMENTS}" "${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${TECH_REVIEW_ATTACHMENTS}" "${ENCRYPTED_DIR}/${TECH_REVIEW_ATTACHMENTS}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${EDITED_TECH_REVIEW_ATTACHMENTS}" "${ENCRYPTED_DIR}/${EDITED_TECH_REVIEW_ATTACHMENTS}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${FACTSHEET_ATTACHMENTS}" "${ENCRYPTED_DIR}/${FACTSHEET_ATTACHMENTS}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${COVID_ATTACHMENTS}" "${ENCRYPTED_DIR}/${COVID_ATTACHMENTS}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${FINAL_6_ATTACHMENTS}" "${ENCRYPTED_DIR}/${FINAL_6_ATTACHMENTS}.gpg" "${GPG_PASSPHRASE}"
 
   mkdir -p ${ATTACHMENTS_DIR}
   echo "Setting up attachments..."
-  unzip -d $ATTACHMENTS_DIR ${DATA_DIR}/${BASE_ATTACHMENTS} 
+  unzip -d $ATTACHMENTS_DIR ${DATA_DIR}/${BASE_ATTACHMENTS}
 
   mkdir -p $TMP_ATTACHMENTS_DIR
   unzip -d $TMP_ATTACHMENTS_DIR ${DATA_DIR}/${TECH_REVIEW_ATTACHMENTS}
