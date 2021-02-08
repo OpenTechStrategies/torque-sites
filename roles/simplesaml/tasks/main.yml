@@ -1,6 +1,7 @@
 ---
 
 - name: Add okta account to autoconfig
+  when: simplesaml_okta_metadata_name is defined
   lineinfile:
     path: "{{ simplesaml_install_directory }}/simplesamlphp-1.18.4/saml-autoconfig.php"
     insertafter: '\$metadata_url_for = array\('
