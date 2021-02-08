@@ -129,7 +129,7 @@ $ svn co https://svn.opentechstrategies.com/repos/ots/trunk/clients/lever-for-ch
 
 Then you need to get the OTS utilities that includes `get-bigdata`
 ```
-$ svn co https://svn.opentechstrategies.com/repos/ots/trunk/utils $OTS_DIR/
+$ git clone https://github.com/OpenTechStrategies/ots-tools.git $OTS_DIR/utils
 ```
 
 Now get the confidential data for the site you're working on.
@@ -332,3 +332,5 @@ For the competition you're working with, run the instructions from
       probably don't want that to be the donor's first experience.
 
 Please add items to this list as needed.
+
+If you have not set up 3rd party login, you can access [local login instead](https://github.com/OpenTechStrategies/torque-sites/blob/main/DESIGN.md#local-login-ie-regular-non-okta-mediawiki-login-is-also-possible)
