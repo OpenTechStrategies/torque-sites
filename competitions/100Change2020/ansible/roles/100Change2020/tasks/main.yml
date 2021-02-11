@@ -41,6 +41,6 @@
       $wgLFCExtraTabs = [
         ["Prospectus", "Prospectus", "main"],
         ["Synthesis of ",  "Synthesis", "synthesis"],
-        ["External Reviews of ", "External Reviews", "externalreviews"],
+        ["Diligence for ", "Diligence", "diligence"],
         ["Original Proposal for ", "Original Proposal", "originalproposal"]
       ];
