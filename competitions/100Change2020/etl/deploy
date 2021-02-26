@@ -17,7 +17,7 @@
 
 CSV_ONLY=""
 PARE=""
-while getopts "cpg:" opt; do
+while getopts "cp:g:" opt; do
   case $opt in
     c) CSV_ONLY="--csv-only" ;;
     p) PARE="--pare=$OPTARG" ;;
