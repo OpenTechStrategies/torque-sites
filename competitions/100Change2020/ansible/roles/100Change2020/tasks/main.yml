@@ -39,7 +39,8 @@
     block: |
       # Overwrite the whole variable since 100&Change 2020 is unique in handling of tabs
       $wgLFCExtraTabs = [
-        ["Prospectus", "Prospectus", "main"],
+        ["Overview", "Solution Overview", "main"],
+        ["Prospectus for ", "Prospectus", "prospectus"],
         ["Analysis of ",  "Analysis", "analysis"],
         ["Diligence for ", "Diligence", "diligence"],
         ["Original Proposal for ", "Original Proposal", "originalproposal"]
