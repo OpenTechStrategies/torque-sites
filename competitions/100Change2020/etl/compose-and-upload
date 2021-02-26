@@ -525,6 +525,7 @@ def main():
     attachments.specify_new_column("Application Attachment", "Application Attachment")
     attachments.specify_new_column("COVID_.*", "COVID Response Attachment")
     attachments.specify_new_column(".*_Prospectus.pdf", "Prospectus Attachment")
+    attachments.specify_new_column(".*_Overview.pdf", "Overview Attachment")
     attachments.specify_new_column(
         ".*_Appendix.*.pdf", "Prospectus Appendix Attachments", None, True
     )
