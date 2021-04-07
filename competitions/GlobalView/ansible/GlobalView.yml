@@ -4,7 +4,7 @@
   become_user: "{{ deployment_user }}"
   roles:
     - mysql
-  
+
 - hosts: mediawiki
   become: true
   become_user: "{{ deployment_user }}"

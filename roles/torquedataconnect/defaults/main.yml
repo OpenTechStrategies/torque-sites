@@ -1,2 +1,3 @@
 ---
 torquedata_server_port: 5000
+torquedata_git_version: 8396d02
