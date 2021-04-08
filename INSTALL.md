@@ -129,14 +129,14 @@ $ svn co https://svn.opentechstrategies.com/repos/ots/trunk/clients/lever-for-ch
 
 Then you need to get the OTS utilities that includes `get-bigdata`
 ```
-$ git clone https://github.com/OpenTechStrategies/ots-tools.git $OTS_DIR/utils
+$ git clone https://github.com/OpenTechStrategies/ots-tools.git $OTS_TOOLS_DIR
 ```
 
 Now get the confidential data for the site you're working on.
 
 ```
 $ cd $OTS_DIR/clients/lever-for-change/torque-sites/<competition-name>/data
-$ $OTS_DIR/utils/get-bigdata
+$ $OTS_TOOLS_DIR/get-bigdata
 ```
 
 Install necessary system libraries
@@ -210,127 +210,15 @@ $ $EDITOR base/simplesaml/inv/<environment>/group_vars/all/secret
 
 # Installing a competition
 
-## Questions to ask before creating a new competition
-
-* Is the competition itself confidential?
-
-  Can the existence, name, and logo of the competition be made public?
-  If anything needs to be confidential, find that out up front and
-  make sure this repository does not expose any of the confidential
-  information.
-
-* Is there a competition logo?
-
-* What should shortname be for this competition?  
-
-  This will be the URL slug and the abbreviation used in other places.
-  Usually it includes a date, even if it is not yet known whether the
-  competition will happen in multiple years.  For example, for the
-  "Larson/Lam ICONIQ Impact Award" in 2020, the shortname is
-  `LLIIA2020`.
-
-* Okta vs local login?  Both?  Some other SSO service?
-
-* If Okta is used, what should the Okta chiclet's name for this competiton be?
-
-  The Okta chiclet should identify the competition unambiguously and
-  should be recognizable to any reasonably informed user.  Here are
-  some examples:
-
-    - "100&Change (2020)"
-    - "Larsen/Lam ICONIQ Impact Award (2020)"
-    - "Lone Star (2020)"
-
-  Usually we just put the date in parentheses after the full name.
-  But there can be exceptions: with "Climate2030", for example, we
-  didn't put "(2020)" after it because that would be confusing given
-  the presence of a date in the competition's actual name.
-
-  (See also the section "Authentication, Authorization, and Okta"
-  in [DESIGN.md](DESIGN.md).)
-
-* What groups/roles will be accessing this competition's data?
-
-  What permissions do the groups need, especially regarding
-  attachments?
-
-* Which proposals (rows) should be included?
-
-  I.e., What are the validation criteria?
-
-* Confirm which columns are to be included and which are not.
-
-  After setting up ETL, send the client a list of columns that
-  *aren't* included in the template at all, just to confirm.
-  
-* How should proposals be sorted initially?
-
-* What categorizations do we want to have Tables of Contents for?
-
-* Is any review/evaluation/ranking data included at competition
-  creation time?
-
-* Will review spreadsheets be coming later?  
-
-  How many different stages of review will there be?  (This is not
-  always knowable in advance, and that's fine, but the more we know
-  ahead of time the better.)
-
-* Do we know what followup information (budget tables, etc?) might be coming later?
-
-* Any special instructions regarding attachments?
-
-* What plugin-based features will be enabled?
-
-  - [TeamComments](https://github.com/opentechstrategies/TeamComments)?  
-
-  - [PickSome](https://github.com/opentechstrategies/PickSome)?  (If
-    so, we have some config decisions to make: naming, how many
-    instances, etc.)
-
-  [SimpleFavorites](https://github.com/opentechstrategies/SimpleFavorites)
-  should always be set up by default, as per Jeff's email:
-    
-        From: Jeff Ubois
-        Subject: Re: Climate 2030 set up
-        To: Karl Fogel
-        CC: Frank Duncan
-        Date: Tue, 15 Sep 2020 22:14:13 +0000
-        Message-ID: <07CBB723-814E-43AC-B8EA-964412149F7D@macfound.org>
-
-* Is there some existing competition that this new one is similar to? 
-
-  I.e., which template to base this new competition on?
-  100Change2020, EO, something else?
-  
-## Technical installation
+## Competition installation
 
 For the competition you're working with, run the instructions from
 "Installing via Ansible" and "Running the ETL pipeline" above.
 
-### Post-installation checklist for new competition instances
-
-1. Replace the default Mediawiki logo block ("`$wg_logo`" etc) with the right logo(s):
-   - Put the competition-specific logo in place for logged-in users.
-   - If the competition is not confidential, the same logo can be displayed to non-logged in users;
-     else the Lever for Change logo should be used.
-2. Create a `TorqueConfig:MainConfig` page in the competition's wiki.
-   (TODO: This item needs more detail.)
-3. Does login work?  Often it's via some third-party SSO provider like Okta.
-4. Is TOC depth adjusted right?
-5. Create TOC link(s) in the left navigation pane.
-6. Do you need book-printing to work?  Does it?  You may need to
-   fiddle with the template.  (TODO: Say where that template is.)
-7. Make sure `ActivityLog` logging is working.
-8. Does the `PickSome` feature need to be configured?
-9. Does the `TeamComments` feature need to be configured?
-10. Does the `SimpleFavorites` feature need to be configured?
-11. Are all the [user roles](DESIGN.md#user-groups) working correctly?
-    - Log in as each role and make sure you see what you expect to see.
-      For example, in a competition that has no finalists yet, someone
-      logging in with the "Donor" role might see no proposals!  You
-      probably don't want that to be the donor's first experience.
-
-Please add items to this list as needed.
+## Local Login
 
 If you have not set up 3rd party login, you can access [local login instead](https://github.com/OpenTechStrategies/torque-sites/blob/main/DESIGN.md#local-login-ie-regular-non-okta-mediawiki-login-is-also-possible)
+
+# Creating a new competition
+
+See the [template competition README](competitions/template/README.md)

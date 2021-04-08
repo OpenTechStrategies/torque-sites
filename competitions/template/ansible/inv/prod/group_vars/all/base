@@ -1,0 +1,15 @@
+---
+competition_name: <COMPETITIONNAME>
+db_username: <COMPETITIONNAME>_rw
+torquedataconnect_sheet_name: <COMPETITIONNAME>
+
+html_directory: /var/www/html
+mediawiki_server: https://torque.leverforchange.org
+mediawiki_install_directory: /home/deploy/<COMPETITIONNAME>/
+mediawiki_mwlib_username: mwlib
+mediawiki_csv2wiki_username: csv2wiki
+
+simplesaml_install_directory: /home/deploy/simplesaml/
+
+# This is only needed for ots deployments, and so not part of the template
+deployment_user: deploy

@@ -1,0 +1,36 @@
+Please only store encrypted data in this directory.                   
+
+* How to encrypt and decrypt files here
+
+  - Decypt:
+
+    $ gpg -d foo.csv.gpg > foo.csv
+
+  - Encrypt (adjust user list as needed):
+
+    $ gpg --symmetric foo.csv
+
+  - The passphrase is in opass in clients/lever-for-change/data-encryption-key
+
+* Descriptions of the data here
+
+  - INITIALZIPFILE.zip:
+
+    CSV and attachment data for the <COMPETITION>
+
+    The CSV file is an export of the raw proposal data.  It may be the
+    final export (as of <MONTH> <DAY>, <YEAR>), but we may receive updates.
+
+    There are <NUM> proposals in the CSV
+
+    <FURTHER DETAILS HERE, FOR EXAMPLE>
+
+    The attachments are in three folders, Valid, Invalid, and Not Submitted.
+    We are only using the Valid proposals.  For those, there's Registration,
+    Application, and sometimes MOUs
+
+    The subfolders of the folders and files names are keyed to the
+    "Application #" column in the CSV file.
+
+    IMPORTANT: this zip was created by zipping * from WITHIN THE DIRECTORY
+    as opposed to zipping the directory.

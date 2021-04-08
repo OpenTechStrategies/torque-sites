@@ -1,0 +1,23 @@
+Good morning!
+
+Another competition is ramping up, and that means another Okta chiclet.  Here's the standard email:
+
+The configuration for simplesaml is:
+
+    Single Sign On URL: https://torque.leverforchange.org/simplesaml/module.php/saml/sp/saml2-acs.php/<COMPETITIONNAME>
+    Audience Restriction URL: https://torque.leverforchange.org/simplesaml/module.php/saml/sp/metadata.php/<COMPETITIONNAME>
+    Default Relay State URL: https://torque.leverforchange.org/<COMPETITIONNAME>/index.php/?saml_sso=<COMPETITIONNAME>
+
+As normal, we'll need okta enabled for the LFC Torque Admin group, as well as the LFC Torque Group
+
+The variables we'll need set up are:
+
+    groups
+    username
+    email
+    first name
+    last name
+
+I'll configure the metadata url on my side as soon as I have it, and then I'll send out another mail as soon as the competition is up and I've gotten access.
+
+Thanks!
