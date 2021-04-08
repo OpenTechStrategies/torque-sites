@@ -5,7 +5,7 @@
     src: <LOGOFILENAME>
     dest: "{{ mediawiki_install_directory }}/mediawiki-1.35.0/resources/assets/<LOGOFILENAME>"
 
-- name: Install ECW2020 Logo
+- name: Install <COMPETITION> Logo
   lineinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-1.35.0/LocalSettings.php"
     regexp: ^\$wgLogo = .*

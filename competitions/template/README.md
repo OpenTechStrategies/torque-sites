@@ -164,7 +164,7 @@ more secret information
     - `opass edit clients/lever-for-change/torque-sites/$SHORTNAME/accounts`
     - This opass file is the placeholder for any accounts that get added
 15. Create an opass file for the ansible production secrets
-    - Use `../$SHORTNAME/ansible/inv/prod/group_vars/all/secret.tmpl`
+    - Create the secret file `mv ../$SHORTNAME/ansible/inv/prod/group_vars/all/secret{.tmpl,}`
     - `opass edit clients/lever-for-change/torque-sites/$SHORTNAME/ansible/prod`
     - One good source is to use xkcd's password generator
       - https://preshing.com/20110811/xkcd-password-generator/ at time of writing
@@ -177,6 +177,11 @@ more secret information
 17. Update `<COMPETITIONNAME>.yaml` to remove any roles not to be included in this competition
     - Please update the `COMPETITIONNAME.yaml` file in the template/ansible directory to
       include any new ones that have been added!
+18. TODO: update compose-and-upload, using it as a shell
+18. TODO: git commit the new competition!
+18. TODO: Logo STUFF
+19. TODO: MediaWiki TorqueConfig stuff!
+20. TODO: 
 18. Install locally, and test!
 
 
