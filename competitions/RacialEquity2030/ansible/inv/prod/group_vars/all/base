@@ -1,0 +1,17 @@
+---
+competition_name: RacialEquity2030
+db_username: RacialEquity2030_rw
+torquedataconnect_sheet_name: RacialEquity2030
+
+html_directory: /var/www/html
+mediawiki_server: https://torque.leverforchange.org
+mediawiki_install_directory: /home/deploy/RacialEquity2030/
+mediawiki_mwlib_username: mwlib
+mediawiki_csv2wiki_username: csv2wiki
+torquedata_server_port: 5003
+torquedata_git_version: 0818187
+
+simplesaml_install_directory: /home/deploy/simplesaml/
+
+# This is only needed for ots deployments, and so not part of the template
+deployment_user: deploy
