@@ -109,6 +109,9 @@ class WikiSession:
         if not page_title:
             return
 
-        p = self.site.pages[page_title]
-        if not p.exists or create_if_exists:
-            p.save(body)
+        try:
+            p = self.site.pages[page_title]
+            if not p.exists or create_if_exists:
+                p.save(body)
+        except:
+            print(page_title + " failed to save")

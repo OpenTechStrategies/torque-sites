@@ -194,9 +194,10 @@ class GenericToc(Toc):
     """A Toc that prints a grouped set of proposals with each group
     being a heading in the eventual wiki page."""
 
-    def __init__(self, name, column, initial_groupings=None, sort=None):
-        """Set up the Toc by giving a NAME for the Toc and a COLUMN which
-        it's based on.
+    def __init__(self, name, column_or_columns, initial_groupings=None, sort=None):
+        """Set up the Toc by giving a NAME for the Toc and a COLUMN_OR_COLUMNS which
+        it's based on. COLUMN_OR_COLUMNS can be eithe a single column name, or a
+        list of column names.
 
         INITIAL_GROUPINGS is an optional Array of different specified groupings,
         which gives it an order as groups (the value of the specified COLUMN for
@@ -208,7 +209,11 @@ class GenericToc(Toc):
 
         super().__init__()
         self.name = name
-        self.column = column
+        if isinstance(column_or_columns, list):
+            self.columns = column_or_columns
+        else:
+            self.columns = [column_or_columns]
+
         self.groupings = initial_groupings if initial_groupings is not None else []
         if sort is not None:
             self.sort = sort
@@ -223,11 +228,14 @@ class GenericToc(Toc):
             self.proposals = competition.ordered_proposals()
 
         for proposal in self.proposals:
-            grouping = proposal.cell(self.column)
-            if grouping not in self.data:
-                self.groupings.append(grouping)
-                self.data[grouping] = []
-            self.data[grouping].append(proposal.key())
+            for column in self.columns:
+                grouping = proposal.cell(column)
+                if grouping:
+                    if grouping not in self.data:
+                        self.groupings.append(grouping)
+                        self.data[grouping] = []
+                    if proposal.key() not in self.data[grouping]:
+                        self.data[grouping].append(proposal.key())
 
         if self.sort:
             self.data = {
@@ -279,12 +287,13 @@ class GenericMultiLineToc(GenericToc):
             self.proposals = competition.ordered_proposals()
 
         for proposal in self.proposals:
-            groupings = proposal.cell(self.column).split("\n")
-            for grouping in groupings:
-                if grouping not in self.data:
-                    self.groupings.append(grouping)
-                    self.data[grouping] = []
-                self.data[grouping].append(proposal.key())
+            for column in self.columns:
+                groupings = proposal.cell(column).split("\n")
+                for grouping in groupings:
+                    if grouping not in self.data:
+                        self.groupings.append(grouping)
+                        self.data[grouping] = []
+                    self.data[grouping].append(proposal.key())
 
         if self.sort:
             self.data = {
