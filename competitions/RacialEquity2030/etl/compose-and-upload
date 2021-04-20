@@ -23,8 +23,10 @@ Usage:
 
   $ compose-and-upload \\
        --proposals-csv=PROPOSALS_CSV \\
+       --admin-review-csv=ADMIN_REVIEW_CSV \\
        --attachments-dir=ATTACHMENTS_DIR \\
        --tdc-config-dir=TDC_CONFIG_DIR \\
+       --correction-file=CORRECTION_FILE \\
        --pare=PARE \\
        --csv-only
 
@@ -36,10 +38,23 @@ Command-line options:
                                   will be uploaded to the torque wiki.  It needs to have subdirectories
                                   by proposal number.
 
+  --admin-review-csv FILE         FILE is a CSV file representing which applications
+                                  in PROPOSALS_CSV should be included, as well as the Organization
+                                  information
+
   --tdc-config-dir DIR            DIR is the location for files that are the base configuration files
                                   needed by TorqueDataConnect, and can be optionally, manually, put on
                                   the torque wiki.  We don't automatically do that because we want to
                                   overwrite the configuration out there.
+
+  --correction-file FILE          FILE is a csv of corrections to the main data.  The header
+                                  must match the header of the original proposals file, and any
+                                  one of the columns must contain the review number.  Then
+                                  the data from the correction file will override the
+                                  source data for output.  There can be multiple correction
+                                  files, and each one overwrites the previous.
+
+                                  If the data cells have the empty string, no correction is applied.
 
   --pare ARG                      If ARG is a number, reduce the number of items to 1/ARG.  If
                                   ARG begins with +, then ARG is a comma separated list of
@@ -69,11 +84,13 @@ def main():
             [
                 "proposals-csv=",
                 "tdc-config-dir=",
+                "admin-review-csv=",
                 "judge-evaluation-csv=",
                 "expert-panel-evaluation-csv=",
                 "application-data=",
                 "financial-sheets-dir=",
                 "attachments-dir=",
+                "correction-file=",
                 "pare=",
                 "csv-only",
             ],
@@ -83,8 +100,10 @@ def main():
         sys.exit(2)
 
     proposals_csv = None
+    admin_review_csv = None
     attachments_dir = None
     tdc_config_dir = None
+    correction_file = None
     pare = None
     csv_only = False
     for o, a in opts:
@@ -98,6 +117,10 @@ def main():
             tdc_config_dir = a
         elif o == "--attachments-dir":
             attachments_dir = a
+        elif o == "--admin-review-csv":
+            admin_review_csv = a
+        elif o == "--correction-file":
+            correction_file = a
         else:
             sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
             sys.exit(2)
@@ -109,34 +132,43 @@ def main():
 
     comp = competition.Competition(proposals_csv, "RacialEquity2030", "Application #", pare)
 
+    correction_processor = competition.CorrectionData("Application #", correction_file)
+    for column in correction_processor.columns_affected():
+        comp.process_cells_special(column, correction_processor)
+
+    comp.add_supplemental_information(competition.LinkedSecondSheet(admin_review_csv, "Application #", ["Organization name"], {}))
+
+    comp.filter_proposals(
+        competition.ColumnEqualsProposalFilter("Admin Review Status", "Not Applicable")
+    )
+
     fix_cell_processor = competition.FixCellProcessor()
     comp.process_all_cells_special(fix_cell_processor)
     fix_cell_processor.report()
 
-    comp.process_cells_special("Organization Name", competition.RemoveHTMLBRsProcessor())
+    comp.process_cells_special("Organization name", competition.RemoveHTMLBRsProcessor())
     comp.process_cells_special("Project Title", competition.RemoveHTMLBRsProcessor())
 
     comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
     comp.add_supplemental_information(competition.GlobalViewMediaWikiTitleAdder("RacialEquity2030", "Project Title"))
 
-    comp.filter_proposals(
-        competition.ColumnEqualsProposalFilter("Admin Review Status", "Not submitted")
-    )
     comp.process_cells_special("Priority Populations", competition.MultiLineProcessor())
+    comp.process_cells_special("Sustainable Development Goals", competition.MultiLineProcessor(split_string="|"))
+
     comp.process_cells_special("Total Projected Costs", competition.NumberCommaizer())
-    comp.process_cells_special("Budget data", competition.BudgetTableProcessor())
+    comp.process_cells_special("Budget Data", competition.BudgetTableProcessor())
 
     attachments = competition.BasicAttachments(
         comp.sorted_proposal_keys, attachments_dir
     )
     comp.add_supplemental_information(attachments)
-    comp.sort("Organization Name")
+    comp.sort("Organization name")
 
     list_toc = toc.ListToc("All_Proposals")
     list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
         [
             {
-                "name": "Organization Name",
+                "name": "Organization name",
                 "heading": "Organization",
             },
             {
@@ -153,29 +185,53 @@ def main():
     )
     comp.add_toc(list_toc)
 
+    comp.add_toc(toc.GenericToc("Funders", ["FUNDER 1 Name", "FUNDER 2 Name", "FUNDER 3 Name"]))
+    comp.add_toc(toc.GenericMultiLineToc("Populations", "Priority Populations"))
+    comp.add_toc(toc.GenericMultiLineToc("Sustainable_Development_Goals", "Sustainable Development Goals",
+        [
+            "No Poverty",
+            "Zero Hunger",
+            "Good Health and Well-being",
+            "Quality Education",
+            "Gender Equality",
+            "Clean Water and Sanitation",
+            "Affordable and Clean Energy",
+            "Decent Work and Economic Growth",
+            "Industry, Innovation and Infrastructure",
+            "Reduced Inequality",
+            "Sustainable Cities and Communities",
+            "Responsible Consumption and Production",
+            "Climate Action",
+            "Life Below Water",
+            "Life on Land",
+            "Peace and Justice Strong Institutions",
+            "Partnerships for the Goals",
+        ]))
+    comp.add_toc(toc.GenericToc("Subject_Areas", "Primary Subject Area"))
+
     comp.add_toc(
         toc.GeographicToc(
             "Current_Work_Locations",
             [
                 [
                     "Location of Current Work #1 Country",
-                    "Location of Current Work #1 State / Province",
+                    "Location of Current Work #1 State / Provence",
                 ],
                 [
                     "Location of Current Work #2 Country",
-                    "Location of Current Work #2 State / Province",
+                    "Location of Current Work #2 State / Provence",
                 ],
                 [
                     "Location of Current Work #3 Country",
-                    "Location of Current Work #3 State / Province",
+                    "Location of Current Work #3 State / Provence",
                 ],
                 [
                     "Location of Current Work #4 Country",
-                    "Location of Current Work #4 State / Province",
+                    "Location of Current Work #4 State / Provence",
                 ],
                 [
                     "Location of Current Work #5 Country",
-                    "Location of Current Work #5 State / Province",
+                    "Location of Current Work #5 State / Provence",
                 ],
             ],
         )
@@ -187,23 +243,23 @@ def main():
             [
                 [
                     "Location of Future Work #1 Country",
-                    "Location of Future Work #1 State / Province",
+                    "Location of Future Work #1 State / Provence",
                 ],
                 [
                     "Location of Future Work #2 Country",
-                    "Location of Future Work #2 State / Province",
+                    "Location of Future Work #2 State / Provence",
                 ],
                 [
                     "Location of Future Work #3 Country",
-                    "Location of Future Work #3 State / Province",
+                    "Location of Future Work #3 State / Provence",
                 ],
                 [
                     "Location of Future Work #4 Country",
-                    "Location of Future Work #4 State / Province",
+                    "Location of Future Work #4 State / Provence",
                 ],
                 [
                     "Location of Future Work #5 Country",
-                    "Location of Future Work #5 State / Province",
+                    "Location of Future Work #5 State / Provence",
                 ],
             ],
         )

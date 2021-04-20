@@ -56,8 +56,11 @@ python3 -V > /dev/null 2>&1 || { echo "python3 required, aborting" ; exit 1; }
 
 PROPOSALS_CSV="RE2020_Registration_Application_2021-03-24_06-29-20.csv"
 BASE_ATTACHMENTS="RE2020_Registration_Application_exports_2021-03-24_08-08-31.zip"
+CORRECTION_FILE="OTS_Corrections.csv"
+ADMIN_REVIEW_CSV="Kellogg-AdminReview.csv"
 
 TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
+ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
 RUNNER="${LFC_DIR}"/compose-and-upload
 
@@ -101,14 +104,16 @@ if [ ! -d "${DATA_DIR}" ] ; then
   echo "Decrypting..."
 
   decrypt "${DATA_DIR}/${BASE_ATTACHMENTS}" "${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${ADMIN_REVIEW_CSV}" "${ENCRYPTED_DIR}/${ADMIN_REVIEW_CSV}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${CORRECTION_FILE}" "${ENCRYPTED_DIR}/${CORRECTION_FILE}.gpg" "${GPG_PASSPHRASE}"
 
   mkdir -p ${TDC_CONFIG_DIR}
 
   echo "Setting up attachments..."
   mkdir -p $TMP_ATTACHMENTS_DIR
   unzip -d ${TMP_ATTACHMENTS_DIR} ${DATA_DIR}/${BASE_ATTACHMENTS}
-  mv "${TMP_ATTACHMENTS_DIR}/*/${PROPOSALS_CSV}" $DATA_DIR
-  mv "${TMP_ATTACHMENTS_DIR}/*/Valid" $ATTACHMENTS_DIR
+  mv "${TMP_ATTACHMENTS_DIR}/"*"/${PROPOSALS_CSV}" $DATA_DIR
+  mv "${TMP_ATTACHMENTS_DIR}/"*"/Valid" $ATTACHMENTS_DIR
 
   # Clean up large zips to save disk space
   rm ${DATA_DIR}/${BASE_ATTACHMENTS}
@@ -129,6 +134,8 @@ mkdir -p $TDC_CONFIG_DIR
 
 ${RUNNER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
           --attachments-dir=${ATTACHMENTS_DIR} \
+          --admin-review-csv="${DATA_DIR}/${ADMIN_REVIEW_CSV}" \
+          --correction-file="${DATA_DIR}/${CORRECTION_FILE}" \
           $PARE \
           $CSV_ONLY \
           --tdc-config-dir="${TDC_CONFIG_DIR}"
