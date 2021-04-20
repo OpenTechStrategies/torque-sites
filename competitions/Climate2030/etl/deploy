@@ -15,39 +15,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-CSV_ONLY=""
-PARE=""
-while getopts "cp:" opt; do
-  case $opt in
-    c) CSV_ONLY="--csv-only" ;;
-    p) PARE="--pare=$OPTARG" ;;
-  esac
-done
-shift $((OPTIND -1))
+SCRIPT_DIR=`dirname "$BASH_SOURCE"`
+COMMON_SCRIPT_DIR="${SCRIPT_DIR}/../../../etl/common/deploy"
+source "${COMMON_SCRIPT_DIR}/utils"
+source "${COMMON_SCRIPT_DIR}/init"
 
 COMPETITION="Climate2030"
 LFC_DIR=`dirname "${0}"`
-BASE_DATA_DIR="${1}"
-
-if [ "${BASE_DATA_DIR}" = "" ]; then
-  echo "ERROR: BASE_DATA_DIRECTORY argument required."
-  echo ""
-  echo "Usage: '${0} [-c] [-p arg] BASE_DATA_DIRECTORY'"
-  echo ""
-  echo "Options:"
-  echo ""
-  echo "  -c                  Uploads CSV only.  Skips creating pages and"
-  echo "                      uploading attachments."
-  echo "  -p <arg>            If ARG is a number, pares by factor of ARG. If"
-  echo "                      ARG begins with +, then ARG is a comma separated"
-  echo "                      list of keys to include.  If ARG begins with @,"
-  echo "                      then ARG is a file with a newline separated list"
-  echo "                      of keys to include."
-  echo ""
-  echo "BASE_DATA_DIRECTORY/Climate2030 is where all the work is done."
-  echo ""
-  exit 1
-fi
 
 DATA_DIR="${BASE_DATA_DIR}/${COMPETITION}"
 
@@ -94,13 +68,13 @@ if [ ! -d "${DATA_DIR}" ] ; then
   mkdir -p $DATA_DIR
   echo "Decrypting..."
 
-  gpg -o ${DATA_DIR}/${BASE_ATTACHMENTS} --decrypt ${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg || exit 1
-  gpg -o "${DATA_DIR}/${JUDGE_EVALUATION_CSV}" --decrypt "${ENCRYPTED_DIR}/${JUDGE_EVALUATION_CSV}.gpg" || exit 1
-  gpg -o "${DATA_DIR}/${EXPERT_PANEL_EVALUATION_CSV}" --decrypt "${ENCRYPTED_DIR}/${EXPERT_PANEL_EVALUATION_CSV}.gpg" || exit 1
-  gpg -o "${DATA_DIR}/${LFC_ANALYSIS_PAGES}" --decrypt "${ENCRYPTED_DIR}/${LFC_ANALYSIS_PAGES}.gpg" || exit 1
-  gpg -o "${DATA_DIR}/${FINANCIAL_DATA}" --decrypt "${ENCRYPTED_DIR}/${FINANCIAL_DATA}.gpg" || exit 1
-  gpg -o "${DATA_DIR}/${FINANCIAL_DATA_CSV}" --decrypt "${ENCRYPTED_DIR}/${FINANCIAL_DATA_CSV}.gpg" || exit 1
-  gpg -o "${DATA_DIR}/${PROPOSALS_CSV}" --decrypt "${ENCRYPTED_DIR}/${PROPOSALS_CSV}.gpg" || exit 1
+  decrypt "${DATA_DIR}/${BASE_ATTACHMENTS}" "${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${JUDGE_EVALUATION_CSV}" "${ENCRYPTED_DIR}/${JUDGE_EVALUATION_CSV}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${EXPERT_PANEL_EVALUATION_CSV}" "${ENCRYPTED_DIR}/${EXPERT_PANEL_EVALUATION_CSV}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${LFC_ANALYSIS_PAGES}" "${ENCRYPTED_DIR}/${LFC_ANALYSIS_PAGES}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${FINANCIAL_DATA}" "${ENCRYPTED_DIR}/${FINANCIAL_DATA}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${FINANCIAL_DATA_CSV}" "${ENCRYPTED_DIR}/${FINANCIAL_DATA_CSV}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${PROPOSALS_CSV}" "${ENCRYPTED_DIR}/${PROPOSALS_CSV}.gpg" "${GPG_PASSPHRASE}"
 
   mkdir -p ${TDC_CONFIG_DIR}
 
