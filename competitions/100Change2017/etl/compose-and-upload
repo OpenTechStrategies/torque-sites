@@ -110,6 +110,7 @@ def main():
     comp.add_supplemental_information(
         competition.MediaWikiTitleAdder("Registered Organization Name")
     )
+    comp.add_supplemental_information(competition.GlobalViewMediaWikiTitleAdder("LFC100Change2017", "Registered Organization Name"))
 
     fix_cell_processor = competition.FixCellProcessor()
     comp.process_all_cells_special(fix_cell_processor)

@@ -451,6 +451,7 @@ def main():
         proposals_csv, "LFC100Change2020", "Review Number", pare
     )
     comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
+    comp.add_supplemental_information(competition.GlobalViewMediaWikiTitleAdder("LFC100Change2020", "Project Title"))
 
     fix_cell_processor = competition.FixCellProcessor()
     comp.process_all_cells_special(fix_cell_processor)

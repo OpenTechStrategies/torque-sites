@@ -313,6 +313,7 @@ def main():
 
     comp = competition.Competition(proposals_csv, "EO2020", "Application #", pare)
     comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
+    comp.add_supplemental_information(competition.GlobalViewMediaWikiTitleAdder("EO2020", "Project Title"))
 
     fix_cell_processor = competition.FixCellProcessor()
     comp.process_all_cells_special(fix_cell_processor)
