@@ -17,3 +17,16 @@
     marker: "## {mark} ANSIBLE PLUGABLE AUTH OVERRIDE CONFIG"
     block: |
       $wgPluggableAuth_EnableLocalLogin = true;
+
+- name: Install additional tab configurations
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
+    marker: "## {mark} ANSIBLE ADDITIONAL TAB CONFIG"
+    block: |
+      # Overwrite the whole variable since LLIIA2020 has a different set of page tabs than default
+      $wgLFCExtraTabs = [
+        ["Memo for", "Finalist Memo", "main"],
+        ["Prospectus for ", "Prospectus", "prospectus"],
+        ["Diligence for ", "Diligence", "diligence"],
+        ["Original Proposal for ", "Original Proposal", "originalproposal"]
+      ];

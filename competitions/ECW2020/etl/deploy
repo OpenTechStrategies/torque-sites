@@ -6,48 +6,22 @@
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-CSV_ONLY=""
-PARE=""
-while getopts "cp:" opt; do
-  case $opt in
-    c) CSV_ONLY="--csv-only" ;;
-    p) PARE="--pare=$OPTARG" ;;
-  esac
-done
-shift $((OPTIND -1))
+SCRIPT_DIR=`dirname "$BASH_SOURCE"`
+COMMON_SCRIPT_DIR="${SCRIPT_DIR}/../../../etl/common/deploy"
+source "${COMMON_SCRIPT_DIR}/utils"
+source "${COMMON_SCRIPT_DIR}/init"
 
 COMPETITION="ECW2020"
 LFC_DIR=`dirname "${0}"`
-BASE_DATA_DIR="${1}"
-
-if [ "${BASE_DATA_DIR}" = "" ]; then
-  echo "ERROR: BASE_DATA_DIRECTORY argument required."
-  echo ""
-  echo "Usage: '${0} [-c] [-p arg] BASE_DATA_DIRECTORY'"
-  echo ""
-  echo "Options:"
-  echo ""
-  echo "  -c                  Uploads CSV only.  Skips creating pages and"
-  echo "                      uploading attachments."
-  echo "  -p <arg>            If ARG is a number, pares by factor of ARG. If"
-  echo "                      ARG begins with +, then ARG is a comma separated"
-  echo "                      list of keys to include.  If ARG begins with @,"
-  echo "                      then ARG is a file with a newline separated list"
-  echo "                      of keys to include."
-  echo ""
-  echo "BASE_DATA_DIRECTORY/ECW2020 is where all the work is done."
-  echo ""
-  exit 1
-fi
 
 DATA_DIR="${BASE_DATA_DIR}/${COMPETITION}"
 
