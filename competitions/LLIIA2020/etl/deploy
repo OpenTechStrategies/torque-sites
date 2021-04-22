@@ -40,6 +40,7 @@ REGIONCONFIG_CSV="regionconfig.csv"
 TOP16_DATA_FILE="top16.dat"
 TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
 FINALIST_ATTACHMENTS_ZIP="LLIIA_Finalists_Attachments.zip"
+FINALIST_ATTACHMENTS_CSV="LLIIA_Finalists_Attachments.csv"
 
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
 RUNNER="${LFC_DIR}"/compose-and-upload
@@ -76,6 +77,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   decrypt "${DATA_DIR}/${BASE_ATTACHMENTS}" "${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg" "${GPG_PASSPHRASE}"
   decrypt "${DATA_DIR}/${BUDGET_ZIP}" "${ENCRYPTED_DIR}/${BUDGET_ZIP}.gpg" "${GPG_PASSPHRASE}"
   decrypt "${DATA_DIR}/${FINALIST_ATTACHMENTS_ZIP}" "${ENCRYPTED_DIR}/${FINALIST_ATTACHMENTS_ZIP}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${FINALIST_ATTACHMENTS_CSV}" "${ENCRYPTED_DIR}/${FINALIST_ATTACHMENTS_CSV}.gpg" "${GPG_PASSPHRASE}"
 
   unzip -d ${DATA_DIR} ${DATA_DIR}/${BUDGET_ZIP}
 
@@ -85,6 +87,15 @@ if [ ! -d "${DATA_DIR}" ] ; then
   echo "Setting up attachments..."
   unzip -d ${ATTACHMENTS_DIR} ${DATA_DIR}/${BASE_ATTACHMENTS}
   mv "${ATTACHMENTS_DIR}/LLIIAE_registration_and_application_data.csv" $DATA_DIR
+
+  echo "Setting up finalist attachments..."
+
+  mkdir -p $TMP_ATTACHMENTS_DIR
+  unzip -d $TMP_ATTACHMENTS_DIR ${DATA_DIR}/${FINALIST_ATTACHMENTS_ZIP}
+  while IFS=, read DIRECTORY_NAME APP_NUMBER ; do
+    cp -v "$TMP_ATTACHMENTS_DIR/LLIIA_Finalists_Attachments/$DIRECTORY_NAME"/**/*.pdf "$ATTACHMENTS_DIR$APP_NUMBER/"
+  done < ${DATA_DIR}/${FINALIST_ATTACHMENTS_CSV}
+  rm -rf $TMP_ATTACHMENTS_DIR
 
   # Clean up large zips to save disk space
   rm ${DATA_DIR}/${BASE_ATTACHMENTS}
