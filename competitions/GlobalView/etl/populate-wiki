@@ -187,6 +187,29 @@ def main():
     comp.add_supplemental_information(GlobalViewMediaWikiOverride())
 
     list_toc = toc.ListToc("All_Proposals")
+    list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
+        [
+            {
+                "name": "Organization Name",
+                "heading": "Organization",
+            },
+            {
+                "name": "Project Title",
+                "heading": "Title",
+                "link": True,
+            },
+            {
+                "name": "Competition Name",
+                "heading": "Competition",
+            },
+            {
+                "name": "Competition Application #",
+                "heading": "ID #",
+                "right_aligned": True,
+            },
+        ]
+    )
+
     comp.add_toc(list_toc)
     comp.add_toc(toc.GenericMultiLineToc("Populations", "Priority Populations"))
     comp.sort("Organization Name")
@@ -213,7 +236,7 @@ def main():
                 proposal.cell("Competition Application #"),
                 proposal.cell("Wiki Key")
             ),
-            True
+            False
         )
 
 
