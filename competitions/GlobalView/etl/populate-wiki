@@ -49,6 +49,37 @@ competition_configs = {
         "priority_populations": "Priority Populations",
         "organization_name": "Organization Name",
     },
+    "100Change2020": {
+        "key": "Review Number",
+        "title": "Project Title",
+        "sheet_name": "LFC100Change2020",
+        "wiki_key": "100Change2020",
+        "priority_populations": "Priority Populations",
+        "organization_name": "Organization Legal Name",
+    },
+    "100Change2017": {
+        "key": "Review_Number",
+        "title": "Registered Organization Name",
+        "sheet_name": "LFC100Change2017",
+        "wiki_key": "100Change2017",
+        "organization_name": "Registered Organization Name",
+    },
+    "EO2020": {
+        "key": "Application #",
+        "title": "Project Title",
+        "sheet_name": "EO2020",
+        "wiki_key": "EO2020",
+        "priority_populations": "Priority Populations",
+        "organization_name": "Organization Name",
+    },
+    "RacialEquity2030": {
+        "key": "Application #",
+        "title": "Project Title",
+        "sheet_name": "RacialEquity2030",
+        "wiki_key": "RacialEquity2030",
+        "priority_populations": "Priority Populations",
+        "organization_name": "Organization name",
+    },
 }
 
 
@@ -128,6 +159,7 @@ def main():
             "Project Title",
             "Organization Name",
             "Wiki Key",
+            "Sheet Name",
             "Priority Populations"
             ])
 
@@ -136,6 +168,9 @@ def main():
             comp = competition.Competition(comp_csv, name, competition_configs[name]["key"], None, True)
 
             for proposal in comp.ordered_proposals():
+                priority_populations = ""
+                if "priority_populations" in competition_configs[name]:
+                    priority_populations = proposal.cell(competition_configs[name]["priority_populations"])
                 csv_writer.writerow([
                     "%s_%s" % (name, proposal.key()),
                     name,
@@ -143,7 +178,8 @@ def main():
                     proposal.cell(competition_configs[name]["title"]),
                     proposal.cell(competition_configs[name]["organization_name"]),
                     competition_configs[name]["wiki_key"],
-                    proposal.cell(competition_configs[name]["priority_populations"])
+                    competition_configs[name]["sheet_name"],
+                    priority_populations
             ])
 
     comp = competition.Competition(csv_location, "GlobalView", "Global Application #")
@@ -169,10 +205,11 @@ def main():
     my_wiki.upload_sheet(comp)
 
     for proposal in comp.proposals.values():
+        print(proposal.cell("MediaWiki Title"))
         my_wiki.create_page(
             proposal.cell("MediaWiki Title"),
             "{{ #tdcrender:%s/id/%s.mwiki|false|%s }}" % (
-                proposal.cell("Competition Name"),
+                proposal.cell("Sheet Name"),
                 proposal.cell("Competition Application #"),
                 proposal.cell("Wiki Key")
             ),

@@ -151,6 +151,7 @@ def main():
 
     comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
     comp.add_supplemental_information(competition.GlobalViewMediaWikiTitleAdder("RacialEquity2030", "Project Title"))
+    comp.add_supplemental_information(competition.StaticColumnAdder("Competition Name", "RacialEquity2030"))
 
     comp.process_cells_special("Priority Populations", competition.MultiLineProcessor())
     comp.process_cells_special("Sustainable Development Goals", competition.MultiLineProcessor(split_string="|"))

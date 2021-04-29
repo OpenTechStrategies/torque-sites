@@ -290,10 +290,11 @@ class GenericMultiLineToc(GenericToc):
             for column in self.columns:
                 groupings = proposal.cell(column).split("\n")
                 for grouping in groupings:
-                    if grouping not in self.data:
-                        self.groupings.append(grouping)
-                        self.data[grouping] = []
-                    self.data[grouping].append(proposal.key())
+                    if grouping:
+                        if grouping not in self.data:
+                            self.groupings.append(grouping)
+                            self.data[grouping] = []
+                        self.data[grouping].append(proposal.key())
 
         if self.sort:
             self.data = {

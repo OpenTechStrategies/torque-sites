@@ -4,4 +4,4 @@ torquedata_install_directory: /home/deploy/torquedata-gv/
 deployment_user: deploy
 torquedata_port: 5003
 supervisor_torquedata_name: torquedata-gv
-torquedata_git_version: 01e0039
+torquedata_git_version: b8f486a

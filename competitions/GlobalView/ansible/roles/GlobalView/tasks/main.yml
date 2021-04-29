@@ -18,7 +18,10 @@
     block: |
       $wgTorqueDataConnectMultiWikiConfig = [];
       $wgTorqueDataConnectMultiWikiConfig["LLIIA2020"] = "LLIIA2020";
-      $wgTorqueDataConnectMultiWikiConfig["LoneStar2020"] = "LoneStar2020";
+      $wgTorqueDataConnectMultiWikiConfig["LFC100Change2020"] = "100Change2020";
+      $wgTorqueDataConnectMultiWikiConfig["LFC100Change2017"] = "100Change2017";
+      $wgTorqueDataConnectMultiWikiConfig["EO2020"] = "EO2020";
+      $wgTorqueDataConnectMultiWikiConfig["RacialEquity2030"] = "RacialEquity2030";
 
 - name: Install Team Comments Disabler
   copy:

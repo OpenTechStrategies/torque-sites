@@ -532,6 +532,28 @@ class MediaWikiTitleAdder(InformationAdder):
         return unidecode.unidecode_expect_nonascii(title).strip()
 
 
+class StaticColumnAdder(InformationAdder):
+    """An InformationAdder that adds a column, and sets that column
+    to a specific value for all rows of the sheet.  This is useful
+    for meta information about a given sheet, so that when using
+    a wiki that has more than one sheet (GlobalView), there's certain
+    information that is constant for all proposals coming from that
+    sheet"""
+
+    def __init__(self, column_name, value):
+        self.column_name = column_name
+        self.value = value
+
+    def column_type(self, column_name):
+        return None
+
+    def column_names(self):
+        return [self.column_name]
+
+    def cell(self, proposal, column_name):
+        return self.value
+
+
 class FinancialDataAdder(InformationAdder):
     """Adder that takes a FINANCIAL_SHEETS_DIR, filled with csvs named
     <Application #>.csv, as well as a DEFINITIONS dictionary that
