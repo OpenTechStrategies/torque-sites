@@ -8,6 +8,7 @@
 
 import csv
 import sys
+from enum import Enum
 
 
 class Toc:
@@ -190,9 +191,20 @@ class WikiTableTocProposalFormatter(TocProposalFormatter):
         return "|}\n"
 
 
+class TocSorter:
+    def __init__(self, attribute, reverse):
+        self.attribute = attribute
+        self.reverse = reverse
+
+
 class GenericToc(Toc):
     """A Toc that prints a grouped set of proposals with each group
     being a heading in the eventual wiki page."""
+
+    class SortMethod(Enum):
+        NONE = TocSorter(None, None)
+        NAME = TocSorter("name", False)
+        COUNT = TocSorter("num_filtered_proposals", True)
 
     def __init__(self, name, column_or_columns, initial_groupings=None, sort=None):
         """Set up the Toc by giving a NAME for the Toc and a COLUMN_OR_COLUMNS which
@@ -217,9 +229,20 @@ class GenericToc(Toc):
         self.groupings = initial_groupings if initial_groupings is not None else []
         if sort is not None:
             self.sort = sort
+        elif initial_groupings is None:
+            self.sort = self.SortMethod.NAME
         else:
-            self.sort = initial_groupings is None
+            # Do not override the natural sort caused by process_competition
+            self.sort = self.SortMethod.NONE
         self.data = {x: [] for x in self.groupings}
+
+    def default_grouping(self, grouping):
+        return {
+            "all_proposal_ids": [],
+            "filtered_proposal_ids": [],
+            "num_filtered_proposals": 0,
+            "name": grouping,
+        }
 
     def process_competition(self, competition):
         self.competition_name = competition.name
@@ -233,34 +256,35 @@ class GenericToc(Toc):
                 if grouping:
                     if grouping not in self.data:
                         self.groupings.append(grouping)
-                        self.data[grouping] = []
-                    if proposal.key() not in self.data[grouping]:
-                        self.data[grouping].append(proposal.key())
-
-        if self.sort:
-            self.data = {
-                grouping: self.data[grouping] for grouping in sorted(self.groupings)
-            }
+                        self.data[grouping] = default_grouping(grouping)
+                    self.data[grouping].all_proposal_ids.append(proposal.key())
 
     def template_file(self):
         template = "__TOC__"
         template += ""
-        template += "{% for group_name, proposal_ids in groups.items() %}\n"
-        template += "    {%- set proposals_in_group = [] %}\n"
-        template += "    {%- for proposal_id in proposal_ids %}\n"
+        template += "{% for group in groups %}\n"
+        template += "    {%- for proposal_id in group.all_proposal_ids %}\n"
         template += (
             "        {%%- if proposal_id in %s.keys() %%}\n" % self.competition_name
         )
-        template += '            {{- "" if proposals_in_group.append(proposal_id) }}\n'
+        template += '            {{- "" if group.filtered_proposal_ids.append(proposal_id) }}\n'
+        template += '            {{- "" if group.update({"num_filtered_proposals": group["num_filtered_proposals"] + 1}) }}\n'
         template += "        {%- endif %}\n"
         template += "    {%- endfor %}\n"
-        template += "    {%- if proposals_in_group|length > 0 %}\n"
+        template += "{%- endfor %}\n"
+
+        if self.sort is self.SortMethod.NONE:
+            template += '{% for group in groups %}\n'
+        else:
+            template += ('{%% for group in groups|sort(attribute="%s", reverse=%s) %%}\n' % (self.sort.value.attribute, str(self.sort.value.reverse)))
+
+        template += "    {%- if group.num_filtered_proposals > 0 %}\n"
 
         # This line is so that we can have counts and still link into it
-        template += "<div id='{{ group_name }}'></div>\n"
-        template += "= {{ group_name }} ({{ proposals_in_group|length }}) =\n"
+        template += "<div id='{{ group.name }}'></div>\n"
+        template += "= {{ group.name }} ({{ group.num_filtered_proposals }}) =\n"
         template += self.proposal_formatter.prefix(self.competition_name)
-        template += "        {%- for proposal_id in proposals_in_group %}\n"
+        template += "        {%- for proposal_id in group.filtered_proposal_ids %}\n"
         template += self.proposal_formatter.format_proposal(
             self.competition_name, "proposal_id"
         )
@@ -271,7 +295,7 @@ class GenericToc(Toc):
         return template
 
     def grouped_data(self):
-        return {"groups": self.data}
+        return {"groups": list(self.data.values())}
 
 
 class GenericMultiLineToc(GenericToc):
@@ -293,13 +317,8 @@ class GenericMultiLineToc(GenericToc):
                     if grouping:
                         if grouping not in self.data:
                             self.groupings.append(grouping)
-                            self.data[grouping] = []
-                        self.data[grouping].append(proposal.key())
-
-        if self.sort:
-            self.data = {
-                grouping: self.data[grouping] for grouping in sorted(self.groupings)
-            }
+                            self.data[grouping] = super().default_grouping(grouping)
+                        self.data[grouping]["all_proposal_ids"].append(proposal.key())
 
 
 class ListToc(Toc):
