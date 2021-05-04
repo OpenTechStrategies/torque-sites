@@ -256,8 +256,8 @@ class GenericToc(Toc):
                 if grouping:
                     if grouping not in self.data:
                         self.groupings.append(grouping)
-                        self.data[grouping] = default_grouping(grouping)
-                    self.data[grouping].all_proposal_ids.append(proposal.key())
+                        self.data[grouping] = self.default_grouping(grouping)
+                    self.data[grouping]["all_proposal_ids"].append(proposal.key())
 
     def template_file(self):
         template = "__TOC__"
