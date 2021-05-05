@@ -56,6 +56,8 @@ Command-line options:
 
                                   If the data cells have the empty string, no correction is applied.
 
+  --peer-to-peer-review FILE      FILE contains the P2P Rank correlating to the application #
+
   --pare ARG                      If ARG is a number, reduce the number of items to 1/ARG.  If
                                   ARG begins with +, then ARG is a comma separated list of
                                   keys to include.  If ARG begins with @, then ARG is a
@@ -91,6 +93,7 @@ def main():
                 "financial-sheets-dir=",
                 "attachments-dir=",
                 "correction-file=",
+                "peer-to-peer-review=",
                 "pare=",
                 "csv-only",
             ],
@@ -104,6 +107,7 @@ def main():
     attachments_dir = None
     tdc_config_dir = None
     correction_file = None
+    peer_to_peer_review_csv = None
     pare = None
     csv_only = False
     for o, a in opts:
@@ -121,6 +125,8 @@ def main():
             admin_review_csv = a
         elif o == "--correction-file":
             correction_file = a
+        elif o == "--peer-to-peer-review":
+            peer_to_peer_review_csv = a
         else:
             sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
             sys.exit(2)
@@ -144,6 +150,12 @@ def main():
         )
     )
 
+    comp.add_supplemental_information(
+        competition.LinkedSecondSheet(
+            peer_to_peer_review_csv, "App # ", ["P2P Rank"], {}
+        )
+    )
+
     comp.filter_proposals(
         competition.ColumnEqualsProposalFilter("Admin Review Status", "Not Applicable")
     )
@@ -155,6 +167,7 @@ def main():
     comp.process_cells_special(
         "Organization name", competition.RemoveHTMLBRsProcessor()
     )
+    comp.process_cells_special("P2P Rank", competition.DefaultValueSetter("9999"))
     comp.process_cells_special("Project Title", competition.RemoveHTMLBRsProcessor())
 
     comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
@@ -178,7 +191,7 @@ def main():
         comp.sorted_proposal_keys, attachments_dir
     )
     comp.add_supplemental_information(attachments)
-    comp.sort("Organization name")
+    comp.sort("P2P Rank", True)
 
     list_toc = toc.ListToc("All_Proposals")
     list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
@@ -195,6 +208,11 @@ def main():
             {
                 "name": "Application #",
                 "heading": "ID #",
+                "right_aligned": True,
+            },
+            {
+                "name": "P2P Rank",
+                "heading": "Rank",
                 "right_aligned": True,
             },
         ]

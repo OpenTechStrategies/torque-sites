@@ -234,7 +234,7 @@ class GenericToc(Toc):
         else:
             # Do not override the natural sort caused by process_competition
             self.sort = self.SortMethod.NONE
-        self.data = {x: [] for x in self.groupings}
+        self.data = {x: self.default_grouping(x) for x in self.groupings}
 
     def default_grouping(self, grouping):
         return {

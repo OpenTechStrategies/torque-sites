@@ -425,6 +425,16 @@ class ColumnTypeUpdater(CellProcessor):
         return self.col_type
 
 
+class DefaultValueSetter(CellProcessor):
+    """Sets the value to DEFAULT_VALUE if no value set there already."""
+
+    def __init__(self, default_value):
+        self.default_value = default_value
+
+    def process_cell(self, proposal, column_name):
+        return proposal.cell(column_name) or self.default_value
+
+
 class InformationAdder:
     """The base class for things that add information to proposals that
     aren't in the base spreadsheet.  Will usually implement column_type,
