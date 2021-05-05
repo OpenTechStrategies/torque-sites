@@ -93,9 +93,9 @@ class GlobalViewMediaWikiOverride(competition.MediaWikiTitleAdder):
 
     def cell(self, proposal, column_name):
         title = "%s (%s: %s)" % (
-                proposal.cell("Project Title"),
-                proposal.cell("Wiki Key"),
-                proposal.cell("Competition Application #")
+            proposal.cell("Project Title"),
+            proposal.cell("Wiki Key"),
+            proposal.cell("Competition Application #"),
         )
         return self.sanitize_title(title)
 
@@ -122,7 +122,9 @@ def main():
     for o, a in opts:
         if o == "--competition":
             if a not in competition_configs:
-                sys.stderr.write("ERROR: competition '%s' is not in our competition_configs\n" % a)
+                sys.stderr.write(
+                    "ERROR: competition '%s' is not in our competition_configs\n" % a
+                )
                 sys.exit(2)
             competition_names.append(a)
         elif o == "--competition-csv":
@@ -139,51 +141,69 @@ def main():
         sys.exit(1)
 
     if len(competition_names) is 0 or len(competition_csvs) is 0:
-        sys.stderr.write("ERROR: need at least one --competition and --competition-csv option.\n\n")
+        sys.stderr.write(
+            "ERROR: need at least one --competition and --competition-csv option.\n\n"
+        )
         sys.stderr.write(__doc__)
         sys.exit(1)
 
     if len(competition_names) is not len(competition_csvs):
-        sys.stderr.write("ERROR: number of --competition and --competition-csv options needs to be the same.\n\n")
+        sys.stderr.write(
+            "ERROR: number of --competition and --competition-csv options needs to be the same.\n\n"
+        )
         sys.stderr.write(__doc__)
         sys.exit(1)
 
     csv_location = os.path.join(tdc_config_dir, "multi-competition-generated.csv")
 
     with open(csv_location, "w") as writer:
-        csv_writer = csv.writer(writer, delimiter=",", quotechar='"', lineterminator="\n")
-        csv_writer.writerow([
-            "Global Application #",
-            "Competition Name",
-            "Competition Application #",
-            "Project Title",
-            "Organization Name",
-            "Wiki Key",
-            "Sheet Name",
-            "Priority Populations"
-            ])
+        csv_writer = csv.writer(
+            writer, delimiter=",", quotechar='"', lineterminator="\n"
+        )
+        csv_writer.writerow(
+            [
+                "Global Application #",
+                "Competition Name",
+                "Competition Application #",
+                "Project Title",
+                "Organization Name",
+                "Wiki Key",
+                "Sheet Name",
+                "Priority Populations",
+            ]
+        )
 
         for name, comp_csv in zip(competition_names, competition_csvs):
-            csv_reader = csv.reader(open(comp_csv, encoding="utf-8"), delimiter=",", quotechar='"')
-            comp = competition.Competition(comp_csv, name, competition_configs[name]["key"], None, True)
+            csv_reader = csv.reader(
+                open(comp_csv, encoding="utf-8"), delimiter=",", quotechar='"'
+            )
+            comp = competition.Competition(
+                comp_csv, name, competition_configs[name]["key"], None, True
+            )
 
             for proposal in comp.ordered_proposals():
                 priority_populations = ""
                 if "priority_populations" in competition_configs[name]:
-                    priority_populations = proposal.cell(competition_configs[name]["priority_populations"])
-                csv_writer.writerow([
-                    "%s_%s" % (name, proposal.key()),
-                    name,
-                    proposal.key(),
-                    proposal.cell(competition_configs[name]["title"]),
-                    proposal.cell(competition_configs[name]["organization_name"]),
-                    competition_configs[name]["wiki_key"],
-                    competition_configs[name]["sheet_name"],
-                    priority_populations
-            ])
+                    priority_populations = proposal.cell(
+                        competition_configs[name]["priority_populations"]
+                    )
+                csv_writer.writerow(
+                    [
+                        "%s_%s" % (name, proposal.key()),
+                        name,
+                        proposal.key(),
+                        proposal.cell(competition_configs[name]["title"]),
+                        proposal.cell(competition_configs[name]["organization_name"]),
+                        competition_configs[name]["wiki_key"],
+                        competition_configs[name]["sheet_name"],
+                        priority_populations,
+                    ]
+                )
 
     comp = competition.Competition(csv_location, "GlobalView", "Global Application #")
-    comp.process_cells_special("Priority Populations", competition.ColumnTypeUpdater("list"))
+    comp.process_cells_special(
+        "Priority Populations", competition.ColumnTypeUpdater("list")
+    )
     comp.add_supplemental_information(GlobalViewMediaWikiOverride())
 
     list_toc = toc.ListToc("All_Proposals")
@@ -211,7 +231,11 @@ def main():
     )
 
     comp.add_toc(list_toc)
-    comp.add_toc(toc.GenericMultiLineToc("Populations", "Priority Populations", None, toc.GenericToc.SortMethod.COUNT))
+    comp.add_toc(
+        toc.GenericMultiLineToc(
+            "Populations", "Priority Populations", None, toc.GenericToc.SortMethod.COUNT
+        )
+    )
     comp.sort("Organization Name")
     comp.process_tocs()
 
@@ -231,12 +255,13 @@ def main():
         print(proposal.cell("MediaWiki Title"))
         my_wiki.create_page(
             proposal.cell("MediaWiki Title"),
-            "{{ #tdcrender:%s/id/%s.mwiki|false|%s }}" % (
+            "{{ #tdcrender:%s/id/%s.mwiki|false|%s }}"
+            % (
                 proposal.cell("Sheet Name"),
                 proposal.cell("Competition Application #"),
-                proposal.cell("Wiki Key")
+                proposal.cell("Wiki Key"),
             ),
-            False
+            False,
         )
 
 

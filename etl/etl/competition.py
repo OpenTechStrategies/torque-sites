@@ -452,8 +452,13 @@ class LinkedSecondSheet(InformationAdder):
     per row, like the original sheet, and has information that should
     get added."""
 
-    def __init__(self, csv_location, key_column_name,
-            additional_column_names, additional_column_types):
+    def __init__(
+        self,
+        csv_location,
+        key_column_name,
+        additional_column_names,
+        additional_column_types,
+    ):
         """Builds the dataset from the CSV_LOCATION, using the KEY_COLUMN_NAME
         to link up against the proposal keys, and the adds the columns from
         ADDITIONAL_COLUMN_NAMES.  The types of these columns are specified
@@ -469,7 +474,10 @@ class LinkedSecondSheet(InformationAdder):
         self.additional_column_types = additional_column_types
         self.data = {}
         for row in csv_reader:
-            self.data[row[key_col_idx]] = {col_name: row[header_row.index(col_name)] for col_name in additional_column_names}
+            self.data[row[key_col_idx]] = {
+                col_name: row[header_row.index(col_name)]
+                for col_name in additional_column_names
+            }
 
     def column_type(self, column_name):
         if column_name in self.additional_column_types.keys():
@@ -636,7 +644,7 @@ class FinancialDataAdder(InformationAdder):
 
                 # This is some serious special casing to recreate the formatting in xlsx
                 items = []
-                for item in row[1:len(proposal_financial_data["years"]) + 1]:
+                for item in row[1 : len(proposal_financial_data["years"]) + 1]:
                     try:
                         float_item = float(item)
                         if "percent" in definition and definition["percent"]:
@@ -691,9 +699,9 @@ class GlobalViewMediaWikiTitleAdder(MediaWikiTitleAdder):
 
     def cell(self, proposal, column_name):
         title = "%s (%s: %s)" % (
-                proposal.cell(self.project_column_name),
-                self.wiki_key,
-                proposal.key()
+            proposal.cell(self.project_column_name),
+            self.wiki_key,
+            proposal.key(),
         )
         return self.sanitize_title(title)
 
@@ -842,7 +850,11 @@ class RegexSpecifiedAttachments(BasicAttachments):
         return None
 
     def column_names(self):
-        return BasicAttachments.defined_column_names + self.nonlist_columns + self.list_columns
+        return (
+            BasicAttachments.defined_column_names
+            + self.nonlist_columns
+            + self.list_columns
+        )
 
     def specify_by_regex(self, regex, name, rank=None):
         """Matches the REGEX against the filename, and then updates the display

@@ -107,17 +107,23 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    comp = competition.Competition(proposals_csv, "<COMPETITIONNAME>", "Application #", pare)
+    comp = competition.Competition(
+        proposals_csv, "<COMPETITIONNAME>", "Application #", pare
+    )
 
     fix_cell_processor = competition.FixCellProcessor()
     comp.process_all_cells_special(fix_cell_processor)
     fix_cell_processor.report()
 
-    comp.process_cells_special("Organization Name", competition.RemoveHTMLBRsProcessor())
+    comp.process_cells_special(
+        "Organization Name", competition.RemoveHTMLBRsProcessor()
+    )
     comp.process_cells_special("Project Title", competition.RemoveHTMLBRsProcessor())
 
     comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
-    comp.add_supplemental_information(competition.GlobalViewMediaWikiTitleAdder("<COMPETITIONNAME>", "Project Title"))
+    comp.add_supplemental_information(
+        competition.GlobalViewMediaWikiTitleAdder("<COMPETITIONNAME>", "Project Title")
+    )
 
     comp.filter_proposals(
         competition.ColumnEqualsProposalFilter("Admin Review Status", "Not submitted")

@@ -267,16 +267,21 @@ class GenericToc(Toc):
         template += (
             "        {%%- if proposal_id in %s.keys() %%}\n" % self.competition_name
         )
-        template += '            {{- "" if group.filtered_proposal_ids.append(proposal_id) }}\n'
+        template += (
+            '            {{- "" if group.filtered_proposal_ids.append(proposal_id) }}\n'
+        )
         template += '            {{- "" if group.update({"num_filtered_proposals": group["num_filtered_proposals"] + 1}) }}\n'
         template += "        {%- endif %}\n"
         template += "    {%- endfor %}\n"
         template += "{%- endfor %}\n"
 
         if self.sort is self.SortMethod.NONE:
-            template += '{% for group in groups %}\n'
+            template += "{% for group in groups %}\n"
         else:
-            template += ('{%% for group in groups|sort(attribute="%s", reverse=%s) %%}\n' % (self.sort.value.attribute, str(self.sort.value.reverse)))
+            template += (
+                '{%% for group in groups|sort(attribute="%s", reverse=%s) %%}\n'
+                % (self.sort.value.attribute, str(self.sort.value.reverse))
+            )
 
         template += "    {%- if group.num_filtered_proposals > 0 %}\n"
 

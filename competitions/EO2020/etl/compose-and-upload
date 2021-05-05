@@ -313,8 +313,12 @@ def main():
 
     comp = competition.Competition(proposals_csv, "EO2020", "Application #", pare)
     comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
-    comp.add_supplemental_information(competition.GlobalViewMediaWikiTitleAdder("EO2020", "Project Title"))
-    comp.add_supplemental_information(competition.StaticColumnAdder("Competition Name", "EO2020"))
+    comp.add_supplemental_information(
+        competition.GlobalViewMediaWikiTitleAdder("EO2020", "Project Title")
+    )
+    comp.add_supplemental_information(
+        competition.StaticColumnAdder("Competition Name", "EO2020")
+    )
 
     fix_cell_processor = competition.FixCellProcessor()
     comp.process_all_cells_special(fix_cell_processor)
@@ -324,11 +328,19 @@ def main():
         comp.sorted_proposal_keys, attachments_dir
     )
     attachments.specify_new_column(".*Finalist Memo.*", "Finalist Memo Attachment", 1)
-    attachments.specify_new_column(".*Technical Review.*", "Technical Review Attachment", 2)
-    attachments.specify_new_column(".*Site Visit Notes.*", "Site Visit Notes Attachment", 3)
-    attachments.specify_new_column(".*Financial Review.*", "Financial Review Attachment", 4)
+    attachments.specify_new_column(
+        ".*Technical Review.*", "Technical Review Attachment", 2
+    )
+    attachments.specify_new_column(
+        ".*Site Visit Notes.*", "Site Visit Notes Attachment", 3
+    )
+    attachments.specify_new_column(
+        ".*Financial Review.*", "Financial Review Attachment", 4
+    )
     attachments.specify_new_column(".*DEI Review.*", "DEI Review Attachment", 5)
-    attachments.specify_new_column(".*Accessibility Review.*", "Accessibility Review Attachment", 6)
+    attachments.specify_new_column(
+        ".*Accessibility Review.*", "Accessibility Review Attachment", 6
+    )
     attachments.specify_new_column(".*Prospectus.*", "Prospectus Attachment", 7)
     attachments.specify_by_regex(".*Synthesis Memo", "Synthesis Memo", 8)
     attachments.specify_by_regex(".*Supplemental Documents", "Financials and MoUs", 9)
