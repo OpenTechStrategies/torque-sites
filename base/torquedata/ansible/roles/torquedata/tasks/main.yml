@@ -16,7 +16,7 @@
   become: true
   become_user: postgres
   postgresql_user:
-    name: torquedata_rw
+    name: "{{ db_username }}"
     password: "{{ db_password }}"
     state: present
 
@@ -26,7 +26,7 @@
   postgresql_db:
     name: "{{ supervisor_torquedata_name }}"
     state: present
-    owner: torquedata_rw
+    owner: "{{ db_username }}"
 
 - name: Setup installation directory
   file:

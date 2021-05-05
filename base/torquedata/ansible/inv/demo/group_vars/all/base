@@ -1,7 +1,8 @@
 ---
 torquedata_install_directory: /home/deploy/torquedata-demo/
 
+db_username: torquedatademo_rw
 deployment_user: deploy
 torquedata_port: 5001
 supervisor_torquedata_name: torquedata-demo
-torquedata_git_version: 9fa0572
+torquedata_git_version: 2d70c64
