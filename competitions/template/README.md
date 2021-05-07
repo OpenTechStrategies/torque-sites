@@ -109,9 +109,9 @@ legacy reasons (variables get named to this, for now).  `$OTS_DIR` should
 be your checkout of the OTS subversion directory, and `$OTS_TOOLS_DIR` should
 be the checkout of the tools dir (see the OTS onboarding checklist at
 https://svn.opentechstrategies.com/repos/ots/trunk/bureaucracy/onboarding/onboarding-checklist.md ).
-In various places, `<COMPETITIONNAME>` also means `<SHORTNAME>`  The reason
+In various places, `<COMPETITION_NAME>` also means `<SHORTNAME>`  The reason
 for that is because `<SHORTNAME>` really only makes sense relative to this
-document, and `<COMPETITIONNAME>` is a more proper name for the placeholder
+document, and `<COMPETITION_NAME>` is a more proper name for the placeholder
 in the various files in this template directory.
 
 The commands here are assumed to be run from the current directory (the
@@ -121,7 +121,7 @@ competitions/template directory)
 2. Send an email to macfound devops, ccing stakeholders in OTS and LFC, using the template `OktaEmailTemplate`
    - The subject can be something along the lines of:
      - Okta Configuration needed for <COMPETITION LONG NAME>
-   - Replace all instances of `<COMPETITIONNAME>` with the SHORTNAME
+   - Replace all instances of `<COMPETITION_NAME>` with the SHORTNAME
    - Change anything else in the email to your liking
    - They should respond with a metadata url that will be used in the configuration below
 3. Set your SHORTNAME variable
@@ -149,9 +149,9 @@ competitions/template directory)
 12. Copy over the ansible and etl directories from the template
     - `cp -ap ansible ../$SHORTNAME`
     - `cp -ap etl ../$SHORTNAME`
-13. Change the files named with `COMPETITIONNAME` as appropriate
-    - `mv ../$SHORTNAME/ansible/roles/{COMPETITIONNAME,$SHORTNAME}`
-    - `mv ../$SHORTNAME/ansible/{COMPETITIONNAME,$SHORTNAME}.yml`
+13. Change the files named with `COMPETITION_NAME` as appropriate
+    - `mv ../$SHORTNAME/ansible/roles/{COMPETITION_NAME,$SHORTNAME}`
+    - `mv ../$SHORTNAME/ansible/{COMPETITION_NAME,$SHORTNAME}.yml`
 14. Create an opass file for the accounts with the following:
    ```
 * For production accounts (https://torque.leverforchange.org/<SHORTNAME>/):
@@ -174,14 +174,13 @@ more secret information
 16. Update all the files in the ansible and etl directories, replacing basically everything
     in angle brackets (`<>`) with the appropriate value.
     - For the `SIMPLESAMLURL_FROMMACFOUND`, you'll need the metadata url from macfound devops
-17. Update `<COMPETITIONNAME>.yaml` to remove any roles not to be included in this competition
-    - Please update the `COMPETITIONNAME.yaml` file in the template/ansible directory to
+17. Update `<COMPETITION_NAME>.yaml` to remove any roles not to be included in this competition
+    - Please update the `COMPETITION_NAME.yaml` file in the template/ansible directory to
       include any new ones that have been added!
 18. TODO: update compose-and-upload, using it as a shell
 18. TODO: git commit the new competition!
 18. TODO: Logo STUFF
 19. TODO: MediaWiki TorqueConfig stuff!
-20. TODO: 
 18. Install locally, and test!
 
 

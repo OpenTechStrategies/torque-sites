@@ -21,6 +21,6 @@
     - simplesaml
     - teamcomments
     - torquedataconnect
-    - <COMPETITIONNAME>
+    - <COMPETITION_NAME>
     # This should always go last, to run db updates and restart
     - finishmediawiki

@@ -1,0 +1,12 @@
+---
+
+- name: Transfer <COMPETITION_NAME> Logo
+  copy:
+    src: <PATH_TO_LOGO_FILE>
+    dest: "{{ mediawiki_install_directory }}/mediawiki-1.35.0/resources/assets/<LOGO_FILENAME>"
+
+- name: Install <COMPETITION_NAME> Logo
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-1.35.0/LocalSettings.php"
+    regexp: ^\$wgLogo = .*
+    line: $wgLogo = "$wgResourceBasePath/resources/assets/<LOGO_FILENAME>";

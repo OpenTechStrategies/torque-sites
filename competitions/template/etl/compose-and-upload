@@ -17,7 +17,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 __doc__ = """\
-Compose all of the Lever for Change <LONGCOMPETITIONNAME> Proposal CSV files.
+Compose all of the Lever for Change <LONG_COMPETITION_NAME> Proposal CSV files.
 
 Usage:
 
@@ -108,7 +108,7 @@ def main():
         sys.exit(1)
 
     comp = competition.Competition(
-        proposals_csv, "<COMPETITIONNAME>", "Application #", pare
+        proposals_csv, "<COMPETITION_NAME>", "Application #", pare
     )
 
     fix_cell_processor = competition.FixCellProcessor()
@@ -122,7 +122,7 @@ def main():
 
     comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
     comp.add_supplemental_information(
-        competition.GlobalViewMediaWikiTitleAdder("<COMPETITIONNAME>", "Project Title")
+        competition.GlobalViewMediaWikiTitleAdder("<COMPETITION_NAME>", "Project Title")
     )
 
     comp.filter_proposals(
