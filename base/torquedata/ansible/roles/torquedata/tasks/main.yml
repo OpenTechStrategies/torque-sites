@@ -11,6 +11,7 @@
     - pipenv
     - postgresql
     - python-psycopg2
+    - supervisor
 
 - name: Create database user
   become: true
