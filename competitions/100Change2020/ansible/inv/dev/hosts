@@ -1,5 +1,0 @@
-[mediawiki]
-wiki.opentechstrategies.com ansible_ssh_user="{{ lookup('env','OTS_USERNAME') }}"
-
-[mysql]
-wiki.opentechstrategies.com ansible_ssh_user="{{ lookup('env','OTS_USERNAME') }}"
