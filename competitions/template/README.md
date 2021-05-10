@@ -137,7 +137,7 @@ competitions/template directory)
    - Generally, we attempt to retain the original filenames from LFC
    - Use the password gotten from `opass show clients/lever-for-change/data-encryption-key`
 8. Copy the template README file, and update it to be accurate
-   - `cp SubversionREADME.tmpl $OTS_DIR/clients/lever-for-change/torque-sites/$SHORTNAME/data/bigdata/README`
+   - `cp DATA_README.tmpl $OTS_DIR/clients/lever-for-change/torque-sites/$SHORTNAME/data/bigdata/README`
    - `$EDITOR $OTS_DIR/clients/lever-for-change/torque-sites/$SHORTNAME/data/bigdata/README`
 9. Add and commit the initial bigdata information
    - `svn add $OTS_DIR/clients/lever-for-change/torque-sites/$SHORTNAME/data/bigdata/*`
