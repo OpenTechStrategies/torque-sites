@@ -164,6 +164,12 @@ def main():
 
     comp = competition.Competition(proposals_csv, "Climate2030", "Application #", pare)
     comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
+    comp.add_supplemental_information(
+        competition.GlobalViewMediaWikiTitleAdder("Climate2030", "Project Title")
+    )
+    comp.add_supplemental_information(
+        competition.StaticColumnAdder("Competition Name", "Climate2030")
+    )
 
     fix_cell_processor = competition.FixCellProcessor()
     comp.process_all_cells_special(fix_cell_processor)

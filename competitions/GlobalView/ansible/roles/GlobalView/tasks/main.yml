@@ -22,6 +22,9 @@
       $wgTorqueDataConnectMultiWikiConfig["LFC100Change2017"] = "100Change2017";
       $wgTorqueDataConnectMultiWikiConfig["EO2020"] = "EO2020";
       $wgTorqueDataConnectMultiWikiConfig["RacialEquity2030"] = "RacialEquity2030";
+      $wgTorqueDataConnectMultiWikiConfig["Climate2030"] = "Climate2030";
+      $wgTorqueDataConnectMultiWikiConfig["ECW2020"] = "ECW2020";
+      $wgTorqueDataConnectMultiWikiConfig["LoneStar2020"] = "LoneStar2020";
 
 - name: Install Team Comments Disabler
   copy:

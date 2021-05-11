@@ -220,6 +220,13 @@ def main():
     comp.process_cells_special("Project Title", competition.RemoveHTMLBRsProcessor())
 
     comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
+    comp.add_supplemental_information(
+        competition.GlobalViewMediaWikiTitleAdder("ECW2020", "Project Title")
+    )
+    comp.add_supplemental_information(
+        competition.StaticColumnAdder("Competition Name", "ECW2020")
+    )
+
 
     comp.filter_proposals(
         competition.ColumnEqualsProposalFilter("Admin Review Status", "Not submitted")

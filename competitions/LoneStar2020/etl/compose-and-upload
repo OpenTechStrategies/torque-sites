@@ -213,6 +213,13 @@ def main():
         comp.process_cells_special(column, correction_processor)
 
     comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
+    comp.add_supplemental_information(
+        competition.GlobalViewMediaWikiTitleAdder("LoneStar2020", "Project Title")
+    )
+    comp.add_supplemental_information(
+        competition.StaticColumnAdder("Competition Name", "LoneStar2020")
+    )
+
 
     fix_cell_processor = competition.FixCellProcessor()
     comp.process_all_cells_special(fix_cell_processor)

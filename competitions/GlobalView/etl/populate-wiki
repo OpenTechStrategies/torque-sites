@@ -80,6 +80,30 @@ competition_configs = {
         "priority_populations": "Priority Populations",
         "organization_name": "Organization name",
     },
+    "Climate2030": {
+        "key": "Application #",
+        "title": "Project Title",
+        "sheet_name": "Climate2030",
+        "wiki_key": "Climate2030",
+        "priority_populations": "Priority Populations",
+        "organization_name": "Organization Name",
+    },
+    "ECW2020": {
+        "key": "Application #",
+        "title": "Project Title",
+        "sheet_name": "ECW2020",
+        "wiki_key": "ECW2020",
+        "priority_populations": "Priority Populations",
+        "organization_name": "Organization Name",
+    },
+    "LoneStar2020": {
+        "key": "Application #",
+        "title": "Project Title",
+        "sheet_name": "LoneStar2020",
+        "wiki_key": "LoneStar2020",
+        "priority_populations": "Priority Populations",
+        "organization_name": "Organization Name",
+    },
 }
 
 
