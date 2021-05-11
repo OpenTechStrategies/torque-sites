@@ -51,6 +51,15 @@ body {
   margin: 50px;
 }
 
+/* This block is due to a bug where the content of the return
+ * of the onSidebarBeforeOutput in the Vector skin is hidden
+ * when that content is just plain html.  It gets assigned
+ * the empty-portlet css class, and we must override for our
+ * specific code.
+ */
+#p-View {
+  display:block;
+}
 @media print {
   .firstHeading {
     display:none;
