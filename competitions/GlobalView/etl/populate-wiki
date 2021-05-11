@@ -228,6 +228,7 @@ def main():
     comp.process_cells_special(
         "Priority Populations", competition.ColumnTypeUpdater("list")
     )
+    comp.process_cells_special("Project Title", competition.RemoveHTMLBRsProcessor())
     comp.add_supplemental_information(GlobalViewMediaWikiOverride())
 
     list_toc = toc.ListToc("All_Proposals")
