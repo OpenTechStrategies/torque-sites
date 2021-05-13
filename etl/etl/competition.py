@@ -277,9 +277,12 @@ class RemoveHTMLBRsProcessor(CellProcessor):
     """A CellProcessor that removes any HTML BR's that were added
     as part of the cleanup process, usually by the FixCellProcessor"""
 
+    def __init__(self, replacement_string=""):
+        self.replacement_string = replacement_string
+
     def process_cell(self, proposal, column_name):
         # Because of how fix_cell works, we have to remove both the <br> and the \n separately
-        return proposal.cell(column_name).replace("<br/>", "").replace("\n", "")
+        return proposal.cell(column_name).replace("<br/>", "").replace("\n", self.replacement_string)
 
 
 class MultiLineProcessor(CellProcessor):

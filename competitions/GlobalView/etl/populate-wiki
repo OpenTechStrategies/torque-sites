@@ -229,6 +229,10 @@ def main():
         "Priority Populations", competition.ColumnTypeUpdater("list")
     )
     comp.process_cells_special("Project Title", competition.RemoveHTMLBRsProcessor())
+
+    # Replacing BRs with spaces for this one, because of the data having new lines in
+    # the middle of some organization names
+    comp.process_cells_special("Organization Name", competition.RemoveHTMLBRsProcessor(" "))
     comp.add_supplemental_information(GlobalViewMediaWikiOverride())
 
     list_toc = toc.ListToc("All_Proposals")
