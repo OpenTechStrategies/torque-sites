@@ -40,6 +40,7 @@ competition_configs = {
         "wiki_key": "LoneStar2020",
         "priority_populations": "Priority Populations",
         "organization_name": "Organization Name",
+        "status": "Admin Review Status",
     },
     "LLIIA2020": {
         "key": "Application #",
@@ -48,6 +49,7 @@ competition_configs = {
         "wiki_key": "LLIIA2020",
         "priority_populations": "Priority Populations",
         "organization_name": "Organization Name",
+        "status": "Valid",
     },
     "100Change2020": {
         "key": "Review Number",
@@ -56,6 +58,7 @@ competition_configs = {
         "wiki_key": "100Change2020",
         "priority_populations": "Priority Populations",
         "organization_name": "Organization Legal Name",
+        "status": "Valid",
     },
     "100Change2017": {
         "key": "Review_Number",
@@ -71,6 +74,7 @@ competition_configs = {
         "wiki_key": "EO2020",
         "priority_populations": "Priority Populations",
         "organization_name": "Organization Name",
+        "status": "Valid",
     },
     "RacialEquity2030": {
         "key": "Application #",
@@ -79,6 +83,7 @@ competition_configs = {
         "wiki_key": "RacialEquity2030",
         "priority_populations": "Priority Populations",
         "organization_name": "Organization name",
+        "status": "Admin Review Status",
     },
     "Climate2030": {
         "key": "Application #",
@@ -87,6 +92,7 @@ competition_configs = {
         "wiki_key": "Climate2030",
         "priority_populations": "Priority Populations",
         "organization_name": "Organization Name",
+        "status": "Admin Review Status",
     },
     "ECW2020": {
         "key": "Application #",
@@ -95,6 +101,7 @@ competition_configs = {
         "wiki_key": "ECW2020",
         "priority_populations": "Priority Populations",
         "organization_name": "Organization Name",
+        "status": "Admin Review Status",
     },
     "LoneStar2020": {
         "key": "Application #",
@@ -103,6 +110,7 @@ competition_configs = {
         "wiki_key": "LoneStar2020",
         "priority_populations": "Priority Populations",
         "organization_name": "Organization Name",
+        "status": "Admin Review Status",
     },
 }
 
@@ -194,6 +202,7 @@ def main():
                 "Wiki Key",
                 "Sheet Name",
                 "Priority Populations",
+                "Status",
             ]
         )
 
@@ -206,6 +215,7 @@ def main():
             )
 
             for proposal in comp.ordered_proposals():
+                print(name)
                 priority_populations = ""
                 if "priority_populations" in competition_configs[name]:
                     priority_populations = proposal.cell(
@@ -221,6 +231,12 @@ def main():
                         competition_configs[name]["wiki_key"],
                         competition_configs[name]["sheet_name"],
                         priority_populations,
+                        # We mark as valid in the case that there is no status so things get included
+                        (
+                            proposal.cell(competition_configs[name]["status"])
+                            if "status" in competition_configs[name]
+                            else "Valid"
+                        ),
                     ]
                 )
 
@@ -232,7 +248,9 @@ def main():
 
     # Replacing BRs with spaces for this one, because of the data having new lines in
     # the middle of some organization names
-    comp.process_cells_special("Organization Name", competition.RemoveHTMLBRsProcessor(" "))
+    comp.process_cells_special(
+        "Organization Name", competition.RemoveHTMLBRsProcessor(" ")
+    )
     comp.add_supplemental_information(GlobalViewMediaWikiOverride())
 
     list_toc = toc.ListToc("All_Proposals")
@@ -270,6 +288,7 @@ def main():
 
     if tdc_config_dir is not None:
         tdc.AllProposals(comp).generate(tdc_config_dir)
+        tdc.ValidProposals(comp, "Status", "Valid").generate(tdc_config_dir)
         tdc.AllColumns(comp).generate(tdc_config_dir)
         tdc.ProcessedSpreadsheet(comp).generate(tdc_config_dir)
 
