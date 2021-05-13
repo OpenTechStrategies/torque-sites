@@ -2,8 +2,6 @@
 competition_name: LLIIA2020
 db_username: LLIIA2020_rw
 torquedataconnect_sheet_name: LLIIA2020
-torquedata_server_port: 5003
-torquedata_git_version: 0818187
 html_directory: /var/www/html
 mediawiki_install_directory: /home/deploy/LLIIA2020/
 mediawiki_mwlib_username: mwlib

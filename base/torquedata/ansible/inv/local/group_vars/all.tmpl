@@ -25,3 +25,13 @@ supervisor_torquedata_name: torquedata
 # to deploy.  A default of main works for development, but for
 # other environments, we want to use specific commit shas
 torquedata_git_version: main
+
+# Database password for postgres user (usually torquedata_rw)
+db_password: ${DB_PASSWORD}
+
+# Secret key needed for django.  See
+# https://docs.djangoproject.com/en/3.1/ref/settings/#std:setting-SECRET_KEY
+#
+# You can use the following to generate it:
+# $ python -c "import secrets; print(secrets.token_urlsafe())"
+secret_key: ${SECRET_KEY}
