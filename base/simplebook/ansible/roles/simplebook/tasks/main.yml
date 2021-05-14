@@ -85,6 +85,11 @@
   args:
     chdir: "{{ simplebook_install_directory }}/services/api/mw2pdf"
 
+- name: Run yarn build
+  command: "yarn build"
+  args:
+    chdir: "{{ simplebook_install_directory }}/services/api/mw2pdf"
+
 - name: Install SimpleBook supervisor
   become_user: root
   template:
