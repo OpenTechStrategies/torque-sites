@@ -22,7 +22,7 @@ $wgHooks['BeforeInitialize'][] = function(&$title, &$article = null, &$output, &
     $wgTorqueDataConnectRenderToHTML,
     $wgTorqueDataConnectView;
   $group = TorqueDataConnectConfig::getValidGroup($user);
-  $view = TorqueDataConnectConfig::getCurrentView();
+  $view = TorqueDataConnectConfig::getCurrentView() ?: "";
   $wgSimpleBookPassthroughParameters = [
     'torqueGroup' => $group,
     'torqueView' => $view,
