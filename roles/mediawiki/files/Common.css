@@ -32,8 +32,21 @@
  * the left menu rather than creating a scrollbar at the bottom.
  */
 body {
-  min-width:1400px;
+ overflow-wrap: break-word;
 }
+
+.torque-main-content {
+  min-width: 750px;
+}
+
+/* This line is because there is no way to identify the "snapshot" vs "body" of a
+ * proposal right now, so we are using nth-of-type until we modify the template to
+ * use classes.
+ */
+.torque-main-content>div:nth-of-type(2) {
+  min-width: 300px;
+}
+
 @media print {
   .firstHeading {
     display:none;
