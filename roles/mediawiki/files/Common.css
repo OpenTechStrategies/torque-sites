@@ -47,6 +47,10 @@ body {
   min-width: 300px;
 }
 
+@page{
+  margin: 50px;
+}
+
 @media print {
   .firstHeading {
     display:none;
