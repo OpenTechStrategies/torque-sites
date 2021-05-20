@@ -1175,4 +1175,4 @@ class EvaluationAdder(InformationAdder):
         if isinstance(val, float):
             return "{0:.1f}".format(val)
         else:
-            return val
+            return val.strip()
