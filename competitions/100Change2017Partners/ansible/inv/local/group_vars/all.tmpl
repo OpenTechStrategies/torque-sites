@@ -32,6 +32,10 @@ postgres_root_password: ${POSTGRES_ROOT_PASSWORD}
 db_username: ${DB_USERNAME}
 db_password: ${DB_PASSWORD}
 
+# This needs to be set to postgres because of the rest of the
+# ansible files set up with postgres
+db_type: postgres
+
 # Directory to install all of the mediawiki needs
 # This must be an absolute path because of weirdness with unarchive
 mediawiki_install_directory: ${MEDIAWIKI_INSTALL_DIRECTORY}

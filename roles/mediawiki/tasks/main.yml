@@ -75,7 +75,7 @@
     chdir: "{{ mediawiki_install_directory }}/mediawiki-1.33.0"
 
 - name: Create Wiki
-  command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/install.php --dbtype=mysql --dbserver=localhost --dbuser=\"{{ db_username }}\" --dbpass=\"{{ db_password }}\" --dbname={{ competition_name }}  --scriptpath=\"/{{ competition_name }}\" --lang=en --pass=\"{{ mediawiki_admin_password }}\" \"{{ competition_name }}\" \"admin\""
+  command: "php {{ mediawiki_install_directory }}/mediawiki-1.33.0/maintenance/install.php --dbtype={{ db_type }} --dbserver=localhost --dbuser=\"{{ db_username }}\" --dbpass=\"{{ db_password }}\" --dbname={{ competition_name }}  --scriptpath=\"/{{ competition_name }}\" --lang=en --pass=\"{{ mediawiki_admin_password }}\" \"{{ competition_name }}\" \"admin\""
   args:
     creates: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
 
