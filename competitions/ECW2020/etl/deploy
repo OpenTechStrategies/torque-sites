@@ -33,6 +33,8 @@ command -v xlsx2csv 2>&1 >> /dev/null || { echo >&2 "xlsx2csv required but it's 
 PROPOSALS_CSV="Shane Eggerman - ECWC_Registration_Application_data_updated.csv"
 BASE_ATTACHMENTS="Shane Eggerman - ECWC_Registration_Application_datа copy 2.zip"
 JUDGE_EVALUATION_CSV="Shane Eggerman - ECWC_Peer_Review_Data copy.csv"
+GOVERNANCE_DOCUMENTS="ECW2020_Governance_Documents.zip"
+FINANCIAL_REVIEW_DOCUMENTS="ECW2020_Financial_Reviews.zip"
 EXPERT_PANEL_EVALUATION_CSV="Shane Eggerman - ECWC_Evaluation_Panel_Data_anon.csv"
 APPLICATION_DATA="ECW Application Data.xlsx"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
@@ -72,6 +74,8 @@ if [ ! -d "${DATA_DIR}" ] ; then
   gpg -o "${DATA_DIR}/${EXPERT_PANEL_EVALUATION_CSV}" --decrypt "${ENCRYPTED_DIR}/${EXPERT_PANEL_EVALUATION_CSV}.gpg" || exit 1
   gpg -o "${DATA_DIR}/${APPLICATION_DATA}" --decrypt "${ENCRYPTED_DIR}/${APPLICATION_DATA}.gpg" || exit 1
   gpg -o "${DATA_DIR}/${BASE_ATTACHMENTS}" --decrypt "${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg" || exit 1
+  gpg -o "${DATA_DIR}/${GOVERNANCE_DOCUMENTS}" --decrypt "${ENCRYPTED_DIR}/${GOVERNANCE_DOCUMENTS}.gpg" || exit 1
+  gpg -o "${DATA_DIR}/${FINANCIAL_REVIEW_DOCUMENTS}" --decrypt "${ENCRYPTED_DIR}/${FINANCIAL_REVIEW_DOCUMENTS}.gpg" || exit 1
   gpg -o "${DATA_DIR}/${FINANCIAL_DATA}" --decrypt "${ENCRYPTED_DIR}/${FINANCIAL_DATA}.gpg" || exit 1
   gpg -o "${DATA_DIR}/${FINANCIAL_DATA_DAT}" --decrypt "${ENCRYPTED_DIR}/${FINANCIAL_DATA_DAT}.gpg" || exit 1
   gpg -o "${DATA_DIR}/${PROPOSALS_CSV}" --decrypt "${ENCRYPTED_DIR}/${PROPOSALS_CSV}.gpg" || exit 1
@@ -84,6 +88,22 @@ if [ ! -d "${DATA_DIR}" ] ; then
   mkdir -p $TMP_ATTACHMENTS_DIR
   unzip -d "${TMP_ATTACHMENTS_DIR}" "${DATA_DIR}/${BASE_ATTACHMENTS}"
   mv "${TMP_ATTACHMENTS_DIR}/Valid" $ATTACHMENTS_DIR
+
+  mkdir -p $TMP_ATTACHMENTS_DIR
+  unzip -d $TMP_ATTACHMENTS_DIR ${DATA_DIR}/${GOVERNANCE_DOCUMENTS}
+  ls $TMP_ATTACHMENTS_DIR | grep "^[[:digit:]]\+_.*.pdf$" | while read file ; do
+    NUM=${file/_*/};
+    cp -v $TMP_ATTACHMENTS_DIR/$file ${ATTACHMENTS_DIR}/$NUM/$file;
+  done
+  rm -rf $TMP_ATTACHMENTS_DIR
+
+  mkdir -p $TMP_ATTACHMENTS_DIR
+  unzip -d $TMP_ATTACHMENTS_DIR ${DATA_DIR}/${FINANCIAL_REVIEW_DOCUMENTS}
+  ls $TMP_ATTACHMENTS_DIR | grep "^[[:digit:]]\+_.*.pdf$" | while read file ; do
+    NUM=${file/_*/};
+    cp -v $TMP_ATTACHMENTS_DIR/$file ${ATTACHMENTS_DIR}/$NUM/$file;
+  done
+  rm -rf $TMP_ATTACHMENTS_DIR
 
   # Clean up large zips to save disk space
   rm "${DATA_DIR}/${BASE_ATTACHMENTS}"
