@@ -56,7 +56,9 @@ Command-line options:
 
                                   If the data cells have the empty string, no correction is applied.
 
-  --peer-to-peer-review FILE      FILE contains the P2P Rank correlating to the application #
+  --peer-to-peer-review FILE      FILE is a CSV file with a many to one relationshp
+                                  between peers and the proposals they evaluated,
+                                  with the extra data being their evaluation
 
   --pare ARG                      If ARG is a number, reduce the number of items to 1/ARG.  If
                                   ARG begins with +, then ARG is a comma separated list of
@@ -150,12 +152,6 @@ def main():
         )
     )
 
-    comp.add_supplemental_information(
-        competition.LinkedSecondSheet(
-            peer_to_peer_review_csv, "App # ", ["P2P Rank"], {}
-        )
-    )
-
     comp.filter_proposals(
         competition.ColumnEqualsProposalFilter("Admin Review Status", "Not Applicable")
     )
@@ -167,7 +163,21 @@ def main():
     comp.process_cells_special(
         "Organization name", competition.RemoveHTMLBRsProcessor()
     )
-    comp.process_cells_special("P2P Rank", competition.DefaultValueSetter("9999"))
+
+    comp.add_supplemental_information(
+        competition.EvaluationAdder(
+            "Peer to Peer",
+            peer_to_peer_review_csv,
+            app_col_name="Application #",
+            score_rank_normalized_col_name="Overall Score Rank Normalized ",
+            sum_of_scores_normalized_col_name="Sum Of Scores Normalized ",
+            trait_col_name="Trait",
+            score_normalized_col_name="Trait Score Normalized",
+            comments_col_name="Trait Judge Comment ",
+            comments_score_normalized_col_name="Trait Score Normalized",
+        )
+    )
+
     comp.process_cells_special("Project Title", competition.RemoveHTMLBRsProcessor())
 
     comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
@@ -191,7 +201,7 @@ def main():
         comp.sorted_proposal_keys, attachments_dir
     )
     comp.add_supplemental_information(attachments)
-    comp.sort("P2P Rank", True)
+    comp.sort("Peer to Peer Overall Score Rank Normalized", True)
 
     list_toc = toc.ListToc("All_Proposals")
     list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
@@ -211,7 +221,7 @@ def main():
                 "right_aligned": True,
             },
             {
-                "name": "P2P Rank",
+                "name": "Peer to Peer Overall Score Rank Normalized",
                 "heading": "Rank",
                 "right_aligned": True,
             },
@@ -322,6 +332,14 @@ def main():
     my_wiki.csv_only = csv_only
     my_wiki.upload_sheet(comp)
     my_wiki.upload_attachments(attachments.attachments)
+
+    for proposal in comp.proposals.values():
+        my_wiki.create_page(
+            "Evaluations of %s" % proposal.cell("MediaWiki Title"),
+            "{{ #tdcrender:RacialEquity2030/id/"
+            + proposal.key()
+            + ".mwiki|Evaluations }}",
+        )
 
 
 if __name__ == "__main__":
