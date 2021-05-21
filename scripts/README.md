@@ -1,3 +1,5 @@
+# find-multi-competition-orgs
+
 Use `find-multi-competition-orgs` to figure out, via the Torque API,
 which organizations have submitted multiple proposals, whether to the
 same competition or to multiple competitions.
@@ -38,3 +40,20 @@ submitted for validity review.  That is, the API will fetch both valid
 and invalid proposals, but even the invalid ones still have some basic
 level of completeness.  Therefore, the CSV generated here only
 considers those proposals.
+
+# clone-production
+
+This script was created to take the current wikis on torque.leverforchange.org
+and copy them over to wiki.opentechstrategies.com.  It does this in three
+parts
+
+1. Run ansible commands targetting wiki.ots.com
+2. Copy over all the databases from one system to the other
+3. Copy over all the directories
+
+When running it, you have to have sudo access on both servers, and you
+will need to install a .my.cnf in the root directory in order to not have a
+root mysql password.  Remove this after you're done!
+
+See the script for more information.  The settings are all done in variables
+at the top, so updating those should hopefully handle all of your needs.
