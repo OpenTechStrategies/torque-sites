@@ -54,9 +54,18 @@
     - wget
     - xdg-utils
 
-- name: install NodeJS
+- name: Prepare NodeJS
+  become_user: root
   shell: |
-    curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash - && sudo apt-get install -y nodejs
+    curl -sL https://deb.nodesource.com/setup_14.x | bash -
+
+- name: Install NodeJS
+  become_user: root
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - nodejs
 
 - name: Install yarn
   become_user: root
@@ -95,9 +104,3 @@
   template:
     src: supervisor-simplebook.conf.j2
     dest: /etc/supervisor/conf.d/simplebook.conf
-
-- name: Restart supervisor for SimpleBook
-  become_user: root
-  supervisorctl:
-    name: "simplebook"
-    state: restarted
