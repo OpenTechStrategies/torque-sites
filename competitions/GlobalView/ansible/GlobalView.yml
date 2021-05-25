@@ -15,6 +15,7 @@
     - embed_video
     - permissions
     - torquedataconnect
+    - exporttables
     - simplesaml
     - GlobalView
     # This should always go last, to run db updates and restart

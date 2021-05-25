@@ -3,10 +3,10 @@
 - name: Transfer RacialEquity2030 Logo
   copy:
     src: RacialEquity2030_Logo.png
-    dest: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/resources/assets/RacialEquity2030_Logo.png"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/resources/assets/RacialEquity2030_Logo.png"
 
 - name: Install RacialEquity2030 Logo
   lineinfile:
-    path: "{{ mediawiki_install_directory }}/mediawiki-1.33.0/LocalSettings.php"
-    regexp: ^\$wgLogo = .*
-    line: $wgLogo = "$wgResourceBasePath/resources/assets/RacialEquity2030_Logo.png";
+    path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
+    regexp: ^\$wgLogos = .*
+    line: $wgLogos = [ '1x' => "$wgResourceBasePath/resources/assets/RacialEquity2030_Logo.png" ];
