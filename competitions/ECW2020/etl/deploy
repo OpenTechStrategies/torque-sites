@@ -38,6 +38,8 @@ FINANCIAL_REVIEW_DOCUMENTS="ECW2020_Financial_Reviews.zip"
 EXPERT_PANEL_EVALUATION_CSV="Shane Eggerman - ECWC_Evaluation_Panel_Data_anon.csv"
 APPLICATION_DATA="ECW Application Data.xlsx"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
+FINALIST_ATTACHMENTS_ZIP="Finalist_Attachments.zip"
+FINALIST_ATTACHMENTS_CSV="Finalist_Attachments.csv"
 FINANCIAL_DATA="ECW-BudgetTable Template for Wiki_vUpdated.xlsx"
 FINANCIAL_DATA_DAT="ECW-BudgetTable Template for Wiki_vUpdated.dat"
 FINANCIAL_SHEETS_DIR="${DATA_DIR}/financial-sheets/"
@@ -70,15 +72,17 @@ if [ ! -d "${DATA_DIR}" ] ; then
   mkdir -p $DATA_DIR
   echo "Decrypting..."
 
-  gpg -o "${DATA_DIR}/${JUDGE_EVALUATION_CSV}" --decrypt "${ENCRYPTED_DIR}/${JUDGE_EVALUATION_CSV}.gpg" || exit 1
-  gpg -o "${DATA_DIR}/${EXPERT_PANEL_EVALUATION_CSV}" --decrypt "${ENCRYPTED_DIR}/${EXPERT_PANEL_EVALUATION_CSV}.gpg" || exit 1
-  gpg -o "${DATA_DIR}/${APPLICATION_DATA}" --decrypt "${ENCRYPTED_DIR}/${APPLICATION_DATA}.gpg" || exit 1
-  gpg -o "${DATA_DIR}/${BASE_ATTACHMENTS}" --decrypt "${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg" || exit 1
-  gpg -o "${DATA_DIR}/${GOVERNANCE_DOCUMENTS}" --decrypt "${ENCRYPTED_DIR}/${GOVERNANCE_DOCUMENTS}.gpg" || exit 1
-  gpg -o "${DATA_DIR}/${FINANCIAL_REVIEW_DOCUMENTS}" --decrypt "${ENCRYPTED_DIR}/${FINANCIAL_REVIEW_DOCUMENTS}.gpg" || exit 1
-  gpg -o "${DATA_DIR}/${FINANCIAL_DATA}" --decrypt "${ENCRYPTED_DIR}/${FINANCIAL_DATA}.gpg" || exit 1
-  gpg -o "${DATA_DIR}/${FINANCIAL_DATA_DAT}" --decrypt "${ENCRYPTED_DIR}/${FINANCIAL_DATA_DAT}.gpg" || exit 1
-  gpg -o "${DATA_DIR}/${PROPOSALS_CSV}" --decrypt "${ENCRYPTED_DIR}/${PROPOSALS_CSV}.gpg" || exit 1
+  decrypt "${DATA_DIR}/${JUDGE_EVALUATION_CSV}" "${ENCRYPTED_DIR}/${JUDGE_EVALUATION_CSV}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${EXPERT_PANEL_EVALUATION_CSV}" "${ENCRYPTED_DIR}/${EXPERT_PANEL_EVALUATION_CSV}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${APPLICATION_DATA}" "${ENCRYPTED_DIR}/${APPLICATION_DATA}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${BASE_ATTACHMENTS}" "${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${GOVERNANCE_DOCUMENTS}" "${ENCRYPTED_DIR}/${GOVERNANCE_DOCUMENTS}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${FINANCIAL_REVIEW_DOCUMENTS}" "${ENCRYPTED_DIR}/${FINANCIAL_REVIEW_DOCUMENTS}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${FINANCIAL_DATA}" "${ENCRYPTED_DIR}/${FINANCIAL_DATA}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${FINANCIAL_DATA_DAT}" "${ENCRYPTED_DIR}/${FINANCIAL_DATA_DAT}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${PROPOSALS_CSV}" "${ENCRYPTED_DIR}/${PROPOSALS_CSV}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${FINALIST_ATTACHMENTS_ZIP}" "${ENCRYPTED_DIR}/${FINALIST_ATTACHMENTS_ZIP}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${FINALIST_ATTACHMENTS_CSV}" "${ENCRYPTED_DIR}/${FINALIST_ATTACHMENTS_CSV}.gpg" "${GPG_PASSPHRASE}"
 
   xlsx2csv "$DATA_DIR/$APPLICATION_DATA" > "$DATA_DIR/${APPLICATION_DATA/xlsx/csv}"
 
@@ -103,6 +107,14 @@ if [ ! -d "${DATA_DIR}" ] ; then
     NUM=${file/_*/};
     cp -v $TMP_ATTACHMENTS_DIR/$file ${ATTACHMENTS_DIR}/$NUM/$file;
   done
+  rm -rf $TMP_ATTACHMENTS_DIR
+
+  echo "Setting up finalist attachments..."
+  mkdir -p $TMP_ATTACHMENTS_DIR
+  unzip -d $TMP_ATTACHMENTS_DIR ${DATA_DIR}/${FINALIST_ATTACHMENTS_ZIP}
+  while IFS=, read DIRECTORY_NAME APP_NUMBER ; do
+    cp -v "$TMP_ATTACHMENTS_DIR/Finalist_Attachments/$DIRECTORY_NAME"/*.pdf "$ATTACHMENTS_DIR/$APP_NUMBER/"
+  done < ${DATA_DIR}/${FINALIST_ATTACHMENTS_CSV}
   rm -rf $TMP_ATTACHMENTS_DIR
 
   # Clean up large zips to save disk space
