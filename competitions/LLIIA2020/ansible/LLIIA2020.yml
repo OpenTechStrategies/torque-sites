@@ -5,14 +5,14 @@
   become_user: "{{ deployment_user }}"
   roles:
     - mysql
-  
+
 - hosts: mediawiki
   become: true
   become_user: "{{ deployment_user }}"
   roles:
     - mediawiki
     - activitylog
-    - collection
+    - simplebook
     - embed_video
     - permissions
     - simplefavorites
