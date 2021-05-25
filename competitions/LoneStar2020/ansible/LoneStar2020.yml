@@ -19,6 +19,7 @@
     - simplesaml
     - teamcomments
     - torquedataconnect
+    - exporttables
     # This should come after permissions because of overrides of defaults
     - LoneStar2020
     # This should always go last, to run db updates and restart
