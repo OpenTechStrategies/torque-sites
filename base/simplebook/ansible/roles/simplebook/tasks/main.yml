@@ -7,6 +7,7 @@
   loop:
     - pipenv
     - supervisor
+    - redis-server
 
 - name: Install Puppeteer prerequisites
   become_user: root
@@ -53,6 +54,18 @@
     - lsb-release
     - wget
     - xdg-utils
+
+- name: Configure redis
+  become_user: root
+  replace:
+    path: "/etc/redis/redis.conf"
+    regexp: 'supervisord no'
+    replace: 'supervisord systemd'
+
+- name: Restart redis
+  become_user: root
+  shell:
+    systemctl restart redis
 
 - name: Prepare NodeJS
   become_user: root
