@@ -12,10 +12,10 @@
   roles:
     - mediawiki
     - activitylog
-    - collection
+    - simplebook
     - embed_video
     - permissions
-    # PickSome has to come after collection so the left menu bar is correct
+    # PickSome has to come after simplebook so the left menu bar is correct
     - picksome
     - simplefavorites
     - simplesaml

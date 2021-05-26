@@ -12,7 +12,7 @@
   roles:
     - mediawiki
     - activitylog
-    - collection
+    - simplebook
     - embed_video
     - permissions
     - simplesaml
