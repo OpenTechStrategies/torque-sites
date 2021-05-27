@@ -16,7 +16,7 @@
     - embed_video
     - permissions
     - simplefavorites
-    # PickSome has to come after simplebook so the left menu bar is correct
+    # PickSome has to come after SimpleBook so the left menu bar is correct
     - picksome
     - simplesaml
     - rss

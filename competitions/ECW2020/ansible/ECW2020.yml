@@ -15,7 +15,7 @@
     - simplebook
     - embed_video
     - permissions
-    # PickSome has to come after simplebook so the left menu bar is correct
+    # PickSome has to come after SimpleBook so the left menu bar is correct
     #- picksome # disabled due to client request on Jan 14, 2021
     - simplefavorites
     - simplesaml
