@@ -7,6 +7,7 @@ html_directory: /var/www/html
 mediawiki_install_directory: /home/deploy/GlobalView/
 mediawiki_mwlib_username: mwlib
 mediawiki_csv2wiki_username: csv2wiki
+mediawiki_server: https://torque.leverforchange.org
 
 simplesaml_install_directory: /home/deploy/simplesaml/
 
