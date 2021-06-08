@@ -5,6 +5,7 @@
     name: "{{ item }}"
     state: present
   loop:
+    - nodejs
     - pipenv
     - supervisor
     - redis-server
@@ -117,3 +118,9 @@
   template:
     src: supervisor-simplebook.conf.j2
     dest: /etc/supervisor/conf.d/simplebook.conf
+
+- name: Restart supervisor for simplebook
+  become_user: root
+  supervisorctl:
+    name: 'simplebook:'
+    state: restarted
