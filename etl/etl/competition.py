@@ -1127,7 +1127,7 @@ class EvaluationAdder(InformationAdder):
                 "%s %s Score Normalized" % (self.name, trait_name)
             ] += float(row[score_normalized_col])
             evaluation_datum["%s %s Comments" % (self.name, trait_name)] += (
-                utils.fix_cell(row[comments_col]) + "\n"
+                utils.fix_cell(row[comments_col].replace("\n", "")) + "\n"
             )
             evaluation_datum[
                 "%s %s Comment Scores Normalized" % (self.name, trait_name)
