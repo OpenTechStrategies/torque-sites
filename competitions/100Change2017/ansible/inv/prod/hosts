@@ -1,5 +1,5 @@
 [postgresql]
-wiki.opentechstrategies.com ansible_ssh_user="{{ lookup('env','OTS_USERNAME') }}"
+torque.leverforchange.org ansible_ssh_user="{{ lookup('env','OTS_USERNAME') }}"
 
 [mediawiki]
-wiki.opentechstrategies.com ansible_ssh_user="{{ lookup('env','OTS_USERNAME') }}"
+torque.leverforchange.org ansible_ssh_user="{{ lookup('env','OTS_USERNAME') }}"
