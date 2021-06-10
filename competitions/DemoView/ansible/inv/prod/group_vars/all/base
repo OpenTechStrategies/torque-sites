@@ -10,7 +10,7 @@ mediawiki_csv2wiki_username: csv2wiki
 
 simplesaml_install_directory: /home/deploy/simplesaml/
 
-torquedata_git_version: 11319ba
+torquedata_git_version: 82c060e
 torquedata_server_port: 5001
 
 # This is only needed for ots deployments, and so not part of the template
