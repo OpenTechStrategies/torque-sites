@@ -9,7 +9,7 @@
   get_url:
     url: https://releases.wikimedia.org/mediawiki/1.35/mediawiki-{{ mediawiki_version }}.tar.gz
     dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}.tar.gz"
-    checksum: sha256:8335a2d8740c5dd5919a480b74c3d8e19f23a68b396df48c2d77646272fdcd67
+    checksum: sha256:3a7fbc1dec03533b57c688b075f721bba70eb14d92a4a1eab8d7d5a5943f2ed4
 
 - name: Extract MediaWiki tarball
   unarchive:
@@ -30,7 +30,7 @@
   get_url:
     url: https://getcomposer.org/installer
     dest: "{{ mediawiki_install_directory }}/composer-setup.php"
-    checksum: "sha384:795f976fe0ebd8b75f26a6dd68f78fd3453ce79f32ecb33e7fd087d39bfeb978342fb73ac986cd4f54edd0dc902601dc"
+    checksum: "sha384:756890a4488ce9024fc62c56153228907f1545c228516cbf63f885e036d37e9a59d27d63f46af1d4d07ee0f76181c7d3"
 
 - name: Make wiki bin directory
   file:
