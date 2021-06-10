@@ -215,7 +215,6 @@ def main():
             )
 
             for proposal in comp.ordered_proposals():
-                print(name)
                 priority_populations = ""
                 if "priority_populations" in competition_configs[name]:
                     priority_populations = proposal.cell(
@@ -300,7 +299,6 @@ def main():
     my_wiki.upload_sheet(comp)
 
     for proposal in comp.proposals.values():
-        print(proposal.cell("MediaWiki Title"))
         my_wiki.create_page(
             proposal.cell("MediaWiki Title"),
             "{{ #tdcrender:%s/id/%s.mwiki|false|%s }}"
