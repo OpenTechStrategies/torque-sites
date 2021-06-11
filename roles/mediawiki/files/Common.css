@@ -60,6 +60,14 @@ body {
 #p-View {
   display:block;
 }
+
+/* Hides the "Printable version" tool.
+ * See https://github.com/OpenTechStrategies/torque-sites/issues/131
+ */
+#t-print {
+display:none;
+}
+
 @media print {
   .firstHeading {
     display:none;
