@@ -5,7 +5,6 @@
     name: "{{ item }}"
     state: present
   loop:
-    - nodejs
     - pipenv
     - supervisor
     - redis-server
