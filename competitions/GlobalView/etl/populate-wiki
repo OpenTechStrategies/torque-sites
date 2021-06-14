@@ -42,6 +42,7 @@ competition_configs = {
         "annual_operating_budget": "Annual Operating Budget",
         "organization_name": "Organization Name",
         "organization_geography": ["Org State/Province", "Org Country"],
+        "rank": "Panel Overall Score Rank Normalized",
         "status": "Admin Review Status",
     },
     "LLIIA2020": {
@@ -53,6 +54,7 @@ competition_configs = {
         "annual_operating_budget": "Annual Operating Budget",
         "organization_name": "Organization Name",
         "organization_geography": ["Org State / Province", "Org Country"],
+        "rank": "Panel Overall Score Rank Normalized",
         "status": "Valid",
     },
     "100Change2020": {
@@ -63,6 +65,7 @@ competition_configs = {
         "priority_populations": "Priority Populations",
         "organization_name": "Organization Legal Name",
         "organization_geography": ["State", "Country"],
+        "rank": "Wise Head Overall Score Rank Normalized",
         "status": "Valid",
     },
     "100Change2017": {
@@ -81,6 +84,7 @@ competition_configs = {
         "priority_populations": "Priority Populations",
         "organization_name": "Organization Name",
         "organization_geography": ["State / Province", "Nation"],
+        "rank": "Judge Overall Score Rank Normalized",
         "status": "Valid",
     },
     "RacialEquity2030": {
@@ -91,6 +95,7 @@ competition_configs = {
         "priority_populations": "Priority Populations",
         "organization_name": "Organization name",
         "organization_geography": ["Applicant State / Province", "Applicant  Country"],
+        "rank": "Peer to Peer Overall Score Rank Normalized",
         "status": "Admin Review Status",
     },
     "Climate2030": {
@@ -102,6 +107,7 @@ competition_configs = {
         "annual_operating_budget": "Annual Operating Budget",
         "organization_name": "Organization Name",
         "organization_geography": ["Org State/Province", "Org Country"],
+        "rank": "Panel Overall Score Rank Normalized",
         "status": "Admin Review Status",
     },
     "ECW2020": {
@@ -113,6 +119,7 @@ competition_configs = {
         "annual_operating_budget": "Annual Operating Budget",
         "organization_name": "Organization Name",
         "organization_geography": ["Org State/Province", "Org Country"],
+        "rank": "Panel Overall Score Rank Normalized",
         "status": "Admin Review Status",
     },
 }
@@ -200,6 +207,7 @@ def main():
                 "Global Application #",
                 "Competition Name",
                 "Competition Application #",
+                "Rank",
                 "Project Title",
                 "Organization Name",
                 "Organization State / Province",
@@ -231,11 +239,16 @@ def main():
                     annual_operating_budget = proposal.cell(
                         competition_configs[name]["annual_operating_budget"]
                     )
+                rank = ""
+                if "rank" in competition_configs[name]:
+                    rank = proposal.cell(competition_configs[name]["rank"])
+
                 csv_writer.writerow(
                     [
                         "%s_%s" % (name, proposal.key()),
                         name,
                         proposal.key(),
+                        rank,
                         proposal.cell(competition_configs[name]["title"]),
                         proposal.cell(competition_configs[name]["organization_name"]),
                         proposal.cell(
@@ -293,6 +306,45 @@ def main():
             },
         ]
     )
+    highly_ranked_toc = toc.ListToc("Highly_Ranked_Proposals")
+
+    # Highly ranked is 25 or better
+    highly_ranked_toc.proposals = sorted(
+        [
+            p
+            for p in comp.ordered_proposals()
+            if p.cell("Rank") and int(p.cell("Rank")) < 26
+        ],
+        key=lambda p: p.cell("Organization Name"),
+    )
+
+    highly_ranked_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
+        [
+            {
+                "name": "Organization Name",
+                "heading": "Organization",
+            },
+            {
+                "name": "Project Title",
+                "heading": "Title",
+                "link": True,
+            },
+            {
+                "name": "Competition Name",
+                "heading": "Competition",
+            },
+            {
+                "name": "Competition Application #",
+                "heading": "ID #",
+                "right_aligned": True,
+            },
+            {
+                "name": "Rank",
+                "heading": "Rank",
+                "right_aligned": True,
+            },
+        ]
+    )
 
     comp.add_toc(
         toc.RegionAwareGeographicToc(
@@ -307,6 +359,7 @@ def main():
     )
 
     comp.add_toc(list_toc)
+    comp.add_toc(highly_ranked_toc)
     comp.add_toc(
         toc.GenericMultiLineToc(
             "Populations", "Priority Populations", None, toc.GenericToc.SortMethod.COUNT
