@@ -41,6 +41,7 @@ competition_configs = {
         "priority_populations": "Priority Populations",
         "annual_operating_budget": "Annual Operating Budget",
         "organization_name": "Organization Name",
+        "organization_geography": ["Org State/Province", "Org Country"],
         "status": "Admin Review Status",
     },
     "LLIIA2020": {
@@ -51,6 +52,7 @@ competition_configs = {
         "priority_populations": "Priority Populations",
         "annual_operating_budget": "Annual Operating Budget",
         "organization_name": "Organization Name",
+        "organization_geography": ["Org State / Province", "Org Country"],
         "status": "Valid",
     },
     "100Change2020": {
@@ -60,6 +62,7 @@ competition_configs = {
         "wiki_key": "100Change2020",
         "priority_populations": "Priority Populations",
         "organization_name": "Organization Legal Name",
+        "organization_geography": ["State", "Country"],
         "status": "Valid",
     },
     "100Change2017": {
@@ -68,6 +71,7 @@ competition_configs = {
         "sheet_name": "LFC100Change2017",
         "wiki_key": "100Change2017",
         "organization_name": "Registered Organization Name",
+        "organization_geography": ["State / Province / Region", "Country"],
     },
     "EO2020": {
         "key": "Application #",
@@ -76,6 +80,7 @@ competition_configs = {
         "wiki_key": "EO2020",
         "priority_populations": "Priority Populations",
         "organization_name": "Organization Name",
+        "organization_geography": ["State / Province", "Nation"],
         "status": "Valid",
     },
     "RacialEquity2030": {
@@ -85,6 +90,7 @@ competition_configs = {
         "wiki_key": "RacialEquity2030",
         "priority_populations": "Priority Populations",
         "organization_name": "Organization name",
+        "organization_geography": ["Applicant State / Province", "Applicant  Country"],
         "status": "Admin Review Status",
     },
     "Climate2030": {
@@ -95,6 +101,7 @@ competition_configs = {
         "priority_populations": "Priority Populations",
         "annual_operating_budget": "Annual Operating Budget",
         "organization_name": "Organization Name",
+        "organization_geography": ["Org State/Province", "Org Country"],
         "status": "Admin Review Status",
     },
     "ECW2020": {
@@ -105,6 +112,7 @@ competition_configs = {
         "priority_populations": "Priority Populations",
         "annual_operating_budget": "Annual Operating Budget",
         "organization_name": "Organization Name",
+        "organization_geography": ["Org State/Province", "Org Country"],
         "status": "Admin Review Status",
     },
 }
@@ -194,6 +202,8 @@ def main():
                 "Competition Application #",
                 "Project Title",
                 "Organization Name",
+                "Organization State / Province",
+                "Organization Country",
                 "Wiki Key",
                 "Sheet Name",
                 "Priority Populations",
@@ -228,6 +238,12 @@ def main():
                         proposal.key(),
                         proposal.cell(competition_configs[name]["title"]),
                         proposal.cell(competition_configs[name]["organization_name"]),
+                        proposal.cell(
+                            competition_configs[name]["organization_geography"][0]
+                        ),
+                        proposal.cell(
+                            competition_configs[name]["organization_geography"][1]
+                        ),
                         competition_configs[name]["wiki_key"],
                         competition_configs[name]["sheet_name"],
                         priority_populations,
@@ -276,6 +292,18 @@ def main():
                 "right_aligned": True,
             },
         ]
+    )
+
+    comp.add_toc(
+        toc.RegionAwareGeographicToc(
+            "Organization_Geography",
+            [
+                [
+                    "Organization Country",
+                    "Organization State / Province",
+                ],
+            ],
+        )
     )
 
     comp.add_toc(list_toc)
