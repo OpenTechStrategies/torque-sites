@@ -39,6 +39,7 @@ competition_configs = {
         "sheet_name": "LoneStar2020",
         "wiki_key": "LoneStar2020",
         "priority_populations": "Priority Populations",
+        "annual_operating_budget": "Annual Operating Budget",
         "organization_name": "Organization Name",
         "status": "Admin Review Status",
     },
@@ -48,6 +49,7 @@ competition_configs = {
         "sheet_name": "LLIIA2020",
         "wiki_key": "LLIIA2020",
         "priority_populations": "Priority Populations",
+        "annual_operating_budget": "Annual Operating Budget",
         "organization_name": "Organization Name",
         "status": "Valid",
     },
@@ -91,6 +93,7 @@ competition_configs = {
         "sheet_name": "Climate2030",
         "wiki_key": "Climate2030",
         "priority_populations": "Priority Populations",
+        "annual_operating_budget": "Annual Operating Budget",
         "organization_name": "Organization Name",
         "status": "Admin Review Status",
     },
@@ -100,15 +103,7 @@ competition_configs = {
         "sheet_name": "ECW2020",
         "wiki_key": "ECW2020",
         "priority_populations": "Priority Populations",
-        "organization_name": "Organization Name",
-        "status": "Admin Review Status",
-    },
-    "LoneStar2020": {
-        "key": "Application #",
-        "title": "Project Title",
-        "sheet_name": "LoneStar2020",
-        "wiki_key": "LoneStar2020",
-        "priority_populations": "Priority Populations",
+        "annual_operating_budget": "Annual Operating Budget",
         "organization_name": "Organization Name",
         "status": "Admin Review Status",
     },
@@ -202,6 +197,7 @@ def main():
                 "Wiki Key",
                 "Sheet Name",
                 "Priority Populations",
+                "Annual Operating Budget",
                 "Status",
             ]
         )
@@ -220,6 +216,11 @@ def main():
                     priority_populations = proposal.cell(
                         competition_configs[name]["priority_populations"]
                     )
+                annual_operating_budget = ""
+                if "annual_operating_budget" in competition_configs[name]:
+                    annual_operating_budget = proposal.cell(
+                        competition_configs[name]["annual_operating_budget"]
+                    )
                 csv_writer.writerow(
                     [
                         "%s_%s" % (name, proposal.key()),
@@ -230,6 +231,7 @@ def main():
                         competition_configs[name]["wiki_key"],
                         competition_configs[name]["sheet_name"],
                         priority_populations,
+                        annual_operating_budget,
                         # We mark as valid in the case that there is no status so things get included
                         (
                             proposal.cell(competition_configs[name]["status"])
@@ -282,6 +284,7 @@ def main():
             "Populations", "Priority Populations", None, toc.GenericToc.SortMethod.COUNT
         )
     )
+    comp.add_toc(toc.AnnualBudgetToc("Annual Operating Budget"))
     comp.sort("Organization Name")
     comp.process_tocs()
 

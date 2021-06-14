@@ -4,6 +4,7 @@ import json
 import os
 import re
 from functools import total_ordering
+from enum import Enum
 
 
 class Competition:
@@ -282,7 +283,11 @@ class RemoveHTMLBRsProcessor(CellProcessor):
 
     def process_cell(self, proposal, column_name):
         # Because of how fix_cell works, we have to remove both the <br> and the \n separately
-        return proposal.cell(column_name).replace("<br/>", "").replace("\n", self.replacement_string)
+        return (
+            proposal.cell(column_name)
+            .replace("<br/>", "")
+            .replace("\n", self.replacement_string)
+        )
 
 
 class MultiLineProcessor(CellProcessor):
@@ -332,6 +337,38 @@ class MultiLineFromListProcessor(CellProcessor):
             cell = cell.strip()
 
         return new_cell.strip()
+
+
+class AnnualBudget(Enum):
+    LESS_THAN_1_MIL = "Less than $1.0 Million"
+    BETWEEN_1_MIL_AND_5_MIL = "$1.0 to 5.0 Million"
+    BETWEEN_5_MIL_AND_10_MIL = "$5.1 to 10 Million"
+    BETWEEN_10_MIL_AND_25_MIL = "$10.1 to 25 Million"
+    BETWEEN_25_MIL_AND_50_MIL = "$25.1 to 50 Million"
+    BETWEEN_50_MIL_AND_100_MIL = "$50.1 to 100 Million"
+    BETWEEN_100_MIL_AND_500_MIL = "$100.1 to 500 Million"
+    BETWEEN_500_MIL_AND_1_BIL = "$500.1 Million to $1 Billion"
+    MORE_THAN_1_BIL = "$1 Billion +"
+
+
+class AnnualBudgetProcessor(CellProcessor):
+    """Normalizes the Annual Budget, so that a unified (GlobalView) TOC
+    works across competitions.
+
+    Requires, as input, a map where the keys are options in the AnnualBudget enum."""
+
+    def __init__(self, mapping):
+        # We invert the mapping for lookup as we process the cell, but we want
+        # the external interface to make more sense and keeping the enum
+        # as the key makes the client look nicer.
+        self.reverse_mapping = {v: k for k, v in mapping.items()}
+
+    def process_cell(self, proposal, column_name):
+        cell = proposal.cell(column_name)
+        if cell not in self.reverse_mapping:
+            raise Exception("%s is not a configured budget value" % cell)
+
+        return self.reverse_mapping[cell].value
 
 
 class BudgetTableProcessor(CellProcessor):

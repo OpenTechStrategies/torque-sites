@@ -359,6 +359,33 @@ class ListToc(Toc):
         return {"proposal_ids": self.keys}
 
 
+class AnnualBudgetToc(GenericToc):
+    """A toc for annual bugets, which is regularized across competitions.
+    Works in conjunction with the AnnualBudgetProcessor, and pulls the
+    values from there.  Because the name of the TOC and the values are
+    all similar across competitions, the Global View of the toc works
+    correctly."""
+
+    def __init__(self, column_name):
+        from . import competition
+
+        super().__init__(
+            "Annual_Budgets",
+            column_name,
+            [
+                competition.AnnualBudget.LESS_THAN_1_MIL.value,
+                competition.AnnualBudget.BETWEEN_1_MIL_AND_5_MIL.value,
+                competition.AnnualBudget.BETWEEN_5_MIL_AND_10_MIL.value,
+                competition.AnnualBudget.BETWEEN_10_MIL_AND_25_MIL.value,
+                competition.AnnualBudget.BETWEEN_25_MIL_AND_50_MIL.value,
+                competition.AnnualBudget.BETWEEN_50_MIL_AND_100_MIL.value,
+                competition.AnnualBudget.BETWEEN_100_MIL_AND_500_MIL.value,
+                competition.AnnualBudget.BETWEEN_500_MIL_AND_1_BIL.value,
+                competition.AnnualBudget.MORE_THAN_1_BIL.value,
+            ],
+        )
+
+
 class GeographicToc(Toc):
     """A toc where the grouping is multi level.  For instance, for a given
     competition, we might want to group first by Country, then by State, then

@@ -220,7 +220,6 @@ def main():
         competition.StaticColumnAdder("Competition Name", "LoneStar2020")
     )
 
-
     fix_cell_processor = competition.FixCellProcessor()
     comp.process_all_cells_special(fix_cell_processor)
     fix_cell_processor.report()
@@ -239,6 +238,22 @@ def main():
         "Total Resource Requirements", competition.NumberCommaizer()
     )
     comp.process_cells_special("Budget data", competition.BudgetTableProcessor())
+    comp.process_cells_special(
+        "Annual Operating Budget",
+        competition.AnnualBudgetProcessor(
+            {
+                competition.AnnualBudget.LESS_THAN_1_MIL: "Less than $1.0 Million",
+                competition.AnnualBudget.BETWEEN_1_MIL_AND_5_MIL: "$1.0 to 5 Million",
+                competition.AnnualBudget.BETWEEN_5_MIL_AND_10_MIL: "$5.1 to 10 Million",
+                competition.AnnualBudget.BETWEEN_10_MIL_AND_25_MIL: "$10.1 to 25 Million",
+                competition.AnnualBudget.BETWEEN_25_MIL_AND_50_MIL: "$25.1 to 50 Million",
+                competition.AnnualBudget.BETWEEN_50_MIL_AND_100_MIL: "$50.1 to 100 Million",
+                competition.AnnualBudget.BETWEEN_100_MIL_AND_500_MIL: "$100.1 to 500 Million",
+                competition.AnnualBudget.BETWEEN_500_MIL_AND_1_BIL: "$500.1 Million to $1 Billion",
+                competition.AnnualBudget.MORE_THAN_1_BIL: "$1 Billion +",
+            }
+        ),
+    )
 
     attachments = competition.BasicAttachments(
         comp.sorted_proposal_keys, attachments_dir
@@ -362,24 +377,7 @@ def main():
     comp.add_toc(list_toc)
     comp.add_toc(toc.GenericMultiLineToc("Populations", "Priority Populations"))
     comp.add_toc(toc.GenericToc("Solution_Categories", "Solution category"))
-
-    comp.add_toc(
-        toc.GenericToc(
-            "Annual_Budgets",
-            "Annual Operating Budget",
-            [
-                "Less than $1.0 Million",
-                "$1.0 to 5 Million",
-                "$5.1 to 10 Million",
-                "$10.1 to 25 Million",
-                "$25.1 to 50 Million",
-                "$50.1 to 100 Million",
-                "$100.1 to 500 Million",
-                "$500.1 Million to $1 Billion",
-                "$1 Billion +",
-            ],
-        )
-    )
+    comp.add_toc(toc.AnnualBudgetToc("Annual Operating Budget"))
 
     comp.add_toc(
         toc.GenericToc(
