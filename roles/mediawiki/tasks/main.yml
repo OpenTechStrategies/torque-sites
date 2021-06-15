@@ -157,9 +157,11 @@
 
 - name: Create mwlib user
   command: "php {{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/maintenance/createAndPromote.php --force --dbuser=\"{{ db_username }}\" --dbpass=\"{{ db_password }}\" \"{{ mediawiki_mwlib_username }}\" \"{{ mediawiki_mwlib_password }}\""
+  when: mediawiki_mwlib_username is defined
 
 - name: Create csv2wiki user
   command: "php {{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/maintenance/createAndPromote.php --bot --force --dbuser=\"{{ db_username }}\" --dbpass=\"{{ db_password }}\" \"{{ mediawiki_csv2wiki_username }}\" \"{{ mediawiki_csv2wiki_password }}\""
+  when: mediawiki_csv2wiki_username is defined
 
 - name: Enable Common.css on Login Page
   blockinfile:
