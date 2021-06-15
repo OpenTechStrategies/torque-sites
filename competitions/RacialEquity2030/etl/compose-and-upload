@@ -60,6 +60,10 @@ Command-line options:
                                   between peers and the proposals they evaluated,
                                   with the extra data being their evaluation
 
+  --expert-panel-review FILE      FILE is a CSV file with a many to one relationshp
+                                  between experts and the proposals they evaluated,
+                                  with the extra data being their evaluation
+
   --pare ARG                      If ARG is a number, reduce the number of items to 1/ARG.  If
                                   ARG begins with +, then ARG is a comma separated list of
                                   keys to include.  If ARG begins with @, then ARG is a
@@ -96,6 +100,7 @@ def main():
                 "attachments-dir=",
                 "correction-file=",
                 "peer-to-peer-review=",
+                "expert-panel-review=",
                 "pare=",
                 "csv-only",
             ],
@@ -110,6 +115,7 @@ def main():
     tdc_config_dir = None
     correction_file = None
     peer_to_peer_review_csv = None
+    expert_panel_review_csv = None
     pare = None
     csv_only = False
     for o, a in opts:
@@ -129,6 +135,8 @@ def main():
             correction_file = a
         elif o == "--peer-to-peer-review":
             peer_to_peer_review_csv = a
+        elif o == "--expert-panel-review":
+            expert_panel_review_csv = a
         else:
             sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
             sys.exit(2)
@@ -163,6 +171,13 @@ def main():
     comp.process_cells_special(
         "Organization name", competition.RemoveHTMLBRsProcessor()
     )
+
+    comp.add_supplemental_information(
+        competition.LinkedSecondSheet(
+            expert_panel_review_csv, "Review #", ["Overall Rank"], {}
+        )
+    )
+    comp.process_cells_special("Overall Rank", competition.DefaultValueSetter("9999"))
 
     comp.add_supplemental_information(
         competition.EvaluationAdder(
@@ -201,7 +216,7 @@ def main():
         comp.sorted_proposal_keys, attachments_dir
     )
     comp.add_supplemental_information(attachments)
-    comp.sort("Peer to Peer Overall Score Rank Normalized", True)
+    comp.sort("Overall Rank", True)
 
     list_toc = toc.ListToc("All_Proposals")
     list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
@@ -221,7 +236,7 @@ def main():
                 "right_aligned": True,
             },
             {
-                "name": "Peer to Peer Overall Score Rank Normalized",
+                "name": "Overall Rank",
                 "heading": "Rank",
                 "right_aligned": True,
             },
