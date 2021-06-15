@@ -43,6 +43,7 @@ competition_configs = {
         "organization_name": "Organization Name",
         "organization_geography": ["Org State/Province", "Org Country"],
         "rank": "Panel Overall Score Rank Normalized",
+        "score": "Panel Sum of Scores Normalized",
         "status": "Admin Review Status",
     },
     "LLIIA2020": {
@@ -55,6 +56,7 @@ competition_configs = {
         "organization_name": "Organization Name",
         "organization_geography": ["Org State / Province", "Org Country"],
         "rank": "Panel Overall Score Rank Normalized",
+        "score": "Panel Sum of Scores Normalized",
         "status": "Valid",
     },
     "100Change2020": {
@@ -66,6 +68,7 @@ competition_configs = {
         "organization_name": "Organization Legal Name",
         "organization_geography": ["State", "Country"],
         "rank": "Wise Head Overall Score Rank Normalized",
+        "score": "Wise Head Sum of Scores Normalized",
         "status": "Valid",
     },
     "100Change2017": {
@@ -85,6 +88,7 @@ competition_configs = {
         "organization_name": "Organization Name",
         "organization_geography": ["State / Province", "Nation"],
         "rank": "Judge Overall Score Rank Normalized",
+        "score": "Judge Sum of Scores Normalized",
         "status": "Valid",
     },
     "RacialEquity2030": {
@@ -96,6 +100,7 @@ competition_configs = {
         "organization_name": "Organization name",
         "organization_geography": ["Applicant State / Province", "Applicant  Country"],
         "rank": "Peer to Peer Overall Score Rank Normalized",
+        "score": "Peer to Peer Sum of Scores Normalized",
         "status": "Admin Review Status",
     },
     "Climate2030": {
@@ -108,6 +113,7 @@ competition_configs = {
         "organization_name": "Organization Name",
         "organization_geography": ["Org State/Province", "Org Country"],
         "rank": "Panel Overall Score Rank Normalized",
+        "score": "Panel Sum of Scores Normalized",
         "status": "Admin Review Status",
     },
     "ECW2020": {
@@ -120,9 +126,17 @@ competition_configs = {
         "organization_name": "Organization Name",
         "organization_geography": ["Org State/Province", "Org Country"],
         "rank": "Panel Overall Score Rank Normalized",
+        "score": "Panel Sum of Scores Normalized",
         "status": "Admin Review Status",
     },
 }
+
+class GroupedScoreToc(toc.GenericToc)
+    """Special case of Toc that groups the proposals by their score,
+    in buckets of 5 (from 1-100)."""
+
+    def process_competition(self, competition):
+        for proposal
 
 
 class GlobalViewMediaWikiOverride(competition.MediaWikiTitleAdder):
