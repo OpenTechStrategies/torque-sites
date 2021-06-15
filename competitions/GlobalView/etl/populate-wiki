@@ -131,12 +131,34 @@ competition_configs = {
     },
 }
 
-class GroupedScoreToc(toc.GenericToc)
+
+class GroupedScoreToc(toc.GenericToc):
     """Special case of Toc that groups the proposals by their score,
     in buckets of 5 (from 1-100)."""
 
+    def __init__(self):
+        super().__init__(
+            "Score_Groups",
+            [],
+            initial_groupings=[
+                ("%s to %s" % (n * 5, n * 5 + 5)) for n in range(19, -1, -1)
+            ],
+        )
+
     def process_competition(self, competition):
-        for proposal
+        import math
+
+        self.competition_name = competition.name
+        # self.data = { x: self.default_grouping(x) for x in groupings }
+
+        for proposal in competition.ordered_proposals():
+            if proposal.cell("Score"):
+                # This assumes no one ever scores 100.  And really, who does?
+                idx = 19 - math.floor(float(proposal.cell("Score")) / 5)
+
+                self.data[self.groupings[idx]]["all_proposal_ids"].append(
+                    proposal.key()
+                )
 
 
 class GlobalViewMediaWikiOverride(competition.MediaWikiTitleAdder):
@@ -222,6 +244,7 @@ def main():
                 "Competition Name",
                 "Competition Application #",
                 "Rank",
+                "Score",
                 "Project Title",
                 "Organization Name",
                 "Organization State / Province",
@@ -256,6 +279,9 @@ def main():
                 rank = ""
                 if "rank" in competition_configs[name]:
                     rank = proposal.cell(competition_configs[name]["rank"])
+                score = ""
+                if "score" in competition_configs[name]:
+                    score = proposal.cell(competition_configs[name]["score"])
 
                 csv_writer.writerow(
                     [
@@ -263,6 +289,7 @@ def main():
                         name,
                         proposal.key(),
                         rank,
+                        score,
                         proposal.cell(competition_configs[name]["title"]),
                         proposal.cell(competition_configs[name]["organization_name"]),
                         proposal.cell(
@@ -380,6 +407,7 @@ def main():
         )
     )
     comp.add_toc(toc.AnnualBudgetToc("Annual Operating Budget"))
+    comp.add_toc(GroupedScoreToc())
     comp.sort("Organization Name")
     comp.process_tocs()
 
