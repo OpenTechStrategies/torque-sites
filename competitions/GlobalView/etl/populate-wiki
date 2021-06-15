@@ -70,6 +70,7 @@ competition_configs = {
         "rank": "Wise Head Overall Score Rank Normalized",
         "score": "Wise Head Sum of Scores Normalized",
         "status": "Valid",
+        "sdg": "Sustainable Development Goals",
     },
     "100Change2017": {
         "key": "Review_Number",
@@ -102,6 +103,7 @@ competition_configs = {
         "rank": "Peer to Peer Overall Score Rank Normalized",
         "score": "Peer to Peer Sum of Scores Normalized",
         "status": "Admin Review Status",
+        "sdg": "Sustainable Development Goals",
     },
     "Climate2030": {
         "key": "Application #",
@@ -252,6 +254,7 @@ def main():
                 "Wiki Key",
                 "Sheet Name",
                 "Priority Populations",
+                "Sustainable Development Goals",
                 "Annual Operating Budget",
                 "Status",
             ]
@@ -282,6 +285,9 @@ def main():
                 score = ""
                 if "score" in competition_configs[name]:
                     score = proposal.cell(competition_configs[name]["score"])
+                sdgs = ""
+                if "sdg" in competition_configs[name]:
+                    sdgs = proposal.cell(competition_configs[name]["sdg"])
 
                 csv_writer.writerow(
                     [
@@ -301,6 +307,7 @@ def main():
                         competition_configs[name]["wiki_key"],
                         competition_configs[name]["sheet_name"],
                         priority_populations,
+                        sdgs,
                         annual_operating_budget,
                         # We mark as valid in the case that there is no status so things get included
                         (
@@ -314,6 +321,9 @@ def main():
     comp = competition.Competition(csv_location, "GlobalView", "Global Application #")
     comp.process_cells_special(
         "Priority Populations", competition.ColumnTypeUpdater("list")
+    )
+    comp.process_cells_special(
+        "Sustainable Development Goals", competition.ColumnTypeUpdater("list")
     )
     comp.process_cells_special("Project Title", competition.RemoveHTMLBRsProcessor())
 
@@ -408,6 +418,33 @@ def main():
     )
     comp.add_toc(toc.AnnualBudgetToc("Annual Operating Budget"))
     comp.add_toc(GroupedScoreToc())
+
+    comp.add_toc(
+        toc.GenericMultiLineToc(
+            "Sustainable_Development_Goals",
+            "Sustainable Development Goals",
+            [
+                "No Poverty",
+                "Zero Hunger",
+                "Good Health and Well-being",
+                "Quality Education",
+                "Gender Equality",
+                "Clean Water and Sanitation",
+                "Affordable and Clean Energy",
+                "Decent Work and Economic Growth",
+                "Industry, Innovation and Infrastructure",
+                "Reduced Inequality",
+                "Sustainable Cities and Communities",
+                "Responsible Consumption and Production",
+                "Climate Action",
+                "Life Below Water",
+                "Life on Land",
+                "Peace and Justice Strong Institutions",
+                "Partnerships for the Goals",
+            ],
+        )
+    )
+
     comp.sort("Organization Name")
     comp.process_tocs()
 
@@ -423,6 +460,7 @@ def main():
 
     my_wiki.csv_only = True
     my_wiki.upload_sheet(comp)
+
 
     for proposal in comp.proposals.values():
         my_wiki.create_page(
