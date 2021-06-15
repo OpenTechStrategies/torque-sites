@@ -1,0 +1,23 @@
+---
+
+- name: Transfer LFC Logo
+  copy:
+    src: LeverForChange_Logo.png
+    dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/resources/assets/LeverForChange_Logo.png"
+
+- name: Install LFC Logo
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
+    regexp: ^\$wgLogos = .*
+    line: $wgLogos = [ '1x' => "$wgResourceBasePath/resources/assets/LeverForChange_Logo.png" ];
+
+- name: Public Permissions
+  blockinfile:
+    marker: "## {mark} HELP WIKI PERMISSIONS"
+    path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
+    block: |
+      $wgGroupPermissions['*']['read'] = true;
+      $wgGroupPermissions['*']['edit'] = false;
+      $wgGroupPermissions['user']['edit'] = true;
+      $wgPluggableAuth_EnableAutoLogin = false;
+      $wgPluggableAuth_EnableLocalLogin = false;
