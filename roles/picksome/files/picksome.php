@@ -1,17 +1,17 @@
 <?php
 # While this next line, adding the hook to the system, should be taken care
 # of in the picksome Extension (and indeed it is).  However, this extension is
-# loaded via wfLoadExtension, and the Collection Extension is loaded the old way.
-# The means that the the SidebarBeforeOutput hook is called # preferring Collection,
+# loaded via wfLoadExtension, and the SimpleBook Extension is loaded the old way.
+# The means that the the SidebarBeforeOutput hook is called # preferring SimpleBook,
 # placing it higher on the sidebar than PickSome.
 #
 # This was requested to be changed, to have the PickSome sidebar section come after
-# the Collection links, and the most straightforward way is to add it to the hook
+# the SimpleBook links, and the most straightforward way is to add it to the hook
 # directly when loaded by LocalSettings (as opposed to in extension.json), overriding
 # the normal way mediawiki loads things.
 $wgHooks['SidebarBeforeOutput'][] = 'PickSomeHooks::onSidebarBeforeOutput';
 
-# And then, because we want to check in the Collection loadup config that
+# And then, because we want to check in the SimpleBook loadup config that
 # picksome was not loaded, we include a global here
 $wgPickSomeLoaded = true;
 

@@ -194,7 +194,8 @@ the included keys.
 In order to get the base system up and running, you need to use the install
 from ansible instructions above for the following:
 
-* base/mwlib
+* base/simplebook
+* base/helpwiki
 * base/torquedata
 * base/simplesaml
 

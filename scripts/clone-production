@@ -10,8 +10,8 @@
 # piecemeal as it was created.  But it should work!
 
 COMPETITIONS="100Change2017 100Change2020 Climate2030 ECW2020 EO2020 GlobalView LLIIA2020 LoneStar2020 RacialEquity2030"
-BASE="mwlib simplesaml torquedata"
-DIRECTORIES="$COMPETITIONS simplesaml mwlib torquedata"
+BASE="simplebook simplesaml torquedata"
+DIRECTORIES="$COMPETITIONS simplesaml simplebook torquedata"
 TORQUE_SITES_DIRECTORY="/tmp/torque-sites"
 TORQUE_SITES_SHA="main"
 PG_DATABASES="100Change2017 torquedata"

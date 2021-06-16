@@ -13,10 +13,6 @@ The current set includes:
 * docswiki - a non competition wiki that houses all the torque documentation.
   This is unique in that it is open to the public, but editing is limited
   to members of LFC
-* mwlib - python service to support book printing for MediaWiki.
-  See [it's page](https://mwlib.readthedocs.io/en/latest/) for more
-  information.  Note that this doesn't install the Collection extension
-  for MediaWiki, as that's left up to the competition.
 * simplebook - python and node service to support book printing
   for MediaWiki.  See [it's page](https://github.com/opentechstrategies/SimpleBook)
   for more information.

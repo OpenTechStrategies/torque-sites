@@ -202,10 +202,9 @@ for technical details of each role's access permissions.
   Automated bots and processes get this group when they log in.
 
 This section will always hold the canonical list of groups and their
-meanings.  For historical background, see [issue
-#62](https://github.com/OpenTechStrategies/torque-sites/issues/62) and
-the [2020-03-17 meeting
-notes](https://github.com/OpenTechStrategies/torque/wiki/Meeting-Notes#2020-03-17-frankkarl-discussion-re-eo-and-usergroup-permissions).
+meanings.  For historical background, see
+[issue #62](https://github.com/OpenTechStrategies/torque-sites/issues/62) and
+the [2020-03-17 meeting notes](https://github.com/OpenTechStrategies/torque/wiki/Meeting-Notes#2020-03-17-frankkarl-discussion-re-eo-and-usergroup-permissions).
 
 ### Granting API access
 
@@ -269,53 +268,18 @@ There is still work to be done to reach this goal.  For example, we'll
 need to switch to using one instance of MediaWiki across Torque,
 albeit with different databases (that is, from an external
 perspective, it would continue to look like multiple separate wikis).
-[Issue
-#56](https://github.com/OpenTechStrategies/torque-sites/issues/56)
-describes this in detail, and [issue
-#55](https://github.com/OpenTechStrategies/torque-sites/issues/55)
+[Issue #56](https://github.com/OpenTechStrategies/torque-sites/issues/56)
+describes this in detail, and
+[issue #55](https://github.com/OpenTechStrategies/torque-sites/issues/55)
 describes a similar situation with SimpleSamlPHP.
 
 ## Generating PDF books from sets of articles
 
-Currently, book creation in torque is done through a now-obsolete
-system that is what Wikipedia itself formerly used: the
+Currently, book creation in torque is done through SimpleBook,
+a fork of the now obsolete system that is what Wikipedia itself
+formerly used: the
 [Collection](https://www.mediawiki.org/wiki/Extension:Collection)
-extension.  It depends on (among other things) mwlib, which uses
-Python 2.x not 3.x.  Wikipedia itself has temporarily disabled its
-Book Creator, which formerly used this extension, and posted a
-[timeline](https://www.mediawiki.org/wiki/Reading/Web/PDF_Functionality)
-about the disablement and the hoped-for future restoration of book
-creation.
-
-This [History
-section](https://en.wikipedia.org/wiki/Wikipedia:Books#History) gives
-a nice overview of the current state of the onion.  Basically,
-single-page PDF generation in mediawiki took a detour through the
-now-also-obsolete [Electron](https://www.mediawiki.org/wiki/Electron)
-before settling on [Proton](https://www.mediawiki.org/wiki/Proton),
-which is now handling single-article PDFs on Wikipedia.org.  However,
-as yet there's no code hooking Proton into some kind of article
-collection system so that one can generate a book consisting of
-multiple articles.  The [Talk page for
-Proton](https://www.mediawiki.org/wiki/Talk:Proton) gives more
-information, also referring to the German company PediaPress's efforts
-to make a new book service called "Collector".  According the History
-page that effort is closed source, and according to the Talk page the
-effort is running behind schedule, though apparently they have a test
-service up at https://pediapress.com/collector.
-
-User [Steelpillow](https://en.wikipedia.org/wiki/User:Steelpillow),
-who seems to know a lot about this topic, suggests the [Talk page for
-Reading/Web/PDF_Functionality](https://www.mediawiki.org/wiki/Talk:Reading/Web/PDF_Functionality)
-as a source of more information.
-
-Meanwhile, there is an independent thing happening at
-http://mediawiki2latex.wmflabs.org/.  It converts wiki pages to LaTeX
-and PDF, and works with any website running MediaWiki, especially
-Wikipedia and Wikibooks.  It's FOSS and written in Haskell, but WMF
-doesn't support Haskell, so this is unlikely to become an official
-Wikipedia solution although it might be interesting for torque's
-purposes.
+extension.
 
 ## Reference
 

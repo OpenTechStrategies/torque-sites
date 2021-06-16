@@ -13,12 +13,6 @@ of the mediawiki instance, and then include that file in `LocalSettings.php`
 * [activitylog/](activitylog/) - Checkout and installation of the 
   [Activity Log Extension](https://github.com/OpenTechStrategies/ActivityLog/).
   The checkout is made from github, rather than pulling down a tar.
-* [collection/](collection/) - Deployment and installation of the
-  [Collection Extension](https://www.mediawiki.org/wiki/Extension:Collection).
-  This is used for book printing along with mwlib, and requres the
-  [mwlib base](../base/mwlib) service to be installed.  The collection tar
-  is kept locally to ensure availability.  There are also some patches to
-  update the extension and enable some interfaces.
 * [embed\_video/](embed_video/) - Installation of the
   [Embed Video Extension](https://www.mediawiki.org/wiki/Extension:EmbedVideo).
   The tar is kept locally for availability, and there are some patches for
@@ -61,6 +55,10 @@ of the mediawiki instance, and then include that file in `LocalSettings.php`
   [Pluggable Auth Extension](https://www.mediawiki.org/wiki/Extension:PluggableAuth)
   and [SimpleSamlPHP Extension](https://www.mediawiki.org/wiki/Extension:SimpleSAMLphp).
   These are used to enable SSO via Okta in the competitions.
+* [simplebook/](simplebook/) - Checkout and installation of the
+  [SimpleBook Extension](https://github.com/OpenTechStrategies/SimpleBook/).
+  This is used for book printing along with simplebook server, and requres the
+  [simplebook base](../base/simplebook) service to be installed.
 * [teamcomments/](teamcomments/) - Checkout and installation of the
   [Team Comments Extension](https://github.com/OpenTechStrategies/TeamComments/)
 * [torquedataconnect/](torquedataconnect/) - Checkout and installation of
