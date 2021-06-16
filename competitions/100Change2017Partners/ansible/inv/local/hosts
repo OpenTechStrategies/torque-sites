@@ -1,5 +1,0 @@
-[postgresql]
-localhost  ansible_connection=local
-
-[mediawiki]
-localhost  ansible_connection=local
