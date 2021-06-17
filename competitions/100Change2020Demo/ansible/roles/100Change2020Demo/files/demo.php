@@ -1,11 +1,11 @@
 <?php
 
 function lfc( &$title, &$article, &$output, &$user, $request, $mediaWiki ) {
-	$view = "";
-	$group = "";
+        $view = "";
+        $group = "";
   if(!$user->isLoggedIn()) {
-	  $view = "Demo";
-	  $group = "sysop";
+          $view = "Demo";
+          $group = "sysop";
   } else {
     $view = TorqueDataConnectConfig::getCurrentView(); 
     $group = TorqueDataConnectConfig::getValidGroup($user); 
@@ -25,7 +25,9 @@ function lfc( &$title, &$article, &$output, &$user, $request, $mediaWiki ) {
     # The Right Way would be to create an actual mediawiki skin that does
     # the kinds of things we want, and choose that skin for public users.
     include "demo_header.php";
-    echo $output->parse($page->getContent()->getText());
+    $parser = \MediaWiki\MediaWikiServices::getInstance()->getParser();
+    $po= $parser->parse($page->getContent()->getText(), $title, ParserOptions::newFromUser($user));
+    echo $po->getText();
     include "demo_footer.php";
     exit();
   }
