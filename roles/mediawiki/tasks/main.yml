@@ -137,6 +137,11 @@
     path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
     line: $wgBlockDisablesLogin = true;
 
+- name: Enable Configs
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
+    line: wfLoadExtension('VisualEditor');
+
 - name: Disable MediaWiki Cache
   # When the cache is enabled, on AWS, with the default setting,
   # the following createAndPromote.php command fails due to cache timeout.
