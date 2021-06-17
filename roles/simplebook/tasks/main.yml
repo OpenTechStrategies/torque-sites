@@ -11,9 +11,23 @@
     src: simplebook.php.j2
     dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/torque-sites-config/simplebook.php"
 
+- name: Transfer TDC Config
+  template:
+    src: simplebook_tdc.php.j2
+    dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/torque-sites-config/simplebook_tdc.php"
+  when: mediawiki_mwlib_username is defined
+
 - name: Enable SimpleBook
   blockinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
     marker: "## {mark} ANSIBLE SIMPLEBOOK CONFIG"
     block: |
       include "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/torque-sites-config/simplebook.php";
+
+- name: Enable SimpleBook TDC
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
+    marker: "## {mark} ANSIBLE SIMPLEBOOK TDC CONFIG"
+    block: |
+      include "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/torque-sites-config/simplebook_tdc.php";
+  when: mediawiki_mwlib_username is defined
