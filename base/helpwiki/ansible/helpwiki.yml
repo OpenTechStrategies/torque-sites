@@ -13,6 +13,7 @@
     - mediawiki
     - permissions
     - simplefavorites
+    - simplebook
     - simplesaml
     - exporttables
     # This should come after permissions because of overrides of defaults
