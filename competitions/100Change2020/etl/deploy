@@ -144,7 +144,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   rm ${DATA_DIR}/${FINAL_6_ATTACHMENTS}
 fi
 
-if ! echo "bad31bbabd6b03ec5be834d3d87ec70361e8efa0  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
+if ! echo "269fe9bcb723ede84e0f7b08442ec852b2c8f5aa  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
   echo "ERROR: SHA of PROPOSALS_CSV did not match expectation!"
   echo "This means that we most likely got a new file, which may have the old"
   echo "errors in it (specifically the organization proposal 829)."

@@ -41,7 +41,10 @@ class Competition:
             sys.exit(-1)
 
         self.name = name
-        self.columns = [col.strip() for col in next(proposals_reader)]
+        # We strip out \ufeff here because sometimes the spreadsheets we get
+        # are edited by macs, and that adds this extra character, which messes
+        # up our columns!
+        self.columns = [col.strip().replace("\ufeff", "") for col in next(proposals_reader)]
         self.key_column_name = key_column_name
         self.column_types = {}
         self.proposals = {}

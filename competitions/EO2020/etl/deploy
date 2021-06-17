@@ -92,6 +92,9 @@ if [ ! -d "${DATA_DIR}" ] ; then
   unzip -d ${DATA_DIR} ${DATA_DIR}/${BASE_ATTACHMENTS}
   mv "${DATA_DIR}/Registration_and_Application_forms_PDFs_EOC" $ATTACHMENTS_DIR
 
+  # This decryption has to come after the unzipping, due to duplication of the csv in the zip
+  gpg --yes -o ${DATA_DIR}/${PROPOSALS_CSV} --decrypt ${ENCRYPTED_DIR}/${PROPOSALS_CSV}.gpg || exit 1
+
   mkdir -p $TMP_ATTACHMENTS_DIR
   unzip -d $TMP_ATTACHMENTS_DIR "${DATA_DIR}/${TOP13_SUPPLEMENTAL_ATTACHMENTS}"
   ls $TMP_ATTACHMENTS_DIR | grep "[[:digit:]]\+_" | while read dir ; do
@@ -129,7 +132,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   rm "${DATA_DIR}/${BRIDGESPAN_ANALYSIS_ZIP}"
 fi
 
-if ! echo "fcc64efaf84cb0d10497bac4b1e9750e9f866faf  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
+if ! echo "e56af8e0537a03f0148310b15144fe2db72c21eb  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
   echo "ERROR: SHA of PROPOSALS_CSV did not match expectation!"
   echo "This means that we most likely got a new file, which may have the old"
   echo "errors in it (specifically the organization proposal 829)."

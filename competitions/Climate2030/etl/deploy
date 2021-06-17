@@ -106,7 +106,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   done
 fi
 
-if ! echo "5fb209182029c369285ee3a9880f946849fa7427  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
+if ! echo "607117d62ebae579e801447f1ff81e3081c1b529  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
   echo "ERROR: SHA of PROPOSALS_CSV did not match expectation!"
   echo "This means that we most likely got a new file, which may have the old"
   echo "errors in it (specifically the organization proposal 829)."
