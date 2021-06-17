@@ -340,14 +340,14 @@ class MultiLineFromListProcessor(CellProcessor):
 
 
 class AnnualBudget(Enum):
-    LESS_THAN_1_MIL = "Less than $1.0 Million"
-    BETWEEN_1_MIL_AND_5_MIL = "$1.0 to 5.0 Million"
-    BETWEEN_5_MIL_AND_10_MIL = "$5.1 to 10 Million"
-    BETWEEN_10_MIL_AND_25_MIL = "$10.1 to 25 Million"
-    BETWEEN_25_MIL_AND_50_MIL = "$25.1 to 50 Million"
-    BETWEEN_50_MIL_AND_100_MIL = "$50.1 to 100 Million"
-    BETWEEN_100_MIL_AND_500_MIL = "$100.1 to 500 Million"
-    BETWEEN_500_MIL_AND_1_BIL = "$500.1 Million to $1 Billion"
+    LESS_THAN_1_MIL = "Less than $1 Million"
+    BETWEEN_1_MIL_AND_5_MIL = "$1 to $5 Million"
+    BETWEEN_5_MIL_AND_10_MIL = "$5 to $10 Million"
+    BETWEEN_10_MIL_AND_25_MIL = "$10 to $25 Million"
+    BETWEEN_25_MIL_AND_50_MIL = "$25 to $50 Million"
+    BETWEEN_50_MIL_AND_100_MIL = "$50 to $100 Million"
+    BETWEEN_100_MIL_AND_500_MIL = "$100 to $500 Million"
+    BETWEEN_500_MIL_AND_1_BIL = "$500 Million to $1 Billion"
     MORE_THAN_1_BIL = "$1 Billion +"
 
 
