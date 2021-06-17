@@ -59,7 +59,7 @@ $wgGroupPermissions['LFCEvaluators']['teamcomment'] = true;
 $wgHooks['SpecialPage_initList'][] = function ( &$list ) {
   global $wgUser;
 
-  if(!$wgUser->isAllowed('view-special-log')) {
+  if($wgUser->isSafeToLoad() && !$wgUser->isAllowed('view-special-log')) {
     unset( $list['Log'] );
   }
   return true;
