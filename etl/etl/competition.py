@@ -196,7 +196,8 @@ class Proposal:
 
     def cell(self, column_name):
         """Returns the cell value for COLUMN_NAME"""
-        return self.data[column_name]
+        if column_name in self.data:
+            return self.data[column_name]
 
     def key(self):
         """Returns the key for this Proposal"""
