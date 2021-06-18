@@ -173,16 +173,23 @@ def main():
     )
 
     comp.add_supplemental_information(
-        competition.LinkedSecondSheet(
-            expert_panel_review_csv, "Review #", ["Overall Rank"], {}
-        )
-    )
-    comp.process_cells_special("Overall Rank", competition.DefaultValueSetter("9999"))
-
-    comp.add_supplemental_information(
         competition.EvaluationAdder(
             "Peer to Peer",
             peer_to_peer_review_csv,
+            app_col_name="Application #",
+            score_rank_normalized_col_name="Overall Score Rank Normalized ",
+            sum_of_scores_normalized_col_name="Sum Of Scores Normalized ",
+            trait_col_name="Trait",
+            score_normalized_col_name="Trait Score Normalized",
+            comments_col_name="Trait Judge Comment ",
+            comments_score_normalized_col_name="Trait Score Normalized",
+        )
+    )
+
+    comp.add_supplemental_information(
+        competition.EvaluationAdder(
+            "Panel",
+            expert_panel_review_csv,
             app_col_name="Application #",
             score_rank_normalized_col_name="Overall Score Rank Normalized ",
             sum_of_scores_normalized_col_name="Sum Of Scores Normalized ",
@@ -216,7 +223,7 @@ def main():
         comp.sorted_proposal_keys, attachments_dir
     )
     comp.add_supplemental_information(attachments)
-    comp.sort("Overall Rank", True)
+    comp.sort("Panel Overall Score Rank Normalized", True)
 
     list_toc = toc.ListToc("All_Proposals")
     list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
