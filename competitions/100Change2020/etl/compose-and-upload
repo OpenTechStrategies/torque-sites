@@ -48,6 +48,8 @@ Command-line options:
                                   between wisehead judges and the proposals they
                                   evaluated, like the judge-evaluation-csv
 
+  --wisehead-corrected-scores-csv FILE     FILE is a CSV file with corrected scores
+
   --correction-file FILE          FILE is a csv of corrections to the main data.  The header
                                   must match the header of the original proposals file, and any
                                   one of the columns must contain the review number.  Then
@@ -389,6 +391,7 @@ def main():
                 "admin-review-csv=",
                 "judge-evaluation-csv=",
                 "wisehead-evaluation-csv=",
+                "wisehead-corrected-scores-csv=",
                 "ots-metadata=",
                 "sdgconfig-csv=",
                 "tdc-config-dir=",
@@ -406,6 +409,7 @@ def main():
     admin_review_csv = None
     judge_evaluation_csv = None
     wisehead_evaluation_csv = None
+    wisehead_corrected_scores_csv = None
     regionconfig_csv = None
     sdgconfig_csv = None
     attachments_dir = None
@@ -428,6 +432,8 @@ def main():
             judge_evaluation_csv = a
         elif o == "--wisehead-evaluation-csv":
             wisehead_evaluation_csv = a
+        elif o == "--wisehead-corrected-scores-csv":
+            wisehead_corrected_scores_csv = a
         elif o == "--ots-metadata":
             ots_metadata_csv = a
         elif o == "--sdgconfig-csv":
@@ -494,6 +500,23 @@ def main():
                 comments_score_normalized_col_name="TraitScoreNormalized",
             )
         )
+
+    comp.add_supplemental_information(
+        competition.LinkedSecondSheet(
+            wisehead_corrected_scores_csv,
+            "Review #",
+            [
+                {
+                    "source_name": "Overall Rank",
+                    "target_name": "Wise Head Overall Score Rank Normalized",
+                },
+                {
+                    "source_name": "Score Total",
+                    "target_name": "Wise Head Sum of Scores Normalized",
+                },
+            ],
+        )
+    )
 
     admin_review = competition.AdminReview(admin_review_csv, "Application #", "Status")
     comp.add_supplemental_information(admin_review)
