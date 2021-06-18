@@ -44,7 +44,9 @@ class Competition:
         # We strip out \ufeff here because sometimes the spreadsheets we get
         # are edited by macs, and that adds this extra character, which messes
         # up our columns!
-        self.columns = [col.strip().replace("\ufeff", "") for col in next(proposals_reader)]
+        self.columns = [
+            col.strip().replace("\ufeff", "") for col in next(proposals_reader)
+        ]
         self.key_column_name = key_column_name
         self.column_types = {}
         self.proposals = {}
@@ -99,7 +101,12 @@ class Competition:
             if adder.column_type(column_name) is not None:
                 self.column_types[column_name] = adder.column_type(column_name)
 
-            self.columns.append(column_name)
+            # Even though this is meant for adding columns, there are times
+            # when adding overwrites columns, such as when merging two sheets
+            # together.
+            if column_name not in self.columns:
+                self.columns.append(column_name)
+
             for proposal in self.proposals.values():
                 proposal.add_cell(column_name, adder.cell(proposal, column_name))
 
@@ -509,28 +516,49 @@ class LinkedSecondSheet(InformationAdder):
         self,
         csv_location,
         key_column_name,
-        additional_column_names,
-        additional_column_types,
+        additional_columns,
     ):
         """Builds the dataset from the CSV_LOCATION, using the KEY_COLUMN_NAME
         to link up against the proposal keys, and the adds the columns from
-        ADDITIONAL_COLUMN_NAMES.  The types of these columns are specified
-        in the dictionary ADDITIONAL_COLUMN_TYPES, which is keyed on the
-        column name."""
+        ADDITIONAL_COLUMN
+
+        ADDITIONAL_COLUMN is a list of objects of the form:
+        {
+          "source_name": a string, the name of the column in the linked sheet
+          "target_name": a string, the name of the column as it should appear
+                         in the final csv.  If omited, source_name is used
+          "type": a string, the type of the column, optional
+        }"""
         csv_reader = csv.reader(
             open(csv_location, encoding="utf-8"), delimiter=",", quotechar='"'
         )
         header_row = next(csv_reader)
 
         key_col_idx = header_row.index(key_column_name)
-        self.additional_column_names = additional_column_names
-        self.additional_column_types = additional_column_types
+        self.additional_columns = additional_columns
         self.data = {}
+
+        additional_columns = [
+            {
+                "source_name": col["source_name"],
+                "target_name": col["target_name"]
+                if "target_name" in col.keys()
+                else col["source_name"],
+                "type": col["type"] if "type" in col.keys() else None,
+            }
+            for col in additional_columns
+        ]
         for row in csv_reader:
             self.data[row[key_col_idx]] = {
-                col_name: row[header_row.index(col_name)]
-                for col_name in additional_column_names
+                col["target_name"]: row[header_row.index(col["source_name"])]
+                for col in additional_columns
             }
+        self.additional_column_types = {
+            col["target_name"]: col["type"] for col in additional_columns
+        }
+        self.additional_column_names = [
+            col["target_name"] for col in additional_columns
+        ]
 
     def column_type(self, column_name):
         if column_name in self.additional_column_types.keys():
@@ -543,6 +571,9 @@ class LinkedSecondSheet(InformationAdder):
     def cell(self, proposal, column_name):
         if proposal.key() in self.data and column_name in self.data[proposal.key()]:
             return self.data[proposal.key()][column_name]
+        elif proposal.cell(column_name):
+            return proposal.cell(column_name)
+
         return ""
 
 

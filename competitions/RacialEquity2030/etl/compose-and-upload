@@ -175,7 +175,7 @@ def main():
 
     comp.add_supplemental_information(
         competition.LinkedSecondSheet(
-            admin_review_csv, "Application #", ["Organization name"], {}
+            admin_review_csv, "Application #", [{"source_name": "Organization name"}]
         )
     )
 
