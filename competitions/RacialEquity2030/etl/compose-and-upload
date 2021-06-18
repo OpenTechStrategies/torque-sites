@@ -83,6 +83,25 @@ import os
 import csv
 
 
+class LFCAnalysisAdder(competition.InformationAdder):
+    """Adds the columns for the LFC Analysis, all empty because these
+    cells are there to be edited upon later"""
+
+    def column_names(self):
+        return [
+            "LFC Analysis: Short Description",
+            "LFC Analysis: Overview",
+            "LFC Analysis: Diversity, Equity and Inclusion",
+            "LFC Analysis: Funder Relationship History",
+            "LFC Analysis: Strength of Approach",
+            "LFC Analysis: Observations",
+            "LFC Analysis: Internet Scan",
+        ]
+
+    def cell(self, proposal, column_name):
+        return ""
+
+
 def main():
     """Compose the LFC input and emit it as html-ized csv."""
     try:
@@ -199,6 +218,7 @@ def main():
             comments_score_normalized_col_name="Trait Score Normalized",
         )
     )
+    comp.add_supplemental_information(LFCAnalysisAdder())
 
     comp.process_cells_special("Project Title", competition.RemoveHTMLBRsProcessor())
 
@@ -361,6 +381,13 @@ def main():
             "{{ #tdcrender:RacialEquity2030/id/"
             + proposal.key()
             + ".mwiki|Evaluations }}",
+        )
+
+    for key in comp.sorted_proposal_keys[0:20]:
+        proposal = comp.proposals[key]
+        my_wiki.create_page(
+            "LFC Analysis of %s" % proposal.cell("MediaWiki Title"),
+            "{{ #tdcrender:RacialEquity2030/id/" + key + ".mwiki|LFCAnalysis }}",
         )
 
 
