@@ -260,8 +260,11 @@ class GenericToc(Toc):
                     self.data[grouping]["all_proposal_ids"].append(proposal.key())
 
     def template_file(self):
-        template = "__TOC__"
-        template += ""
+        template = ""
+        if self.include_wiki_toc():
+            template += "__TOC__"
+            template += ""
+
         template += "{% for group in groups %}\n"
         template += "    {%- for proposal_id in group.all_proposal_ids %}\n"
         template += (
@@ -301,6 +304,10 @@ class GenericToc(Toc):
 
     def grouped_data(self):
         return {"groups": list(self.data.values())}
+
+    def include_wiki_toc(self):
+        """Add the wiki __TOC__ if this returns True"""
+        return True
 
 
 class GenericMultiLineToc(GenericToc):
