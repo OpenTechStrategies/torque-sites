@@ -26,7 +26,6 @@ Usage:
        --admin-review-csv=ADMIN_REVIEW_CSV \\
        --judge-evaluation-csv=JUDGE_EVALUATION_CSV \\
        --wisehead-evaluation-csv=WISEHEAD_CSV \\
-       --sdgconfig-csv=SDGCONFIG_CSV \\
        --attachments-dir=ATTACHMENTS_DIR \\
        --correction-file=COORECTION_FILE \\
        --tdc-config-dir=TDC_CONFIG_DIR \\
@@ -64,10 +63,6 @@ Command-line options:
                                   for a given review number, and what value should go there.
                                   This spreadsheet grows as the ETL pipeline one-off needs grow.
 
-  --sdgconfig-csv FILE            FILE is a csv of sdg configurations, that when provided
-                                  will be checked against in the SDG column for validation
-                                  and separation into a list.
-
   --attachments-dir DIR           DIR is a directory for compose-csvs to look in for what attachments
                                   will be uploaded to the torque wiki.  It needs to have subdirectories
                                   by proposal number.
@@ -96,24 +91,6 @@ import sys
 import os
 import re
 import csv
-
-
-def process_sdgconfig_data(sdgconfig_csv):
-    """Takes a CSV_READER representing a valid sdgs, and their number
-    and converts it into a dict representing a lookup by sdg.
-    If no reader is provided, then None is returned.
-
-    The return object, when CSV_READER is present is of the form:
-      SDG_DATA[name] = {
-        number: integer
-      }
-    """
-
-    reader = csv.reader(
-        open(sdgconfig_csv, encoding="utf-8"), delimiter=",", quotechar='"'
-    )
-    next(reader)
-    return [{"name": row[1], "number": row[0]} for row in reader]
 
 
 def process_ots_metadata(ots_metadata_file):
@@ -393,7 +370,6 @@ def main():
                 "wisehead-evaluation-csv=",
                 "wisehead-corrected-scores-csv=",
                 "ots-metadata=",
-                "sdgconfig-csv=",
                 "tdc-config-dir=",
                 "attachments-dir=",
                 "correction-file=",
@@ -411,7 +387,6 @@ def main():
     wisehead_evaluation_csv = None
     wisehead_corrected_scores_csv = None
     regionconfig_csv = None
-    sdgconfig_csv = None
     attachments_dir = None
     toc_dir = None
     ots_metadata_csv = None
@@ -436,8 +411,6 @@ def main():
             wisehead_corrected_scores_csv = a
         elif o == "--ots-metadata":
             ots_metadata_csv = a
-        elif o == "--sdgconfig-csv":
-            sdgconfig_csv = a
         elif o == "--correction-file":
             correction_files.append(a)
         elif o == "--tdc-config-dir":
@@ -469,7 +442,6 @@ def main():
     fix_cell_processor.report()
 
     ots_metadata = process_ots_metadata(ots_metadata_csv)
-    sdgconfig_data = process_sdgconfig_data(sdgconfig_csv)
 
     if judge_evaluation_csv is not None:
         comp.add_supplemental_information(
@@ -529,10 +501,36 @@ def main():
     comp.add_supplemental_information(ApplicationLevelAdder())
 
     comp.process_cells_special("Priority Populations", competition.MultiLineProcessor())
+
+    sdg_list = [
+            "No Poverty",
+            "Zero Hunger",
+            "Good Health and Well-being",
+            "Quality Education",
+            "Gender Equality",
+            "Clean Water and Sanitation",
+            "Affordable and Clean Energy",
+            "Decent Work and Economic Growth",
+            "Industry, Innovation and Infrastructure",
+            "Reduced Inequality",
+            "Sustainable Cities and Communities",
+            "Responsible Consumption and Production",
+            "Climate Action",
+            "Life Below Water",
+            "Life on Land",
+            "Peace and Justice Strong Institutions",
+            "Partnerships to achieve the Goal",
+        ]
+
     comp.process_cells_special(
         "Sustainable Development Goals",
-        competition.MultiLineFromListProcessor([sdg["name"] for sdg in sdgconfig_data]),
+        competition.MultiLineFromListProcessor(sdg_list)
     )
+    comp.process_cells_special(
+        "Sustainable Development Goals",
+        competition.SustainableDevelopmentGoalProcessor(sdg_list)
+    )
+
 
     for correction_file in correction_files:
         correction_processor = competition.CorrectionData(
@@ -659,7 +657,7 @@ def main():
         toc.GenericMultiLineToc(
             "SDG_TOC",
             "Sustainable Development Goals",
-            [sdg["name"] for sdg in sdgconfig_data],
+            competition.SustainableDevelopmentGoalProcessor.official_sdgs,
         )
     )
 
