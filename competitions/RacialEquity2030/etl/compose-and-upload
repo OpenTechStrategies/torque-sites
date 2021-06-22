@@ -235,6 +235,12 @@ def main():
         "Sustainable Development Goals",
         competition.MultiLineProcessor(split_string="|"),
     )
+    comp.process_cells_special(
+        "Sustainable Development Goals",
+        competition.SustainableDevelopmentGoalProcessor(
+            competition.SustainableDevelopmentGoalProcessor.official_sdgs
+        ),
+    )
 
     comp.process_cells_special("Total Projected Costs", competition.NumberCommaizer())
     comp.process_cells_special("Budget Data", competition.BudgetTableProcessor())
@@ -295,25 +301,7 @@ def main():
         toc.GenericMultiLineToc(
             "Sustainable_Development_Goals",
             "Sustainable Development Goals",
-            [
-                "No Poverty",
-                "Zero Hunger",
-                "Good Health and Well-being",
-                "Quality Education",
-                "Gender Equality",
-                "Clean Water and Sanitation",
-                "Affordable and Clean Energy",
-                "Decent Work and Economic Growth",
-                "Industry, Innovation and Infrastructure",
-                "Reduced Inequality",
-                "Sustainable Cities and Communities",
-                "Responsible Consumption and Production",
-                "Climate Action",
-                "Life Below Water",
-                "Life on Land",
-                "Peace and Justice Strong Institutions",
-                "Partnerships for the Goals",
-            ],
+            competition.SustainableDevelopmentGoalProcessor.official_sdgs,
         )
     )
     comp.add_toc(toc.GenericToc("Subject_Areas", "Primary Subject Area"))
