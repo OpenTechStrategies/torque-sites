@@ -169,15 +169,15 @@ def main():
         proposals_csv, "RacialEquity2030", "Application #", pare
     )
 
-    correction_processor = competition.CorrectionData("Application #", correction_file)
-    for column in correction_processor.columns_affected():
-        comp.process_cells_special(column, correction_processor)
-
     comp.add_supplemental_information(
         competition.LinkedSecondSheet(
             admin_review_csv, "Application #", [{"source_name": "Organization name"}]
         )
     )
+
+    correction_processor = competition.CorrectionData("Application #", correction_file)
+    for column in correction_processor.columns_affected():
+        comp.process_cells_special(column, correction_processor)
 
     comp.filter_proposals(
         competition.ColumnEqualsProposalFilter("Admin Review Status", "Not Applicable")
