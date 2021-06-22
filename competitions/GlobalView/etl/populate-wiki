@@ -66,6 +66,7 @@ competition_configs = {
         "wiki_key": "100Change2020",
         "priority_populations": "Priority Populations",
         "organization_name": "Organization Legal Name",
+        "organization_ein": "Identification Number of Principal Organization ein",
         "organization_geography": ["State", "Country"],
         "rank": "Wise Head Overall Score Rank Normalized",
         "score": "Wise Head Sum of Scores Normalized",
@@ -88,6 +89,7 @@ competition_configs = {
         "priority_populations": "Priority Populations",
         "annual_operating_budget": "Annual Operating Budget",
         "organization_name": "Organization Name",
+        "organization_ein": "EIN",
         "organization_geography": ["State / Province", "Nation"],
         "rank": "Judge Overall Score Rank Normalized",
         "score": "Judge Sum of Scores Normalized",
@@ -101,6 +103,7 @@ competition_configs = {
         "priority_populations": "Priority Populations",
         "annual_operating_budget": "Annual Operating Budget",
         "organization_name": "Organization name",
+        "organization_ein": "Applicant Tax Identification Number",
         "organization_geography": ["Applicant State / Province", "Applicant  Country"],
         "rank": "Peer to Peer Overall Score Rank Normalized",
         "score": "Peer to Peer Sum of Scores Normalized",
@@ -115,6 +118,7 @@ competition_configs = {
         "priority_populations": "Priority Populations",
         "annual_operating_budget": "Annual Operating Budget",
         "organization_name": "Organization Name",
+        "organization_ein": "EIN",
         "organization_geography": ["Org State/Province", "Org Country"],
         "rank": "Panel Overall Score Rank Normalized",
         "score": "Panel Sum of Scores Normalized",
@@ -128,6 +132,7 @@ competition_configs = {
         "priority_populations": "Priority Populations",
         "annual_operating_budget": "Annual Operating Budget",
         "organization_name": "Organization Name",
+        "organization_ein": "EIN",
         "organization_geography": ["Org State/Province", "Org Country"],
         "rank": "Panel Overall Score Rank Normalized",
         "score": "Panel Sum of Scores Normalized",
@@ -163,6 +168,69 @@ class GroupedScoreToc(toc.GenericToc):
                 self.data[self.groupings[idx]]["all_proposal_ids"].append(
                     proposal.key()
                 )
+
+
+class MultiCompAppsToc(toc.GenericToc):
+    """Creates a report/toc for organizations that have applied more than
+    once."""
+
+    def __init__(self):
+        self.name = "Multiple_Competition_Applications"
+        self.sort = super().SortMethod.COUNT
+        self.proposal_formatter = toc.WikiListTocProposalFormatter()
+
+    def process_competition(self, competition):
+        self.competition_name = competition.name
+
+        self.orgs = []
+
+        proposals_with_no_ein = []
+        for proposal in competition.ordered_proposals():
+            ein = proposal.cell("Organization EIN")
+            found = False
+
+            if ein:
+                for org in self.orgs:
+                    if org["ein"] == ein:
+                        found = True
+                        org["proposals"].append(proposal)
+                        org["names"].append(proposal.cell("Organization Name"))
+                        break
+
+                if not found:
+                    self.orgs.append(
+                        {
+                            "names": [proposal.cell("Organization Name")],
+                            "ein": ein,
+                            "proposals": [proposal],
+                        }
+                    )
+            else:
+                proposals_with_no_ein.append(proposal)
+
+        for proposal in proposals_with_no_ein:
+            name = proposal.cell("Organization Name")
+            found = False
+            for org in self.orgs:
+                if name in org["names"]:
+                    found = True
+                    org["proposals"].append(proposal)
+                    break
+
+            if not found:
+                self.orgs.append({"names": [name], "ein": "", "proposals": [proposal]})
+
+    def grouped_data(self):
+        data = []
+        for org in self.orgs:
+            org_title = "%s - %s" % (org["names"][0], org["ein"])
+            datum = self.default_grouping(org_title)
+            datum["all_proposal_ids"] = [p.key() for p in org["proposals"]]
+            data.append(datum)
+        return {"groups": data}
+
+    def include_wiki_toc(self):
+        return False
 
 
 class GlobalViewMediaWikiOverride(competition.MediaWikiTitleAdder):
@@ -251,6 +319,7 @@ def main():
                 "Score",
                 "Project Title",
                 "Organization Name",
+                "Organization EIN",
                 "Organization State / Province",
                 "Organization Country",
                 "Wiki Key",
@@ -281,6 +350,9 @@ def main():
                     annual_operating_budget = proposal.cell(
                         competition_configs[name]["annual_operating_budget"]
                     )
+                ein = ""
+                if "organization_ein" in competition_configs[name]:
+                    ein = proposal.cell(competition_configs[name]["organization_ein"])
                 rank = ""
                 if "rank" in competition_configs[name]:
                     rank = proposal.cell(competition_configs[name]["rank"])
@@ -300,6 +372,7 @@ def main():
                         score,
                         proposal.cell(competition_configs[name]["title"]),
                         proposal.cell(competition_configs[name]["organization_name"]),
+                        ein,
                         proposal.cell(
                             competition_configs[name]["organization_geography"][0]
                         ),
@@ -420,6 +493,7 @@ def main():
     )
     comp.add_toc(toc.AnnualBudgetToc("Annual Operating Budget"))
     comp.add_toc(GroupedScoreToc())
+    comp.add_toc(MultiCompAppsToc())
 
     comp.add_toc(
         toc.GenericMultiLineToc(
