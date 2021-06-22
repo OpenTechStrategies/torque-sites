@@ -382,6 +382,48 @@ class AnnualBudgetProcessor(CellProcessor):
         return self.reverse_mapping[cell].value
 
 
+class SustainableDevelopmentGoalProcessor(CellProcessor):
+    """Normalizes the Sustainable Development Goals.  The list from
+    1-17 for the text of the competition should get passed in.  The
+    official list can be found at
+    https://en.wikipedia.org/wiki/Sustainable_Development_Goals"""
+
+    official_sdgs = [
+        "No Poverty",
+        "Zero Hunger",
+        "Good Health and Well-being",
+        "Quality Education",
+        "Gender Equality",
+        "Clean Water and Sanitation",
+        "Affordable and Clean Energy",
+        "Decent Work and Economic Growth",
+        "Industry, Innovation and Infrastructure",
+        "Reduced Inequality",
+        "Sustainable Cities and Communities",
+        "Responsible Consumption and Production",
+        "Climate Action",
+        "Life Below Water",
+        "Life on Land",
+        "Peace, Justice and Strong Institutions",
+        "Partnerships for the Goals",
+    ]
+
+    def __init__(self, sdg_list):
+        self.reverse_mapping = {v: idx for idx, v in enumerate(sdg_list)}
+
+    def process_cell(self, proposal, column_name):
+        cell = proposal.cell(column_name)
+
+        new_cell = ""
+        for value in cell.split("\n"):
+            if value not in self.reverse_mapping.keys():
+                raise Exception("'%s' is not a configured sdg value" % value)
+
+            new_cell += self.official_sdgs[self.reverse_mapping[value]] + "\n"
+
+        return new_cell.strip()
+
+
 class BudgetTableProcessor(CellProcessor):
     """A CellProcessor specifically for the Budget Table format sent
     from Common Pool, that then gets uploaded as a json document for
