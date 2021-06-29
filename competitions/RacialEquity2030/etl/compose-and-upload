@@ -408,7 +408,7 @@ def main():
                 proposal = comp.proposals[key]
                 my_wiki.create_page(
                     "LFC Analysis of %s" % proposal.cell("MediaWiki Title"),
-                    "{{ #tdcrender:RacialEquity/id/" + key + ".mwiki|LFCAnalysis }}",
+                    "{{ #tdcrender:RacialEquity2030/id/" + key + ".mwiki|LFCAnalysis }}",
                 )
 
 
