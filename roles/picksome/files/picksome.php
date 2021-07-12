@@ -30,7 +30,8 @@ $wgPickSomePage = function($title) {
     $valid_pages = [];
     preg_match_all("/\\[\\[([^\\]]*)\\]\\]/", $page->getContent()->getText(), $valid_pages);
     foreach($valid_pages[1] as $valid_page) {
-      if($title->equals(Title::newFromText($valid_page))) {
+      $valid_page_title = Title::newFromText($valid_page);
+      if($valid_page_title && $title->equals($valid_page_title)) {
         return true;
       }
     }
