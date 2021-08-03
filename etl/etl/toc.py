@@ -40,6 +40,11 @@ class Toc:
         the template to be handled by torque with rendering the Toc"""
         return {}
 
+    def raw(self):
+        """Returns whether this is a raw html table of contents, or an
+        mwiki one"""
+        return False
+
 
 class TocProposalFormatter:
     """Base class for formatters for how TOC lists are built.  For instance,

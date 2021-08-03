@@ -73,6 +73,7 @@ class WikiSession:
                 "format": "json",
                 "sheet_name": self.competition_name,
                 "toc_name": toc.name,
+                "raw_toc": ("true" if toc.raw() else None)
             },
             {"template": toc.template_file(), "json": json.dumps(toc.grouped_data())},
         )
