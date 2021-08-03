@@ -24,6 +24,7 @@ python3 -V > /dev/null 2>&1 || { echo "python3 required, aborting" ; exit 1; }
 
 COMPETITIONS="EO2020 100Change2020 100Change2017 LLIIA2020 RacialEquity2030 Climate2030 ECW2020 LoneStar2020"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
+MAPS_DIR="${DATA_DIR}/maps"
 RUNNER="${LFC_DIR}"/populate-wiki
 
 COMPETITIONS_ARGUMENT=""
@@ -36,9 +37,12 @@ for comp in $COMPETITIONS ; do
   COMPETITIONS_ARGUMENT="$COMPETITIONS_ARGUMENT --competition=$comp --competition-csv=$FILE"
 done
 
+mkdir -p $MAPS_DIR
+
 echo "Populating wiki..."
 mkdir -p ${TDC_CONFIG_DIR}
 $RUNNER \
   --tdc-config-dir="${TDC_CONFIG_DIR}" \
+  --maps-dir="${MAPS_DIR}" \
   $COMPETITIONS_ARGUMENT
 echo "Done."

@@ -141,6 +141,20 @@ competition_configs = {
 }
 
 
+class CompetitionMapToc(toc.Toc):
+    def __init__(self, competition, maps_dir):
+        self.competition = competition
+        self.name = competition + "_Map"
+        self.maps_dir = maps_dir
+
+    def template_file(self):
+        from pathlib import Path
+        return Path("%s/applicant_locations_%s.html" % (maps_dir, self.competition)).read_text()
+
+    def raw(self):
+        return True
+
+
 class GroupedScoreToc(toc.GenericToc):
     """Special case of Toc that groups the proposals by their score,
     in buckets of 5 (from 1-100)."""
@@ -260,6 +274,7 @@ def main():
                 "competition-csv=",
                 "competition=",
                 "tdc-config-dir=",
+                "maps-dir=",
             ],
         )
     except getopt.GetoptError as err:
@@ -269,6 +284,7 @@ def main():
     competition_names = []
     competition_csvs = []
     tdc_config_dir = None
+    maps_dir = None
     for o, a in opts:
         if o == "--competition":
             if a not in competition_configs:
@@ -281,6 +297,8 @@ def main():
             competition_csvs.append(a)
         elif o == "--tdc-config-dir":
             tdc_config_dir = a
+        elif o == "--maps-dir":
+            maps_dir = a
         else:
             sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
             sys.exit(2)
@@ -494,6 +512,9 @@ def main():
     comp.add_toc(toc.AnnualBudgetToc("Annual Operating Budget"))
     comp.add_toc(GroupedScoreToc())
     comp.add_toc(MultiCompAppsToc())
+
+    for c_data in competition_configs.values():
+        comp.add_toc(CompetitionMapToc(c_data["sheet_name"], maps_dir))
 
     comp.add_toc(
         toc.GenericMultiLineToc(
