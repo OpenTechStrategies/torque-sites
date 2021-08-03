@@ -25,6 +25,7 @@ Usage:
        --proposals-csv=PROPOSALS_CSV \\
        --attachments-dir=ATTACHMENTS_DIR \\
        --tdc-config-dir=TDC_CONFIG_DIR \\
+       --correction-file=CORRECTION_FILE \\
        --pare=PARE \\
        --csv-only
 
@@ -46,6 +47,15 @@ Command-line options:
                                   keys to include.  If ARG begins with @, then ARG is a
                                   file with a list of keys to include.  For both + and @,
                                   the list of keys will be limited to only the ones provided.
+
+  --correction-file FILE          FILE is a csv of corrections to the main data.  The header
+                                  must match the header of the original proposals file, and any
+                                  one of the columns must contain the review number.  Then
+                                  the data from the correction file will override the
+                                  source data for output.  There can be multiple correction
+                                  files, and each one overwrites the previous.
+
+                                  If the data cells have the empty string, no correction is applied.
 
   --csv-only                      Only upload the created CSV file.  Don't upload attachments or
                                   create wiki pages.  For use to speed up process when wiki has been
@@ -71,6 +81,7 @@ def main():
                 "attachments-dir=",
                 "pare=",
                 "csv-only",
+                "correction-file=",
             ],
         )
     except getopt.GetoptError as err:
@@ -82,6 +93,7 @@ def main():
     tdc_config_dir = None
     pare = None
     csv_only = False
+    correction_files = []
     pare = None
     csv_only = False
     for o, a in opts:
@@ -95,6 +107,8 @@ def main():
             tdc_config_dir = a
         elif o == "--attachments-dir":
             attachments_dir = a
+        elif o == "--correction-file":
+            correction_files.append(a)
         else:
             sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
             sys.exit(2)
@@ -122,6 +136,13 @@ def main():
     fix_cell_processor = competition.FixCellProcessor()
     comp.process_all_cells_special(fix_cell_processor)
     fix_cell_processor.report()
+
+    for correction_file in correction_files:
+        correction_processor = competition.CorrectionData(
+            "Review_Number", correction_file
+        )
+        for column in correction_processor.columns_affected():
+            comp.process_cells_special(column, correction_processor)
 
     attachments = competition.RegexSpecifiedAttachments(
         comp.sorted_proposal_keys, attachments_dir

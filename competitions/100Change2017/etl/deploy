@@ -79,6 +79,7 @@ RECLASSIFICATION_XLSX="geo-and-topic-revisions-Reclassify-themes-ALL-complete-(m
 RECLASSIFICATION_CSV="geo-and-topic-revisions-Reclassify-themes-ALL-complete-(merged-assignment-docs).csv"
 EXCLUDED_REVIEW_NUMBERS_TXT="excluded-review-numbers.txt"
 ATTACHMENT_ZIP="Generated-Attachments-From-Mediawiki.zip"
+OTS_CORRECTION_FILE="OTS_Corrections.csv"
 
 ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig/"
@@ -115,6 +116,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   cp ${ENCRYPTED_DIR}/${EXCLUDED_REVIEW_NUMBERS_TXT} ${DATA_DIR}/${EXCLUDED_REVIEW_NUMBERS_TXT}
   gpg -o ${DATA_DIR}/${RECLASSIFICATION_XLSX} --decrypt ${ENCRYPTED_DIR}/${RECLASSIFICATION_XLSX}.gpg || exit 1
   gpg -o ${DATA_DIR}/${ATTACHMENT_ZIP} --decrypt ${ENCRYPTED_DIR}/${ATTACHMENT_ZIP}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${OTS_CORRECTION_FILE} --decrypt ${ENCRYPTED_DIR}/${OTS_CORRECTION_FILE}.gpg || exit 1
 
   mkdir -p ${ATTACHMENTS_DIR}
   mkdir -p ${TDC_CONFIG_DIR}
@@ -342,7 +344,8 @@ ${RUNNER} --proposals-csv="${DATA_DIR}/${STAGE_FINAL_CSV}" \
           $PARE \
           $CSV_ONLY \
           --tdc-config-dir="${TDC_CONFIG_DIR}" \
-          --attachments-dir=${ATTACHMENTS_DIR}
+          --attachments-dir=${ATTACHMENTS_DIR} \
+          --correction-file="${DATA_DIR}/${OTS_CORRECTION_FILE}"
 if [ $? -ne 0 ]; then
 		echo Upload failure!
 		exit 1
