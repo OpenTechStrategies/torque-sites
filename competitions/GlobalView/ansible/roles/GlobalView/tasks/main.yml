@@ -37,3 +37,18 @@
     marker: "## {mark} ANSIBLE DISABLE TEAM COMMENTS"
     block: |
       include "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/torque-sites-config/disableteamcomments.php";
+
+# This is a nasty hack.  For certain large TOCs, mediawiki blows
+# up with an error about the strip state being exceeded, as it's set to
+# 5M.  These tocs are large enough to warrant a 10M size, however there's
+# no way to pass this variable in.  So that means we need to actually chage
+# the source code, which is a very brittle change and may break someday.
+#
+# It also might not.
+- name: Change Strip State size limit
+  tags: demo
+  replace:
+    path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/includes/parser/StripState.php"
+    regexp: "	protected \\$sizeLimit = 5000000;"
+    replace: "	protected $sizeLimit = 10000000;"
+
