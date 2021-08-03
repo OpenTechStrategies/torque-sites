@@ -228,6 +228,9 @@ def main():
     comp.process_cells_special(
         "Project Description", competition.RemoveHTMLBRsProcessor()
     )
+    comp.process_cells_special(
+        "Organization Name", competition.RemoveHTMLBRsProcessor()
+    )
 
     comp.filter_proposals(
         competition.ColumnNotEqualsProposalFilter("Admin Review Status", "Valid")
