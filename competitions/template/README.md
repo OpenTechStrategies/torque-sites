@@ -165,24 +165,45 @@ more secret information
     - This opass file is the placeholder for any accounts that get added
 15. Create an opass file for the ansible production secrets
     - Create the secret file `mv ../$SHORTNAME/ansible/inv/prod/group_vars/all/secret{.tmpl,}`
+    - `$EDITOR ../$SHORTNAME/ansible/inv/prod/group_vars/all/secret`
     - `opass edit clients/lever-for-change/torque-sites/$SHORTNAME/ansible/prod`
     - One good source is to use xkcd's password generator
       - https://preshing.com/20110811/xkcd-password-generator/ at time of writing
-    - Pay special attention to the password requiring to have no spaces, as this
-      is required by the current Book Creator (though this note should be
-      changed as soon as we are done with the OTS book creator!)
-16. Update all the files in the ansible and etl directories, replacing basically everything
-    in angle brackets (`<>`) with the appropriate value.
     - For the `SIMPLESAMLURL_FROMMACFOUND`, you'll need the metadata url from macfound devops
-17. Update `<COMPETITION_NAME>.yaml` to remove any roles not to be included in this competition
+16. Get Logo
+    - Logo should be gotten from somewhere, and then turned into a correct width png
+    - This command requires imagemagick
+      - `convert -geometry 150 <LOGO_LOCATION> ../$SHORTNAME/ansible/roles/$SHORTNAME/files/${SHORTNAME}_Logo.png`
+17. Update all the files in the ansible and etl directories, replacing basically everything
+    in angle brackets (`<>`) with the appropriate value.
+    - in ansible directory, this is mainly replacing `<COMPETITION_NAME>` with `$SHORTNAME`
+    - in etl directory, there is more, as there's the filenames of the csv (from earlier step), and long competition name
+      - depending on the competition, some variables may not be needed (for instance, if we didn't get a zip file of attachments)
+        - to replace `<SHA>`, just do `sha1sum <PROPOSALS_CSV_LOCATION>`
+    - One nice way to do this is `vim `ack -l "<" ../$SHORTNAME/` `
+18. Update `<COMPETITION_NAME>.yaml` to remove any roles not to be included in this competition
     - Please update the `COMPETITION_NAME.yaml` file in the template/ansible directory to
       include any new ones that have been added!
-18. TODO: update compose-and-upload, using it as a shell
-18. TODO: git commit the new competition!
-18. TODO: Logo STUFF
-19. TODO: MediaWiki TorqueConfig stuff!
-18. Install locally, and test!
-
+19. Deploy initial version of wiki to production, check simplesaml configuration works
+    - `(cd ../$SHORTNAME/ansible ; ansible-playbook -i inv/prod $SHORTNAME.yml)`
+20. Update etl/{compose-and-upload,deploy}, using it as a shell
+    - some things to consider
+      - Attachments may or may not be a part
+      - Validitity of proposals may be a part
+21. Set up etl configuration for production
+    - `cp ../$SHORTNAME/etl/config.py{.tmpl,}`
+    - `$EDITOR ../$SHORTNAME/etl/config.py`
+22. Run initial ETL pipeline
+    - `(cd ../$SHORTNAME/etl ; ./deploy -g '<GPGPASS>' <DATADIR>)`
+    - This may not work if the data isn't fully done yet, so you can just move on to the next steps and work out later
+23. Git commit the new competition!
+    - (cd ..; git add $SHORTNAME; git commit -m "Initial commit of $SHORTNAME competition")
+    - Don't forget to push!
+24. Update TorqueConfig:MainConfig on the new wiki
+    - Will usually involve copying from another competition
+    - Add the columns from `<DATADIR>/$SHORTNAME/tdcconfig/AllColumns`
+    - Add the proposals from `<DATADIR>/$SHORTNAME/tdcconfig/AllProposals`
+25. Complete the checklist below
 
 ## Post-installation checklist for new competition instances
 

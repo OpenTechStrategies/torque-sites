@@ -2,11 +2,11 @@
 
 - name: Transfer <COMPETITION_NAME> Logo
   copy:
-    src: <PATH_TO_LOGO_FILE>
-    dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/resources/assets/<LOGO_FILENAME>"
+    src: <COMPETITION_NAME>_Logo.png
+    dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/resources/assets/<COMPETITION_NAME>_Logo.png"
 
 - name: Install <COMPETITION_NAME> Logo
   lineinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
     regexp: ^\$wgLogos = .*
-    line: $wgLogos = [ '1x' => "$wgResourceBasePath/resources/assets/<LOGO_FILENAME>" ];
+    line: $wgLogos = [ '1x' => "$wgResourceBasePath/resources/assets/<COMPETITION_NAME>_Logo.png" ];
