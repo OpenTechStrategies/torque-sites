@@ -203,7 +203,8 @@ more secret information
     - Will usually involve copying from another competition
     - Add the columns from `<DATADIR>/$SHORTNAME/tdcconfig/AllColumns`
     - Add the proposals from `<DATADIR>/$SHORTNAME/tdcconfig/AllProposals`
-25. Complete the checklist below
+25. Add to Global View
+26. Complete the checklist below
 
 ## Post-installation checklist for new competition instances
 
