@@ -138,6 +138,17 @@ competition_configs = {
         "score": "Panel Sum of Scores Normalized",
         "status": "Admin Review Status",
     },
+    "Democracy22": {
+        "key": "Application #",
+        "title": "Project Title",
+        "sheet_name": "Democracy22",
+        "wiki_key": "Democracy22",
+        "priority_populations": "Priority Populations",
+        "annual_operating_budget": "Annual Operating Budget",
+        "organization_name": "Organization name",
+        "organization_geography": ["Org State / Province", "Org Nation"],
+        "status": "Admin Review Status",
+    },
 }
 
 
