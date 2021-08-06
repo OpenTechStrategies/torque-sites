@@ -141,6 +141,33 @@ competition_configs = {
 }
 
 
+class FutureWorkMapToc(toc.Toc):
+    def __init__(self, maps_dir):
+        self.competition = competition
+        self.name = "Future_Work_Map"
+        self.maps_dir = maps_dir
+
+    def template_file(self):
+        from pathlib import Path
+        return Path("%s/future_work_map.html" % self.maps_dir).read_text()
+
+    def raw(self):
+        return True
+
+class Top25MapToc(toc.Toc):
+    def __init__(self, maps_dir):
+        self.competition = competition
+        self.name = "Top_25_Map"
+        self.maps_dir = maps_dir
+
+    def template_file(self):
+        from pathlib import Path
+        return Path("%s/top_25_map.html" % self.maps_dir).read_text()
+
+    def raw(self):
+        return True
+
+
 class CompetitionMapToc(toc.Toc):
     def __init__(self, competition, maps_dir):
         self.competition = competition
@@ -149,7 +176,7 @@ class CompetitionMapToc(toc.Toc):
 
     def template_file(self):
         from pathlib import Path
-        return Path("%s/applicant_locations_%s.html" % (maps_dir, self.competition)).read_text()
+        return Path("%s/applicant_locations_%s.html" % (self.maps_dir, self.competition)).read_text()
 
     def raw(self):
         return True
@@ -515,6 +542,9 @@ def main():
 
     for c_data in competition_configs.values():
         comp.add_toc(CompetitionMapToc(c_data["sheet_name"], maps_dir))
+
+    comp.add_toc(FutureWorkMapToc(maps_dir))
+    comp.add_toc(Top25MapToc(maps_dir))
 
     comp.add_toc(
         toc.GenericMultiLineToc(
