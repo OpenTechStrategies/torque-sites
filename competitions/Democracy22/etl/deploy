@@ -29,6 +29,7 @@ DATA_DIR="${BASE_DATA_DIR}/${COMPETITION}"
 python3 -V > /dev/null 2>&1 || { echo "python3 required, aborting" ; exit 1; }
 
 PROPOSALS_CSV="SDA2021_Registration_Application_2021-08-03_08-15-54.csv"
+ADMIN_REVIEW_CSV="AdminReviewP2P_SDA2021_08052021.csv"
 
 TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
@@ -75,6 +76,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   echo "Decrypting..."
 
   decrypt "${DATA_DIR}/${PROPOSALS_CSV}" "${ENCRYPTED_DIR}/${PROPOSALS_CSV}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${ADMIN_REVIEW_CSV}" "${ENCRYPTED_DIR}/${ADMIN_REVIEW_CSV}.gpg" "${GPG_PASSPHRASE}"
 
   mkdir -p ${TDC_CONFIG_DIR}
 fi
@@ -92,6 +94,7 @@ fi
 mkdir -p $TDC_CONFIG_DIR
 
 ${RUNNER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
+          --admin-review-csv="${DATA_DIR}/${ADMIN_REVIEW_CSV}" \
           $PARE \
           $CSV_ONLY \
           --tdc-config-dir="${TDC_CONFIG_DIR}"

@@ -23,6 +23,7 @@ Usage:
 
   $ compose-and-upload \\
        --proposals-csv=PROPOSALS_CSV \\
+       --admin-review-csv=ADMIN_REVIEW_CSV \\
        --attachments-dir=ATTACHMENTS_DIR \\
        --tdc-config-dir=TDC_CONFIG_DIR \\
        --pare=PARE \\
@@ -35,6 +36,10 @@ Command-line options:
   --attachments-dir DIR           DIR is a directory for compose-csvs to look in for what attachments
                                   will be uploaded to the torque wiki.  It needs to have subdirectories
                                   by proposal number.
+
+  --admin-review-csv FILE         FILE is a CSV file representing which applications
+                                  in PROPOSALS_CSV should be included, as well as the Organization
+                                  information
 
   --tdc-config-dir DIR            DIR is the location for files that are the base configuration files
                                   needed by TorqueDataConnect, and can be optionally, manually, put on
@@ -68,11 +73,8 @@ def main():
             "",
             [
                 "proposals-csv=",
+                "admin-review-csv=",
                 "tdc-config-dir=",
-                "judge-evaluation-csv=",
-                "expert-panel-evaluation-csv=",
-                "application-data=",
-                "financial-sheets-dir=",
                 "attachments-dir=",
                 "pare=",
                 "csv-only",
@@ -83,6 +85,7 @@ def main():
         sys.exit(2)
 
     proposals_csv = None
+    admin_review_csv = None
     attachments_dir = None
     tdc_config_dir = None
     pare = None
@@ -96,6 +99,8 @@ def main():
             csv_only = True
         elif o == "--tdc-config-dir":
             tdc_config_dir = a
+        elif o == "--admin-review-csv":
+            admin_review_csv = a
         elif o == "--attachments-dir":
             attachments_dir = a
         else:
@@ -111,12 +116,22 @@ def main():
         proposals_csv, "Democracy22", "Application #", pare
     )
 
+    comp.filter_proposals(
+        competition.ColumnEqualsProposalFilter("Admin Review Status", "Not Applicable")
+    )
+
+    comp.add_supplemental_information(
+        competition.LinkedSecondSheet(
+            admin_review_csv, "Application #", [{"source_name": "Organization name"}]
+        )
+    )
+
     fix_cell_processor = competition.FixCellProcessor()
     comp.process_all_cells_special(fix_cell_processor)
     fix_cell_processor.report()
 
     comp.process_cells_special(
-        "Organization Name", competition.RemoveHTMLBRsProcessor()
+        "Organization name", competition.RemoveHTMLBRsProcessor()
     )
     comp.process_cells_special("Project Title", competition.RemoveHTMLBRsProcessor())
 
@@ -125,24 +140,37 @@ def main():
         competition.GlobalViewMediaWikiTitleAdder("Democracy22", "Project Title")
     )
 
-    comp.filter_proposals(
-        competition.ColumnEqualsProposalFilter("Admin Review Status", "Not submitted")
-    )
     comp.process_cells_special("Priority Populations", competition.MultiLineProcessor())
     comp.process_cells_special("Total Projected Costs", competition.NumberCommaizer())
-    comp.process_cells_special("Budget data", competition.BudgetTableProcessor())
+    comp.process_cells_special("Budget Data", competition.BudgetTableProcessor())
+    comp.process_cells_special(
+        "Annual Operating Budget",
+        competition.AnnualBudgetProcessor(
+            {
+                competition.AnnualBudget.LESS_THAN_1_MIL: "Less than $1 Million",
+                competition.AnnualBudget.BETWEEN_1_MIL_AND_5_MIL: "$1.0 to 5.0 Million",
+                competition.AnnualBudget.BETWEEN_5_MIL_AND_10_MIL: "$5.1 to 10 Million",
+                competition.AnnualBudget.BETWEEN_10_MIL_AND_25_MIL: "$10.1 to 25 Million",
+                competition.AnnualBudget.BETWEEN_25_MIL_AND_50_MIL: "$25.1 to 50 Million",
+                competition.AnnualBudget.BETWEEN_50_MIL_AND_100_MIL: "$50.1 to 100 Million",
+                competition.AnnualBudget.BETWEEN_100_MIL_AND_500_MIL: "$100.1 to 500 Million",
+                competition.AnnualBudget.BETWEEN_500_MIL_AND_1_BIL: "$500.1 Million to $1 Billion",
+                competition.AnnualBudget.MORE_THAN_1_BIL: "$1 Billion +",
+            }
+        ),
+    )
 
     attachments = competition.BasicAttachments(
         comp.sorted_proposal_keys, attachments_dir
     )
     comp.add_supplemental_information(attachments)
-    comp.sort("Organization Name")
+    comp.sort("Organization name")
 
     list_toc = toc.ListToc("All_Proposals")
     list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
         [
             {
-                "name": "Organization Name",
+                "name": "Organization name",
                 "heading": "Organization",
             },
             {
@@ -160,25 +188,8 @@ def main():
     comp.add_toc(list_toc)
 
     comp.add_toc(toc.GenericMultiLineToc("Populations", "Priority Populations"))
-    comp.add_toc(toc.GenericToc("Regions", "Application Data Region"))
-
-    comp.add_toc(
-        toc.GenericToc(
-            "Annual_Budgets",
-            "Annual Operating Budget",
-            [
-                "Less than $1 Million",
-                "$1.0 to 5.0 Million",
-                "$5.1 to 10 Million",
-                "$10.1 to 25 Million",
-                "$25.1 to 50 Million",
-                "$50.1 to 100 Million",
-                "$100.1 to 500 Million",
-                "$500.1 Million to $1 Billion",
-                "$1 Billion +",
-            ],
-        )
-    )
+    comp.add_toc(toc.GenericToc("Solution_Categories", "Solution Category"))
+    comp.add_toc(toc.AnnualBudgetToc("Annual Operating Budget"))
 
     comp.add_toc(
         toc.GenericToc(
@@ -203,23 +214,23 @@ def main():
             [
                 [
                     "Location of Current Work #1 Country",
-                    "Location of Current Work #1 State /Province",
+                    "Location of Current Work #1 State / Province",
                 ],
                 [
                     "Location of Current Work #2 Country",
-                    "Location of Current Work #2 State /Province",
+                    "Location of Current Work #2 State / Province",
                 ],
                 [
                     "Location of Current Work #3 Country",
-                    "Location of Current Work #3 State /Province",
+                    "Location of Current Work #3 State / Province",
                 ],
                 [
-                    "Location of Current Work #4 Country",
-                    "Location of Current Work #4 State /Province",
+                    "Location of Current Solution #4 Country",
+                    "Location of Current Solution #4 State",
                 ],
                 [
                     "Location of Current Work #5 Country",
-                    "Location of Current Work #5 State /Province",
+                    "Location of Current Work #5 State / Province",
                 ],
             ],
         )
@@ -235,19 +246,19 @@ def main():
                 ],
                 [
                     "Location of Future Work #2 Country",
-                    "Location of Future Work #2 State /Province",
+                    "Location of Future Work #2 State / Province",
                 ],
                 [
                     "Location of Future Work #3 Country",
-                    "Location of Future Work #3 State /Province",
+                    "Location of Future Work #3 State / Province",
                 ],
                 [
                     "Location of Future Work #4 Country",
-                    "Location of Future Work #4 State /Province",
+                    "Location of Future Work #4 State / Province",
                 ],
                 [
                     "Location of Future Work #5 Country",
-                    "Location of Future Work #5 State /Province",
+                    "Location of Future Work #5 State / Province",
                 ],
             ],
         )
