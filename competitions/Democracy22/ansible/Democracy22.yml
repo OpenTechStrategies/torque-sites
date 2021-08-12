@@ -18,6 +18,7 @@
     # PickSome has to come after SimpleBook so the left menu bar is correct
     - simplefavorites
     - simplesaml
+    - teamcomments
     - torquedataconnect
     - exporttables
     - Democracy22
