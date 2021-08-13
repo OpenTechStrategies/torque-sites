@@ -34,6 +34,7 @@ ADMIN_REVIEW_CSV="AdminReviewP2P_SDA2021_08052021.csv"
 TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
+CORRECTION_FILE="SDA Updated Lead Applicant Names Corrections.csv"
 RUNNER="${LFC_DIR}"/compose-and-upload
 
 decrypt () {
@@ -77,6 +78,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
 
   decrypt "${DATA_DIR}/${PROPOSALS_CSV}" "${ENCRYPTED_DIR}/${PROPOSALS_CSV}.gpg" "${GPG_PASSPHRASE}"
   decrypt "${DATA_DIR}/${ADMIN_REVIEW_CSV}" "${ENCRYPTED_DIR}/${ADMIN_REVIEW_CSV}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${CORRECTION_FILE}" "${ENCRYPTED_DIR}/${CORRECTION_FILE}.gpg" "${GPG_PASSPHRASE}"
 
   mkdir -p ${TDC_CONFIG_DIR}
 fi
@@ -95,6 +97,7 @@ mkdir -p $TDC_CONFIG_DIR
 
 ${RUNNER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
           --admin-review-csv="${DATA_DIR}/${ADMIN_REVIEW_CSV}" \
+          --correction-file="${DATA_DIR}/${CORRECTION_FILE}" \
           $PARE \
           $CSV_ONLY \
           --tdc-config-dir="${TDC_CONFIG_DIR}"

@@ -26,6 +26,7 @@ Usage:
        --admin-review-csv=ADMIN_REVIEW_CSV \\
        --attachments-dir=ATTACHMENTS_DIR \\
        --tdc-config-dir=TDC_CONFIG_DIR \\
+       --correction-file=CORRECTION_FILE \\
        --pare=PARE \\
        --csv-only
 
@@ -45,6 +46,15 @@ Command-line options:
                                   needed by TorqueDataConnect, and can be optionally, manually, put on
                                   the torque wiki.  We don't automatically do that because we want to
                                   overwrite the configuration out there.
+
+  --correction-file FILE          FILE is a csv of corrections to the main data.  The header
+                                  must match the header of the original proposals file, and any
+                                  one of the columns must contain the review number.  Then
+                                  the data from the correction file will override the
+                                  source data for output.  There can be multiple correction
+                                  files, and each one overwrites the previous.
+
+                                  If the data cells have the empty string, no correction is applied.
 
   --pare ARG                      If ARG is a number, reduce the number of items to 1/ARG.  If
                                   ARG begins with +, then ARG is a comma separated list of
@@ -76,6 +86,7 @@ def main():
                 "admin-review-csv=",
                 "tdc-config-dir=",
                 "attachments-dir=",
+                "correction-file=",
                 "pare=",
                 "csv-only",
             ],
@@ -88,6 +99,7 @@ def main():
     admin_review_csv = None
     attachments_dir = None
     tdc_config_dir = None
+    correction_file = None
     pare = None
     csv_only = False
     for o, a in opts:
@@ -101,6 +113,8 @@ def main():
             tdc_config_dir = a
         elif o == "--admin-review-csv":
             admin_review_csv = a
+        elif o == "--correction-file":
+            correction_file = a
         elif o == "--attachments-dir":
             attachments_dir = a
         else:
@@ -125,6 +139,10 @@ def main():
             admin_review_csv, "Application #", [{"source_name": "Organization name"}]
         )
     )
+
+    correction_processor = competition.CorrectionData("Application #", correction_file)
+    for column in correction_processor.columns_affected():
+        comp.process_cells_special(column, correction_processor)
 
     fix_cell_processor = competition.FixCellProcessor()
     comp.process_all_cells_special(fix_cell_processor)
