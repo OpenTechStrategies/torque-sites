@@ -3,10 +3,10 @@
 - name: Transfer Democracy22 Logo
   copy:
     src: Democracy22_Logo.png
-    dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/resources/assets/Democracy22_Logo.png"
+    dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/resources/assets/Democracy22_Logo.svg"
 
 - name: Install Democracy22 Logo
   lineinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
     regexp: ^\$wgLogos = .*
-    line: $wgLogos = [ '1x' => "$wgResourceBasePath/resources/assets/Democracy22_Logo.png" ];
+    line: $wgLogos = [ 'svg' => "$wgResourceBasePath/resources/assets/Democracy22_Logo.svg" ];
