@@ -69,6 +69,29 @@ import sys
 import os
 
 
+class RankAdder(competition.InformationAdder):
+    """Adds the rank for chip selections and semifinalists"""
+
+    def __init__(self, chipselections_file, semifinalists_file):
+        with open(chipselections_file) as f:
+            self.chipselections = f.read().splitlines()
+
+        with open(semifinalists_file) as f:
+            self.semifinalists = f.read().splitlines()
+
+    def column_names(self):
+        return ["Ranking"]
+
+    def cell(self, proposal, column_name):
+        if proposal.key() in self.chipselections:
+            return "Chip"
+
+        if proposal.key() in self.semifinalists:
+            return "Semi"
+
+        return ""
+
+
 def main():
     """Compose the LFC input and emit it as html-ized csv."""
     try:
@@ -82,6 +105,8 @@ def main():
                 "pare=",
                 "csv-only",
                 "correction-file=",
+                "chipselections=",
+                "semifinalists=",
             ],
         )
     except getopt.GetoptError as err:
@@ -94,6 +119,8 @@ def main():
     pare = None
     csv_only = False
     correction_files = []
+    chipselections = False
+    semifinalists = False
     pare = None
     csv_only = False
     for o, a in opts:
@@ -109,6 +136,10 @@ def main():
             attachments_dir = a
         elif o == "--correction-file":
             correction_files.append(a)
+        elif o == "--chipselections":
+            chipselections = a
+        elif o == "--semifinalists":
+            semifinalists = a
         else:
             sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
             sys.exit(2)
@@ -132,6 +163,7 @@ def main():
     comp.add_supplemental_information(
         competition.StaticColumnAdder("Competition Name", "100Change2017")
     )
+    comp.add_supplemental_information(RankAdder(chipselections, semifinalists))
 
     fix_cell_processor = competition.FixCellProcessor()
     comp.process_all_cells_special(fix_cell_processor)

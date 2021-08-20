@@ -80,6 +80,8 @@ RECLASSIFICATION_CSV="geo-and-topic-revisions-Reclassify-themes-ALL-complete-(me
 EXCLUDED_REVIEW_NUMBERS_TXT="excluded-review-numbers.txt"
 ATTACHMENT_ZIP="Generated-Attachments-From-Mediawiki.zip"
 OTS_CORRECTION_FILE="OTS_Corrections.csv"
+CHIP_SELECTIONS_FILE="chipselections.dat"
+SEMI_FINALISTS_FILE="semifinalists.dat"
 
 ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig/"
@@ -117,6 +119,8 @@ if [ ! -d "${DATA_DIR}" ] ; then
   gpg -o ${DATA_DIR}/${RECLASSIFICATION_XLSX} --decrypt ${ENCRYPTED_DIR}/${RECLASSIFICATION_XLSX}.gpg || exit 1
   gpg -o ${DATA_DIR}/${ATTACHMENT_ZIP} --decrypt ${ENCRYPTED_DIR}/${ATTACHMENT_ZIP}.gpg || exit 1
   gpg -o ${DATA_DIR}/${OTS_CORRECTION_FILE} --decrypt ${ENCRYPTED_DIR}/${OTS_CORRECTION_FILE}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${CHIPS_ELECTIONS_FILE} --decrypt ${ENCRYPTED_DIR}/${CHIPS_ELECTIONS_FILE}.gpg || exit 1
+  gpg -o ${DATA_DIR}/${SEMI_FINALISTS_FILE} --decrypt ${ENCRYPTED_DIR}/${SEMI_FINALISTS_FILE}.gpg || exit 1
 
   mkdir -p ${ATTACHMENTS_DIR}
   mkdir -p ${TDC_CONFIG_DIR}
@@ -345,6 +349,8 @@ ${RUNNER} --proposals-csv="${DATA_DIR}/${STAGE_FINAL_CSV}" \
           $CSV_ONLY \
           --tdc-config-dir="${TDC_CONFIG_DIR}" \
           --attachments-dir=${ATTACHMENTS_DIR} \
+          --chipselections=${DATA_DIR}/${CHIP_SELECTIONS_FILE} \
+          --semifinalists=${DATA_DIR}/${SEMI_FINALISTS_FILE} \
           --correction-file="${DATA_DIR}/${OTS_CORRECTION_FILE}"
 if [ $? -ne 0 ]; then
 		echo Upload failure!
