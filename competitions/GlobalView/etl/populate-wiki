@@ -80,6 +80,8 @@ competition_configs = {
         "wiki_key": "100Change2017",
         "organization_name": "Registered Organization Name",
         "organization_geography": ["State / Province / Region", "Country"],
+        "score": "Total_Score",
+        "rank": "Ranking",
     },
     "EO2020": {
         "key": "Application #",
@@ -450,7 +452,9 @@ def main():
         [
             p
             for p in comp.ordered_proposals()
-            if p.cell("Rank") and int(p.cell("Rank")) < 26
+
+            # Chip and Semi are for 100Change2017
+            if p.cell("Rank") and (p.cell("Rank") is "Chip" or p.cell("Rank") is "Semi" or int(p.cell("Rank")) < 26)
         ],
         key=lambda p: p.cell("Organization Name"),
     )
