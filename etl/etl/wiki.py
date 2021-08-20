@@ -40,6 +40,8 @@ class WikiSession:
         if not self.csv_only:
             self.create_pages(comp)
 
+        self.sanity_check_wiki(comp)
+
     def upload_attachments(self, attachments):
         """Uploads all the ATTACHMENTS, which is a list of
         competition.Attachment"""
@@ -73,7 +75,7 @@ class WikiSession:
                 "format": "json",
                 "sheet_name": self.competition_name,
                 "toc_name": toc.name,
-                "raw_toc": ("true" if toc.raw() else None)
+                "raw_toc": ("true" if toc.raw() else None),
             },
             {"template": toc.template_file(), "json": json.dumps(toc.grouped_data())},
         )
@@ -116,3 +118,23 @@ class WikiSession:
                 p.save(body)
         except:
             print(page_title + " failed to save")
+
+    def sanity_check_wiki(self, comp):
+        """Does a sanity check on the wiki after all is said and done.  Add to it as
+        more accuracy checks become appropriate.
+
+        Currently this sanity check only dumps out a list of suspicious pages.  That is, pages
+        that weren't added during this run that exist on the wiki.  Some of them will have been
+        added via normal wiki means, but some of them shouldn't be there, usually due to bugs."""
+
+        added_pages = [
+            proposal.cell(competition.MediaWikiTitleAdder.title_column_name)
+            for proposal in comp.ordered_proposals()
+        ]
+        all_pages = [page.name for page in self.site.allpages()]
+        print("The following pages are in the wiki, but not added via the etl pipeline")
+        for page_title in all_pages:
+            if page_title not in added_pages:
+                # This could be improved to see if the page is likely to need to be removed
+                # For instance, only triggering on things we're sure are proposal pages
+                print(page_title)

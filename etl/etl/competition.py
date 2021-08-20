@@ -660,6 +660,10 @@ class MediaWikiTitleAdder(InformationAdder):
             title = title[:-1]
         title = title.replace("\n", " ")
 
+        # This line is just so our mediawiki title matches what actually happens
+        # when the page is created in the wiki.  Needed for the wiki sanity checking
+        title = title.replace("  ", " ")
+
         # All mediawiki titles are capitalized, so we lean into that
         title = title[0].upper() + title[1:]
 
