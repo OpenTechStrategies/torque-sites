@@ -141,3 +141,7 @@ def parse_pare(pare_option):
         except:
             raise Exception("Pare option not a number: " + pare_option)
     return (pare_factor, keys_to_include)
+
+
+def remove_empty_strings(string_list):
+    return list(filter(None, string_list))
