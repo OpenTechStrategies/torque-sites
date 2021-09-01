@@ -71,7 +71,7 @@ Command-line options:
                                   created already.
 """
 
-from etl import competition, wiki, toc, tdc, utils
+from etl import competition, wiki, toc, tdc, utils, Geocoder
 import config
 import getopt
 import sys
@@ -347,6 +347,134 @@ def main():
             ],
         )
     )
+
+    if (config.geocode_api_key):
+      geocoder = Geocoder.Geocoder(config.geocode_api_key)
+      comp.add_supplemental_information(
+          competition.GeocodeAdder(
+              "Organization LatLng",
+              Geocoder.Geocoder.generate_address_query_lambda(
+                  address1='Street Address',
+                  address2='Address Line 2',
+                  city='City',
+                  state='Org State / Province',
+                  country='Org Country',
+                  locality='Org Locality / County / District',
+                  zipCode='Zip / Postal Code',
+              ),
+              geocoder,
+          )
+      )
+      comp.add_supplemental_information(
+          competition.GeocodeAdder(
+              "Location of Current Work #1 LatLng",
+              Geocoder.Geocoder.generate_address_query_lambda(
+                  state='Location of Current Work #1 State /Province',
+                  country='Location of Current Work #1 Country',
+                  locality='Location of Current Work #1 Locality / County / District',
+              ),
+              geocoder,
+          )
+      )
+      comp.add_supplemental_information(
+          competition.GeocodeAdder(
+              "Location of Current Work #2 LatLng",
+              Geocoder.Geocoder.generate_address_query_lambda(
+                  state='Location of Current Work #2 State /Province',
+                  country='Location of Current Work #2 Country',
+                  locality='Location of Current Work #2 Locality / County / District',
+              ),
+              geocoder,
+          )
+      )
+      comp.add_supplemental_information(
+          competition.GeocodeAdder(
+              "Location of Current Work #3 LatLng",
+              Geocoder.Geocoder.generate_address_query_lambda(
+                  state='Location of Current Work #3 State /Province',
+                  country='Location of Current Work #3 Country',
+                  locality='Location of Current Work #3 Locality / County / District',
+              ),
+              geocoder,
+          )
+      )
+      comp.add_supplemental_information(
+          competition.GeocodeAdder(
+              "Location of Current Work #4 LatLng",
+              Geocoder.Geocoder.generate_address_query_lambda(
+                  state='Location of Current Work #4 State /Province',
+                  country='Location of Current Work #4 Country',
+                  locality='Location of Current Work #4 Locality / County / District',
+              ),
+              geocoder,
+          )
+      )
+      comp.add_supplemental_information(
+          competition.GeocodeAdder(
+              "Location of Current Work #5 LatLng",
+              Geocoder.Geocoder.generate_address_query_lambda(
+                  state='Location of Current Work #5 State /Province',
+                  country='Location of Current Work #5 Country',
+                  locality='Location of Current Work #5 Locality / County / District',
+              ),
+              geocoder,
+          )
+      )
+      comp.add_supplemental_information(
+          competition.GeocodeAdder(
+              "Location of Future Work #1 LatLng",
+              Geocoder.Geocoder.generate_address_query_lambda(
+                  state='Location of Future Work #1 State / Province',
+                  country='Location of Future Work #1 Country',
+                  locality='Location of Future Work #1 Locality / County / District',
+              ),
+              geocoder,
+          )
+      )
+      comp.add_supplemental_information(
+          competition.GeocodeAdder(
+              "Location of Future Work #2 LatLng",
+              Geocoder.Geocoder.generate_address_query_lambda(
+                  state='Location of Future Work #2 State / Province',
+                  country='Location of Future Work #2 Country',
+                  locality='Location of Future Work #2 Locality / County / District',
+              ),
+              geocoder,
+          )
+      )
+      comp.add_supplemental_information(
+          competition.GeocodeAdder(
+              "Location of Future Work #3 LatLng",
+              Geocoder.Geocoder.generate_address_query_lambda(
+                  state='Location of Future Work #3 State / Province',
+                  country='Location of Future Work #3 Country',
+                  locality='Location of Future Work #3 Locality / County / District',
+              ),
+              geocoder,
+          )
+      )
+      comp.add_supplemental_information(
+          competition.GeocodeAdder(
+              "Location of Future Work #4 LatLng",
+              Geocoder.Geocoder.generate_address_query_lambda(
+                  state='Location of Future Work #4 State / Province',
+                  country='Location of Future Work #4 Country',
+                  locality='Location of Future Work #4 Locality / County / District',
+              ),
+              geocoder,
+          )
+      )
+      comp.add_supplemental_information(
+          competition.GeocodeAdder(
+              "Location of Future Work #5 LatLng",
+              Geocoder.Geocoder.generate_address_query_lambda(
+                  state='Location of Future Work #5 State / Province',
+                  country='Location of Future Work #5 Country',
+                  locality='Location of Future Work #5 Locality / County / District',
+              ),
+              geocoder,
+          )
+      )
 
     comp.process_tocs()
 
