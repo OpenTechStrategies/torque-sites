@@ -5,12 +5,12 @@
   # See https://www.mediawiki.org/wiki/Manual:Installation_requirements
   apt:
     name: "{{ item }}"
-    #update_cache: yes # commented out for dev purposes
+    update_cache: yes # commented out for dev purposes
     state: present
   loop:
     - pipenv
     - postgresql
-    - python-psycopg2
+    - python3-psycopg2
     - supervisor
 
 - name: Create database user

@@ -6,7 +6,7 @@
     state: present
   loop:
     - postgresql
-    - python-psycopg2
+    - python3-psycopg2
 
 - name: Create database user
   become: true
