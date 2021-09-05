@@ -27,7 +27,7 @@ Usage:
        --tdc-config-dir=TDC_CONFIG_DIR \\
        --correction-file=CORRECTION_FILE \\
        --pare=PARE \\
-       --csv-only
+       --collection-only
 
 Command-line options:
   --proposals-csv FILE            FILE is a CSV file representing the bulk
@@ -57,7 +57,7 @@ Command-line options:
 
                                   If the data cells have the empty string, no correction is applied.
 
-  --csv-only                      Only upload the created CSV file.  Don't upload attachments or
+  --collection-only               Only upload the created CSV file.  Don't upload attachments or
                                   create wiki pages.  For use to speed up process when wiki has been
                                   created already.
 """
@@ -103,7 +103,7 @@ def main():
                 "tdc-config-dir=",
                 "attachments-dir=",
                 "pare=",
-                "csv-only",
+                "collection-only",
                 "correction-file=",
                 "chipselections=",
                 "semifinalists=",
@@ -117,19 +117,19 @@ def main():
     attachments_dir = None
     tdc_config_dir = None
     pare = None
-    csv_only = False
+    collection_only = False
     correction_files = []
     chipselections = False
     semifinalists = False
     pare = None
-    csv_only = False
+    collection_only = False
     for o, a in opts:
         if o == "--proposals-csv":
             proposals_csv = a
         elif o == "--pare":
             pare = a
-        elif o == "--csv-only":
-            csv_only = True
+        elif o == "--collection-only":
+            collection_only = True
         elif o == "--tdc-config-dir":
             tdc_config_dir = a
         elif o == "--attachments-dir":
@@ -193,12 +193,12 @@ def main():
     if tdc_config_dir is not None:
         tdc.AllProposals(comp).generate(tdc_config_dir)
         tdc.AllColumns(comp).generate(tdc_config_dir)
-        tdc.ProcessedSpreadsheet(comp).generate(tdc_config_dir)
+        tdc.ProcessedCollection(comp).generate(tdc_config_dir)
 
     my_wiki = wiki.WikiSession(
         config.username, config.password, comp.name, config.wiki_url
     )
-    my_wiki.csv_only = csv_only
+    my_wiki.collection_only = collection_only
     my_wiki.upload_sheet(comp)
     my_wiki.upload_attachments(attachments.attachments)
 

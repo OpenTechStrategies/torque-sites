@@ -329,7 +329,7 @@ class GenericMultiLineToc(GenericToc):
 
         for proposal in self.proposals:
             for column in self.columns:
-                groupings = proposal.cell(column).split("\n")
+                groupings = proposal.cell(column)
                 for grouping in groupings:
                     if grouping:
                         if grouping not in self.data:

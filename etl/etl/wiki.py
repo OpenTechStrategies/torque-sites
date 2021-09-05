@@ -17,7 +17,7 @@ class WikiSession:
         self.site = mwclient.Site(host, path="/", scheme=scheme, reqs={"timeout": 300})
         self.site.login(username, password)
         self.competition_name = competition_name
-        self.csv_only = False
+        self.collection_only = False
 
     def upload_sheet(self, comp):
         """Uploads the sheet, the tocs, and creates the pages for
@@ -31,13 +31,13 @@ class WikiSession:
                 "sheet_name": self.competition_name,
                 "key_column": comp.key_column_name,
             },
-            {"data_file": comp.to_csv(io.StringIO()).getvalue()},
+            {"data_file": comp.to_json(io.StringIO()).getvalue()},
         )
 
         for toc in comp.tocs:
             self.upload_toc(toc)
 
-        if not self.csv_only:
+        if not self.collection_only:
             self.create_pages(comp)
 
         self.sanity_check_wiki(comp)
@@ -46,7 +46,7 @@ class WikiSession:
         """Uploads all the ATTACHMENTS, which is a list of
         competition.Attachment"""
 
-        if self.csv_only:
+        if self.collection_only:
             return
 
         for attachment in attachments:

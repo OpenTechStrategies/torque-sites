@@ -19,7 +19,7 @@ CSV_ONLY=""
 PARE=""
 while getopts "cp:" opt; do
   case $opt in
-    c) CSV_ONLY="--csv-only" ;;
+    c) CSV_ONLY="--collection-only" ;;
     p) PARE="--pare=$OPTARG" ;;
   esac
 done

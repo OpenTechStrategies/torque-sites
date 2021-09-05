@@ -49,15 +49,9 @@ class Competition:
             col.strip().replace("\ufeff", "") for col in next(proposals_reader)
         ]
         self.key_column_name = key_column_name
-        self.column_types = {}
         self.proposals = {}
         self.sorted_proposal_keys = []
         self.tocs = []
-
-        if type_row_included:
-            type_row = next(proposals_reader)
-            for column_name, column_type in zip(self.columns, type_row):
-                self.column_types[column_name] = column_type
 
         row_num = 0
         key_column_idx = self.columns.index(key_column_name)
@@ -88,9 +82,6 @@ class Competition:
         """For cells in the competition at COLUMN_NAME,
         apply the PROCESSOR to them.  PROCESSOR is an object
         of the CellProcessor type."""
-        if processor.column_type() is not None:
-            self.column_types[column_name] = processor.column_type()
-
         for proposal in self.proposals.values():
             proposal.process_cell_special(column_name, processor)
 
@@ -99,9 +90,6 @@ class Competition:
         must be of the InformationAdder type.  This will add the
         headers, the column types, and the data."""
         for column_name in adder.column_names():
-            if adder.column_type(column_name) is not None:
-                self.column_types[column_name] = adder.column_type(column_name)
-
             # Even though this is meant for adding columns, there are times
             # when adding overwrites columns, such as when merging two sheets
             # together.
@@ -142,24 +130,12 @@ class Competition:
         """Returns an array of Proposals ordered by the current sort"""
         return [self.proposals[k] for k in self.sorted_proposal_keys]
 
-    def to_csv(self, output):
-        """Writes a csv out to stream OUTPUT designed to be uploaded to a
+    def to_json(self, output):
+        """Writes a json document out to stream OUTPUT designed to be uploaded to a
         torque instance"""
-        csv_writer = csv.writer(
-            output, delimiter=",", quotechar='"', lineterminator="\n"
+        output.write(
+            json.dumps([p.to_dict(self.columns) for p in self.ordered_proposals()])
         )
-        csv_writer.writerow(self.columns)
-
-        # The column types, as an array in the order of the header columns
-        csv_writer.writerow(
-            [
-                (self.column_types[col] if col in self.column_types else "")
-                for col in self.columns
-            ]
-        )
-        for proposal in self.ordered_proposals():
-            csv_writer.writerow(proposal.to_csv(self.columns))
-
         return output
 
     def add_toc(self, toc):
@@ -204,10 +180,10 @@ class Proposal:
         """Returns the key for this Proposal"""
         return self.cell(self.key_column_name)
 
-    def to_csv(self, column_names):
+    def to_dict(self, column_names):
         """Transforms this Proposal into an array for output, ordered by
         COLUMN_NAMES"""
-        return [self.cell(column_name) for column_name in column_names]
+        return {column_name: self.cell(column_name) for column_name in column_names}
 
 
 class ProposalFilter:
@@ -245,13 +221,7 @@ class ColumnNotEqualsProposalFilter(ProposalFilter):
 
 
 class CellProcessor:
-    """The base class for Cell Processors, which implement column_type
-    and process_cell"""
-
-    def column_type(self):
-        """Return the torque type of the column, or None if using the default
-        column type"""
-        return None
+    """The base class for Cell Processors, which implement process_cell"""
 
     def process_cell(self, proposal, column_name):
         """Transforms the PROPOSAL, in COLUMN_NAME, to some other value, and
@@ -310,12 +280,9 @@ class MultiLineProcessor(CellProcessor):
     def __init__(self, split_string=","):
         self.split_string = split_string
 
-    def column_type(self):
-        return "list"
-
     def process_cell(self, proposal, column_name):
         cell = proposal.cell(column_name)
-        return "\n".join([elem.strip() for elem in cell.split(self.split_string)])
+        return [elem.strip() for elem in cell.split(self.split_string)]
 
 
 class MultiLineFromListProcessor(CellProcessor):
@@ -326,19 +293,16 @@ class MultiLineFromListProcessor(CellProcessor):
     def __init__(self, valid_list):
         self.valid_list = valid_list
 
-    def column_type(self):
-        return "list"
-
     def process_cell(self, proposal, column_name):
         cell = proposal.cell(column_name).strip()
-        new_cell = ""
+        processed_value = []
         while cell != "":
             found = False
 
             for value in self.valid_list:
                 if cell.startswith(value):
                     found = True
-                    new_cell += value + "\n"
+                    processed_value.extend(value)
                     cell = cell[len(value) :]
                 if cell.startswith(","):
                     cell = cell[1:]
@@ -348,7 +312,7 @@ class MultiLineFromListProcessor(CellProcessor):
 
             cell = cell.strip()
 
-        return new_cell.strip()
+        return processed_value
 
 
 class AnnualBudget(Enum):
@@ -430,9 +394,6 @@ class BudgetTableProcessor(CellProcessor):
     from Common Pool, that then gets uploaded as a json document for
     torque to work with."""
 
-    def column_type(self):
-        return "json"
-
     def process_cell(self, proposal, column_name):
         cell = proposal.cell(column_name)
         budget_rows = cell.split("||")
@@ -443,15 +404,12 @@ class BudgetTableProcessor(CellProcessor):
             budget_row_data.append(
                 {"description": budget_items[0], "amount": budget_amount}
             )
-        return json.dumps(budget_row_data)
+        return budget_row_data
 
 
 class NumberCommaizer(CellProcessor):
     """A CellProcessor that takes large numbers and inserts commas where appropriate,
     and does nothing if it looks like they aren't large numbers."""
-
-    def column_type(self):
-        return None
 
     def process_cell(self, proposal, column_name):
         """Return the CELL with commas as if it were a large number,
@@ -496,27 +454,12 @@ class CorrectionData(CellProcessor):
         be used with a loop to process a competition."""
         return self.header
 
-    def column_type(self):
-        return None
-
     def process_cell(self, proposal, column_name):
         key = proposal.key()
         if key in self.correction_data and column_name in self.correction_data[key]:
             return self.correction_data[key][column_name]
 
         return proposal.cell(column_name)
-
-
-class ColumnTypeUpdater(CellProcessor):
-    """This doesn't actually process the cell, but adds a column type
-    of COLUMN_TYPE passed in, so that for cells that are already processed
-    completely, we can add the type for the column"""
-
-    def __init__(self, col_type):
-        self.col_type = col_type
-
-    def column_type(self):
-        return self.col_type
 
 
 class DefaultValueSetter(CellProcessor):
@@ -531,13 +474,7 @@ class DefaultValueSetter(CellProcessor):
 
 class InformationAdder:
     """The base class for things that add information to proposals that
-    aren't in the base spreadsheet.  Will usually implement column_type,
-    names, and cell"""
-
-    def column_type(self, column_name):
-        """Returns the column type for the COLUMN_NAME that would have
-        been added by this adder"""
-        return None
+    aren't in the base spreadsheet.  Will usually implement column_names, and cell"""
 
     def column_names(self):
         """Returns a list of column names that this adder will be adding
@@ -597,17 +534,9 @@ class LinkedSecondSheet(InformationAdder):
                 col["target_name"]: row[header_row.index(col["source_name"])]
                 for col in additional_columns
             }
-        self.additional_column_types = {
-            col["target_name"]: col["type"] for col in additional_columns
-        }
         self.additional_column_names = [
             col["target_name"] for col in additional_columns
         ]
-
-    def column_type(self, column_name):
-        if column_name in self.additional_column_types.keys():
-            return self.additional_column_types[column_name]
-        return None
 
     def column_names(self):
         return self.additional_column_names
@@ -629,9 +558,6 @@ class MediaWikiTitleAdder(InformationAdder):
 
     def __init__(self, project_column_name):
         self.project_column_name = project_column_name
-
-    def column_type(self, column_name):
-        return None
 
     def column_names(self):
         return [self.title_column_name]
@@ -683,9 +609,6 @@ class StaticColumnAdder(InformationAdder):
     def __init__(self, column_name, value):
         self.column_name = column_name
         self.value = value
-
-    def column_type(self, column_name):
-        return None
 
     def column_names(self):
         return [self.column_name]
@@ -808,14 +731,11 @@ class FinancialDataAdder(InformationAdder):
 
             self.financial_data[key] = proposal_financial_data
 
-    def column_type(self, column_name):
-        return "json"
-
     def column_names(self):
         return ["LFC Financial Data"]
 
     def cell(self, proposal, column_name):
-        return json.dumps(self.financial_data.get(proposal.key(), {}))
+        return self.financial_data.get(proposal.key(), {})
 
 
 class GlobalViewMediaWikiTitleAdder(MediaWikiTitleAdder):
@@ -927,12 +847,6 @@ class BasicAttachments(InformationAdder):
                         )
                     )
 
-    def column_type(self, column_name):
-        # List for both, so we don't need to switch on it
-        if column_name in self.defined_column_names:
-            return "list"
-        return None
-
     def column_names(self):
         return BasicAttachments.defined_column_names
 
@@ -947,21 +861,15 @@ class BasicAttachments(InformationAdder):
             attachments_by_column_name[attachment.column_name].append(attachment)
 
         if column_name == self.defined_column_names[0]:
-            return "\n".join(
-                [
-                    a.name
-                    for a in attachments_by_column_name[self.defined_column_names[1]]
-                ]
-            )
+            return [
+                a.name for a in attachments_by_column_name[self.defined_column_names[1]]
+            ]
         elif column_name == self.defined_column_names[1]:
-            return "\n".join(
-                [
-                    a.file
-                    for a in attachments_by_column_name[self.defined_column_names[1]]
-                ]
-            )
+            return [
+                a.file for a in attachments_by_column_name[self.defined_column_names[1]]
+            ]
         elif column_name in attachments_by_column_name:
-            return "\n".join([a.file for a in attachments_by_column_name[column_name]])
+            return [a.file for a in attachments_by_column_name[column_name]]
         else:
             return ""
 
@@ -977,11 +885,6 @@ class RegexSpecifiedAttachments(BasicAttachments):
         super().__init__(keys, attachments_dir)
         self.nonlist_columns = []
         self.list_columns = []
-
-    def column_type(self, column_name):
-        if column_name in self.defined_column_names + self.list_columns:
-            return "list"
-        return None
 
     def column_names(self):
         return (
@@ -1031,9 +934,6 @@ class AdminReview(InformationAdder, ProposalFilter):
         key_col_idx = header_row.index(key_column_name)
         valid_col_idx = header_row.index(valid_column_name)
         self.data = {row[key_col_idx]: row[valid_col_idx] for row in csv_reader}
-
-    def column_type(self, column_name):
-        return None
 
     def column_names(self):
         return ["Valid"]
@@ -1239,20 +1139,20 @@ class EvaluationAdder(InformationAdder):
                 evaluation_datum[
                     "%s %s Score Normalized" % (self.name, trait_name)
                 ] = 0.0
-                evaluation_datum["%s %s Comments" % (self.name, trait_name)] = ""
+                evaluation_datum["%s %s Comments" % (self.name, trait_name)] = []
                 evaluation_datum[
                     "%s %s Comment Scores Normalized" % (self.name, trait_name)
-                ] = ""
+                ] = []
 
             evaluation_datum[
                 "%s %s Score Normalized" % (self.name, trait_name)
             ] += float(row[score_normalized_col])
-            evaluation_datum["%s %s Comments" % (self.name, trait_name)] += (
-                utils.fix_cell(row[comments_col].replace("\n", "")) + "\n"
+            evaluation_datum["%s %s Comments" % (self.name, trait_name)].append(
+                utils.fix_cell(row[comments_col].replace("\n", ""))
             )
             evaluation_datum[
                 "%s %s Comment Scores Normalized" % (self.name, trait_name)
-            ] += (row[comments_score_normalized_col] + "\n")
+            ].append(row[comments_score_normalized_col])
 
         self.traits.sort()
 
@@ -1277,11 +1177,6 @@ class EvaluationAdder(InformationAdder):
             ]
         )
 
-    def column_type(self, column_name):
-        if column_name in self.list_columns:
-            return "list"
-        return None
-
     def column_names(self):
         return self.regular_columns + self.list_columns
 
@@ -1296,7 +1191,7 @@ class EvaluationAdder(InformationAdder):
         if isinstance(val, float):
             return "{0:.1f}".format(val)
         else:
-            return val.strip()
+            return val
 
 class GeocodeAdder(InformationAdder):
     """Converts a specified set of address columns into geocode JSON columns."""
