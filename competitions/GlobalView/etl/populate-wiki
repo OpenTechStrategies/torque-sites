@@ -392,12 +392,6 @@ def main():
                 )
 
     comp = competition.Competition(csv_location, "GlobalView", "Global Application #")
-    comp.process_cells_special(
-        "Priority Populations", competition.ColumnTypeUpdater("list")
-    )
-    comp.process_cells_special(
-        "Sustainable Development Goals", competition.ColumnTypeUpdater("list")
-    )
     comp.process_cells_special("Project Title", competition.RemoveHTMLBRsProcessor())
 
     # Replacing BRs with spaces for this one, because of the data having new lines in
@@ -509,13 +503,13 @@ def main():
         tdc.AllProposals(comp).generate(tdc_config_dir)
         tdc.ValidProposals(comp, "Status", "Valid").generate(tdc_config_dir)
         tdc.AllColumns(comp).generate(tdc_config_dir)
-        tdc.ProcessedSpreadsheet(comp).generate(tdc_config_dir)
+        tdc.ProcessedCollection(comp).generate(tdc_config_dir)
 
     my_wiki = wiki.WikiSession(
         config.username, config.password, comp.name, config.wiki_url
     )
 
-    my_wiki.csv_only = True
+    my_wiki.collection_only = True
     my_wiki.upload_sheet(comp)
 
 

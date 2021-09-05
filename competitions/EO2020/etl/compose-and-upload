@@ -30,7 +30,7 @@ Usage:
        --attachments-dir=ATTACHMENTS_DIR \\
        --tdc-config-dir=TDC_CONFIG_DIR \\
        --pare=PARE \\
-       --csv-only
+       --collection-only
 
 Command-line options:
   --proposals-csv FILE            FILE is a CSV file representing the bulk
@@ -105,9 +105,6 @@ class ThematicAreasAdder(competition.InformationAdder):
         thematic_area_col = header.index("Thematic Area")
         for row in csv_reader:
             self.data[row[app_col]] = row[thematic_area_col]
-
-    def column_type(self, column_name):
-        return None
 
     def column_names(self):
         return ["Thematic Area"]
@@ -184,7 +181,7 @@ class BridgeSpanDataAdder(competition.InformationAdder):
                 row_obj["data"].append(col)
             table["rows"].append(row_obj)
 
-        return json.dumps(table)
+        return table
 
     def fix_bridgespan_cell(self, cell):
         """Uses FIX_CELL to fix CELL, then does additional fixing based
@@ -202,10 +199,6 @@ class BridgeSpanDataAdder(competition.InformationAdder):
         cell = bold_first_re.sub("\\1 '''\\2'''", cell)
 
         return cell
-
-    def column_type(self, column_name):
-        if column_name == "Bridgespan Financial overview table":
-            return "json"
 
     def column_names(self):
         return self.header
@@ -227,9 +220,6 @@ class LFCEvaluationAdder(competition.InformationAdder):
         )
         next(csv_reader)
         self.data = {row[0]: row[1] for row in csv_reader}
-
-    def column_type(self, column_name):
-        return None
 
     def column_names(self):
         return ["LFC Recommendation"]
@@ -274,14 +264,14 @@ def main():
     attachments_dir = None
     tdc_config_dir = None
     pare = None
-    csv_only = False
+    collection_only = False
     for o, a in opts:
         if o == "--proposals-csv":
             proposals_csv = a
         elif o == "--pare":
             pare = a
         elif o == "--csv-only":
-            csv_only = True
+            collection_only = True
         elif o == "--admin-review-csv":
             admin_review_csv = a
         elif o == "--judge-evaluation-csv":
@@ -494,12 +484,12 @@ def main():
         tdc.AllProposals(comp).generate(tdc_config_dir)
         tdc.ValidProposals(comp, "Valid", "Valid").generate(tdc_config_dir)
         tdc.AllColumns(comp).generate(tdc_config_dir)
-        tdc.ProcessedSpreadsheet(comp).generate(tdc_config_dir)
+        tdc.ProcessedCollection(comp).generate(tdc_config_dir)
 
     my_wiki = wiki.WikiSession(
         config.username, config.password, comp.name, config.wiki_url
     )
-    my_wiki.csv_only = csv_only
+    my_wiki.collection_only = collection_only
     my_wiki.upload_sheet(comp)
     my_wiki.upload_attachments(attachments.attachments)
 

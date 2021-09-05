@@ -13,7 +13,6 @@
 # the uploader for debugging and setup of the wikis.
 
 import os
-import csv
 from etl import competition
 
 
@@ -79,14 +78,14 @@ class AllColumns:
         print("AllColumns written to TDC config dir")
 
 
-class ProcessedSpreadsheet:
+class ProcessedCollection:
     """Dumps out the final spreadsheet that gets uploaded to torque on to disk."""
 
     def __init__(self, competition):
         self.competition = competition
 
     def generate(self, config_dir):
-        with open(os.path.join(config_dir, "etl-processed.csv"), "w") as f:
-            self.competition.to_csv(f)
+        with open(os.path.join(config_dir, "etl-processed.json"), "w") as f:
+            self.competition.to_json(f)
 
-        print("etl-processed.csv written to TDC config dir")
+        print("etl-processed.json written to TDC config dir")

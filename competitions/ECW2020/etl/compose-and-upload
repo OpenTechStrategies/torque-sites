@@ -29,7 +29,7 @@ Usage:
        --application-data=APPLICATION_DATA_CSV \\
        --tdc-config-dir=TDC_CONFIG_DIR \\
        --pare=PARE \\
-       --csv-only
+       --collection-only
 
 Command-line options:
   --proposals-csv FILE            FILE is a CSV file representing the bulk
@@ -66,7 +66,7 @@ Command-line options:
                                   file with a list of keys to include.  For both + and @,
                                   the list of keys will be limited to only the ones provided.
 
-  --csv-only                      Only upload the created CSV file.  Don't upload attachments or
+  --collection-only               Only upload the created CSV file.  Don't upload attachments or
                                   create wiki pages.  For use to speed up process when wiki has been
                                   created already.
 """
@@ -164,7 +164,7 @@ def main():
                 "financial-sheets-dir=",
                 "attachments-dir=",
                 "pare=",
-                "csv-only",
+                "collection-only",
             ],
         )
     except getopt.GetoptError as err:
@@ -179,14 +179,14 @@ def main():
     application_data_csv = None
     financial_sheets_dir = None
     pare = None
-    csv_only = False
+    collection_only = False
     for o, a in opts:
         if o == "--proposals-csv":
             proposals_csv = a
         elif o == "--pare":
             pare = a
-        elif o == "--csv-only":
-            csv_only = True
+        elif o == "--collection-only":
+            collection_only = True
         elif o == "--tdc-config-dir":
             tdc_config_dir = a
         elif o == "--judge-evaluation-csv":
@@ -453,12 +453,12 @@ def main():
             tdc_config_dir
         )
         tdc.AllColumns(comp).generate(tdc_config_dir)
-        tdc.ProcessedSpreadsheet(comp).generate(tdc_config_dir)
+        tdc.ProcessedCollection(comp).generate(tdc_config_dir)
 
     my_wiki = wiki.WikiSession(
         config.username, config.password, comp.name, config.wiki_url
     )
-    my_wiki.csv_only = csv_only
+    my_wiki.collection_only = collection_only
     my_wiki.upload_sheet(comp)
     my_wiki.upload_attachments(attachments.attachments)
 

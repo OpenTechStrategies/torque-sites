@@ -20,7 +20,7 @@ PARE=""
 GPG_PASSPHRASE=""
 while getopts "cp:g:" opt; do
   case $opt in
-    c) CSV_ONLY="--csv-only" ;;
+    c) CSV_ONLY="--collection-only" ;;
     p) PARE="--pare=$OPTARG" ;;
     g) GPG_PASSPHRASE="$OPTARG" ;;
   esac
