@@ -305,6 +305,21 @@ def main():
     )
     comp.add_supplemental_information(attachments)
 
+    comp.remove_information(competition.ColumnRemover("Org Country ID"))
+    comp.remove_information(competition.ColumnRemover("Org State / Province ID"))
+    comp.transform_sheet(
+        competition.LocationCombiner(
+            column_name="Organization",
+            address_1="Street Address",
+            address_2="Address Line 2",
+            city="City",
+            locality="Org Locality / County / District",
+            state="Org State / Province",
+            country="Org Country",
+            zip_postal="Zip / Postal Code",
+        )
+    )
+
     comp.sort("Panel Overall Score Rank Normalized", True)
 
     list_toc = toc.ListToc("All_Proposals")
