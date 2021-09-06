@@ -7,7 +7,7 @@
 # in the TorqueConfig on the wiki, like AllColumns.  These would
 # represent permission for all the proposals, and all the columns,
 # respectively.  Another utility here is a dump out of the entire
-# spreadsheet after the etl pipeline is run.
+# json file after the etl pipeline is run.
 #
 # None of these are used by the pipeline, but all may be useful to
 # the uploader for debugging and setup of the wikis.
@@ -79,7 +79,7 @@ class AllColumns:
 
 
 class ProcessedCollection:
-    """Dumps out the final spreadsheet that gets uploaded to torque on to disk."""
+    """Dumps out the final object that gets uploaded to torque on to disk in json."""
 
     def __init__(self, competition):
         self.competition = competition
