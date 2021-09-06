@@ -469,7 +469,7 @@ def main():
         config.username, config.password, comp.name, config.wiki_url
     )
     my_wiki.collection_only = collection_only
-    my_wiki.upload_sheet(comp)
+    my_wiki.upload_collection(comp)
     my_wiki.upload_attachments(attachments.attachments)
 
     with open(lfc_analysis_pages) as f:

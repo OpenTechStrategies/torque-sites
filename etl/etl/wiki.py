@@ -19,16 +19,16 @@ class WikiSession:
         self.competition_name = competition_name
         self.collection_only = False
 
-    def upload_sheet(self, comp):
-        """Uploads the sheet, the tocs, and creates the pages for
+    def upload_collection(self, comp):
+        """Uploads the collection, the tocs, and creates the pages for
         a Competition COMP"""
         self.site.raw_call(
             "api",
             {
-                "action": "torquedataconnectuploadsheet",
+                "action": "torquedataconnectuploadcollection",
                 "format": "json",
                 "object_name": "proposal",
-                "sheet_name": self.competition_name,
+                "collection_name": self.competition_name,
                 "key_column": comp.key_column_name,
             },
             {"data_file": comp.to_json(io.StringIO()).getvalue()},
@@ -57,9 +57,9 @@ class WikiSession:
                     {
                         "action": "torquedataconnectuploadattachment",
                         "format": "json",
-                        "sheet_name": self.competition_name,
+                        "collection_name": self.competition_name,
                         "object_id": attachment.key,
-                        "permissions_column": attachment.column_name,
+                        "permissions_field": attachment.column_name,
                         "attachment_name": attachment.file,
                     },
                     {"attachment": attachment_stream.read()},
@@ -73,7 +73,7 @@ class WikiSession:
             {
                 "action": "torquedataconnectuploadtoc",
                 "format": "json",
-                "sheet_name": self.competition_name,
+                "collection_name": self.competition_name,
                 "toc_name": toc.name,
                 "raw_toc": ("true" if toc.raw() else None),
             },

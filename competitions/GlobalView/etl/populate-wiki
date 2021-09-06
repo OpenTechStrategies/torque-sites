@@ -319,7 +319,7 @@ def main():
                 "Organization State / Province",
                 "Organization Country",
                 "Wiki Key",
-                "Sheet Name",
+                "Collection Name",
                 "Priority Populations",
                 "Sustainable Development Goals",
                 "Annual Operating Budget",
@@ -510,7 +510,7 @@ def main():
     )
 
     my_wiki.collection_only = True
-    my_wiki.upload_sheet(comp)
+    my_wiki.upload_collection(comp)
 
 
     for proposal in comp.proposals.values():
@@ -518,7 +518,7 @@ def main():
             proposal.cell("MediaWiki Title"),
             "{{ #tdcrender:%s/id/%s.mwiki|false|%s }}"
             % (
-                proposal.cell("Sheet Name"),
+                proposal.cell("Collection Name"),
                 proposal.cell("Competition Application #"),
                 proposal.cell("Wiki Key"),
             ),
