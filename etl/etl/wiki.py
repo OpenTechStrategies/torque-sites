@@ -29,7 +29,7 @@ class WikiSession:
                 "format": "json",
                 "object_name": "proposal",
                 "collection_name": self.competition_name,
-                "key_column": comp.key_column_name,
+                "key_field": comp.key_column_name,
             },
             {"data_file": comp.to_json(io.StringIO()).getvalue()},
         )
