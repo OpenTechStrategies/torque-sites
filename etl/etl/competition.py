@@ -1008,7 +1008,7 @@ class AdminReview(InformationAdder, ProposalFilter):
         self.data = {row[key_col_idx]: row[valid_col_idx] for row in csv_reader}
 
     def column_names(self):
-        return ["Valid"]
+        return ["Admin Review Status"]
 
     def cell(self, proposal, column_name):
         return self.data[proposal.key()] if (proposal.key() in self.data) else ""
