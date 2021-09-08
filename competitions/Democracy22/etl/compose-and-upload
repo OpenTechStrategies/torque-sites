@@ -195,6 +195,168 @@ def main():
         ),
     )
 
+    comp.transform_sheet(
+        competition.LocationCombiner(
+            column_name="Organization",
+            address_1="Street Address",
+            address_2="Street Address Line 2",
+            city="City",
+            state="Org State / Province",
+            locality="Org Locality / District / County",
+            country="Org Nation",
+            zip_postal="Zip / Postal Code",
+        )
+    )
+    comp.transform_sheet(
+        competition.PersonCombiner(
+            column_name="Participant",
+            first_name="Participant First Name",
+            last_name="Participant Last Name",
+            email="Participant Email",
+        )
+    )
+    comp.transform_sheet(
+        competition.PersonCombiner(
+            column_name="Primary Contact",
+            first_name="Primary Contact First Name",
+            last_name="Primary Contact Last Name",
+            title="Primary Contact Title",
+            phone="Primary Contact Phone",
+            email="Primary Contact Email",
+        )
+    )
+    comp.transform_sheet(
+        competition.PersonCombiner(
+            column_name="Secondary Contact",
+            first_name="Secondary Contact First Name",
+            last_name="Secondary Contact Last Name",
+            title="Secondary Contact Title",
+            phone="Secondary Contact Phone",
+            email="Secondary Contact Email",
+        )
+    )
+
+
+    for num in ["1", "2", "3"]:
+        comp.transform_sheet(
+            competition.PersonCombiner(
+                column_name="Key Staff #%s" % num,
+                first_name="Key Staff #%s: First Name" % num,
+                last_name="Key Staff #%s: Last Name" % num,
+            )
+        )
+        comp.transform_sheet(
+            competition.ColumnRenamer(
+                "Key Staff #%s: Affiliation" % num, "Key Staff #%s Affiliation" % num
+            )
+        )
+        comp.transform_sheet(
+            competition.ColumnRenamer(
+                "Key Staff #%s: Biography" % num, "Key Staff #%s Biography" % num
+            )
+        )
+
+
+    for num in ["1", "2", "3", "5"]:
+        comp.transform_sheet(
+            competition.LocationCombiner(
+                column_name="Current Work #%s" % num,
+                state="Location of Current Work #%s State / Province" % num,
+                locality="Location of Current Work #%s Locality / District / County" % num,
+                country="Location of Current Work #%s Country" % num,
+            )
+        )
+        comp.remove_information(
+            competition.ColumnRemover("Location of Current Work #%s Country ID" % num)
+        )
+        comp.remove_information(
+            competition.ColumnRemover("Location of Current Work #%s Locality / District / County ID" % num)
+        )
+        comp.remove_information(
+            competition.ColumnRemover(
+                "Location of Current Work #%s State / Province ID" % num
+            )
+        )
+
+    comp.transform_sheet(
+        competition.LocationCombiner(
+            column_name="Current Work #4",
+            state="Location of Current Solution #4 State",
+            locality="Location of Current Solution #4 Locality",
+            country="Location of Current Solution #4 Country",
+        )
+    )
+    comp.remove_information(
+        competition.ColumnRemover("Location of Current Solution #4 Country ID")
+    )
+    comp.remove_information(
+        competition.ColumnRemover("Location of Current Solution #4 Locality ID")
+    )
+    comp.remove_information(
+        competition.ColumnRemover(
+            "Location of Current Solution #4 State ID"
+        )
+    )
+
+
+    for num in ["1", "2", "3", "4", "5"]:
+        comp.transform_sheet(
+            competition.LocationCombiner(
+                column_name="Future Work #%s" % num,
+                state="Location of Future Work #%s State / Province" % num,
+                locality="Location of Future Work #%s Locality / District / County" % num,
+                country="Location of Future Work #%s Country" % num,
+            )
+        )
+        comp.remove_information(
+            competition.ColumnRemover("Location of Future Work #%s Country ID" % num)
+        )
+        comp.remove_information(
+            competition.ColumnRemover("Location of Future Work #%s Locality / District / County ID" % num)
+        )
+        comp.remove_information(
+            competition.ColumnRemover(
+                "Location of Future Work #%s State / Province ID" % num
+            )
+        )
+
+    comp.transform_sheet(competition.ColumnRenamer("Application GUID", "GUID"))
+    comp.transform_sheet(
+        competition.ColumnRenamer("Competition domain", "Competition Domain")
+    )
+    comp.transform_sheet(competition.ColumnRenamer("Solution Category", "Primary Subject Area Category"))
+    comp.transform_sheet(
+        competition.ColumnRenamer("EIN", "Applicant Tax Identification Number")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("VIDEO PRESENTATION", "Video")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Organization name", "Organization Name")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Exclusive Summary", "Executive Summary")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Lead Applicant Website or Social Media Page", "Organization Website")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Project Website or Social Media Page", "Project Website")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Ability to Scale", "Ability To Scale")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Stakeholder &amp; Community Engagement", "Community Engagement")
+    )
+
+    comp.remove_information(competition.ColumnRemover("Application GUID + competition domain"))
+    comp.remove_information(competition.ColumnRemover("Org Nation ID"))
+    comp.remove_information(competition.ColumnRemover("Org State / Province ID"))
+    comp.remove_information(competition.ColumnRemover("Org Locality / District / County ID"))
+    comp.remove_information(competition.ColumnRemover("Priority Populations IDs"))
+    comp.remove_information(competition.ColumnRemover("Primary Subject Area ID"))
+
     attachments = competition.BasicAttachments(
         comp.sorted_proposal_keys, attachments_dir
     )
@@ -252,26 +414,15 @@ def main():
         toc.GeographicToc(
             "Current_Work_Locations",
             [
-                [
-                    "Location of Current Work #1 Country",
-                    "Location of Current Work #1 State / Province",
-                ],
-                [
-                    "Location of Current Work #2 Country",
-                    "Location of Current Work #2 State / Province",
-                ],
-                [
-                    "Location of Current Work #3 Country",
-                    "Location of Current Work #3 State / Province",
-                ],
-                [
-                    "Location of Current Solution #4 Country",
-                    "Location of Current Solution #4 State",
-                ],
-                [
-                    "Location of Current Work #5 Country",
-                    "Location of Current Work #5 State / Province",
-                ],
+                "Current Work #1 Location",
+                "Current Work #2 Location",
+                "Current Work #3 Location",
+                "Current Work #4 Location",
+                "Current Work #5 Location",
+            ],
+            [
+                competition.LocationCombiner.COUNTRY,
+                competition.LocationCombiner.STATE,
             ],
         )
     )
@@ -280,26 +431,15 @@ def main():
         toc.GeographicToc(
             "Future_Work_Locations",
             [
-                [
-                    "Location of Future Work #1 Country",
-                    "Location of Future Work #1 State / Province",
-                ],
-                [
-                    "Location of Future Work #2 Country",
-                    "Location of Future Work #2 State / Province",
-                ],
-                [
-                    "Location of Future Work #3 Country",
-                    "Location of Future Work #3 State / Province",
-                ],
-                [
-                    "Location of Future Work #4 Country",
-                    "Location of Future Work #4 State / Province",
-                ],
-                [
-                    "Location of Future Work #5 Country",
-                    "Location of Future Work #5 State / Province",
-                ],
+                "Future Work #1 Location",
+                "Future Work #2 Location",
+                "Future Work #3 Location",
+                "Future Work #4 Location",
+                "Future Work #5 Location",
+            ],
+            [
+                competition.LocationCombiner.COUNTRY,
+                competition.LocationCombiner.STATE,
             ],
         )
     )
