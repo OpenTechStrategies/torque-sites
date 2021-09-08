@@ -1396,3 +1396,36 @@ class LocationCombiner(ColumnCombiner):
         if zip_postal:
             new_columns[zip_postal] = LocationCombiner.ZIP_POSTAL
         super().__init__("%s Location" % column_name, new_columns)
+
+
+class PersonCombiner(ColumnCombiner):
+    """Takes Location based columns, and then combines them into a single
+    column with the the name "<COLUMN_NAME> Location"."""
+
+    FIRST_NAME = "First Name"
+    LAST_NAME = "Last Name"
+    TITLE = "Title"
+    PHONE = "Phone"
+    EMAIL = "Email"
+
+    def __init__(
+        self,
+        column_name,
+        first_name=None,
+        last_name=None,
+        title=None,
+        phone=None,
+        email=None,
+    ):
+        new_columns = {}
+        if first_name:
+            new_columns[first_name] = PersonCombiner.FIRST_NAME
+        if last_name:
+            new_columns[last_name] = PersonCombiner.LAST_NAME
+        if title:
+            new_columns[title] = PersonCombiner.TITLE
+        if phone:
+            new_columns[phone] = PersonCombiner.PHONE
+        if email:
+            new_columns[email] = PersonCombiner.EMAIL
+        super().__init__(column_name, new_columns)
