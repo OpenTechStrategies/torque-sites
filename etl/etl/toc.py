@@ -405,24 +405,27 @@ class GeographicToc(Toc):
     AND State.  This Toc handles all the collating of the data, and then puts
     out the toc in a general way."""
 
-    def __init__(self, name, column_sets):
+    def __init__(self, name, columns, location_granularities):
         super().__init__()
         self.name = name
-        self.column_sets = column_sets
-        self.num_levels = len(column_sets[0])
+        self.columns = columns
+        self.location_granularities = location_granularities
+        self.num_levels = len(location_granularities)
         self.data = {}
 
     def process_competition(self, competition):
         self.competition_name = competition.name
 
-        def add_proposal_to_data(proposal, data, column_set):
-            val = proposal.cell(column_set[0]).strip()
+        def add_proposal_to_data(proposal, data, column, granularities):
+            val = proposal.cell(column)[granularities[0]].strip()
             if not val:
                 return
-            if len(column_set) > 1:
+            if len(granularities) > 1:
                 if val not in data:
                     data[val] = {"shown": False, "subcolumn": {}}
-                add_proposal_to_data(proposal, data[val]["subcolumn"], column_set[1:])
+                add_proposal_to_data(
+                    proposal, data[val]["subcolumn"], column, granularities[1:]
+                )
             else:
                 if val not in data:
                     data[val] = {"shown": False, "proposals": []}
@@ -433,8 +436,10 @@ class GeographicToc(Toc):
             self.proposals = competition.ordered_proposals()
 
         for proposal in self.proposals:
-            for column_set in self.column_sets:
-                add_proposal_to_data(proposal, self.data, column_set)
+            for column in self.columns:
+                add_proposal_to_data(
+                    proposal, self.data, column, self.location_granularities
+                )
 
         def sort_data(data):
             for key in sorted(data.keys()):
