@@ -22,6 +22,7 @@ class WikiSession:
     def upload_collection(self, comp):
         """Uploads the collection, the tocs, and creates the pages for
         a Competition COMP"""
+        comp.validate_fields()
         self.site.raw_call(
             "api",
             {

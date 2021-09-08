@@ -170,6 +170,27 @@ class Competition:
         for toc in self.tocs:
             toc.process_competition(self)
 
+    def validate_fields(self):
+        """Validate that all the fields being uploaded are in the whitelist"""
+        import importlib.resources as pkg_resources
+        from . import data
+
+        whitelisted_fields = (
+            pkg_resources.open_text(data, "field_whitelist.dat", encoding="utf-8")
+            .read()
+            .strip()
+            .split("\n")
+        )
+
+        passed_whitelist = True
+        for column in self.columns:
+            if column not in whitelisted_fields:
+                passed_whitelist = False
+                print("Column '%s' is not in whitelisted fields file" % column)
+
+        if not passed_whitelist:
+            raise Exception("Did not pass whitelist, see above for why")
+
 
 class Proposal:
     """A Proposal, of which there are many in a competition.  A Proposal
