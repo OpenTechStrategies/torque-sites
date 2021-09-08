@@ -1354,30 +1354,38 @@ class LocationCombiner(ColumnCombiner):
     """Takes Location based columns, and then combines them into a single
     column with the the name "<COLUMN_NAME> Location"."""
 
+    COUNTRY = "Country"
+    STATE = "State/Province"
+    LOCALITY = "Locality/District/County"
+    ADDRESS_1 = "Street Address"
+    ADDRESS_2 = "Address Line 2"
+    CITY = "City"
+    ZIP_POSTAL = "Zip/Postal Code"
+
     def __init__(
         self,
         column_name,
-        address_1,
-        address_2,
-        city,
-        state,
-        locality,
-        country,
-        zip_postal,
+        address_1=None,
+        address_2=None,
+        city=None,
+        state=None,
+        locality=None,
+        country=None,
+        zip_postal=None,
     ):
         new_columns = {}
         if country:
-            new_columns[country] = "Country"
+            new_columns[country] = LocationCombiner.COUNTRY
         if state:
-            new_columns[state] = "State/Province"
+            new_columns[state] = LocationCombiner.STATE
         if locality:
-            new_columns[locality] = "Locality/District/County"
+            new_columns[locality] = LocationCombiner.LOCALITY
         if address_1:
-            new_columns[address_1] = "Street Address"
+            new_columns[address_1] = LocationCombiner.ADDRESS_1
         if address_2:
-            new_columns[address_2] = "Address Line 2"
+            new_columns[address_2] = LocationCombiner.ADDRESS_2
         if city:
-            new_columns[city] = "City"
+            new_columns[city] = LocationCombiner.CITY
         if zip_postal:
-            new_columns[zip_postal] = "Zip/Postal Code"
+            new_columns[zip_postal] = LocationCombiner.ZIP_POSTAL
         super().__init__("%s Location" % column_name, new_columns)
