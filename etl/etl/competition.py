@@ -1312,6 +1312,23 @@ class ColumnRemover(InformationRemover):
         return [self.column]
 
 
+class ColumnRenamer(InformationTransformer):
+    """Renames OLD_COLUMN_NAME to NEW_COLUMN_NAME"""
+
+    def __init__(self, old_column_name, new_column_name):
+        self.old_column_name = old_column_name
+        self.new_column_name = new_column_name
+
+    def columns_to_remove(self):
+        return [self.old_column_name]
+
+    def column_names(self):
+        return [self.new_column_name]
+
+    def cell(self, proposal, column_name):
+        return proposal.cell(self.old_column_name)
+
+
 class ColumnCombiner(InformationTransformer):
     """Takes a dictionary of {old_column_name: new_subcolumn_name}
     and a new column name for which to combine these into.  For example
