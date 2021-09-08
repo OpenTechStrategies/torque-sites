@@ -830,12 +830,13 @@ class Attachment:
     """Represents an attachment on the file system, and handles special cases
     about display names to make sure things show up correctly"""
 
-    def __init__(self, key, filename, column_name, path):
+    def __init__(self, key, filename, column_name, subcolumn_name, path):
         self.file = filename
         self.rank = None
         self.key = key
         self.path = path
         self.column_name = column_name
+        self.subcolumn_name = subcolumn_name
         self.name = re.sub("^\\d*_", "", filename)
         self.name = re.sub("\.pdf$", "", self.name)
         if len(self.name) > 33:
@@ -876,7 +877,8 @@ class BasicAttachments(InformationAdder):
 
     When rank is unset, attachments move to the end."""
 
-    defined_column_names = ["Attachment Display Names", "Attachments"]
+    BASIC_COLUMN_NAME = "Attachments"
+    RESTRICTED_COLUMN_NAME = "Restricted Attachments"
 
     def __init__(self, keys, attachments_dir):
         self.attachments = []
@@ -905,7 +907,8 @@ class BasicAttachments(InformationAdder):
                         Attachment(
                             key,
                             attachment_file,
-                            BasicAttachments.defined_column_names[1],
+                            BasicAttachments.BASIC_COLUMN_NAME,
+                            "Default",
                             os.path.join(
                                 full_application_attachment_dir, attachment_file
                             ),
@@ -913,30 +916,34 @@ class BasicAttachments(InformationAdder):
                     )
 
     def column_names(self):
-        return BasicAttachments.defined_column_names
+        return [
+            BasicAttachments.BASIC_COLUMN_NAME,
+            BasicAttachments.RESTRICTED_COLUMN_NAME,
+        ]
 
     def cell(self, proposal, column_name):
         attachments = [a for a in self.attachments if a.key == proposal.key()]
         attachments.sort()
 
-        attachments_by_column_name = {name: [] for name in self.defined_column_names}
-        for attachment in attachments:
-            if attachment.column_name not in attachments_by_column_name:
-                attachments_by_column_name[attachment.column_name] = []
-            attachments_by_column_name[attachment.column_name].append(attachment)
+        by_column_name = {
+            BasicAttachments.BASIC_COLUMN_NAME: {},
+            BasicAttachments.RESTRICTED_COLUMN_NAME: {},
+        }
 
-        if column_name == self.defined_column_names[0]:
-            return [
-                a.name for a in attachments_by_column_name[self.defined_column_names[1]]
-            ]
-        elif column_name == self.defined_column_names[1]:
-            return [
-                a.file for a in attachments_by_column_name[self.defined_column_names[1]]
-            ]
-        elif column_name in attachments_by_column_name:
-            return [a.file for a in attachments_by_column_name[column_name]]
-        else:
-            return ""
+        for attachment in attachments:
+            if attachment.column_name not in by_column_name:
+                raise Exception(
+                    "Attachment not in a valid column name: %s" % attachment.column_name
+                )
+
+            if attachment.subcolumn_name not in by_column_name[attachment.column_name]:
+                by_column_name[attachment.column_name][attachment.subcolumn_name] = []
+
+            by_column_name[attachment.column_name][attachment.subcolumn_name].append(
+                {"file": attachment.file, "name": attachment.name}
+            )
+
+        return by_column_name[column_name]
 
 
 class RegexSpecifiedAttachments(BasicAttachments):
