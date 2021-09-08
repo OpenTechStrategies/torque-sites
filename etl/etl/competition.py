@@ -1206,24 +1206,23 @@ class EvaluationAdder(InformationAdder):
             if trait_name not in self.traits:
                 self.traits.append(trait_name)
 
-            if "%s %s" % (self.name, trait_name) not in evaluation_datum:
-                evaluation_datum["%s %s" % (self.name, trait_name)] = trait_name
+            if "%s %s Judge Data" % (self.name, trait_name) not in evaluation_datum:
+                evaluation_datum["%s %s Judge Data" % (self.name, trait_name)] = {
+                    "Comments": [],
+                    "Comment Scores Normalized": [],
+                }
                 evaluation_datum[
                     "%s %s Score Normalized" % (self.name, trait_name)
                 ] = 0.0
-                evaluation_datum["%s %s Comments" % (self.name, trait_name)] = []
-                evaluation_datum[
-                    "%s %s Comment Scores Normalized" % (self.name, trait_name)
-                ] = []
 
             evaluation_datum[
                 "%s %s Score Normalized" % (self.name, trait_name)
             ] += float(row[score_normalized_col])
-            evaluation_datum["%s %s Comments" % (self.name, trait_name)].append(
-                utils.fix_cell(row[comments_col].replace("\n", ""))
-            )
-            evaluation_datum[
-                "%s %s Comment Scores Normalized" % (self.name, trait_name)
+            evaluation_datum["%s %s Judge Data" % (self.name, trait_name)][
+                "Comments"
+            ].append(utils.fix_cell(row[comments_col].replace("\n", "")))
+            evaluation_datum["%s %s Judge Data" % (self.name, trait_name)][
+                "Comment Scores Normalized"
             ].append(row[comments_score_normalized_col])
 
         self.traits.sort()
@@ -1233,20 +1232,11 @@ class EvaluationAdder(InformationAdder):
             "%s Sum of Scores Normalized" % self.name,
         ]
         self.regular_columns.extend(
-            ["%s %s" % (self.name, trait) for trait in self.traits]
-        )
-        self.regular_columns.extend(
             ["%s %s Score Normalized" % (self.name, trait) for trait in self.traits]
         )
         self.list_columns = []
         self.list_columns.extend(
-            ["%s %s Comments" % (self.name, trait) for trait in self.traits]
-        )
-        self.list_columns.extend(
-            [
-                "%s %s Comment Scores Normalized" % (self.name, trait)
-                for trait in self.traits
-            ]
+            ["%s %s Judge Data" % (self.name, trait) for trait in self.traits]
         )
 
     def column_names(self):
