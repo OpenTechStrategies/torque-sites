@@ -821,12 +821,14 @@ class GlobalViewMediaWikiTitleAdder(MediaWikiTitleAdder):
     """A MediaWikiTitleAdder that has a different title layout because it's tailored
     to GlobalView, so that it contains the independent competition sheet name."""
 
+    title_column_name = "GlobalView MediaWiki Title"
+
     def __init__(self, wiki_key, project_column_name):
         self.project_column_name = project_column_name
         self.wiki_key = wiki_key
 
     def column_names(self):
-        return ["GlobalView MediaWiki Title"]
+        return [self.title_column_name]
 
     def cell(self, proposal, column_name):
         title = "%s (%s: %s)" % (

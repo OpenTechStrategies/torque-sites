@@ -246,23 +246,6 @@ class MultiCompAppsToc(toc.GenericToc):
         return False
 
 
-class GlobalViewMediaWikiOverride(competition.MediaWikiTitleAdder):
-    """A MediaWikiTitleAdder that has a different title layout because it's tailored
-    to GlobalView, so that it contains the independent competition sheet name.  This
-    one takes over the MediaWiki Title place in the spreadsheet for uploading."""
-
-    def __init__(self):
-        pass
-
-    def cell(self, proposal, column_name):
-        title = "%s (%s: %s)" % (
-            proposal.cell("Project Title"),
-            proposal.cell("Wiki Key"),
-            proposal.cell("Competition Application #"),
-        )
-        return self.sanitize_title(title)
-
-
 def main():
     """Compose the LFC input and emit it as html-ized csv."""
     try:
@@ -341,6 +324,7 @@ def main():
                 "Sustainable Development Goals",
                 "Annual Operating Budget",
                 "Status",
+                "MediaWiki Title",
             ]
         )
 
@@ -403,6 +387,7 @@ def main():
                             if "status" in competition_configs[name]
                             else "Valid"
                         ),
+                        proposal.cell(competition.GlobalViewMediaWikiTitleAdder.title_column_name),
                     ]
                 )
 
@@ -420,7 +405,6 @@ def main():
     comp.process_cells_special(
         "Organization Name", competition.RemoveHTMLBRsProcessor(" ")
     )
-    comp.add_supplemental_information(GlobalViewMediaWikiOverride())
 
     list_toc = toc.ListToc("All_Proposals")
     list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
