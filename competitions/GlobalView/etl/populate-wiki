@@ -303,14 +303,14 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    if len(competition_names) is 0 or len(competition_csvs) is 0:
+    if len(competition_names) == 0 or len(competition_csvs) == 0:
         sys.stderr.write(
             "ERROR: need at least one --competition and --competition-csv option.\n\n"
         )
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    if len(competition_names) is not len(competition_csvs):
+    if len(competition_names) != len(competition_csvs):
         sys.stderr.write(
             "ERROR: number of --competition and --competition-csv options needs to be the same.\n\n"
         )
@@ -454,7 +454,7 @@ def main():
             for p in comp.ordered_proposals()
 
             # Chip and Semi are for 100Change2017
-            if p.cell("Rank") and (p.cell("Rank") is "Chip" or p.cell("Rank") is "Semi" or int(p.cell("Rank")) < 26)
+            if p.cell("Rank") and (p.cell("Rank") == "Chip" or p.cell("Rank") == "Semi" or int(p.cell("Rank")) < 26)
         ],
         key=lambda p: p.cell("Organization Name"),
     )

@@ -331,7 +331,7 @@ class MultiLineFromListProcessor(CellProcessor):
     def process_cell(self, proposal, column_name):
         cell = proposal.cell(column_name).strip()
         new_cell = ""
-        while cell is not "":
+        while cell != "":
             found = False
 
             for value in self.valid_list:
