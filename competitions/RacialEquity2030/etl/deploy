@@ -36,6 +36,7 @@ FINALIST_ATTACHMENTS="Finalist Attachments.zip"
 CORRECTION_FILE="OTS_Corrections.csv"
 ADMIN_REVIEW_CSV="Kellogg-AdminReview.csv"
 WILDCARDS="wildcards.dat"
+FUNDERS_CORRECTION="Funders-WKKF.csv"
 
 TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
@@ -75,6 +76,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   decrypt "${DATA_DIR}/${P2P_RANKING_CSV}" "${ENCRYPTED_DIR}/${P2P_RANKING_CSV}.gpg" "${GPG_PASSPHRASE}"
   decrypt "${DATA_DIR}/${EP_RANKING_CSV}" "${ENCRYPTED_DIR}/${EP_RANKING_CSV}.gpg" "${GPG_PASSPHRASE}"
   decrypt "${DATA_DIR}/${WILDCARDS}" "${ENCRYPTED_DIR}/${WILDCARDS}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${FUNDERS_CORRECTION}" "${ENCRYPTED_DIR}/${FUNDERS_CORRECTION}.gpg" "${GPG_PASSPHRASE}"
 
   mkdir -p ${TDC_CONFIG_DIR}
 
@@ -117,6 +119,7 @@ ${RUNNER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
           --expert-panel-review="${DATA_DIR}/${EP_RANKING_CSV}" \
           --correction-file="${DATA_DIR}/${CORRECTION_FILE}" \
           --wildcards="${DATA_DIR}/${WILDCARDS}" \
+          --funders-correction="${DATA_DIR}/${FUNDERS_CORRECTION}" \
           $PARE \
           $CSV_ONLY \
           --tdc-config-dir="${TDC_CONFIG_DIR}"

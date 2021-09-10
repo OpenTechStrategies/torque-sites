@@ -64,8 +64,10 @@ Command-line options:
                                   between experts and the proposals they evaluated,
                                   with the extra data being their evaluation
 
-  --wildcards FILE                FILE is a simle newline separated list of proposal keys
+  --wildcards FILE                FILE is a simple newline separated list of proposal keys
                                   for the wildcard proposals.
+
+  --funders-correction FILE       FILE is a csv with current funders, and what they should be.
 
   --pare ARG                      If ARG is a number, reduce the number of items to 1/ARG.  If
                                   ARG begins with +, then ARG is a comma separated list of
@@ -105,6 +107,25 @@ class LFCAnalysisAdder(competition.InformationAdder):
         return ""
 
 
+class FundersCorrectionProcessor(competition.CellProcessor):
+    def __init__(self, funders_correction_location):
+        self.data = {}
+
+        csv_reader = csv.reader(
+            open(funders_correction_location, encoding="utf-8"),
+            delimiter=",",
+            quotechar='"',
+        )
+        for correction_row in csv_reader:
+            self.data[correction_row[1].strip()] = correction_row[2].strip()
+
+    def process_cell(self, proposal, column_name):
+        current = proposal.cell(column_name).strip()
+        if current in self.data:
+            new = self.data[proposal.cell(column_name)]
+            return "" if new == "remove" else new
+
+
 def main():
     """Compose the LFC input and emit it as html-ized csv."""
     try:
@@ -124,6 +145,7 @@ def main():
                 "peer-to-peer-review=",
                 "expert-panel-review=",
                 "wildcards=",
+                "funders-correction=",
                 "pare=",
                 "csv-only",
             ],
@@ -140,6 +162,7 @@ def main():
     peer_to_peer_review_csv = None
     expert_panel_review_csv = None
     wildcards = None
+    funders_correction = None
     pare = None
     csv_only = False
     for o, a in opts:
@@ -163,6 +186,8 @@ def main():
             expert_panel_review_csv = a
         elif o == "--wildcards":
             wildcards = a
+        elif o == "--funders-correction":
+            funders_correction = a
         else:
             sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
             sys.exit(2)
@@ -248,6 +273,11 @@ def main():
             competition.SustainableDevelopmentGoalProcessor.official_sdgs
         ),
     )
+
+    funder_processor = FundersCorrectionProcessor(funders_correction)
+    comp.process_cells_special("FUNDER 1 Name", funder_processor)
+    comp.process_cells_special("FUNDER 2 Name", funder_processor)
+    comp.process_cells_special("FUNDER 3 Name", funder_processor)
 
     comp.process_cells_special("Total Projected Costs", competition.NumberCommaizer())
     comp.process_cells_special("Budget Data", competition.BudgetTableProcessor())
@@ -408,7 +438,9 @@ def main():
                 proposal = comp.proposals[key]
                 my_wiki.create_page(
                     "LFC Analysis of %s" % proposal.cell("MediaWiki Title"),
-                    "{{ #tdcrender:RacialEquity2030/id/" + key + ".mwiki|LFCAnalysis }}",
+                    "{{ #tdcrender:RacialEquity2030/id/"
+                    + key
+                    + ".mwiki|LFCAnalysis }}",
                 )
 
 
