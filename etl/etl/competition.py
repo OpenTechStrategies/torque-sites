@@ -1,4 +1,5 @@
 from etl import utils
+from etl import Geocoder
 import csv
 import json
 import os
@@ -1296,3 +1297,43 @@ class EvaluationAdder(InformationAdder):
             return "{0:.1f}".format(val)
         else:
             return val.strip()
+
+class GeocodeAdder(InformationAdder):
+    """Converts a specified set of address columns into geocode JSON columns."""
+
+    def __init__(
+        self,
+        new_column_name,
+        address_pattern,
+        geocoder,
+    ):
+        """Takes:
+        1. The name of the new column.
+        2. A method that takes a proposal and returns the address to be geocoded.
+        2. An instantiated Geocoder object.
+        """
+        self.new_column_name = new_column_name
+        self.address_pattern = address_pattern
+        self.geocoder = geocoder
+
+    def column_names(self):
+        return [self.new_column_name]
+
+    def cell(self, proposal, column_name):
+        address_pattern = self.address_pattern
+        full_address = address_pattern(proposal)
+        if (full_address == ''):
+            return ""
+
+        try:
+            geocode_result = self.geocoder.geocode(full_address)
+            if (geocode_result is None):
+                print(f"COULD NOT GEOCODE: {full_address}")
+            else:
+                print(f"GEOCODED: {full_address}")
+                return f"{geocode_result.latitude},{geocode_result.longitude}"
+        except Exception as e:
+            print(f"Error Geocoding: {full_address}")
+            print(e)
+
+        return ""

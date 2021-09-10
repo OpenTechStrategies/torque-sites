@@ -10,5 +10,5 @@ setup(
     author_email="intentionally@left.blank.com",
     url="https://github.com/OpenTechStrategies/torque-sites",
     packages=["etl"],
-    install_requires=["mwclient", "bs4", "unidecode"],
+    install_requires=["mwclient", "bs4", "unidecode", "geopy"],
 )
