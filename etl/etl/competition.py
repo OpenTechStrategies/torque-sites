@@ -65,6 +65,8 @@ class Competition:
         for column_name in remover.columns_to_remove():
             if column_name in self.columns:
                 self.columns.remove(column_name)
+            else:
+                raise Exception("Column %s is not in our column list" % column_name)
 
             for proposal in self.proposals.values():
                 proposal.remove_cell(column_name)
