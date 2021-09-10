@@ -13,64 +13,24 @@ class Competition:
 
     def __init__(
         self,
-        proposals_location,
+        proposals,
+        columns,
+        sorted_proposal_keys,
         name,
         key_column_name,
-        pare=None,
-        type_row_included=False,
     ):
-        """Initializes the competition from the source spreadsheet in
-        PROPOSALS_LOCATION (a file location).  Loads up the CSV and processes
-        it.
+        """Initializes the competition from PROPOSALS, with the sorted keys
+        in SORTED_PROPOSAL_KEYS.  COLUMNS is the columns for those proposals.
 
         NAME refers to the name of the competition, KEY_COLUMN_NAME
-        is which column in the base csv holds the identifier for the proposal.
-
-        Boolean TYPE_ROW_INCLUDED indicates whether the second row is a list of torque
-        column types.  This is useful when the incoming spreadsheet was previously
-        generated for torque.
-
-        PARE, when passed in, restricts the number of items as defined by utils.parse_pare"""
-        try:
-            proposals_reader = csv.reader(
-                open(proposals_location, encoding="utf-8"), delimiter=",", quotechar='"'
-            )
-        except UnicodeDecodeError:
-            sys.stderr.write(
-                "fix-csv expects utf-8-encoded unicode, not whatever is in this csv file.\n"
-            )
-            sys.exit(-1)
+        is which column in the base csv holds the identifier for the proposal."""
 
         self.name = name
-        # We strip out \ufeff here because sometimes the spreadsheets we get
-        # are edited by macs, and that adds this extra character, which messes
-        # up our columns!
-        self.columns = [
-            col.strip().replace("\ufeff", "") for col in next(proposals_reader)
-        ]
+        self.columns = columns
         self.key_column_name = key_column_name
-        self.proposals = {}
-        self.sorted_proposal_keys = []
+        self.proposals = proposals
+        self.sorted_proposal_keys = sorted_proposal_keys
         self.tocs = []
-
-        row_num = 0
-        key_column_idx = self.columns.index(key_column_name)
-        pare_factor, keys_to_include = utils.parse_pare(pare)
-        for row in proposals_reader:
-            row_num = row_num + 1
-            if pare_factor is not None and (row_num % pare_factor) != 0:
-                continue
-
-            if (
-                keys_to_include is not None
-                and row[key_column_idx] not in keys_to_include
-            ):
-                continue
-
-            proposal = Proposal(self.columns, row, key_column_name)
-            key = proposal.key()
-            self.sorted_proposal_keys.append(key)
-            self.proposals[key] = proposal
 
     def process_all_cells_special(self, processor):
         """For all cells in the competition, apply CellProcessor PROCESSOR
@@ -192,18 +152,122 @@ class Competition:
             raise Exception("Did not pass whitelist, see above for why")
 
 
+class CsvBasedCompetition(Competition):
+    """A Competition that's based on a master CSV, usually from outside sources."""
+    def __init__(
+        self,
+        proposals_location,
+        name,
+        key_column_name,
+        pare=None,
+    ):
+        """Initializes the competition from the source spreadsheet in
+        PROPOSALS_LOCATION (a file location).  Loads up the CSV and processes
+        it.
+
+        NAME refers to the name of the competition, KEY_COLUMN_NAME
+        is which column in the base csv holds the identifier for the proposal.
+
+        PARE, when passed in, restricts the number of items as defined by utils.parse_pare"""
+        try:
+            proposals_reader = csv.reader(
+                open(proposals_location, encoding="utf-8"), delimiter=",", quotechar='"'
+            )
+        except UnicodeDecodeError:
+            sys.stderr.write(
+                "fix-csv expects utf-8-encoded unicode, not whatever is in this csv file.\n"
+            )
+            sys.exit(-1)
+
+        # We strip out \ufeff here because sometimes the spreadsheets we get
+        # are edited by macs, and that adds this extra character, which messes
+        # up our columns!
+        columns = [
+            col.strip().replace("\ufeff", "") for col in next(proposals_reader)
+        ]
+        proposals = {}
+        sorted_proposal_keys = []
+
+        row_num = 0
+        key_column_idx = columns.index(key_column_name)
+        pare_factor, keys_to_include = utils.parse_pare(pare)
+        for row in proposals_reader:
+            row_num = row_num + 1
+            if pare_factor is not None and (row_num % pare_factor) != 0:
+                continue
+
+            if (
+                keys_to_include is not None
+                and row[key_column_idx] not in keys_to_include
+            ):
+                continue
+
+            proposal = Proposal(dict(zip(columns, row)), key_column_name)
+            key = proposal.key()
+            proposals[key] = proposal
+            sorted_proposal_keys.append(key)
+
+        super().__init__(proposals, columns, sorted_proposal_keys, name, key_column_name)
+
+
+class JsonBasedCompetition(Competition):
+    """A Competition that's based on a master JSON, usually generated from other competition etl pipelines."""
+    def __init__(
+        self,
+        proposals_location,
+        name,
+        key_column_name,
+        pare=None,
+    ):
+        """Initializes the competition from the source json file in
+        PROPOSALS_LOCATION (a file location).
+
+        NAME refers to the name of the competition, KEY_COLUMN_NAME
+        is which column in the base csv holds the identifier for the proposal.
+
+        PARE, when passed in, restricts the number of items as defined by utils.parse_pare"""
+        proposal_data = json.load(open(proposals_location, encoding="utf-8"))
+
+        if len(proposal_data) == 0:
+            raise Exception("Proposal data was empty, which means we can't get columns")
+
+        columns = list(proposal_data[0].keys())
+
+        proposals = {}
+        sorted_proposal_keys = []
+
+        row_num = 0
+        pare_factor, keys_to_include = utils.parse_pare(pare)
+        for proposal_datum in proposal_data:
+            row_num = row_num + 1
+            if pare_factor is not None and (row_num % pare_factor) != 0:
+                continue
+
+            if (
+                keys_to_include is not None
+                and proposal[key_column_name] not in keys_to_include
+            ):
+                continue
+
+            proposal = Proposal(proposal_datum, key_column_name)
+            key = proposal.key()
+            proposals[key] = proposal
+            sorted_proposal_keys.append(key)
+
+        super().__init__(proposals, columns, sorted_proposal_keys, name, key_column_name)
+
+
 class Proposal:
     """A Proposal, of which there are many in a competition.  A Proposal
     loosely represents one row in the master spreadsheet, but provides
     indexing based on names, ability to add new fields, etc"""
 
-    def __init__(self, column_names, row, key_column_name):
-        """COLUMN_NAMES are the list of columns that came from the
-        initial spreadsheet, while ROW is the value for this proposal.
+    def __init__(self, data, key_column_name):
+        """DATA is a dictionary of the proposal initial data.
         KEY_COLUMN_NAME is used to later get the key of this proposal.
 
         This sets up the proposal by processing the initial row"""
-        self.data = dict(zip(column_names, row))
+        self.data = data
         self.key_column_name = key_column_name
 
     def add_cell(self, column_name, cell):
