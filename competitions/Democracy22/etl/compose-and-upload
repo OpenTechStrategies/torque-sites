@@ -130,7 +130,7 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    comp = competition.Competition(
+    comp = competition.CsvBasedCompetition(
         proposals_csv, "Democracy22", "Application #", pare
     )
 

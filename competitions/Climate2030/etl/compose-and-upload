@@ -162,7 +162,7 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    comp = competition.Competition(proposals_csv, "Climate2030", "Application #", pare)
+    comp = competition.CsvBasedCompetition(proposals_csv, "Climate2030", "Application #", pare)
     comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
     comp.add_supplemental_information(
         competition.GlobalViewMediaWikiTitleAdder("Climate2030", "Project Title")
