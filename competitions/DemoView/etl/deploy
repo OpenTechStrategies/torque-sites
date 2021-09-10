@@ -56,14 +56,14 @@ DATA_DIR="${BASE_DATA_DIR}/${COMPETITION}"
 # Make sure we have python3
 python3 -V > /dev/null 2>&1 || { echo "python3 required, aborting" ; exit 1; }
 
-PROPOSALS_CSV="Example_Spreadsheet.csv"
+PROPOSALS_JSON="Example_Collection.json"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
 EXAMPLE_MOU="example-mou.pdf"
 EXAMPLE_FINANCIALS="example-financials.pdf"
 RUNNER="${LFC_DIR}"/compose-and-upload
 
-if [ ! -f "$TORQUE_DIR/example/$PROPOSALS_CSV" ] ; then
-  echo "ERROR: $PROPOSALS_CSV doesn't exist yet"
+if [ ! -f "$TORQUE_DIR/example/$PROPOSALS_JSON" ] ; then
+  echo "ERROR: $PROPOSALS_JSON doesn't exist yet"
   echo ""
   echo "You probably need to run ./deploy in $TORQUE_DIR/example/"
   exit 1
@@ -74,7 +74,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
 
   mkdir -p $DATA_DIR
 
-  cp $TORQUE_DIR/example/$PROPOSALS_CSV $DATA_DIR/$PROPOSALS_CSV
+  cp $TORQUE_DIR/example/$PROPOSALS_JSON $DATA_DIR/$PROPOSALS_JSON
   cp $TORQUE_DIR/example/$EXAMPLE_MOU $DATA_DIR/$EXAMPLE_MOU
   cp $TORQUE_DIR/example/$EXAMPLE_FINANCIALS $DATA_DIR/$EXAMPLE_FINANCIALS
 
@@ -85,7 +85,7 @@ fi
 #
 # Use --pare to convert only 1% of the entries, to save time while testing. 
 echo "Stage 1: Composing..."
-${RUNNER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
+${RUNNER} --proposals-json="${DATA_DIR}/${PROPOSALS_JSON}" \
           $PARE \
           $CSV_ONLY \
           --tdc-config-dir="${TDC_CONFIG_DIR}" \
