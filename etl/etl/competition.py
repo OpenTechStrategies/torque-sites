@@ -31,6 +31,7 @@ class Competition:
         self.proposals = proposals
         self.sorted_proposal_keys = sorted_proposal_keys
         self.tocs = []
+        self.whitelist_exceptions = []
 
     def process_all_cells_special(self, processor):
         """For all cells in the competition, apply CellProcessor PROCESSOR
@@ -132,6 +133,11 @@ class Competition:
         for toc in self.tocs:
             toc.process_competition(self)
 
+    def add_whitelist_exception(self, column_name):
+        """Adds COLUMN_NAME to the list of fields that aren't errored on, even
+        if it isn't in the whitelist."""
+        self.whitelist_exceptions.append(column_name)
+
     def validate_fields(self):
         """Validate that all the fields being uploaded are in the whitelist"""
         import importlib.resources as pkg_resources
@@ -146,7 +152,7 @@ class Competition:
 
         passed_whitelist = True
         for column in self.columns:
-            if column not in whitelisted_fields:
+            if column not in whitelisted_fields and column not in self.whitelist_exceptions:
                 passed_whitelist = False
                 print("Column '%s' is not in whitelisted fields file" % column)
 
