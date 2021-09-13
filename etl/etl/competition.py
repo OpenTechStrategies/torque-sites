@@ -156,6 +156,7 @@ class Competition:
 
 class CsvBasedCompetition(Competition):
     """A Competition that's based on a master CSV, usually from outside sources."""
+
     def __init__(
         self,
         proposals_location,
@@ -184,9 +185,7 @@ class CsvBasedCompetition(Competition):
         # We strip out \ufeff here because sometimes the spreadsheets we get
         # are edited by macs, and that adds this extra character, which messes
         # up our columns!
-        columns = [
-            col.strip().replace("\ufeff", "") for col in next(proposals_reader)
-        ]
+        columns = [col.strip().replace("\ufeff", "") for col in next(proposals_reader)]
         proposals = {}
         sorted_proposal_keys = []
 
@@ -209,11 +208,14 @@ class CsvBasedCompetition(Competition):
             proposals[key] = proposal
             sorted_proposal_keys.append(key)
 
-        super().__init__(proposals, columns, sorted_proposal_keys, name, key_column_name)
+        super().__init__(
+            proposals, columns, sorted_proposal_keys, name, key_column_name
+        )
 
 
 class JsonBasedCompetition(Competition):
     """A Competition that's based on a master JSON, usually generated from other competition etl pipelines."""
+
     def __init__(
         self,
         proposals_location,
@@ -256,7 +258,9 @@ class JsonBasedCompetition(Competition):
             proposals[key] = proposal
             sorted_proposal_keys.append(key)
 
-        super().__init__(proposals, columns, sorted_proposal_keys, name, key_column_name)
+        super().__init__(
+            proposals, columns, sorted_proposal_keys, name, key_column_name
+        )
 
 
 class Proposal:
