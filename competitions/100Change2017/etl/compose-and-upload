@@ -149,9 +149,11 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    comp = competition.Competition(
+    comp = competition.CsvBasedCompetition(
         proposals_csv, "LFC100Change2017", "Review_Number", pare
     )
+    comp.transform_sheet(competition.ColumnRenamer("Review_Number", "Application #"))
+    comp.rekey("Application #")
     comp.add_supplemental_information(
         competition.MediaWikiTitleAdder("Registered Organization Name")
     )
@@ -179,12 +181,198 @@ def main():
     attachments = competition.RegexSpecifiedAttachments(
         comp.sorted_proposal_keys, attachments_dir
     )
-    attachments.specify_new_column("^\\d*_mou", "MOU Attachment")
-    attachments.specify_new_column("^\\d*_team", "Team Attachment")
-    attachments.specify_new_column("financial", "Financials Attachment")
+    attachments.specify_new_subcolumn("^\\d*_mou", "MOU Attachment")
+    attachments.specify_new_subcolumn("^\\d*_team", "Team Attachment")
+    attachments.specify_new_subcolumn("financial", "Financials Attachment")
     comp.add_supplemental_information(attachments)
 
-    comp.sort("Registered Organization Name")
+    comp.transform_sheet(
+        competition.LocationCombiner(
+            column_name="Organization",
+            city="City",
+            state="State / Province / Region",
+            country="Country",
+            zip_postal="Postal / Zip Code",
+        )
+    )
+
+    comp.transform_sheet(
+        competition.PersonCombiner(
+            column_name="Primary Contact",
+            phone="Phone Number",
+        )
+    )
+
+    comp.transform_sheet(
+        competition.PersonCombiner(
+            column_name="Participant",
+            email="Participant_Email",
+        )
+    )
+
+    comp.transform_sheet(
+        competition.LocationCombiner(
+            column_name="Future Work #1",
+            country="Country/State 1",
+        )
+    )
+    comp.transform_sheet(
+        competition.LocationCombiner(
+            column_name="Future Work #2",
+            country="Country/State 2",
+        )
+    )
+    comp.transform_sheet(
+        competition.LocationCombiner(
+            column_name="Future Work #3",
+            country="Country/State 3",
+        )
+    )
+    comp.transform_sheet(
+        competition.LocationCombiner(
+            column_name="Future Work #4",
+            country="Other Work Location",
+        )
+    )
+
+    comp.transform_sheet(
+        competition.ColumnRenamer("Registered Organization Name", "Organization Name")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Legal Status", "Organization Legal Status")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Area of Org Expertise", "Area of Org Expertise")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Primary Thematic Area", "Primary Subject Area Category"
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Hear about 100 and Change Selection", "Source")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Team Purpose", "Case for Partnership")
+    )
+    comp.transform_sheet(competition.ColumnRenamer("Legal Entity Name", "Legal Name"))
+    comp.transform_sheet(
+        competition.ColumnRenamer("Team Structure", "Team Collaboration")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Problem Statement", "Challenge Statement")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Proposed Solution", "Solution Overview")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Timeline and Key Milestones", "Timeline and Milestones"
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Risk Assessment", "Barrier Assessment and Risk Mitigation"
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Plan Monitoring/Evaluation/Learning", "Measurement of Results"
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Resource Requirements and Sustainability", "Total Resource Requirements"
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Human Subjects Research", "Human Subject Research")
+    )
+    comp.transform_sheet(competition.ColumnRenamer("Team Story", "Why Your Team"))
+    comp.transform_sheet(
+        competition.ColumnRenamer("Ranking", "Panel Overall Score Rank Normalized")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Total_Score", "Panel Sum of Scores Normalized")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Trait1_Score", "Panel IMPACTFUL Score Normalized")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Trait2_Score", "Panel EVIDENCE-BASED Score Normalized"
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Trait3_Score", "Panel FEASIBLE Score Normalized")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Trait4_Score", "Panel IMPACTFUL Score Normalized")
+    )
+    comp.transform_sheet(competition.ColumnRenamer("Pitch Video Link", "Video"))
+
+    comp.add_whitelist_exception("Principal Organization Registration Location")
+    comp.add_whitelist_exception("Principal Organization Jurisdiction")
+    comp.add_whitelist_exception("Principal Organization Jurisdiction - Other")
+    comp.add_whitelist_exception("Principal Organization City")
+    comp.add_whitelist_exception("Principal Organization State / Province")
+    comp.add_whitelist_exception("Principal Organization Postal Code")
+    comp.add_whitelist_exception("Principal Organization Country")
+    comp.add_whitelist_exception("Principal Organization Point of Contact Name")
+    comp.add_whitelist_exception("Principal Organization Point of Contact Title")
+    comp.add_whitelist_exception("Principal Organization Point of Contact Phone")
+    comp.add_whitelist_exception("Principal Organization Point of Contact Email")
+    comp.add_whitelist_exception("Registration Location")
+    comp.add_whitelist_exception("Legal Status - Other")
+    comp.add_whitelist_exception("Registration Location - Other")
+    comp.add_whitelist_exception("Principal Organization Legal Status")
+    comp.add_whitelist_exception("Principal Organization Legal Status - Other")
+    comp.add_whitelist_exception("Principal Organization Legal Status - Other - Notes")
+    comp.add_whitelist_exception("Hear about 100 and Change Notes")
+    comp.add_whitelist_exception(
+        "Principal Organization Primary Area of Expertise - Dropdown"
+    )
+    comp.add_whitelist_exception(
+        "Principal Organization Primary Area of Expertise - Notes"
+    )
+    comp.add_whitelist_exception(
+        "Principal Organization Primary Thematic Area of Proposed Solution - Dropdown"
+    )
+    comp.add_whitelist_exception(
+        "Principal Organization Primary Thematic Area of Proposed Solution - Notes"
+    )
+    comp.add_whitelist_exception("Oceans/Space/Global")
+    comp.add_whitelist_exception("Tactics and Technology")
+    comp.add_whitelist_exception("Previous Performance")
+    comp.add_whitelist_exception("Organizational Capacity")
+    comp.add_whitelist_exception("Competition Name2")
+    comp.add_whitelist_exception("Trait4_Comment1")
+    comp.add_whitelist_exception("Trait4_Comment2")
+    comp.add_whitelist_exception("Trait4_Comment3")
+    comp.add_whitelist_exception("Trait4_Comment4")
+    comp.add_whitelist_exception("Trait4_Comment5")
+    comp.add_whitelist_exception("Trait2_Comment1")
+    comp.add_whitelist_exception("Trait2_Comment2")
+    comp.add_whitelist_exception("Trait2_Comment3")
+    comp.add_whitelist_exception("Trait2_Comment4")
+    comp.add_whitelist_exception("Trait2_Comment5")
+    comp.add_whitelist_exception("Trait3_Comment1")
+    comp.add_whitelist_exception("Trait3_Comment2")
+    comp.add_whitelist_exception("Trait3_Comment3")
+    comp.add_whitelist_exception("Trait3_Comment4")
+    comp.add_whitelist_exception("Trait3_Comment5")
+    comp.add_whitelist_exception("Trait1_Comment1")
+    comp.add_whitelist_exception("Trait1_Comment2")
+    comp.add_whitelist_exception("Trait1_Comment3")
+    comp.add_whitelist_exception("Trait1_Comment4")
+    comp.add_whitelist_exception("Trait1_Comment5")
+    comp.add_whitelist_exception("Valid_Submission")
+    comp.add_whitelist_exception("Big_Bet_Enduring_Commitment_Alignment")
+    comp.add_whitelist_exception("Reason_For_Turndown")
+    comp.add_whitelist_exception("Comments")
+    comp.add_whitelist_exception("Why Collaboration is Effective")
+
+    comp.sort("Organization Name")
 
     comp.add_toc(toc.GenericToc("Topic_TOC", "Primary Thematic Area"))
 
