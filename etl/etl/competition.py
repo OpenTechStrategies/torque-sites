@@ -1021,15 +1021,6 @@ class RegexSpecifiedAttachments(BasicAttachments):
 
     def __init__(self, keys, attachments_dir):
         super().__init__(keys, attachments_dir)
-        self.nonlist_columns = []
-        self.list_columns = []
-
-    def column_names(self):
-        return (
-            BasicAttachments.defined_column_names
-            + self.nonlist_columns
-            + self.list_columns
-        )
 
     def specify_by_regex(self, regex, name, rank=None):
         """Matches the REGEX against the filename, and then updates the display
@@ -1039,21 +1030,16 @@ class RegexSpecifiedAttachments(BasicAttachments):
                 attachment.name = name
                 attachment.rank = rank
 
-    def specify_new_column(self, regex, column_name, rank=None, is_list=False):
+    def specify_new_subcolumn(self, regex, column_name, rank=None):
         """Matches the REGEX against the filename, and then updates the display
         name to COLUMN_NAME, and the rank to RANK (default of None, or last) if it matches.
 
-        Also adds COLUMN_NAME as a a column to the spreadsheet and links the
-        attachments specified to that column"""
+        Also updates the subcolumn of the attachment to COLUMN_NAME"""
 
-        if is_list:
-            self.list_columns.append(column_name)
-        else:
-            self.nonlist_columns.append(column_name)
         for attachment in self.attachments:
             if re.search(regex, attachment.file, flags=re.I):
                 attachment.rank = rank
-                attachment.column_name = column_name
+                attachment.subcolumn_name = column_name
 
 
 class AdminReview(InformationAdder, ProposalFilter):
