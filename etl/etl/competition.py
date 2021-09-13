@@ -159,6 +159,13 @@ class Competition:
         if not passed_whitelist:
             raise Exception("Did not pass whitelist, see above for why")
 
+    def rekey(self, new_column_name):
+        """Sometimes the key column is one of the ones that has changed or been combined, in which
+        case, after that update, we need to rekey the whole competition to the new name"""
+        self.key_column_name = new_column_name
+        for proposal in self.proposals.values():
+            proposal.key_column_name = new_column_name
+
 
 class CsvBasedCompetition(Competition):
     """A Competition that's based on a master CSV, usually from outside sources."""
