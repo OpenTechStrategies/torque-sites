@@ -93,18 +93,18 @@ class LFCAnalysisAdder(competition.InformationAdder):
     cells are there to be edited upon later"""
 
     def column_names(self):
-        return [
-            "LFC Analysis: Short Description",
-            "LFC Analysis: Overview",
-            "LFC Analysis: Diversity, Equity and Inclusion",
-            "LFC Analysis: Funder Relationship History",
-            "LFC Analysis: Strength of Approach",
-            "LFC Analysis: Observations",
-            "LFC Analysis: Internet Scan",
-        ]
+        return ["LFC Analysis"]
 
     def cell(self, proposal, column_name):
-        return ""
+        return {
+            "Short Description": "",
+            "Overview": "",
+            "Diversity, Equity and Inclusion": "",
+            "Funder Relationship History": "",
+            "Strength of Approach": "",
+            "Observations": "",
+            "Internet Scan": "",
+        }
 
 
 class FundersCorrectionProcessor(competition.CellProcessor):
@@ -197,7 +197,7 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    comp = competition.Competition(
+    comp = competition.CsvBasedCompetition(
         proposals_csv, "RacialEquity2030", "Application #", pare
     )
 
@@ -225,7 +225,7 @@ def main():
 
     comp.add_supplemental_information(
         competition.EvaluationAdder(
-            "Peer to Peer",
+            "Peer",
             peer_to_peer_review_csv,
             app_col_name="Application #",
             score_rank_normalized_col_name="Overall Score Rank Normalized ",
@@ -302,6 +302,233 @@ def main():
         comp.sorted_proposal_keys, attachments_dir
     )
     comp.add_supplemental_information(attachments)
+
+    comp.transform_sheet(
+        competition.LocationCombiner(
+            column_name="Organization",
+            address_1="Street Address",
+            address_2="Address Line 2",
+            city="City",
+            state="Applicant State / Province",
+            locality="Applicant Locality / District / County",
+            country="Applicant  Country",
+            zip_postal="Zip / Postal Code",
+        )
+    )
+
+    comp.transform_sheet(
+        competition.PersonCombiner(
+            column_name="Participant",
+            first_name="Participant First Name",
+            last_name="Participant Last Name",
+            email="Participant Email",
+        )
+    )
+    comp.transform_sheet(
+        competition.PersonCombiner(
+            column_name="Primary Contact",
+            first_name="Primary Contact First Name",
+            last_name="Primary Contact Last Name",
+            title="Primary Contact Title",
+            phone="Primary Contact Phone",
+            email="Primary Contact Email",
+        )
+    )
+    comp.transform_sheet(
+        competition.PersonCombiner(
+            column_name="Secondary Contact",
+            first_name="Secondary Contact First Name",
+            last_name="Secondary Contact Last Name",
+            title="Secondary Contact Title",
+            phone="Secondary Contact Phone",
+            email="Secondary Contact Email",
+        )
+    )
+    for num in ["1", "2", "3"]:
+        comp.transform_sheet(
+            competition.PersonCombiner(
+                column_name="Key Staff #%s" % num,
+                first_name="Key Staff #%s: First Name" % num,
+                last_name="Key Staff #%s: Last Name" % num,
+            )
+        )
+
+        comp.transform_sheet(
+            competition.ColumnRenamer(
+                "Key Staff #%s: Affiliation" % num,
+                "Key Staff #%s Affiliation" % num,
+            )
+        )
+        comp.transform_sheet(
+            competition.ColumnRenamer(
+                "Key Staff #%s: Biography" % num,
+                "Key Staff #%s Biography" % num,
+            )
+        )
+
+    for num in ["1", "2", "3"]:
+        comp.transform_sheet(
+            competition.ColumnRenamer("FUNDER %s Name" % num, "Funder #%s" % num)
+        )
+
+        comp.transform_sheet(
+            competition.ColumnRenamer(
+                "FUNDER %s First year of funding" % num,
+                "Funder #%s: First Year of Funding" % num,
+            )
+        )
+        comp.transform_sheet(
+            competition.ColumnRenamer(
+                "FUNDER %s Last year of funding" % num,
+                "Funder #%s: Last Year of Funding" % num,
+            )
+        )
+        comp.transform_sheet(
+            competition.ColumnRenamer(
+                "FUNDER %s Amount of funding" % num,
+                "Funder #%s: Amount of Funding" % num,
+            )
+        )
+
+    comp.transform_sheet(
+        competition.ColumnCombiner(
+            "Demographics",
+            {
+                "Demographics - African - Board Members": "African - Board Members",
+                "Demographics - African - Senior Management": "African - Senior Management",
+                "Demographics - African - Other Staff": "African - Other Staff",
+                "Demographics - Asian - Board Members": "Asian - Board Members",
+                "Demographics - Asian - Senior Management": "Asian - Senior Management",
+                "Demographics - Asian - Other Staff": "Asian - Other Staff",
+                "Demographics - Caucasian - Board Members": "Caucasian - Board Members",
+                "Demographics - Caucasian - Senior Management": "Caucasian - Senior Management",
+                "Demographics - Caucasian - Other Staff": "Caucasian - Other Staff",
+                "Demographics - Hispanic or Latina/o/x - Board Members": "Hispanic or Latina/o/x - Board Members",
+                "Demographics - Hispanic or Latina/o/x - Senior Management": "Hispanic or Latina/o/x - Senior Management",
+                "Demographics - Hispanic or Latina/o/x - Other Staff": "Hispanic or Latina/o/x - Other Staff",
+                "Demographics - Middle Eastern or North African - Board Members": "Middle Eastern or North African - Board Members",
+                "Demographics - Middle Eastern or North African - Senior Management": "Middle Eastern or North African - Senior Management",
+                "Demographics - Middle Eastern or North African - Other Staff": "Middle Eastern or North African - Other Staff",
+                "Demographics - Native Hawaiian or Pacific Islander - Board Members": "Native Hawaiian or Pacific Islander - Board Members",
+                "Demographics - Native Hawaiian or Pacific Islander - Senior Management": "Native Hawaiian or Pacific Islander - Senior Management",
+                "Demographics - Native Hawaiian or Pacific Islander - Other Staff": "Native Hawaiian or Pacific Islander - Other Staff",
+                "Demographics - Other - Board Members": "Other - Board Members",
+                "Demographics - Other - Senior Management": "Other - Senior Management",
+                "Demographics - Other - Other Staff": "Other - Other Staff",
+            },
+        )
+    )
+
+    # This exists because one of them was not like the others, and it makes the loop below prettier
+    for num in ["1", "2", "3", "4", "5"]:
+        comp.transform_sheet(
+            competition.ColumnRenamer(
+                "Location of Current Solution #%s Locality / District / County" % num,
+                "Location of Current Work #%s Locality / District / County" % num,
+            )
+        )
+
+    for work_type in ["Current", "Future"]:
+        for num in ["1", "2", "3", "4", "5"]:
+            comp.transform_sheet(
+                competition.LocationCombiner(
+                    column_name="%s Work #%s" % (work_type, num),
+                    state="Location of %s Work #%s State / Provence" % (work_type, num),
+                    country="Location of %s Work #%s Country" % (work_type, num),
+                    locality="Location of %s Work #%s Locality / District / County"
+                    % (work_type, num),
+                )
+            )
+            comp.remove_information(
+                competition.ColumnRemover(
+                    "Location of %s Work #%s Country ID" % (work_type, num)
+                )
+            )
+            comp.remove_information(
+                competition.ColumnRemover(
+                    "Location of %s Work #%s State / Provence ID" % (work_type, num)
+                )
+            )
+            comp.remove_information(
+                competition.ColumnRemover(
+                    "Location of %s Work #%s Locality / District / County ID"
+                    % (work_type, num)
+                )
+            )
+
+    comp.transform_sheet(competition.ColumnRenamer("Application GUID", "GUID"))
+    comp.transform_sheet(
+        competition.ColumnRenamer("Competition domain", "Competition Domain")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Exclusive Summary", "Executive Summary")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Applicant Organization Identification Number",
+            "Applicant Tax Identification Number",
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Organization name", "Organization Name")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Applicant Website or Social Media Page", "Organization Website"
+        )
+    )
+    comp.transform_sheet(competition.ColumnRenamer("Video Presentation", "Video"))
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Project Website or Social Media Page", "Project Website"
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Your Intended Path to Impact", "Project Focus")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Racial Equity and Racial Healing", "Diversity-Equity-Inclusion"
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Defining Success", "Evidence of Effectiveness")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("External References", "Bibliography")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Peer GAME CHANGING Score Normalized", "Peer IMPACTFUL Score Normalized"
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Peer GAME CHANGING Judge Data", "Peer IMPACTFUL Judge Data"
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Panel GAME CHANGING Score Normalized", "Panel IMPACTFUL Score Normalized"
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Panel GAME CHANGING Judge Data", "Panel IMPACTFUL Judge Data"
+        )
+    )
+    comp.remove_information(
+        competition.ColumnRemover("Application GUID + competition domain")
+    )
+    comp.remove_information(competition.ColumnRemover("Applicant Country ID"))
+    comp.remove_information(competition.ColumnRemover("Applicant State / Province ID"))
+    comp.remove_information(
+        competition.ColumnRemover("Applicant Locality / District / County ID")
+    )
+    comp.remove_information(competition.ColumnRemover("Priority Populations IDs"))
+    comp.remove_information(competition.ColumnRemover("Primary Subject Area ID"))
+    comp.remove_information(competition.ColumnRemover("Primary Area of Expertise ID"))
+
     comp.sort("Panel Overall Score Rank Normalized", True)
 
     list_toc = toc.ListToc("All_Proposals")
@@ -347,26 +574,15 @@ def main():
         toc.GeographicToc(
             "Current_Work_Locations",
             [
-                [
-                    "Location of Current Work #1 Country",
-                    "Location of Current Work #1 State / Provence",
-                ],
-                [
-                    "Location of Current Work #2 Country",
-                    "Location of Current Work #2 State / Provence",
-                ],
-                [
-                    "Location of Current Work #3 Country",
-                    "Location of Current Work #3 State / Provence",
-                ],
-                [
-                    "Location of Current Work #4 Country",
-                    "Location of Current Work #4 State / Provence",
-                ],
-                [
-                    "Location of Current Work #5 Country",
-                    "Location of Current Work #5 State / Provence",
-                ],
+                "Current Work #1 Location",
+                "Current Work #2 Location",
+                "Current Work #3 Location",
+                "Current Work #4 Location",
+                "Current Work #5 Location",
+            ],
+            [
+                competition.LocationCombiner.COUNTRY,
+                competition.LocationCombiner.STATE,
             ],
         )
     )
@@ -375,26 +591,15 @@ def main():
         toc.GeographicToc(
             "Future_Work_Locations",
             [
-                [
-                    "Location of Future Work #1 Country",
-                    "Location of Future Work #1 State / Provence",
-                ],
-                [
-                    "Location of Future Work #2 Country",
-                    "Location of Future Work #2 State / Provence",
-                ],
-                [
-                    "Location of Future Work #3 Country",
-                    "Location of Future Work #3 State / Provence",
-                ],
-                [
-                    "Location of Future Work #4 Country",
-                    "Location of Future Work #4 State / Provence",
-                ],
-                [
-                    "Location of Future Work #5 Country",
-                    "Location of Future Work #5 State / Provence",
-                ],
+                "Future Work #1 Location",
+                "Future Work #2 Location",
+                "Future Work #3 Location",
+                "Future Work #4 Location",
+                "Future Work #5 Location",
+            ],
+            [
+                competition.LocationCombiner.COUNTRY,
+                competition.LocationCombiner.STATE,
             ],
         )
     )
