@@ -496,14 +496,14 @@ class SustainableDevelopmentGoalProcessor(CellProcessor):
     def process_cell(self, proposal, column_name):
         cell = proposal.cell(column_name)
 
-        new_cell = ""
-        for value in cell.split("\n"):
+        new_cell = []
+        for value in cell:
             if value not in self.reverse_mapping.keys():
                 raise Exception("'%s' is not a configured sdg value" % value)
 
-            new_cell += self.official_sdgs[self.reverse_mapping[value]] + "\n"
+            new_cell.append(self.official_sdgs[self.reverse_mapping[value]])
 
-        return new_cell.strip()
+        return new_cell
 
 
 class BudgetTableProcessor(CellProcessor):
