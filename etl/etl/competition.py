@@ -1485,3 +1485,27 @@ class PersonCombiner(ColumnCombiner):
         if email:
             new_columns[email] = PersonCombiner.EMAIL
         super().__init__(column_name, new_columns)
+
+
+class NameSplitter(InformationTransformer):
+    """Takes a column representing a name, and splits on the first space
+    into first and last name columns."""
+
+    def __init__(self, column_name, first_name, last_name):
+        self.column_name = column_name
+        self.first_name = first_name
+        self.last_name = last_name
+
+    def columns_to_remove(self):
+        return [self.column_name]
+
+    def column_names(self):
+        return [self.first_name, self.last_name]
+
+    def cell(self, proposal, column_name):
+        if proposal.cell(self.column_name):
+            split_name = proposal.cell(self.column_name).split(" ", 1)
+            if column_name == self.first_name:
+                return split_name[0]
+            elif len(split_name) > 1:
+                return split_name[1]
