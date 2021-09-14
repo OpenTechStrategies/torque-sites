@@ -156,7 +156,7 @@ def create_tdc_config(tdc_config_dir, comp):
             [
                 tdc.proposal_to_title_line(p)
                 for p in comp.ordered_proposals()
-                if int(p.cell("Wise Head Overall Score Rank Normalized")) < 101
+                if int(p.cell("Panel Overall Score Rank Normalized")) < 101
             ]
         )
 
@@ -166,7 +166,7 @@ def create_tdc_config(tdc_config_dir, comp):
                 tdc.proposal_to_title_line(p)
                 for p in comp.ordered_proposals()
                 if (
-                    int(p.cell("Wise Head Overall Score Rank Normalized")) < 101
+                    int(p.cell("Panel Overall Score Rank Normalized")) < 101
                     or p.cell("Wild Card") == "Wild Card"
                 )
             ]
@@ -178,7 +178,7 @@ def create_tdc_config(tdc_config_dir, comp):
                 tdc.proposal_to_title_line(p)
                 for p in comp.ordered_proposals()
                 if (
-                    int(p.cell("Wise Head Overall Score Rank Normalized")) < 101
+                    int(p.cell("Panel Overall Score Rank Normalized")) < 101
                     or p.cell("Wild Card") == "Wild Card"
                     and p.cell("TR Disqualified") != "TR Disqualified"
                 )
@@ -191,7 +191,7 @@ def create_tdc_config(tdc_config_dir, comp):
             [
                 tdc.proposal_to_title_line(p)
                 for p in comp.ordered_proposals()
-                if int(p.cell("Wise Head Overall Score Rank Normalized")) < 202
+                if int(p.cell("Panel Overall Score Rank Normalized")) < 202
             ]
         )
 
@@ -200,84 +200,9 @@ def create_tdc_config(tdc_config_dir, comp):
             [
                 tdc.proposal_to_title_line(p)
                 for p in comp.ordered_proposals()
-                if int(p.cell("Wise Head Overall Score Rank Normalized")) != 9999
+                if int(p.cell("Panel Overall Score Rank Normalized")) != 9999
             ]
         )
-
-    # These are hardcoded here, because where else?  We want this output
-    # to go with the other tdc_config outputs, so here is the best place
-    # to get into the project and update later.
-    with open(os.path.join(tdc_config_dir, "ApiColumns"), "w") as f:
-        f.writelines(
-            [
-                "* Organization Legal Name\n",
-                "* City\n",
-                "* State\n",
-                "* Country\n",
-                "* Principal Organization Website or Social Media\n",
-                "* Identification Number of Principal Organization\n",
-                "* Identification Number of Principal Organization ein\n",
-                "* Primary Contact First Name\n",
-                "* Primary Contact Last Name\n",
-                "* Primary Contact Title\n",
-                "* Primary Contact Email\n",
-                "* Review Number\n",
-                "* Project Title\n",
-                "* Project Description\n",
-                "* Executive Summary\n",
-                "* Problem Statement\n",
-                "* Solution Overview\n",
-                "* Youtube Video\n",
-                "* Location Of Future Work Country\n",
-                "* Location Of Future Work2 Country\n",
-                "* Location Of Future Work3 Country\n",
-                "* Location Of Future Work4 Country\n",
-                "* Location Of Future Work5 Country\n",
-                "* Location Of Current Solution Country\n",
-                "* Location Of Current Solution2 Country\n",
-                "* Location Of Current Solution3 Country\n",
-                "* Location Of Current Solution4 Country\n",
-                "* Location Of Current Solution5 Country\n",
-                "* Project Website or Social Media Page\n",
-                "* Application Level\n",
-                "* Competition Domain\n",
-            ]
-        )
-
-    review_columns = [
-        "Judge Overall Score Rank Normalized",
-        "Judge Sum of Scores Normalized",
-        "Judge IMPACTFUL",
-        "Judge IMPACTFUL Score Normalized",
-        "Judge IMPACTFUL Comments",
-        "Judge EVIDENCE-BASED",
-        "Judge EVIDENCE-BASED Score Normalized",
-        "Judge EVIDENCE-BASED Comments",
-        "Judge FEASIBLE",
-        "Judge FEASIBLE Score Normalized",
-        "Judge FEASIBLE Comments",
-        "Judge DURABLE",
-        "Judge DURABLE Score Normalized",
-        "Judge DURABLE Comments",
-        "Wise Head Sum of Scores Normalized",
-        "Wise Head IMPACTFUL",
-        "Wise Head IMPACTFUL Score Normalized",
-        "Wise Head IMPACTFUL Comments",
-        "Wise Head EVIDENCE-BASED",
-        "Wise Head EVIDENCE-BASED Score Normalized",
-        "Wise Head EVIDENCE-BASED Comments",
-        "Wise Head FEASIBLE",
-        "Wise Head FEASIBLE Score Normalized",
-        "Wise Head FEASIBLE Comments",
-        "Wise Head DURABLE",
-        "Wise Head DURABLE Score Normalized",
-        "Wise Head DURABLE Comments",
-    ]
-
-    with open(os.path.join(tdc_config_dir, "NonReviewColumns"), "w") as f:
-        for column in comp.columns:
-            if column not in review_columns:
-                f.writelines("* %s\n" % column)
 
 
 class ApplicationLevelAdder(competition.InformationAdder):
@@ -288,7 +213,7 @@ class ApplicationLevelAdder(competition.InformationAdder):
 
     def cell(self, proposal, column_name):
         if (
-            int(proposal.cell("Wise Head Overall Score Rank Normalized")) < 101
+            int(proposal.cell("Panel Overall Score Rank Normalized")) < 101
             or proposal.cell("Wild Card") == "Wild Card"
         ) and proposal.cell("TR Disqualified") != "TR Disqualified":
             return "Highly Ranked"
@@ -316,7 +241,7 @@ class WildcardEligibleAdder(competition.InformationAdder):
         return ["Wild Card Eligible"]
 
     def cell(self, proposal, column_name):
-        rank = int(proposal.cell("Wise Head Overall Score Rank Normalized"))
+        rank = int(proposal.cell("Panel Overall Score Rank Normalized"))
         return "Wild Card Eligible" if rank > 100 and rank <= 201 else ""
 
 
@@ -333,23 +258,16 @@ class TRDisqualifiedAdder(competition.InformationAdder):
         return self.ots_metadata.get(proposal.key(), {}).get("TR Disqualified", "")
 
 
-class AppendixDisplayNamesAdder(competition.InformationAdder):
+class AppendixDisplayNames:
     """Adds a list matching the Prospectus Appendix Attachments for the names"""
 
-    def column_names(self):
-        return ["Names of Prospectus Appendix Attachments"]
-
-    def clean(self, attachment):
-        retn = re.sub(".pdf", "", attachment)
-        retn = re.sub("^[^_]*_", "", retn)
-        retn = re.sub("_", " ", retn)
-        return retn
-
-    def cell(self, proposal, column_name):
-        return [
-            self.clean(at)
-            for at in proposal.cell("Prospectus Appendix Attachments").split("\n")
-        ]
+    def clean(self, attachments):
+        for attachment in attachments:
+            name = attachment.name
+            name = re.sub(".pdf", "", name)
+            name = re.sub("^[^_]*_", "", name)
+            name = re.sub("_", " ", name)
+            attachment.name = name
 
 
 def main():
@@ -421,9 +339,11 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    comp = competition.Competition(
+    comp = competition.CsvBasedCompetition(
         proposals_csv, "LFC100Change2020", "Review Number", pare
     )
+    comp.transform_sheet(competition.ColumnRenamer("Review Number", "Application #"))
+    comp.rekey("Application #")
     comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
     comp.add_supplemental_information(
         competition.GlobalViewMediaWikiTitleAdder("100Change2020", "Project Title")
@@ -441,7 +361,7 @@ def main():
     if judge_evaluation_csv is not None:
         comp.add_supplemental_information(
             competition.EvaluationAdder(
-                "Judge",
+                "Peer",
                 judge_evaluation_csv,
                 app_col_name="Application #",
                 score_rank_normalized_col_name="OverallScoreRankNormalized",
@@ -456,7 +376,7 @@ def main():
     if wisehead_evaluation_csv is not None:
         comp.add_supplemental_information(
             competition.EvaluationAdder(
-                "Wise Head",
+                "Panel",
                 wisehead_evaluation_csv,
                 app_col_name="Application #",
                 score_rank_normalized_col_name="OverallScoreRankNormalized",
@@ -475,11 +395,11 @@ def main():
             [
                 {
                     "source_name": "Overall Rank",
-                    "target_name": "Wise Head Overall Score Rank Normalized",
+                    "target_name": "Panel Overall Score Rank Normalized",
                 },
                 {
                     "source_name": "Score Total",
-                    "target_name": "Wise Head Sum of Scores Normalized",
+                    "target_name": "Panel Sum of Scores Normalized",
                 },
             ],
         )
@@ -498,34 +418,33 @@ def main():
     comp.process_cells_special("Priority Populations", competition.MultiLineProcessor())
 
     sdg_list = [
-            "No Poverty",
-            "Zero Hunger",
-            "Good Health and Well-being",
-            "Quality Education",
-            "Gender Equality",
-            "Clean Water and Sanitation",
-            "Affordable and Clean Energy",
-            "Decent Work and Economic Growth",
-            "Industry, Innovation and Infrastructure",
-            "Reduced Inequality",
-            "Sustainable Cities and Communities",
-            "Responsible Consumption and Production",
-            "Climate Action",
-            "Life Below Water",
-            "Life on Land",
-            "Peace and Justice Strong Institutions",
-            "Partnerships to achieve the Goal",
-        ]
+        "No Poverty",
+        "Zero Hunger",
+        "Good Health and Well-being",
+        "Quality Education",
+        "Gender Equality",
+        "Clean Water and Sanitation",
+        "Affordable and Clean Energy",
+        "Decent Work and Economic Growth",
+        "Industry, Innovation and Infrastructure",
+        "Reduced Inequality",
+        "Sustainable Cities and Communities",
+        "Responsible Consumption and Production",
+        "Climate Action",
+        "Life Below Water",
+        "Life on Land",
+        "Peace and Justice Strong Institutions",
+        "Partnerships to achieve the Goal",
+    ]
 
     comp.process_cells_special(
         "Sustainable Development Goals",
-        competition.MultiLineFromListProcessor(sdg_list)
+        competition.MultiLineFromListProcessor(sdg_list),
     )
     comp.process_cells_special(
         "Sustainable Development Goals",
-        competition.SustainableDevelopmentGoalProcessor(sdg_list)
+        competition.SustainableDevelopmentGoalProcessor(sdg_list),
     )
-
 
     for correction_file in correction_files:
         correction_processor = competition.CorrectionData(
@@ -538,54 +457,278 @@ def main():
         comp.sorted_proposal_keys, attachments_dir
     )
 
-    attachments.specify_new_column("Financial Attachment", "Financials Attachment")
-    attachments.specify_new_column("Tech Review Attachment", "Tech Review Attachment")
-    attachments.specify_new_column(
+    attachments.specify_new_subcolumn("Financial Attachment", "Financials Attachment")
+    attachments.specify_new_subcolumn(
+        "Tech Review Attachment", "Tech Review Attachment"
+    )
+    attachments.specify_new_subcolumn(
         ".*Tech Review Redacted.*", "Tech Review Redacted Attachment"
     )
-    attachments.specify_new_column("MOU Attachment", "MOU Attachment")
-    attachments.specify_new_column("Application Attachment", "Application Attachment")
-    attachments.specify_new_column("COVID_.*", "COVID Response Attachment")
-    attachments.specify_new_column(".*_Prospectus.pdf", "Prospectus Attachment")
-    attachments.specify_new_column(".*_Overview.pdf", "Overview Attachment")
-    attachments.specify_new_column(
-        ".*_Appendix.*.pdf", "Prospectus Appendix Attachments", None, True
+    attachments.specify_new_subcolumn("MOU Attachment", "MOU Attachment")
+    attachments.specify_new_subcolumn(
+        "Application Attachment", "Application Attachment"
     )
-    attachments.specify_new_column("Two Page Fact Sheet", "Fact Sheet Attachment")
-    competition.BasicAttachments.defined_column_names = [
-        "Other Attachment Display Names",
-        "Other Attachments",
-    ]
+    attachments.specify_new_subcolumn("COVID_.*", "COVID Response Attachment")
+    attachments.specify_new_subcolumn(".*_Prospectus.pdf", "Prospectus Attachment")
+    attachments.specify_new_subcolumn(".*_Overview.pdf", "Overview Attachment")
+    attachments.specify_new_subcolumn(
+        ".*_Appendix.*.pdf", "Prospectus Appendix Attachments"
+    )
+    attachments.specify_new_subcolumn("Two Page Fact Sheet", "Fact Sheet Attachment")
     for attachment in attachments.attachments:
         if (
             ots_metadata.get(attachment.key, {}).get("Financial Attachment", "")
             == attachment.file
         ):
-            attachment.column_name = "Financials Attachment"
+            attachment.subcolumn_name = "Financials Attachment"
         elif (
             ots_metadata.get(attachment.key, {}).get("MOU Attachment", "")
             == attachment.file
         ):
-            attachment.column_name = "MOU Attachment"
+            attachment.subcolumn_name = "MOU Attachment"
         elif (
             ots_metadata.get(attachment.key, {}).get("Tech Review Attachment", "")
             == attachment.file
         ):
-            attachment.column_name = "Tech Review Attachment"
+            attachment.subcolumn_name = "Tech Review Attachment"
         elif (
             ots_metadata.get(attachment.key, {}).get("Two Page Fact Sheet", "")
             == attachment.file
         ):
-            attachment.column_name = "Fact Sheet Attachment"
+            attachment.subcolumn_name = "Fact Sheet Attachment"
         elif (
             ots_metadata.get(attachment.key, {}).get("Application Attachment", "")
             == attachment.file
         ):
-            attachment.column_name = "Application Attachment"
+            attachment.subcolumn_name = "Application Attachment"
     comp.add_supplemental_information(attachments)
-    comp.add_supplemental_information(AppendixDisplayNamesAdder())
+    AppendixDisplayNames().clean(attachments.attachments)
 
-    comp.sort("Wise Head Overall Score Rank Normalized", True)
+    comp.transform_sheet(
+        competition.LocationCombiner(
+            column_name="Organization",
+            address_1="Street Address",
+            city="City",
+            state="State",
+            locality="Locality",
+            country="Country",
+            zip_postal="Zip Postal Code",
+        )
+    )
+
+    comp.transform_sheet(
+        competition.PersonCombiner(
+            column_name="Participant",
+            first_name="First Name",
+            last_name="Last Name",
+            email="Email",
+        )
+    )
+    comp.transform_sheet(
+        competition.PersonCombiner(
+            column_name="Primary Contact",
+            first_name="Primary Contact First Name",
+            last_name="Primary Contact Last Name",
+            title="Primary Contact Title",
+            phone="Primary Contact Phone",
+            email="Primary Contact Email",
+        )
+    )
+    comp.transform_sheet(
+        competition.PersonCombiner(
+            column_name="Secondary Contact",
+            first_name="Secondary Contact First Name",
+            last_name="Secondary Contact Last Name",
+            title="Secondary Contact Title",
+            phone="Secondary Contact Phone",
+            email="Secondary Contact Email",
+        )
+    )
+    for num in ["1", "2", "3"]:
+        comp.transform_sheet(
+            competition.PersonCombiner(
+                column_name="Key Staff #%s" % num,
+                first_name="Key Staff #%s: Firstname" % num,
+                last_name="Key Staff #%s: Lastname" % num,
+            )
+        )
+
+        comp.transform_sheet(
+            competition.ColumnRenamer(
+                "Key Staff #%s: Association" % num, "Key Staff #%s Affiliation" % num
+            )
+        )
+        comp.transform_sheet(
+            competition.ColumnRenamer(
+                "Key Staff #%s: Biography" % num, "Key Staff #%s Biography" % num
+            )
+        )
+
+    for old_work_type, new_work_type in zip(
+        ["Current Solution", "Future Work"], ["Current Work", "Future Work"]
+    ):
+        for old_num, new_num in zip(
+            ["", "2", "3", "4", "5"], ["1", "2", "3", "4", "5"]
+        ):
+            comp.transform_sheet(
+                competition.LocationCombiner(
+                    column_name="%s #%s" % (new_work_type, new_num),
+                    state="Location Of %s%s State" % (old_work_type, old_num),
+                    locality="Location Of %s%s Locality" % (old_work_type, old_num),
+                    country="Location Of %s%s Country" % (old_work_type, old_num),
+                )
+            )
+            comp.remove_information(
+                competition.ColumnRemover(
+                    "Location Of %s%s Country id" % (old_work_type, old_num)
+                )
+            )
+            comp.remove_information(
+                competition.ColumnRemover(
+                    "Location Of %s%s State id" % (old_work_type, old_num)
+                )
+            )
+            comp.remove_information(
+                competition.ColumnRemover(
+                    "Location Of %s%s Locality id" % (old_work_type, old_num)
+                )
+            )
+
+    comp.add_whitelist_exception("Did Apply")
+    comp.add_whitelist_exception("Principal Organization")
+    comp.add_whitelist_exception("COVID-19 Impact")
+    comp.add_whitelist_exception("Type of Evidence")
+    comp.add_whitelist_exception("Durability of Impact")
+    comp.add_whitelist_exception("Project Phase #1: Name")
+    comp.add_whitelist_exception("Project Phase #1: Duration")
+    comp.add_whitelist_exception("Project Phase #1: Description")
+    comp.add_whitelist_exception("Project Phase #2: Name")
+    comp.add_whitelist_exception("Project Phase #2: Duration")
+    comp.add_whitelist_exception("Project Phase #2: Description")
+    comp.add_whitelist_exception("Project Phase #3: Name")
+    comp.add_whitelist_exception("Project Phase #3: Duration")
+    comp.add_whitelist_exception("Project Phase #3: Description")
+    comp.add_whitelist_exception("Phase #1: Budget Sub-Total")
+    comp.add_whitelist_exception("Phase #2: Budget Sub-Total")
+    comp.add_whitelist_exception("Phase #3: Budget Sub-Total")
+    comp.add_whitelist_exception("Other Resource Requirements")
+    comp.add_whitelist_exception("Financial Sustainability")
+    comp.add_whitelist_exception("Wild Card Eligible")
+    comp.add_whitelist_exception("Wild Card")
+    comp.add_whitelist_exception("TR Disqualified")
+
+    comp.transform_sheet(competition.ColumnRenamer("Participant key", "GUID"))
+    comp.transform_sheet(
+        competition.ColumnRenamer("Organization Legal Name", "Organization Name")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Problem Statement", "Challenge Statement")
+    )
+    comp.transform_sheet(competition.ColumnRenamer("Hear About", "Source"))
+    comp.transform_sheet(competition.ColumnRenamer("Youtube Video", "Video"))
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Principal Organization Website or Social Media", "Organization Website"
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Case of Partnership", "Case for Partnership")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Demand to Address The Problem", "Community Engagement"
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Diversity Equity and Inclusion", "Diversity-Equity-Inclusion"
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Project Website or Social Media Page",
+            "Project Website",
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Technical Process Description",
+            "Innovation",
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Solution Stage",
+            "Project Focus",
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Key Words",
+            "Key Words and Phrases",
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Monitoring Evaluation and Learning",
+            "Measurement of Results",
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Planning for Scale and Amplifying Impact",
+            "Ability To Scale",
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Identification Number of Principal Organization",
+            "Applicant Organization Identification Authority",
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Identification Number of Principal Organization ein",
+            "Applicant Tax Identification Number",
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Application Level",
+            "Achievement Level",
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Funder #1: Name",
+            "Funder #1",
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Funder #2: Name",
+            "Funder #2",
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Funder #3: Name",
+            "Funder #3",
+        )
+    )
+
+    comp.remove_information(competition.ColumnRemover("Participant key and Domain"))
+    comp.remove_information(competition.ColumnRemover("Country ID"))
+    comp.remove_information(competition.ColumnRemover("State ID"))
+    comp.remove_information(competition.ColumnRemover("Locality ID"))
+    comp.remove_information(competition.ColumnRemover("Priority Populations IDs"))
+    comp.remove_information(competition.ColumnRemover("Primary Subject Area ID"))
+    comp.remove_information(
+        competition.ColumnRemover("Primary Subject Area Category ID")
+    )
+    comp.remove_information(competition.ColumnRemover("Primary Area of Expertise ID"))
+
+    comp.sort("Panel Overall Score Rank Normalized", True)
 
     comp.add_toc(toc.GenericToc("Topic_TOC", "Primary Subject Area Category"))
     comp.add_toc(toc.GenericMultiLineToc("Population_TOC", "Priority Populations"))
@@ -602,12 +745,12 @@ def main():
                 "link": True,
             },
             {
-                "name": "Review Number",
+                "name": "Application #",
                 "heading": "ID #",
                 "right_aligned": True,
             },
             {
-                "name": "Wise Head Overall Score Rank Normalized",
+                "name": "Panel Overall Score Rank Normalized",
                 "heading": "Rank",
                 "right_aligned": True,
             },
@@ -623,7 +766,7 @@ def main():
         p
         for p in comp.ordered_proposals()
         if (
-            int(p.cell("Wise Head Overall Score Rank Normalized")) < 101
+            int(p.cell("Panel Overall Score Rank Normalized")) < 101
             or p.cell("Wild Card") == "Wild Card"
         )
         and p.cell("TR Disqualified") != "TR Disqualified"
@@ -632,19 +775,24 @@ def main():
     comp.add_toc(finalist_candidates)
 
     comp.add_toc(
-        toc.RegionAwareGeographicToc(
+        toc.GeographicToc(
             "Geographic_TOC",
             [
-                ["Location Of Current Solution Country"],
-                ["Location Of Current Solution2 Country"],
-                ["Location Of Current Solution3 Country"],
-                ["Location Of Current Solution4 Country"],
-                ["Location Of Current Solution5 Country"],
-                ["Location Of Future Work Country"],
-                ["Location Of Future Work2 Country"],
-                ["Location Of Future Work3 Country"],
-                ["Location Of Future Work4 Country"],
-                ["Location Of Future Work5 Country"],
+                "Current Work #1 Location",
+                "Current Work #2 Location",
+                "Current Work #3 Location",
+                "Current Work #4 Location",
+                "Current Work #5 Location",
+                "Future Work #1 Location",
+                "Future Work #2 Location",
+                "Future Work #3 Location",
+                "Future Work #4 Location",
+                "Future Work #5 Location",
+            ],
+            [
+                competition.LocationCombiner.REGION,
+                competition.LocationCombiner.SUBREGION,
+                competition.LocationCombiner.COUNTRY,
             ],
         )
     )
