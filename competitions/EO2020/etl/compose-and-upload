@@ -599,7 +599,7 @@ def main():
         comp.add_toc(top13)
 
     comp.add_toc(
-        toc.RegionAwareGeographicToc(
+        toc.GeographicToc(
             "Geographic_TOC",
             [
                 "Future Work #1 Location",
@@ -614,6 +614,8 @@ def main():
                 "Current Work #5 Location",
             ],
             [
+                competition.LocationCombiner.REGION,
+                competition.LocationCombiner.SUBREGION,
                 competition.LocationCombiner.COUNTRY,
                 competition.LocationCombiner.STATE,
             ],

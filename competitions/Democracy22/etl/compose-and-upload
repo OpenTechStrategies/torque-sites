@@ -350,12 +350,16 @@ def main():
         competition.ColumnRenamer("Stakeholder &amp; Community Engagement", "Community Engagement")
     )
 
+    comp.add_whitelist_exception("Lead Applicant Name")
+    comp.add_whitelist_exception("Team Partners")
+
     comp.remove_information(competition.ColumnRemover("Application GUID + competition domain"))
     comp.remove_information(competition.ColumnRemover("Org Nation ID"))
     comp.remove_information(competition.ColumnRemover("Org State / Province ID"))
     comp.remove_information(competition.ColumnRemover("Org Locality / District / County ID"))
     comp.remove_information(competition.ColumnRemover("Priority Populations IDs"))
     comp.remove_information(competition.ColumnRemover("Primary Subject Area ID"))
+    comp.remove_information(competition.ColumnRemover("Primary Area of Expertise ID"))
 
     attachments = competition.BasicAttachments(
         comp.sorted_proposal_keys, attachments_dir

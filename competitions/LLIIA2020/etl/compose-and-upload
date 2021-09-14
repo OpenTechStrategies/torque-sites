@@ -466,7 +466,7 @@ def main():
     comp.add_toc(toc.AnnualBudgetToc("Annual Operating Budget"))
 
     comp.add_toc(
-        toc.RegionAwareGeographicToc(
+        toc.GeographicToc(
             "Geographic_TOC",
             [
                 "Current Work #1 Location",
@@ -480,7 +480,11 @@ def main():
                 "Future Work #4 Location",
                 "Future Work #5 Location",
             ],
-            [competition.LocationCombiner.COUNTRY],
+            [
+                competition.LocationCombiner.REGION,
+                competition.LocationCombiner.SUBREGION,
+                competition.LocationCombiner.COUNTRY,
+            ],
         )
     )
 
