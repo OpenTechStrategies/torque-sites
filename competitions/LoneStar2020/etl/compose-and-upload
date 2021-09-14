@@ -93,26 +93,26 @@ class LFCAnalysisAdder(competition.InformationAdder):
     cells are there to be edited upon later"""
 
     def column_names(self):
-        return [
-            "LFC Analysis: Recommendation",
-            "LFC Analysis: Short Description",
-            "LFC Analysis: LHP Relationship History",
-            "LFC Analysis: TRANSFORMATIVE Summary",
-            "LFC Analysis: EVIDENCE-BASED Summary",
-            "LFC Analysis: FEASIBLE Summary",
-            "LFC Analysis: SCALABLE Summary",
-            "LFC Analysis: Overview",
-            "LFC Analysis: Strength of Approach",
-            "LFC Analysis: Risks and Challenges",
-            "LFC Analysis: Internet Scan",
-            "LFC Analysis: Diversity, Equity and Inclusion",
-            "LFC Analysis: Observations",
-            "LFC Analysis: Financial Overview",
-            "LFC Analysis: Funding Overview",
-        ]
+        return ["LFC Analysis"]
 
     def cell(self, proposal, column_name):
-        return ""
+        return {
+            "Recommendation": "",
+            "Short Description": "",
+            "LHP Relationship History": "",
+            "TRANSFORMATIVE Summary": "",
+            "EVIDENCE-BASED Summary": "",
+            "FEASIBLE Summary": "",
+            "SCALABLE Summary": "",
+            "Overview": "",
+            "Strength of Approach": "",
+            "Risks and Challenges": "",
+            "Internet Scan": "",
+            "Diversity, Equity and Inclusion": "",
+            "Observations": "",
+            "Financial Overview": "",
+            "Funding Overview": "",
+        }
 
 
 class SolutionCategoryRankAdder(competition.InformationAdder):
@@ -135,7 +135,7 @@ class SolutionCategoryRankAdder(competition.InformationAdder):
         return ["Solution Category Ranking"]
 
     def cell(self, proposal, column_name):
-        if proposal.cell("Panel Overall Score Rank Normalized") is "9999":
+        if proposal.cell("Panel Overall Score Rank Normalized") == "9999":
             return "9999"
         return (
             self.grouped_and_ranked[proposal.cell("Solution category")].index(proposal)
@@ -206,7 +206,9 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    comp = competition.Competition(proposals_csv, "LoneStar2020", "Application #", pare)
+    comp = competition.CsvBasedCompetition(
+        proposals_csv, "LoneStar2020", "Application #", pare
+    )
 
     correction_processor = competition.CorrectionData("Application #", correction_file)
     for column in correction_processor.columns_affected():
@@ -262,10 +264,125 @@ def main():
         comp.sorted_proposal_keys, attachments_dir
     )
     comp.add_supplemental_information(attachments)
+
+    comp.transform_sheet(
+        competition.LocationCombiner(
+            column_name="Organization",
+            address_1="Street Address",
+            address_2="Address Line 2",
+            city="City",
+            state="Org State/Province",
+            locality="Org Locality/ District/ County",
+            country="Org Country",
+            zip_postal="Zip/Postal Code",
+        )
+    )
+    comp.transform_sheet(
+        competition.PersonCombiner(
+            column_name="Participant",
+            first_name="Participant First Name",
+            last_name="Participant Last Name",
+            email="Participant Email",
+        )
+    )
+    comp.transform_sheet(
+        competition.PersonCombiner(
+            column_name="Primary Contact",
+            first_name="Primary Contact First Name",
+            last_name="Primary Contact Last Name",
+            title="Primary Contact Title",
+            phone="Primary Contact Phone",
+            email="Primary Contact Email",
+        )
+    )
+    comp.transform_sheet(
+        competition.PersonCombiner(
+            column_name="Secondary Contact",
+            first_name="Secondary Contact First Name",
+            last_name="Secondary Contact Last Name",
+            title="Secondary Contact Title",
+            phone="Secondary Contact Phone",
+            email="Secondary Contact Email",
+        )
+    )
+    for num in ["1", "2", "3"]:
+        comp.transform_sheet(
+            competition.PersonCombiner(
+                column_name="Key Staff #%s" % num,
+                first_name="Key Staff #%s First Name" % num,
+                last_name="Key Staff #%s Last Name" % num,
+            )
+        )
+
+    # This exists because one of them was not like the others, and it makes the loop below prettier
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Location of Future Work #1 State / Province",
+            "Location of Future Work #1 State /Province",
+        )
+    )
+
+    for work_type in ["Current", "Future"]:
+        for num in ["1", "2", "3", "4", "5"]:
+            comp.transform_sheet(
+                competition.LocationCombiner(
+                    column_name="%s Work #%s" % (work_type, num),
+                    state="Location of %s Work #%s State /Province" % (work_type, num),
+                    country="Location of %s Work #%s Country" % (work_type, num),
+                    locality="Location of %s Work #%s Locality / District / County"
+                    % (work_type, num),
+                )
+            )
+            comp.remove_information(
+                competition.ColumnRemover(
+                    "Location of %s Work #%s Country ID" % (work_type, num)
+                )
+            )
+            comp.remove_information(
+                competition.ColumnRemover(
+                    "Location of %s Work #%s State / Province ID" % (work_type, num)
+                )
+            )
+            comp.remove_information(
+                competition.ColumnRemover(
+                    "Location of %s Work #%s Locality / District / County ID"
+                    % (work_type, num)
+                )
+            )
+
+    comp.transform_sheet(
+        competition.ColumnRenamer("Solution category", "Primary Subject Area Category")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Organization legal status", "Organization Legal Status"
+        )
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Org Website", "Organization Website")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Stakeholder Engagement", "Community Engagement")
+    )
+    comp.transform_sheet(
+        competition.ColumnRenamer("Ability to Scale", "Ability To Scale")
+    )
+    comp.transform_sheet(competition.ColumnRenamer("Budget data", "Budget Data"))
+    comp.add_whitelist_exception("Solution Category Ranking")
+    comp.remove_information(competition.ColumnRemover("GUID + Competition Domain"))
+    comp.remove_information(competition.ColumnRemover("Org Country ID"))
+    comp.remove_information(competition.ColumnRemover("Org State / Province ID"))
+    comp.remove_information(
+        competition.ColumnRemover("Org Locality / County / District ID")
+    )
+    comp.remove_information(competition.ColumnRemover("Priority Populations Id"))
+    comp.remove_information(competition.ColumnRemover("Primary Subject Area ID"))
+    comp.remove_information(competition.ColumnRemover("Primary Area of Expertise ID"))
+
     if judge_evaluation_csv is not None:
         comp.add_supplemental_information(
             competition.EvaluationAdder(
-                "Judge",
+                "Peer",
                 judge_evaluation_csv,
                 app_col_name="Application #",
                 score_rank_normalized_col_name="OverallScoreRankNormalized",
@@ -403,26 +520,15 @@ def main():
         toc.GeographicToc(
             "Current_Work_Locations",
             [
-                [
-                    "Location of Current Work #1 State /Province",
-                    "Location of Current Work #1 Locality / District / County",
-                ],
-                [
-                    "Location of Current Work #2 State /Province",
-                    "Location of Current Work #2 Locality / District / County",
-                ],
-                [
-                    "Location of Current Work #3 State /Province",
-                    "Location of Current Work #3 Locality / District / County",
-                ],
-                [
-                    "Location of Current Work #4 State /Province",
-                    "Location of Current Work #4 Locality / District / County",
-                ],
-                [
-                    "Location of Current Work #5 State /Province",
-                    "Location of Current Work #5 Locality / District / County",
-                ],
+                "Current Work #1 Location",
+                "Current Work #2 Location",
+                "Current Work #3 Location",
+                "Current Work #4 Location",
+                "Current Work #5 Location",
+            ],
+            [
+                competition.LocationCombiner.COUNTRY,
+                competition.LocationCombiner.STATE,
             ],
         )
     )
@@ -431,26 +537,15 @@ def main():
         toc.GeographicToc(
             "Future_Work_Locations",
             [
-                [
-                    "Location of Future Work #1 State / Province",
-                    "Location of Future Work #1 Locality / District / County",
-                ],
-                [
-                    "Location of Future Work #2 State /Province",
-                    "Location of Future Work #2 Locality / District / County",
-                ],
-                [
-                    "Location of Future Work #3 State /Province",
-                    "Location of Future Work #3 Locality / District / County",
-                ],
-                [
-                    "Location of Future Work #4 State /Province",
-                    "Location of Future Work #4 Locality / District / County",
-                ],
-                [
-                    "Location of Future Work #5 State /Province",
-                    "Location of Future Work #5 Locality / District / County",
-                ],
+                "Future Work #1 Location",
+                "Future Work #2 Location",
+                "Future Work #3 Location",
+                "Future Work #4 Location",
+                "Future Work #5 Location",
+            ],
+            [
+                competition.LocationCombiner.COUNTRY,
+                competition.LocationCombiner.STATE,
             ],
         )
     )
