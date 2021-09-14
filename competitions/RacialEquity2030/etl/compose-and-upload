@@ -517,6 +517,15 @@ def main():
             "Panel GAME CHANGING Judge Data", "Panel IMPACTFUL Judge Data"
         )
     )
+    comp.transform_sheet(
+        competition.ColumnRenamer(
+            "Applicant Legal Name", "Legal Name"
+        )
+    )
+
+    comp.add_whitelist_exception("Organization location of formation")
+    comp.add_whitelist_exception("Affirmation of Approach")
+
     comp.remove_information(
         competition.ColumnRemover("Application GUID + competition domain")
     )

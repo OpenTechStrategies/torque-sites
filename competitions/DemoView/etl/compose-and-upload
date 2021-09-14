@@ -104,12 +104,12 @@ class DemoAttachments(competition.InformationAdder):
 
         self.attachments.append(
             competition.Attachment(
-                proposal.key(), mou_filename, column_name, "Default", location
+                proposal.key(), mou_filename, column_name, "Default", self.mou
             )
         )
         self.attachments.append(
             competition.Attachment(
-                proposal.key(), financials_filename, column_name, "Default", location
+                proposal.key(), financials_filename, column_name, "Default", self.financials
             )
         )
 
@@ -268,10 +268,9 @@ def main():
     comp.remove_information(
         competition.ColumnRemover("Locality / County / District ID")
     )
-    comp.remove_information(competition.ColumnRemover("Priority Populations IDs"))
     comp.remove_information(competition.ColumnRemover("Primary Subject Area ID"))
-    comp.remove_information(competition.ColumnRemover("Priority Populations ID"))
     comp.remove_information(competition.ColumnRemover("Org Primary Area ID"))
+    comp.remove_information(competition.ColumnRemover("Priority Populations ID"))
 
     comp.transform_sheet(competition.ColumnRenamer("Org Website", "Website"))
     comp.transform_sheet(
@@ -332,7 +331,7 @@ def main():
     comp.add_toc(toc.GenericToc("Topic", "Primary Subject Area"))
 
     comp.add_toc(
-        toc.RegionAwareGeographicToc(
+        toc.GeographicToc(
             "Geographic_TOC",
             [
                 "Current Work #1 Location",
@@ -347,6 +346,8 @@ def main():
                 "Future Work #5 Location",
             ],
             [
+                competition.LocationCombiner.REGION,
+                competition.LocationCombiner.SUBREGION,
                 competition.LocationCombiner.COUNTRY,
                 competition.LocationCombiner.STATE,
             ],
