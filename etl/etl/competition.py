@@ -4,6 +4,7 @@ import csv
 import json
 import os
 import re
+import sys
 from functools import total_ordering
 from enum import Enum
 
@@ -1426,10 +1427,12 @@ class ColumnCombiner(InformationTransformer):
         }
 
 
-class LocationCombiner(ColumnCombiner):
+class LocationCombiner(InformationTransformer):
     """Takes Location based columns, and then combines them into a single
     column with the the name "<COLUMN_NAME> Location"."""
 
+    REGION = "Region"
+    SUBREGION = "Subregion"
     COUNTRY = "Country"
     STATE = "State/Province"
     LOCALITY = "Locality/District/County"
@@ -1437,6 +1440,21 @@ class LocationCombiner(ColumnCombiner):
     ADDRESS_2 = "Address Line 2"
     CITY = "City"
     ZIP_POSTAL = "Zip/Postal Code"
+
+    import importlib.resources as pkg_resources
+    from . import data
+
+    region_data_by_country = {}
+    csv_reader = csv.reader(
+        pkg_resources.open_text(data, "regionconfig.csv", encoding="utf-8"),
+        delimiter=",",
+        quotechar='"',
+    )
+    next(csv_reader)
+    for row in csv_reader:
+        region_data_by_country[row[0]] = {"subregion": row[1], "region": row[2]}
+
+    country_errors = []
 
     def __init__(
         self,
@@ -1449,22 +1467,56 @@ class LocationCombiner(ColumnCombiner):
         country=None,
         zip_postal=None,
     ):
-        new_columns = {}
+        self.column_config = {}
         if country:
-            new_columns[country] = LocationCombiner.COUNTRY
+            self.column_config[country] = LocationCombiner.COUNTRY
+            self.include_region = True
         if state:
-            new_columns[state] = LocationCombiner.STATE
+            self.column_config[state] = LocationCombiner.STATE
         if locality:
-            new_columns[locality] = LocationCombiner.LOCALITY
+            self.column_config[locality] = LocationCombiner.LOCALITY
         if address_1:
-            new_columns[address_1] = LocationCombiner.ADDRESS_1
+            self.column_config[address_1] = LocationCombiner.ADDRESS_1
         if address_2:
-            new_columns[address_2] = LocationCombiner.ADDRESS_2
+            self.column_config[address_2] = LocationCombiner.ADDRESS_2
         if city:
-            new_columns[city] = LocationCombiner.CITY
+            self.column_config[city] = LocationCombiner.CITY
         if zip_postal:
-            new_columns[zip_postal] = LocationCombiner.ZIP_POSTAL
-        super().__init__("%s Location" % column_name, new_columns)
+            self.column_config[zip_postal] = LocationCombiner.ZIP_POSTAL
+
+        self.new_column_name = "%s Location" % column_name
+
+    def columns_to_remove(self):
+        return self.column_config.keys()
+
+    def column_names(self):
+        return [self.new_column_name]
+
+    def cell(self, proposal, column_name):
+        data = {
+            new_col: proposal.cell(old_col)
+            for (old_col, new_col) in self.column_config.items()
+        }
+
+        if self.include_region:
+            country = data[LocationCombiner.COUNTRY]
+
+            try:
+                region = self.region_data_by_country[country]["region"]
+                subregion = self.region_data_by_country[country]["subregion"]
+                data[LocationCombiner.REGION] = region
+                data[LocationCombiner.SUBREGION] = subregion
+            except KeyError:
+                if country not in self.country_errors:
+                    print(
+                        "Country %s not in region config file, skipping" % country,
+                        file=sys.stderr,
+                    )
+                    self.country_errors.append(country)
+                data[LocationCombiner.REGION] = ""
+                data[LocationCombiner.SUBREGION] = ""
+
+        return data
 
 
 class PersonCombiner(ColumnCombiner):
