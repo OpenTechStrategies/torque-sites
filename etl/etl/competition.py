@@ -432,7 +432,7 @@ class MultiLineFromListProcessor(CellProcessor):
             for value in self.valid_list:
                 if cell.startswith(value):
                     found = True
-                    processed_value.extend(value)
+                    processed_value.append(value)
                     cell = cell[len(value) :]
                 if cell.startswith(","):
                     cell = cell[1:]
