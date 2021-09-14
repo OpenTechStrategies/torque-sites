@@ -28,12 +28,12 @@ RUNNER="${LFC_DIR}"/populate-wiki
 
 COMPETITIONS_ARGUMENT=""
 for comp in $COMPETITIONS ; do
-  FILE="$BASE_DATA_DIR/$comp/tdcconfig/etl-processed.csv"
+  FILE="$BASE_DATA_DIR/$comp/tdcconfig/etl-processed.json"
   if [ ! -f $FILE ] ; then
     echo "Error: $FILE does not seem to be there, probably need to run the ./deploy in torque-sites/$comp/etl with -c option"
     exit 1
   fi
-  COMPETITIONS_ARGUMENT="$COMPETITIONS_ARGUMENT --competition=$comp --competition-csv=$FILE"
+  COMPETITIONS_ARGUMENT="$COMPETITIONS_ARGUMENT --competition=$comp --competition-json=$FILE"
 done
 
 echo "Populating wiki..."

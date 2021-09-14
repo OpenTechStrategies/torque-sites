@@ -34,122 +34,56 @@ import csv
 
 competition_configs = {
     "LoneStar2020": {
-        "key": "Application #",
-        "title": "Project Title",
         "sheet_name": "LoneStar2020",
         "wiki_key": "LoneStar2020",
-        "priority_populations": "Priority Populations",
-        "annual_operating_budget": "Annual Operating Budget",
-        "organization_name": "Organization Name",
-        "organization_geography": ["Org State/Province", "Org Country"],
         "rank": "Panel Overall Score Rank Normalized",
         "score": "Panel Sum of Scores Normalized",
-        "status": "Admin Review Status",
     },
     "LLIIA2020": {
-        "key": "Application #",
-        "title": "Project Title",
         "sheet_name": "LLIIA2020",
         "wiki_key": "LLIIA2020",
-        "priority_populations": "Priority Populations",
-        "annual_operating_budget": "Annual Operating Budget",
-        "organization_name": "Organization Name",
-        "organization_geography": ["Org State / Province", "Org Country"],
         "rank": "Panel Overall Score Rank Normalized",
         "score": "Panel Sum of Scores Normalized",
-        "status": "Valid",
     },
     "100Change2020": {
-        "key": "Review Number",
-        "title": "Project Title",
         "sheet_name": "LFC100Change2020",
         "wiki_key": "100Change2020",
-        "priority_populations": "Priority Populations",
-        "organization_name": "Organization Legal Name",
-        "organization_ein": "Identification Number of Principal Organization ein",
-        "organization_geography": ["State", "Country"],
         "rank": "Wise Head Overall Score Rank Normalized",
         "score": "Wise Head Sum of Scores Normalized",
-        "status": "Valid",
-        "sdg": "Sustainable Development Goals",
     },
     "100Change2017": {
-        "key": "Review_Number",
-        "title": "Registered Organization Name",
         "sheet_name": "LFC100Change2017",
         "wiki_key": "100Change2017",
-        "organization_name": "Registered Organization Name",
-        "organization_geography": ["State / Province / Region", "Country"],
         "score": "Total_Score",
         "rank": "Ranking",
     },
     "EO2020": {
-        "key": "Application #",
-        "title": "Project Title",
         "sheet_name": "EO2020",
         "wiki_key": "EO2020",
-        "priority_populations": "Priority Populations",
-        "annual_operating_budget": "Annual Operating Budget",
-        "organization_name": "Organization Name",
-        "organization_ein": "EIN",
-        "organization_geography": ["State / Province", "Nation"],
         "rank": "Judge Overall Score Rank Normalized",
         "score": "Judge Sum of Scores Normalized",
-        "status": "Valid",
     },
     "RacialEquity2030": {
-        "key": "Application #",
-        "title": "Project Title",
         "sheet_name": "RacialEquity2030",
         "wiki_key": "RacialEquity2030",
-        "priority_populations": "Priority Populations",
-        "annual_operating_budget": "Annual Operating Budget",
-        "organization_name": "Organization name",
-        "organization_ein": "Applicant Tax Identification Number",
-        "organization_geography": ["Applicant State / Province", "Applicant  Country"],
         "rank": "Panel Overall Score Rank Normalized",
         "score": "Panel Sum of Scores Normalized",
-        "status": "Admin Review Status",
-        "sdg": "Sustainable Development Goals",
     },
     "Climate2030": {
-        "key": "Application #",
-        "title": "Project Title",
         "sheet_name": "Climate2030",
         "wiki_key": "Climate2030",
-        "priority_populations": "Priority Populations",
-        "annual_operating_budget": "Annual Operating Budget",
-        "organization_name": "Organization Name",
-        "organization_ein": "EIN",
-        "organization_geography": ["Org State/Province", "Org Country"],
         "rank": "Panel Overall Score Rank Normalized",
         "score": "Panel Sum of Scores Normalized",
-        "status": "Admin Review Status",
     },
     "ECW2020": {
-        "key": "Application #",
-        "title": "Project Title",
         "sheet_name": "ECW2020",
         "wiki_key": "ECW2020",
-        "priority_populations": "Priority Populations",
-        "annual_operating_budget": "Annual Operating Budget",
-        "organization_name": "Organization Name",
-        "organization_ein": "EIN",
-        "organization_geography": ["Org State/Province", "Org Country"],
         "rank": "Panel Overall Score Rank Normalized",
         "score": "Panel Sum of Scores Normalized",
-        "status": "Admin Review Status",
     },
     "Democracy22": {
-        "key": "Application #",
-        "title": "Project Title",
         "sheet_name": "Democracy22",
         "wiki_key": "Democracy22",
-        "priority_populations": "Priority Populations",
-        "annual_operating_budget": "Annual Operating Budget",
-        "organization_name": "Organization name",
-        "organization_geography": ["Org State / Province", "Org Nation"],
-        "status": "Admin Review Status",
     },
 }
 
@@ -247,13 +181,12 @@ class MultiCompAppsToc(toc.GenericToc):
 
 
 def main():
-    """Compose the LFC input and emit it as html-ized csv."""
     try:
         opts, args = getopt.getopt(
             sys.argv[1:],
             "",
             [
-                "competition-csv=",
+                "competition-json=",
                 "competition=",
                 "tdc-config-dir=",
             ],
@@ -263,7 +196,7 @@ def main():
         sys.exit(2)
 
     competition_names = []
-    competition_csvs = []
+    competition_jsons = []
     tdc_config_dir = None
     for o, a in opts:
         if o == "--competition":
@@ -273,8 +206,8 @@ def main():
                 )
                 sys.exit(2)
             competition_names.append(a)
-        elif o == "--competition-csv":
-            competition_csvs.append(a)
+        elif o == "--competition-json":
+            competition_jsons.append(a)
         elif o == "--tdc-config-dir":
             tdc_config_dir = a
         else:
@@ -286,113 +219,83 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    if len(competition_names) == 0 or len(competition_csvs) == 0:
+    if len(competition_names) == 0 or len(competition_jsons) == 0:
         sys.stderr.write(
-            "ERROR: need at least one --competition and --competition-csv option.\n\n"
+            "ERROR: need at least one --competition and --competition-json option.\n\n"
         )
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    if len(competition_names) != len(competition_csvs):
+    if len(competition_names) != len(competition_jsons):
         sys.stderr.write(
-            "ERROR: number of --competition and --competition-csv options needs to be the same.\n\n"
+            "ERROR: number of --competition and --competition-json options needs to be the same.\n\n"
         )
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    csv_location = os.path.join(tdc_config_dir, "multi-competition-generated.csv")
+    columns = [
+        "Global Application #",
+        "Competition Application #",
+        "Competition Name",
+        "Rank",
+        "Score",
+        "Wiki Key",
+        "Collection Name",
+        "Project Title",
+        "Organization Name",
+        "Applicant Tax Identification Number",
+        "Organization Location",
+        "Priority Populations",
+        "Sustainable Development Goals",
+        "Annual Operating Budget",
+        "Admin Review Status",
+        "MediaWiki Title",
+    ]
 
-    with open(csv_location, "w") as writer:
-        csv_writer = csv.writer(
-            writer, delimiter=",", quotechar='"', lineterminator="\n"
-        )
-        csv_writer.writerow(
-            [
-                "Global Application #",
-                "Competition Name",
-                "Competition Application #",
-                "Rank",
-                "Score",
-                "Project Title",
-                "Organization Name",
-                "Organization EIN",
-                "Organization State / Province",
-                "Organization Country",
-                "Wiki Key",
-                "Collection Name",
-                "Priority Populations",
-                "Sustainable Development Goals",
-                "Annual Operating Budget",
-                "Status",
-                "MediaWiki Title",
-            ]
-        )
+    gv_proposals = {}
+    gv_keys = []
+    for name, comp_json in zip(competition_names, competition_jsons):
+        comp = competition.JsonBasedCompetition(comp_json, name, "Application #")
 
-        for name, comp_csv in zip(competition_names, competition_csvs):
-            csv_reader = csv.reader(
-                open(comp_csv, encoding="utf-8"), delimiter=",", quotechar='"'
+        for proposal in comp.ordered_proposals():
+            gv_proposal = {c: proposal.cell(c) for c in columns}
+            gv_key = ("%s_%s" % (name, proposal.key()),)
+            gv_proposal["Global Application #"] = gv_key
+            gv_proposal["Competition Application #"] = proposal.key()
+            gv_proposal["Wiki Key"] = competition_configs[name]["wiki_key"]
+            gv_proposal["Competition Name"] = name
+            gv_proposal["MediaWiki Title"] = proposal.cell(
+                competition.GlobalViewMediaWikiTitleAdder.title_column_name
             )
-            comp = competition.Competition(
-                comp_csv, name, competition_configs[name]["key"], None, True
+
+            if "rank" in competition_configs[name]:
+                gv_proposal["Rank"] = proposal.cell(competition_configs[name]["rank"])
+            if "score" in competition_configs[name]:
+                gv_proposal["Score"] = proposal.cell(competition_configs[name]["score"])
+            if not gv_proposal["Admin Review Status"]:
+                gv_proposal["Admin Review Status"] = "Valid"
+            if not gv_proposal["Sustainable Development Goals"]:
+                gv_proposal["Sustainable Development Goals"] = []
+            if not gv_proposal["Priority Populations"]:
+                gv_proposal["Priority Populations"] = []
+            if not gv_proposal["Project Title"]:
+                gv_proposal["Project Title"] = gv_proposal["Organization Name"]
+
+            gv_proposals[gv_key] = competition.Proposal(
+                gv_proposal, "Global Application #"
             )
+            gv_keys.append(gv_key)
 
-            for proposal in comp.ordered_proposals():
-                priority_populations = ""
-                if "priority_populations" in competition_configs[name]:
-                    priority_populations = proposal.cell(
-                        competition_configs[name]["priority_populations"]
-                    )
-                annual_operating_budget = ""
-                if "annual_operating_budget" in competition_configs[name]:
-                    annual_operating_budget = proposal.cell(
-                        competition_configs[name]["annual_operating_budget"]
-                    )
-                ein = ""
-                if "organization_ein" in competition_configs[name]:
-                    ein = proposal.cell(competition_configs[name]["organization_ein"])
-                rank = ""
-                if "rank" in competition_configs[name]:
-                    rank = proposal.cell(competition_configs[name]["rank"])
-                score = ""
-                if "score" in competition_configs[name]:
-                    score = proposal.cell(competition_configs[name]["score"])
-                sdgs = ""
-                if "sdg" in competition_configs[name]:
-                    sdgs = proposal.cell(competition_configs[name]["sdg"])
-
-                csv_writer.writerow(
-                    [
-                        "%s_%s" % (name, proposal.key()),
-                        name,
-                        proposal.key(),
-                        rank,
-                        score,
-                        proposal.cell(competition_configs[name]["title"]),
-                        proposal.cell(competition_configs[name]["organization_name"]),
-                        ein,
-                        proposal.cell(
-                            competition_configs[name]["organization_geography"][0]
-                        ),
-                        proposal.cell(
-                            competition_configs[name]["organization_geography"][1]
-                        ),
-                        competition_configs[name]["wiki_key"],
-                        competition_configs[name]["sheet_name"],
-                        priority_populations,
-                        sdgs,
-                        annual_operating_budget,
-                        # We mark as valid in the case that there is no status so things get included
-                        (
-                            proposal.cell(competition_configs[name]["status"])
-                            if "status" in competition_configs[name]
-                            else "Valid"
-                        ),
-                        proposal.cell(competition.GlobalViewMediaWikiTitleAdder.title_column_name),
-                    ]
-                )
-
-    comp = competition.Competition(csv_location, "GlobalView", "Global Application #")
+    comp = competition.Competition(
+        gv_proposals, columns, gv_keys, "GlobalView", "Global Application #"
+    )
     comp.process_cells_special("Project Title", competition.RemoveHTMLBRsProcessor())
+    comp.add_whitelist_exception("Global Application #")
+    comp.add_whitelist_exception("Competition Application #")
+    comp.add_whitelist_exception("Rank")
+    comp.add_whitelist_exception("Score")
+    comp.add_whitelist_exception("Wiki Key")
+    comp.add_whitelist_exception("Collection Name")
 
     # Replacing BRs with spaces for this one, because of the data having new lines in
     # the middle of some organization names
@@ -430,9 +333,13 @@ def main():
         [
             p
             for p in comp.ordered_proposals()
-
             # Chip and Semi are for 100Change2017
-            if p.cell("Rank") and (p.cell("Rank") == "Chip" or p.cell("Rank") == "Semi" or int(p.cell("Rank")) < 26)
+            if p.cell("Rank")
+            and (
+                p.cell("Rank") == "Chip"
+                or p.cell("Rank") == "Semi"
+                or int(p.cell("Rank")) < 26
+            )
         ],
         key=lambda p: p.cell("Organization Name"),
     )
@@ -466,13 +373,16 @@ def main():
     )
 
     comp.add_toc(
-        toc.RegionAwareGeographicToc(
+        toc.GeographicToc(
             "Organization_Geography",
             [
-                [
-                    "Organization Country",
-                    "Organization State / Province",
-                ],
+                "Organization Location",
+            ],
+            [
+                competition.LocationCombiner.REGION,
+                competition.LocationCombiner.SUBREGION,
+                competition.LocationCombiner.COUNTRY,
+                competition.LocationCombiner.STATE,
             ],
         )
     )
@@ -511,7 +421,6 @@ def main():
 
     my_wiki.collection_only = True
     my_wiki.upload_collection(comp)
-
 
     for proposal in comp.proposals.values():
         my_wiki.create_page(
