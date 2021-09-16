@@ -153,6 +153,17 @@ class BudgetDataAdder(competition.InformationAdder):
         else:
             return json.dumps({})
 
+class ProposalMapToc(toc.Toc):
+    def __init__(self):
+        self.name = "Proposal_Map"
+        self.maps_dir = "templates"
+
+    def template_file(self):
+        from pathlib import Path
+        return Path("%s/proposal_map.html" % self.maps_dir).read_text()
+
+    def raw(self):
+        return False
 
 def main():
     """Compose the LFC input and emit it as html-ized csv."""
@@ -366,6 +377,7 @@ def main():
           )
       )
 
+    comp.add_toc(ProposalMapToc())
     comp.process_tocs()
 
     if tdc_config_dir is not None:
