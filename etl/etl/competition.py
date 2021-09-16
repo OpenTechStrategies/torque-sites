@@ -1306,6 +1306,7 @@ class GeocodeAdder(InformationAdder):
         new_column_name,
         address_pattern,
         geocoder,
+        debug=False,
     ):
         """Takes:
         1. The name of the new column.
@@ -1315,6 +1316,7 @@ class GeocodeAdder(InformationAdder):
         self.new_column_name = new_column_name
         self.address_pattern = address_pattern
         self.geocoder = geocoder
+        self.debug = debug
 
     def column_names(self):
         return [self.new_column_name]
@@ -1324,6 +1326,9 @@ class GeocodeAdder(InformationAdder):
         full_address = address_pattern(proposal)
         if (full_address == ''):
             return ""
+
+        if (self.debug):
+            return "0,0"
 
         try:
             geocode_result = self.geocoder.geocode(full_address)
