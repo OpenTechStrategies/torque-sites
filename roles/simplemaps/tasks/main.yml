@@ -1,0 +1,12 @@
+---
+
+- name: Check out SimpleMaps
+  git:
+    repo: https://github.com/OpenTechStrategies/SimpleMaps
+    dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/extensions/SimpleMaps/"
+    version: 227721d
+
+- name: Enable SimpleMaps
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
+    line: "wfLoadExtension('SimpleMaps');"
