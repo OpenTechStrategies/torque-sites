@@ -18,6 +18,7 @@
     - torquedataconnect
     - exporttables
     - simplesaml
+    - simplemaps
     - GlobalView
     # This should always go last, to run db updates and restart
     - finishmediawiki
