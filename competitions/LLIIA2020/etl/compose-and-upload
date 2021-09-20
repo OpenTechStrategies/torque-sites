@@ -153,6 +153,17 @@ class BudgetDataAdder(competition.InformationAdder):
         else:
             return json.dumps({})
 
+class ProposalMapToc(toc.Toc):
+    def __init__(self):
+        self.name = "Proposal_Map"
+        self.maps_dir = "templates"
+
+    def template_file(self):
+        from pathlib import Path
+        return Path("%s/proposal_map.html" % self.maps_dir).read_text()
+
+    def raw(self):
+        return False
 
 def main():
     """Compose the LFC input and emit it as html-ized csv."""
@@ -365,117 +376,8 @@ def main():
               geocoder,
           )
       )
-      comp.add_supplemental_information(
-          competition.GeocodeAdder(
-              "Location of Current Work #1 LatLng",
-              Geocoder.Geocoder.generate_address_query_lambda(
-                  state='Location of Current Work #1 State /Province',
-                  country='Location of Current Work #1 Country',
-                  locality='Location of Current Work #1 Locality / County / District',
-              ),
-              geocoder,
-          )
-      )
-      comp.add_supplemental_information(
-          competition.GeocodeAdder(
-              "Location of Current Work #2 LatLng",
-              Geocoder.Geocoder.generate_address_query_lambda(
-                  state='Location of Current Work #2 State /Province',
-                  country='Location of Current Work #2 Country',
-                  locality='Location of Current Work #2 Locality / County / District',
-              ),
-              geocoder,
-          )
-      )
-      comp.add_supplemental_information(
-          competition.GeocodeAdder(
-              "Location of Current Work #3 LatLng",
-              Geocoder.Geocoder.generate_address_query_lambda(
-                  state='Location of Current Work #3 State /Province',
-                  country='Location of Current Work #3 Country',
-                  locality='Location of Current Work #3 Locality / County / District',
-              ),
-              geocoder,
-          )
-      )
-      comp.add_supplemental_information(
-          competition.GeocodeAdder(
-              "Location of Current Work #4 LatLng",
-              Geocoder.Geocoder.generate_address_query_lambda(
-                  state='Location of Current Work #4 State /Province',
-                  country='Location of Current Work #4 Country',
-                  locality='Location of Current Work #4 Locality / County / District',
-              ),
-              geocoder,
-          )
-      )
-      comp.add_supplemental_information(
-          competition.GeocodeAdder(
-              "Location of Current Work #5 LatLng",
-              Geocoder.Geocoder.generate_address_query_lambda(
-                  state='Location of Current Work #5 State /Province',
-                  country='Location of Current Work #5 Country',
-                  locality='Location of Current Work #5 Locality / County / District',
-              ),
-              geocoder,
-          )
-      )
-      comp.add_supplemental_information(
-          competition.GeocodeAdder(
-              "Location of Future Work #1 LatLng",
-              Geocoder.Geocoder.generate_address_query_lambda(
-                  state='Location of Future Work #1 State / Province',
-                  country='Location of Future Work #1 Country',
-                  locality='Location of Future Work #1 Locality / County / District',
-              ),
-              geocoder,
-          )
-      )
-      comp.add_supplemental_information(
-          competition.GeocodeAdder(
-              "Location of Future Work #2 LatLng",
-              Geocoder.Geocoder.generate_address_query_lambda(
-                  state='Location of Future Work #2 State / Province',
-                  country='Location of Future Work #2 Country',
-                  locality='Location of Future Work #2 Locality / County / District',
-              ),
-              geocoder,
-          )
-      )
-      comp.add_supplemental_information(
-          competition.GeocodeAdder(
-              "Location of Future Work #3 LatLng",
-              Geocoder.Geocoder.generate_address_query_lambda(
-                  state='Location of Future Work #3 State / Province',
-                  country='Location of Future Work #3 Country',
-                  locality='Location of Future Work #3 Locality / County / District',
-              ),
-              geocoder,
-          )
-      )
-      comp.add_supplemental_information(
-          competition.GeocodeAdder(
-              "Location of Future Work #4 LatLng",
-              Geocoder.Geocoder.generate_address_query_lambda(
-                  state='Location of Future Work #4 State / Province',
-                  country='Location of Future Work #4 Country',
-                  locality='Location of Future Work #4 Locality / County / District',
-              ),
-              geocoder,
-          )
-      )
-      comp.add_supplemental_information(
-          competition.GeocodeAdder(
-              "Location of Future Work #5 LatLng",
-              Geocoder.Geocoder.generate_address_query_lambda(
-                  state='Location of Future Work #5 State / Province',
-                  country='Location of Future Work #5 Country',
-                  locality='Location of Future Work #5 Locality / County / District',
-              ),
-              geocoder,
-          )
-      )
 
+    comp.add_toc(ProposalMapToc())
     comp.process_tocs()
 
     if tdc_config_dir is not None:

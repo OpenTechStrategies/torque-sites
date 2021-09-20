@@ -1,0 +1,11 @@
+{|class="simpleMap"
+!Lat
+!Lng
+!Popup Content
+{% for proposal_id, proposal in LLIIA2020.items() %}
+|-
+| {{ proposal['Organization LatLng'].split(',')[0] }}
+| {{ proposal['Organization LatLng'].split(',')[1] }}
+| [[{{ proposal['MediaWiki Title'] }}]]
+{% endfor %}
+|}
