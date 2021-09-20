@@ -54,6 +54,10 @@ table.wikitable tr th {
   background-color: #0058a4 !important;
 }
 
+div.simpleMap {
+  height: 800px;
+}
+
 .wikitable tr td {
   font-family: 'Source Sans Pro', sans-serif !important;
   color: #002D55 !important;

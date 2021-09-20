@@ -23,6 +23,7 @@
     - teamcomments
     - torquedataconnect
     - exporttables
+    - simplemaps
     # This should come after permissions because of overrides of defaults
     - 100Change2020
     # This should always go last, to run db updates and restart
