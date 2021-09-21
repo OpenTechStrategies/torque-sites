@@ -2,7 +2,7 @@
 
 - name: Transfer Democracy22 Logo
   copy:
-    src: Democracy22_Logo.png
+    src: Democracy22_Logo.svg
     dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/resources/assets/Democracy22_Logo.svg"
 
 - name: Install Democracy22 Logo
