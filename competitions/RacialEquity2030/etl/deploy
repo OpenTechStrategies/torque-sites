@@ -37,6 +37,7 @@ CORRECTION_FILE="OTS_Corrections.csv"
 ADMIN_REVIEW_CSV="Kellogg-AdminReview.csv"
 WILDCARDS="wildcards.dat"
 FUNDERS_CORRECTION="Funders-WKKF.csv"
+DEIA_REVIEWS="RE2030 DEIA Reviews.zip"
 
 TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
@@ -77,6 +78,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   decrypt "${DATA_DIR}/${EP_RANKING_CSV}" "${ENCRYPTED_DIR}/${EP_RANKING_CSV}.gpg" "${GPG_PASSPHRASE}"
   decrypt "${DATA_DIR}/${WILDCARDS}" "${ENCRYPTED_DIR}/${WILDCARDS}.gpg" "${GPG_PASSPHRASE}"
   decrypt "${DATA_DIR}/${FUNDERS_CORRECTION}" "${ENCRYPTED_DIR}/${FUNDERS_CORRECTION}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${DEIA_REVIEWS}" "${ENCRYPTED_DIR}/${DEIA_REVIEWS}.gpg" "${GPG_PASSPHRASE}"
 
   mkdir -p ${TDC_CONFIG_DIR}
 
@@ -92,6 +94,16 @@ if [ ! -d "${DATA_DIR}" ] ; then
     NUM=${file/_*/};
     mkdir -p ${ATTACHMENTS_DIR}/$NUM/
     mv -v $TMP_ATTACHMENTS_DIR/*/$NUM*/* ${ATTACHMENTS_DIR}/$NUM/
+  done
+  rm -rf $TMP_ATTACHMENTS_DIR
+
+  mkdir -p $TMP_ATTACHMENTS_DIR
+  unzip -d $TMP_ATTACHMENTS_DIR "${DATA_DIR}/${DEIA_REVIEWS}"
+  ls "$TMP_ATTACHMENTS_DIR" | while read dir ; do
+    mkdir -p ${ATTACHMENTS_DIR}/$dir/
+    ls $TMP_ATTACHMENTS_DIR/$dir/  | while read file ; do
+      mv -v "$TMP_ATTACHMENTS_DIR/$dir/$file" "${ATTACHMENTS_DIR}/$dir/${dir}_${file}"
+    done
   done
   rm -rf $TMP_ATTACHMENTS_DIR
 
