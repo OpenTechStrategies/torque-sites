@@ -84,6 +84,7 @@ def main():
             [
                 "proposals-csv=",
                 "admin-review-csv=",
+                "peer-rankings-csv=",
                 "tdc-config-dir=",
                 "attachments-dir=",
                 "correction-file=",
@@ -97,6 +98,7 @@ def main():
 
     proposals_csv = None
     admin_review_csv = None
+    peer_rankings_csv = None
     attachments_dir = None
     tdc_config_dir = None
     correction_file = None
@@ -113,6 +115,8 @@ def main():
             tdc_config_dir = a
         elif o == "--admin-review-csv":
             admin_review_csv = a
+        elif o == "--peer-rankings-csv":
+            peer_rankings_csv = a
         elif o == "--correction-file":
             correction_file = a
         elif o == "--attachments-dir":
@@ -137,6 +141,22 @@ def main():
     comp.add_supplemental_information(
         competition.LinkedSecondSheet(
             admin_review_csv, "Application #", [{"source_name": "Organization name"}]
+        )
+    )
+
+    comp.add_supplemental_information(
+        competition.EvaluationRankingsAdder(
+            peer_rankings_csv,
+            "Peer",
+            "Review #",
+            "Overall Rank",
+            "Score Total",
+            [
+                {"name": "Trait 1", "source_col_name": "Trait 1 Score"},
+                {"name": "Trait 2", "source_col_name": "Trait 2 Score"},
+                {"name": "Trait 3", "source_col_name": "Trait 3 Score"},
+                {"name": "Trait 4", "source_col_name": "Trait 4 Score"},
+            ],
         )
     )
 
@@ -182,7 +202,7 @@ def main():
         comp.sorted_proposal_keys, attachments_dir
     )
     comp.add_supplemental_information(attachments)
-    comp.sort("Organization name")
+    comp.sort("Peer Overall Score Rank Normalized", True)
 
     list_toc = toc.ListToc("All_Proposals")
     list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
@@ -199,6 +219,11 @@ def main():
             {
                 "name": "Application #",
                 "heading": "ID #",
+                "right_aligned": True,
+            },
+            {
+                "name": "Peer Overall Score Rank Normalized",
+                "heading": "Peer Rank",
                 "right_aligned": True,
             },
         ]
@@ -298,6 +323,13 @@ def main():
     my_wiki.csv_only = csv_only
     my_wiki.upload_sheet(comp)
     my_wiki.upload_attachments(attachments.attachments)
+
+    for proposal in comp.proposals.values():
+        my_wiki.create_page(
+            "Evaluations of %s" % proposal.cell("MediaWiki Title"),
+            "{{ #tdcrender:Democracy22/id/" + proposal.key() + ".mwiki|Evaluations }}",
+            True
+        )
 
 
 if __name__ == "__main__":
