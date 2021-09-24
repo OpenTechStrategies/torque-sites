@@ -117,7 +117,7 @@ class FundersCorrectionProcessor(competition.CellProcessor):
             quotechar='"',
         )
         for correction_row in csv_reader:
-            self.data[correction_row[1].strip()] = correction_row[2].strip()
+            self.data[correction_row[1].strip()] = correction_row[0].strip()
 
     def process_cell(self, proposal, column_name):
         current = proposal.cell(column_name).strip()
