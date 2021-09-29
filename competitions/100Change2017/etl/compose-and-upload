@@ -242,7 +242,7 @@ def main():
         competition.ColumnRenamer("Legal Status", "Organization Legal Status")
     )
     comp.transform_sheet(
-        competition.ColumnRenamer("Area of Org Expertise", "Area of Org Expertise")
+        competition.ColumnRenamer("Area of Org Expertise", "Primary Area of Expertise")
     )
     comp.transform_sheet(
         competition.ColumnRenamer(
@@ -374,7 +374,7 @@ def main():
 
     comp.sort("Organization Name")
 
-    comp.add_toc(toc.GenericToc("Topic_TOC", "Primary Thematic Area"))
+    comp.add_toc(toc.GenericToc("Topic_TOC", "Primary Subject Area Category"))
 
     comp.process_tocs()
 
