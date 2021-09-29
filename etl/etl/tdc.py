@@ -64,7 +64,7 @@ class ValidProposals:
         print("ValidProposals written to TDC config dir")
 
 
-class AllColumns:
+class Columns:
     """Dumps out the list of all the columns in a competition in the form
     that can be used by the torque config parser"""
 

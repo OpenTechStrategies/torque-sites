@@ -511,7 +511,7 @@ def main():
 
     if tdc_config_dir is not None:
         tdc.AllProposals(comp).generate(tdc_config_dir)
-        tdc.AllColumns(comp).generate(tdc_config_dir)
+        tdc.Columns(comp).generate(tdc_config_dir)
         tdc.ProcessedCollection(comp).generate(tdc_config_dir)
 
     my_wiki = wiki.WikiSession(

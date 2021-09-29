@@ -148,7 +148,7 @@ def create_tdc_config(tdc_config_dir, comp):
 
     tdc.AllProposals(comp).generate(tdc_config_dir)
     tdc.ValidProposals(comp, "Valid", "Valid").generate(tdc_config_dir)
-    tdc.AllColumns(comp).generate(tdc_config_dir)
+    tdc.Columns(comp).generate(tdc_config_dir)
     tdc.ProcessedCollection(comp).generate(tdc_config_dir)
 
     with open(os.path.join(tdc_config_dir, "Top100"), "w") as f:
