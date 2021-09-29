@@ -622,7 +622,7 @@ def main():
         tdc.ValidProposals(comp, "Admin Review Status", "Valid").generate(
             tdc_config_dir
         )
-        tdc.AllColumns(comp).generate(tdc_config_dir)
+        tdc.Columns(comp).generate(tdc_config_dir)
         tdc.ProcessedCollection(comp).generate(tdc_config_dir)
 
     my_wiki = wiki.WikiSession(
