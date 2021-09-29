@@ -1508,7 +1508,8 @@ class LocationCombiner(InformationTransformer):
                 data[LocationCombiner.REGION] = ""
                 data[LocationCombiner.SUBREGION] = ""
 
-        return data
+        if any(data.values()):
+            return data
 
 
 class PersonCombiner(ColumnCombiner):
