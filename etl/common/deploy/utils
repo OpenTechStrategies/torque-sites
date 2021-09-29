@@ -21,6 +21,17 @@ decrypt () {
 	local passphrase="${3}"
 
 	if [ -z "${passphrase}" ]; then
+		if command -v opass &> /dev/null ; then
+			echo 'Attempting to get PASSPHRASE from opass'
+			passphrase=$(opass show clients/lever-for-change/data-encryption-key | tail -n 1)
+
+			# This line depends a bit on some assumptions about how the caller is using
+			# variables set up in the ./init file
+			GPG_PASSPHRASE=$passphrase
+		fi
+	fi
+
+	if [ -z "${passphrase}" ]; then
 		echo 'NO PASSPHRASE'
 		gpg -o "${output_location}" --decrypt "${encrypted_location}" || exit 1
 	else
