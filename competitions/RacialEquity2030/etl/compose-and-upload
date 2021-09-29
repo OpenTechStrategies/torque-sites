@@ -545,7 +545,7 @@ def main():
     list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
         [
             {
-                "name": "Organization name",
+                "name": "Organization Name",
                 "heading": "Organization",
             },
             {
@@ -559,7 +559,7 @@ def main():
                 "right_aligned": True,
             },
             {
-                "name": "Overall Rank",
+                "name": "Panel Overall Score Rank Normalized",
                 "heading": "Rank",
                 "right_aligned": True,
             },
