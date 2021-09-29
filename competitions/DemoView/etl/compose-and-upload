@@ -272,7 +272,7 @@ def main():
     comp.remove_information(competition.ColumnRemover("Org Primary Area ID"))
     comp.remove_information(competition.ColumnRemover("Priority Populations ID"))
 
-    comp.transform_sheet(competition.ColumnRenamer("Org Website", "Website"))
+    comp.transform_sheet(competition.ColumnRenamer("Org Website", "Organization Website"))
     comp.transform_sheet(
         competition.ColumnRenamer("Org Primary Area", "Primary Area of Expertise")
     )
@@ -296,7 +296,6 @@ def main():
     comp.transform_sheet(
         competition.ColumnRenamer("EIN", "Applicant Tax Identification Number")
     )
-    comp.transform_sheet(competition.ColumnRenamer("Website", "Organization Website"))
     comp.transform_sheet(
         competition.ColumnRenamer("Ability to Scale", "Ability To Scale")
     )
