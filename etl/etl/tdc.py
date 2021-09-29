@@ -72,9 +72,28 @@ class AllColumns:
         self.competition = competition
 
     def generate(self, config_dir):
-        with open(os.path.join(config_dir, "AllColumns"), "w") as f:
-            f.writelines("* %s\n" % column for column in self.competition.columns)
+        from etl import field_whitelist
 
+        exceptions = { }
+        for (field, group) in self.competition.whitelist_exceptions:
+            if group not in exceptions:
+                exceptions[group] = []
+            exceptions[group].append(field)
+
+        for group in list(set(list(field_whitelist.whitelist.keys()) + list(exceptions.keys()))):
+            available_columns = []
+            if group in field_whitelist.whitelist:
+                available_columns.extend(field_whitelist.whitelist[group])
+            if group in exceptions:
+                available_columns.extend(exceptions[group])
+
+            with open(os.path.join(config_dir, "%sColumns" % group), "w") as f:
+                f.writelines(["* %s\n" % column for column in self.competition.columns if column in available_columns])
+
+            print("%sColumns written to TDC config dir" % group)
+
+        with open(os.path.join(config_dir, "AllColumns"), "w") as f:
+            f.writelines(["* %s\n" % column for column in self.competition.columns])
         print("AllColumns written to TDC config dir")
 
 

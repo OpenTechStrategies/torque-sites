@@ -290,12 +290,12 @@ def main():
         gv_proposals, columns, gv_keys, "GlobalView", "Global Application #"
     )
     comp.process_cells_special("Project Title", competition.RemoveHTMLBRsProcessor())
-    comp.add_whitelist_exception("Global Application #")
-    comp.add_whitelist_exception("Competition Application #")
-    comp.add_whitelist_exception("Rank")
-    comp.add_whitelist_exception("Score")
-    comp.add_whitelist_exception("Wiki Key")
-    comp.add_whitelist_exception("Collection Name")
+    comp.add_whitelist_exception("Global Application #", "Application")
+    comp.add_whitelist_exception("Competition Application #", "Application")
+    comp.add_whitelist_exception("Rank", "Confidential")
+    comp.add_whitelist_exception("Score", "Confidential")
+    comp.add_whitelist_exception("Wiki Key", "Application")
+    comp.add_whitelist_exception("Collection Name", "Application")
 
     # Replacing BRs with spaces for this one, because of the data having new lines in
     # the middle of some organization names

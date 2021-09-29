@@ -134,26 +134,22 @@ class Competition:
         for toc in self.tocs:
             toc.process_competition(self)
 
-    def add_whitelist_exception(self, column_name):
+    def add_whitelist_exception(self, column_name, column_group):
         """Adds COLUMN_NAME to the list of fields that aren't errored on, even
         if it isn't in the whitelist."""
-        self.whitelist_exceptions.append(column_name)
+        self.whitelist_exceptions.append((column_name, column_group))
 
     def validate_fields(self):
         """Validate that all the fields being uploaded are in the whitelist"""
-        import importlib.resources as pkg_resources
-        from . import data
+        from etl import field_whitelist
 
-        whitelisted_fields = (
-            pkg_resources.open_text(data, "field_whitelist.dat", encoding="utf-8")
-            .read()
-            .strip()
-            .split("\n")
-        )
+        # Flattens the lists
+        whitelisted_fields = [ f for fieldlist in field_whitelist.whitelist.values() for f in fieldlist ]
+        exceptions = [ f for (f, g) in self.whitelist_exceptions ]
 
         passed_whitelist = True
         for column in self.columns:
-            if column not in whitelisted_fields and column not in self.whitelist_exceptions:
+            if column not in whitelisted_fields and column not in exceptions:
                 passed_whitelist = False
                 print("Column '%s' is not in whitelisted fields file" % column)
 

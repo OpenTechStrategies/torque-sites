@@ -368,7 +368,7 @@ def main():
         competition.ColumnRenamer("Ability to Scale", "Ability To Scale")
     )
     comp.transform_sheet(competition.ColumnRenamer("Budget data", "Budget Data"))
-    comp.add_whitelist_exception("Solution Category Ranking")
+    comp.add_whitelist_exception("Solution Category Ranking", "Application")
     comp.remove_information(competition.ColumnRemover("GUID + Competition Domain"))
     comp.remove_information(competition.ColumnRemover("Org Country ID"))
     comp.remove_information(competition.ColumnRemover("Org State / Province ID"))
