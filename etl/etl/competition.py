@@ -1143,9 +1143,6 @@ class EvaluationRankingsAdder(InformationAdder):
 
             for trait_def in trait_defs:
                 evaluation_datum[
-                    "{} {}".format(self.name, trait_def["name"])
-                ] = trait_def["name"]
-                evaluation_datum[
                     "{} {} Score Normalized".format(self.name, trait_def["name"])
                 ] = row[trait_def["col"]]
 
@@ -1156,7 +1153,6 @@ class EvaluationRankingsAdder(InformationAdder):
             "{} Overall Score Rank Normalized".format(self.name),
             "{} Sum of Scores Normalized".format(self.name),
         ]
-        names.extend(["{} {}".format(self.name, trait) for trait in self.traits])
         names.extend(
             ["{} {} Score Normalized".format(self.name, trait) for trait in self.traits]
         )
