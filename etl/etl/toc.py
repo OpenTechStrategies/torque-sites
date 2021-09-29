@@ -437,9 +437,10 @@ class GeographicToc(Toc):
 
         for proposal in self.proposals:
             for column in self.columns:
-                add_proposal_to_data(
-                    proposal, self.data, column, self.location_granularities
-                )
+                if proposal.cell(column):
+                    add_proposal_to_data(
+                        proposal, self.data, column, self.location_granularities
+                    )
 
         def sort_data(data):
             for key in sorted(data.keys()):
