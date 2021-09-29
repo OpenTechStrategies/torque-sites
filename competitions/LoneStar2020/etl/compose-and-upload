@@ -238,7 +238,7 @@ def main():
         competition.ColumnNotEqualsProposalFilter("Admin Review Status", "Valid")
     )
 
-    comp.process_cells_special("Priority Populations", competition.MultiLineProcessor())
+    comp.process_cells_special("Priority Populations", competition.ToListProcessor())
     comp.process_cells_special(
         "Total Resource Requirements", competition.NumberCommaizer()
     )
@@ -495,7 +495,7 @@ def main():
         ]
     )
     comp.add_toc(list_toc)
-    comp.add_toc(toc.GenericMultiLineToc("Populations", "Priority Populations"))
+    comp.add_toc(toc.GenericListToc("Populations", "Priority Populations"))
     comp.add_toc(toc.GenericToc("Solution_Categories", "Solution category"))
     comp.add_toc(toc.AnnualBudgetToc("Annual Operating Budget"))
 

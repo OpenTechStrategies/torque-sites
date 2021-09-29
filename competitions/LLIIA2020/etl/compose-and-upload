@@ -281,9 +281,9 @@ def main():
         comp.add_supplemental_information(BudgetDataAdder(budget_csv))
 
     comp.process_cells_special("Total Projected Costs", competition.NumberCommaizer())
-    comp.process_cells_special("Priority Populations", competition.MultiLineProcessor())
+    comp.process_cells_special("Priority Populations", competition.ToListProcessor())
     comp.process_cells_special(
-        "Key Words and Phrases", competition.MultiLineProcessor()
+        "Key Words and Phrases", competition.ToListProcessor()
     )
     comp.process_cells_special(
         "Annual Operating Budget",
@@ -460,8 +460,8 @@ def main():
     )
     comp.add_toc(list_toc)
 
-    comp.add_toc(toc.GenericMultiLineToc("Population_TOC", "Priority Populations"))
-    comp.add_toc(toc.GenericMultiLineToc("Keyword_TOC", "Key Words and Phrases"))
+    comp.add_toc(toc.GenericListToc("Population_TOC", "Priority Populations"))
+    comp.add_toc(toc.GenericListToc("Keyword_TOC", "Key Words and Phrases"))
 
     comp.add_toc(toc.AnnualBudgetToc("Annual Operating Budget"))
 

@@ -262,10 +262,10 @@ def main():
         competition.StaticColumnAdder("Competition Name", "RacialEquity2030")
     )
 
-    comp.process_cells_special("Priority Populations", competition.MultiLineProcessor())
+    comp.process_cells_special("Priority Populations", competition.ToListProcessor())
     comp.process_cells_special(
         "Sustainable Development Goals",
-        competition.MultiLineProcessor(split_string="|"),
+        competition.ToListProcessor(split_string="|"),
     )
     comp.process_cells_special(
         "Sustainable Development Goals",
@@ -570,9 +570,9 @@ def main():
     comp.add_toc(
         toc.GenericToc("Funders", ["FUNDER 1 Name", "FUNDER 2 Name", "FUNDER 3 Name"])
     )
-    comp.add_toc(toc.GenericMultiLineToc("Populations", "Priority Populations"))
+    comp.add_toc(toc.GenericListToc("Populations", "Priority Populations"))
     comp.add_toc(
-        toc.GenericMultiLineToc(
+        toc.GenericListToc(
             "Sustainable_Development_Goals",
             "Sustainable Development Goals",
             competition.SustainableDevelopmentGoalProcessor.official_sdgs,

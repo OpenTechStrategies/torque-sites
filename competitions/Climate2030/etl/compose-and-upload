@@ -178,8 +178,8 @@ def main():
     comp.filter_proposals(
         competition.ColumnEqualsProposalFilter("Admin Review Status", "Not submitted")
     )
-    comp.process_cells_special("Priority Populations", competition.MultiLineProcessor())
-    comp.process_cells_special("Project Focus", competition.MultiLineProcessor())
+    comp.process_cells_special("Priority Populations", competition.ToListProcessor())
+    comp.process_cells_special("Project Focus", competition.ToListProcessor())
     comp.process_cells_special("Total Projected Costs", competition.NumberCommaizer())
     comp.process_cells_special("Budget data", competition.BudgetTableProcessor())
     comp.process_cells_special(
@@ -447,8 +447,8 @@ def main():
     )
     comp.add_toc(list_toc)
 
-    comp.add_toc(toc.GenericMultiLineToc("Populations", "Priority Populations"))
-    comp.add_toc(toc.GenericMultiLineToc("Project_Focus", "Project Focus"))
+    comp.add_toc(toc.GenericListToc("Populations", "Priority Populations"))
+    comp.add_toc(toc.GenericListToc("Project_Focus", "Project Focus"))
     comp.add_toc(toc.AnnualBudgetToc("Annual Operating Budget"))
 
     comp.add_toc(
