@@ -350,8 +350,8 @@ def main():
         competition.ColumnRenamer("Stakeholder &amp; Community Engagement", "Community Engagement")
     )
 
-    comp.add_whitelist_exception("Lead Applicant Name")
-    comp.add_whitelist_exception("Team Partners")
+    comp.add_whitelist_exception("Lead Applicant Name", "Application")
+    comp.add_whitelist_exception("Team Partners", "Application")
 
     comp.remove_information(competition.ColumnRemover("Application GUID + competition domain"))
     comp.remove_information(competition.ColumnRemover("Org Nation ID"))

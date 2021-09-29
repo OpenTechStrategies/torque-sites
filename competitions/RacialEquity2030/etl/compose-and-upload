@@ -523,8 +523,9 @@ def main():
         )
     )
 
-    comp.add_whitelist_exception("Organization location of formation")
-    comp.add_whitelist_exception("Affirmation of Approach")
+    comp.add_whitelist_exception("Organization location of formation", "Application")
+    comp.add_whitelist_exception("Affirmation of Approach", "Application")
+    comp.add_whitelist_exception("Demographics", "Application")
 
     comp.remove_information(
         competition.ColumnRemover("Application GUID + competition domain")
