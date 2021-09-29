@@ -12,6 +12,7 @@
   roles:
     - mediawiki
     - embed_video
-    #    - torquedataconnect
-    #    - 100Change2020Demo
-    #    - finishmediawiki
+    - torquedataconnect
+    - permissions
+    - 100Change2020Demo
+    - finishmediawiki
