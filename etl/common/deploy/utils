@@ -33,9 +33,10 @@ decrypt () {
 
 	if [ -z "${passphrase}" ]; then
 		echo 'NO PASSPHRASE'
-		gpg -o "${output_location}" --decrypt "${encrypted_location}" || exit 1
+
+		gpg --yes -o "${output_location}" --decrypt "${encrypted_location}" || exit 1
 	else
 		echo 'PASSPHRASE'
-		gpg --batch --passphrase "${passphrase}" -o "${output_location}" --decrypt "${encrypted_location}" || exit 1
+		gpg --yes --batch --passphrase "${passphrase}" -o "${output_location}" --decrypt "${encrypted_location}" || exit 1
 	fi
 }
