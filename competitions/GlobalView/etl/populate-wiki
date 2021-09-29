@@ -390,7 +390,7 @@ def main():
     comp.add_toc(list_toc)
     comp.add_toc(highly_ranked_toc)
     comp.add_toc(
-        toc.GenericMultiLineToc(
+        toc.GenericListToc(
             "Populations", "Priority Populations", None, toc.GenericToc.SortMethod.COUNT
         )
     )
@@ -399,7 +399,7 @@ def main():
     comp.add_toc(MultiCompAppsToc())
 
     comp.add_toc(
-        toc.GenericMultiLineToc(
+        toc.GenericListToc(
             "Sustainable_Development_Goals",
             "Sustainable Development Goals",
             competition.SustainableDevelopmentGoalProcessor.official_sdgs,

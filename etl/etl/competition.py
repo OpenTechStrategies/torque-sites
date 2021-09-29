@@ -399,10 +399,9 @@ class RemoveHTMLBRsProcessor(CellProcessor):
         )
 
 
-class MultiLineProcessor(CellProcessor):
+class ToListProcessor(CellProcessor):
     """A CellProcessor that splits a cell on the initialized SPLIT_STRING
-    (defautling to comma: ",") into a newline separate list, for torque
-    to represent as a list"""
+    (defautling to comma: ",") into a list."""
 
     def __init__(self, split_string=","):
         self.split_string = split_string
@@ -412,10 +411,10 @@ class MultiLineProcessor(CellProcessor):
         return [elem.strip() for elem in cell.split(self.split_string)]
 
 
-class MultiLineFromListProcessor(CellProcessor):
-    """A CellProcesor that splits a cell into multiple lines, but does
+class ToSpecifiedListProcessor(CellProcessor):
+    """A CellProcesor that splits a cell into a list, but does
     so based on a passed in list, verifying that each item appears
-    in the list, and allowing list items to have commas in them."""
+    in the specified list, and allowing items to have commas in them."""
 
     def __init__(self, valid_list):
         self.valid_list = valid_list

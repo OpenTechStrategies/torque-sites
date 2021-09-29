@@ -175,7 +175,7 @@ def main():
         )
     )
 
-    comp.process_cells_special("Priority Populations", competition.MultiLineProcessor())
+    comp.process_cells_special("Priority Populations", competition.ToListProcessor())
     comp.process_cells_special("Total Projected Costs", competition.NumberCommaizer())
     comp.process_cells_special("Budget Data", competition.BudgetTableProcessor())
     comp.process_cells_special(
@@ -393,7 +393,7 @@ def main():
     )
     comp.add_toc(list_toc)
 
-    comp.add_toc(toc.GenericMultiLineToc("Populations", "Priority Populations"))
+    comp.add_toc(toc.GenericListToc("Populations", "Priority Populations"))
     comp.add_toc(toc.GenericToc("Solution_Categories", "Solution Category"))
     comp.add_toc(toc.AnnualBudgetToc("Annual Operating Budget"))
 

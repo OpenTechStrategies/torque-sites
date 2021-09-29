@@ -414,7 +414,7 @@ def main():
     comp.add_supplemental_information(admin_review)
     comp.filter_proposals(admin_review)
 
-    comp.process_cells_special("Priority Populations", competition.MultiLineProcessor())
+    comp.process_cells_special("Priority Populations", competition.ToListProcessor())
 
     comp.transform_sheet(
         competition.LocationCombiner(
@@ -554,7 +554,7 @@ def main():
     comp.sort("Panel Overall Score Rank Normalized", True)
 
     comp.add_toc(toc.GenericToc("Topic_TOC", "Primary Subject Area Category"))
-    comp.add_toc(toc.GenericMultiLineToc("Population_TOC", "Priority Populations"))
+    comp.add_toc(toc.GenericListToc("Population_TOC", "Priority Populations"))
     proposal_formatter = toc.WikiTableTocProposalFormatter(
         [
             {

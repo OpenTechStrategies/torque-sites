@@ -315,7 +315,7 @@ class GenericToc(Toc):
         return True
 
 
-class GenericMultiLineToc(GenericToc):
+class GenericListToc(GenericToc):
     """A special case of GenericToc for columns that have multiple
     values in them (like a list of keywords), so that proposals
     can show up multiple times on the Toc"""
