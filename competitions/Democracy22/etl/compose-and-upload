@@ -144,22 +144,6 @@ def main():
         )
     )
 
-    comp.add_supplemental_information(
-        competition.EvaluationRankingsAdder(
-            peer_rankings_csv,
-            "Peer",
-            "Review #",
-            "Overall Rank",
-            "Score Total",
-            [
-                {"name": "Trait 1", "source_col_name": "Trait 1 Score"},
-                {"name": "Trait 2", "source_col_name": "Trait 2 Score"},
-                {"name": "Trait 3", "source_col_name": "Trait 3 Score"},
-                {"name": "Trait 4", "source_col_name": "Trait 4 Score"},
-            ],
-        )
-    )
-
     correction_processor = competition.CorrectionData("Application #", correction_file)
     for column in correction_processor.columns_affected():
         comp.process_cells_special(column, correction_processor)
@@ -176,6 +160,19 @@ def main():
     comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
     comp.add_supplemental_information(
         competition.GlobalViewMediaWikiTitleAdder("Democracy22", "Project Title")
+    )
+    comp.add_supplemental_information(
+        competition.EvaluationAdder(
+            "Peer",
+            peer_rankings_csv,
+            app_col_name="Application #",
+            score_rank_normalized_col_name="Overall Score Rank Normalized ",
+            sum_of_scores_normalized_col_name="Sum Of Scores Normalized ",
+            trait_col_name="Trait",
+            score_normalized_col_name="Trait Score Normalized",
+            comments_col_name="Trait Judge Comment ",
+            comments_score_normalized_col_name="Trait Score Normalized",
+        )
     )
 
     comp.process_cells_special("Priority Populations", competition.MultiLineProcessor())
