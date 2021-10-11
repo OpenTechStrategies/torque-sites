@@ -1,7 +1,7 @@
 ---
 competition_name: Climate2030
 db_username: Climate2030_rw
-torquedataconnect_sheet_name: Climate2030
+torquedataconnect_collection_name: Climate2030
 
 html_directory: /var/www/html
 mediawiki_server: https://torque.leverforchange.org
