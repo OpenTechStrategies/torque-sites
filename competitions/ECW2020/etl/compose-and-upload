@@ -453,10 +453,10 @@ def main():
                 )
             )
 
-    comp.add_whitelist_exception("WPI Indicators", "Application")
-    comp.add_whitelist_exception("Strategic Approaches", "Application")
-    comp.add_whitelist_exception("Strategic Approach Narrative", "Application")
-    comp.add_whitelist_exception("Application Data Region", "Application")
+    comp.add_allowlist_exception("WPI Indicators", "Application")
+    comp.add_allowlist_exception("Strategic Approaches", "Application")
+    comp.add_allowlist_exception("Strategic Approach Narrative", "Application")
+    comp.add_allowlist_exception("Application Data Region", "Application")
 
     comp.remove_information(competition.ColumnRemover("GUID + Competition Domain"))
     comp.remove_information(competition.ColumnRemover("Org Country ID"))

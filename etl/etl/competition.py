@@ -32,7 +32,7 @@ class Competition:
         self.proposals = proposals
         self.sorted_proposal_keys = sorted_proposal_keys
         self.tocs = []
-        self.whitelist_exceptions = []
+        self.allowlist_exceptions = []
 
     def process_all_cells_special(self, processor):
         """For all cells in the competition, apply CellProcessor PROCESSOR
@@ -134,27 +134,27 @@ class Competition:
         for toc in self.tocs:
             toc.process_competition(self)
 
-    def add_whitelist_exception(self, column_name, column_group):
+    def add_allowlist_exception(self, column_name, column_group):
         """Adds COLUMN_NAME to the list of fields that aren't errored on, even
-        if it isn't in the whitelist."""
-        self.whitelist_exceptions.append((column_name, column_group))
+        if it isn't in the allowlist."""
+        self.allowlist_exceptions.append((column_name, column_group))
 
     def validate_fields(self):
-        """Validate that all the fields being uploaded are in the whitelist"""
-        from etl import field_whitelist
+        """Validate that all the fields being uploaded are in the allowlist"""
+        from etl import field_allowlist
 
         # Flattens the lists
-        whitelisted_fields = [ f for fieldlist in field_whitelist.whitelist.values() for f in fieldlist ]
-        exceptions = [ f for (f, g) in self.whitelist_exceptions ]
+        allowlisted_fields = [ f for fieldlist in field_allowlist.allowlist.values() for f in fieldlist ]
+        exceptions = [ f for (f, g) in self.allowlist_exceptions ]
 
-        passed_whitelist = True
+        passed_allowlist = True
         for column in self.columns:
-            if column not in whitelisted_fields and column not in exceptions:
-                passed_whitelist = False
-                print("Column '%s' is not in whitelisted fields file" % column)
+            if column not in allowlisted_fields and column not in exceptions:
+                passed_allowlist = False
+                print("Column '%s' is not in allowlisted fields file" % column)
 
-        if not passed_whitelist:
-            raise Exception("Did not pass whitelist, see above for why")
+        if not passed_allowlist:
+            raise Exception("Did not pass allowlist, see above for why")
 
     def rekey(self, new_column_name):
         """Sometimes the key column is one of the ones that has changed or been combined, in which
