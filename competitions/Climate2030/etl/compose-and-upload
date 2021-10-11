@@ -394,7 +394,7 @@ def main():
         )
     )
 
-    comp.add_whitelist_exception("Projected GHG Emission reduction", "Application")
+    comp.add_allowlist_exception("Projected GHG Emission reduction", "Application")
 
     comp.remove_information(competition.ColumnRemover("GUID + Competition Domain"))
     comp.remove_information(competition.ColumnRemover("Org Country ID"))

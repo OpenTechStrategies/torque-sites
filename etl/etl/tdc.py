@@ -72,18 +72,18 @@ class Columns:
         self.competition = competition
 
     def generate(self, config_dir):
-        from etl import field_whitelist
+        from etl import field_allowlist
 
         exceptions = { }
-        for (field, group) in self.competition.whitelist_exceptions:
+        for (field, group) in self.competition.allowlist_exceptions:
             if group not in exceptions:
                 exceptions[group] = []
             exceptions[group].append(field)
 
-        for group in list(set(list(field_whitelist.whitelist.keys()) + list(exceptions.keys()))):
+        for group in list(set(list(field_allowlist.allowlist.keys()) + list(exceptions.keys()))):
             available_columns = []
-            if group in field_whitelist.whitelist:
-                available_columns.extend(field_whitelist.whitelist[group])
+            if group in field_allowlist.allowlist:
+                available_columns.extend(field_allowlist.allowlist[group])
             if group in exceptions:
                 available_columns.extend(exceptions[group])
 

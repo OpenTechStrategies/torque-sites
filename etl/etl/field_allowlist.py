@@ -1,4 +1,4 @@
-whitelist = {
+allowlist = {
     "Application": [
         "GUID",
         "Competition Domain",
