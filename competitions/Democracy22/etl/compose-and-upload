@@ -394,7 +394,7 @@ def main():
     comp.add_toc(list_toc)
 
     comp.add_toc(toc.GenericListToc("Populations", "Priority Populations"))
-    comp.add_toc(toc.GenericToc("Solution_Categories", "Solution Category"))
+    comp.add_toc(toc.GenericToc("Solution_Categories", "Primary Subject Area Category"))
     comp.add_toc(toc.AnnualBudgetToc("Annual Operating Budget"))
 
     comp.add_toc(
