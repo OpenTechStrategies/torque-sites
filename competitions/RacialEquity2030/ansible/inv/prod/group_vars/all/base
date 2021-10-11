@@ -1,7 +1,7 @@
 ---
 competition_name: RacialEquity2030
 db_username: RacialEquity2030_rw
-torquedataconnect_sheet_name: RacialEquity2030
+torquedataconnect_collection_name: RacialEquity2030
 
 html_directory: /var/www/html
 mediawiki_server: https://torque.leverforchange.org
