@@ -512,7 +512,7 @@ def main():
     comp.add_toc(list_toc)
 
     comp.add_toc(toc.GenericListToc("Populations", "Priority Populations"))
-    comp.add_toc(toc.GenericToc("Themes", "Application Data Theme"))
+    comp.add_toc(toc.GenericToc("Themes", "Primary Subject Area Category"))
     comp.add_toc(toc.GenericToc("Regions", "Application Data Region"))
 
     comp.add_toc(toc.AnnualBudgetToc("Annual Operating Budget"))
