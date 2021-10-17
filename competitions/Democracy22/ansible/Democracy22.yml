@@ -22,6 +22,7 @@
     - torquedataconnect
     - exporttables
     - simplemaps
+    - emulategroup
     - Democracy22
     # This should always go last, to run db updates and restart
     - finishmediawiki

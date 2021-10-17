@@ -40,6 +40,7 @@ $wgGroupPermissions['sysop']['picksome'] = true;
 $wgGroupPermissions['sysop']['picksome-admin'] = true;
 $wgGroupPermissions['sysop']['view-special-log'] = true;
 $wgGroupPermissions['sysop']['torquedataconnect-edit'] = true;
+$wgGroupPermissions['sysop']['emulategroup'] = true;
 
 $wgGroupPermissions['DecisionMakers']['teamcomment'] = true;
 $wgGroupPermissions['DecisionMakers']['teamcommentseeusernames'] = true;
