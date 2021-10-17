@@ -19,6 +19,7 @@
     - exporttables
     - simplesaml
     - simplemaps
+    - emulategroup
     - GlobalView
     # This should always go last, to run db updates and restart
     - finishmediawiki

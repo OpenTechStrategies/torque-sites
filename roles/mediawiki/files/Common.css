@@ -181,8 +181,21 @@ body {
  * the empty-portlet css class, and we must override for our
  * specific code.
  */
-#p-View {
+#p-View, #p-Emulate {
   display:block;
+}
+
+#p-Emulate input,select {
+  width:130px;
+}
+
+#p-Emulate {
+  line-height: 1.125em;
+  font-size: 0.75em;
+}
+
+#p-Emulate .currentlyemulating{
+  font-weight:bold;
 }
 
 /* Hides the "Printable version" tool.

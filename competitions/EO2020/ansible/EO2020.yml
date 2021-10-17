@@ -21,6 +21,7 @@
     - torquedataconnect
     - exporttables
     - simplemaps
+    - emulategroup
     - EO2020
     # This should always go last, to run db updates and restart
     - finishmediawiki
