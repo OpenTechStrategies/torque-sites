@@ -162,6 +162,9 @@ def main():
         competition.GlobalViewMediaWikiTitleAdder("Democracy22", "Project Title")
     )
     comp.add_supplemental_information(
+        competition.StaticColumnAdder("Competition Name", "Democracy22")
+    )
+    comp.add_supplemental_information(
         competition.EvaluationAdder(
             "Peer",
             peer_rankings_csv,
