@@ -14,3 +14,63 @@ MEDIA_ROOT="{{ torquedata_install_directory }}uploads"
 
 COLLECTIONS_ALIAS="competitions"
 DOCUMENTS_ALIAS="proposals"
+
+from core import utils
+class RankBandFilter(utils.Filter):
+    def name(self):
+        return "rank_band"
+
+    def display_name(self):
+        return "Rank Band"
+
+    def document_value(self, document):
+        try:
+            rank = int(document["Panel Overall Score Rank Normalized"])
+            if rank < 6:
+                return "1-5"
+            elif rank < 11:
+                return "6-10"
+            elif rank < 21:
+                return "11-20"
+            elif rank < 51:
+                return "21-50"
+            elif rank < 101:
+                return "51-100"
+            elif rank < 9999:
+                return "101+"
+            else:
+                return "Unranked"
+        except ValueError:
+            return "Unranked"
+        except TypeError:
+            return "Unranked"
+
+    def sort(self, names):
+        correct_order = [
+            "1-5",
+            "6-10",
+            "11-20",
+            "21-50",
+            "51-100",
+            "101+",
+            "Unranked",
+        ]
+        names.sort(key=lambda name: correct_order.index(name) if name in correct_order else len(correct_order))
+        return names
+
+
+class CompetitionName(utils.Filter):
+    def name(self):
+        return "competition_name"
+
+    def display_name(self):
+        return "Competition"
+
+    def document_value(self, document):
+        return document["Competition Name"] or "Unknown"
+
+
+FILTERS = [
+    RankBandFilter(),
+    CompetitionName(),
+]
