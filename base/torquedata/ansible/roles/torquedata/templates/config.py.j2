@@ -24,8 +24,23 @@ class RankBandFilter(utils.Filter):
         return "Rank Band"
 
     def document_value(self, document):
+        rank_str = False
         try:
-            rank = int(document["Panel Overall Score Rank Normalized"])
+            rank_str = document["Panel Overall Score Rank Normalized"]
+        except ValueError:
+            pass
+
+        if not rank_str:
+            try:
+                rank_str = document["Peer Overall Score Rank Normalized"]
+            except ValueError:
+                pass
+
+        if not rank_str:
+            return "Unranked"
+
+        try:
+            rank = int(rank_str)
             if rank < 6:
                 return "1-5"
             elif rank < 11:
