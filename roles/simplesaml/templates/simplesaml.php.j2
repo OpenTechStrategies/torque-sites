@@ -49,8 +49,7 @@ $wgSimpleSAMLphp_EmailAttribute = 'email';
 $wgSimpleSAMLphp_UsernameAttribute = 'email';
 
 $wgSimpleSAMLphp_SyncAllGroups_GroupNameModificationCallback = function($origGroupName){
-# Remove spaces
-  return preg_replace('/\s/', '', $origGroupName);
+  return "LfcOkta";
 };
 $wgSimpleSAMLphp_AttributeProcessorFactories = [
   "MediaWiki\\Extension\\SimpleSAMLphp\\AttributeProcessor\\SyncAllGroups::factory"
