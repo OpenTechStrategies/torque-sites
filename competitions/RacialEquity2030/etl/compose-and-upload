@@ -568,7 +568,7 @@ def main():
     comp.add_toc(list_toc)
 
     comp.add_toc(
-        toc.GenericToc("Funders", ["Funder #1", "Funder #2", "Funder #3"])
+        toc.GenericToc("Funders", ["Funder #1", "Funder #2", "Funder #3"], sort=toc.GenericToc.SortMethod.COUNT)
     )
     comp.add_toc(toc.GenericListToc("Populations", "Priority Populations"))
     comp.add_toc(
