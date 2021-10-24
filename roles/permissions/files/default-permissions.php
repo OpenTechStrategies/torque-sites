@@ -141,9 +141,9 @@ $wgSimpleSAMLphp_SyncAllGroups_LocallyManaged = [
 #
 $wgSimpleSAMLphp_GroupMap = [
   # Deprecated settings
-  'sysop' => ['groups' => ['LFC Torque Admin', 'LFC Staff', 'LFC Admins']],
-  'interface-admin' => ['groups' => ['LFC Torque Admin', 'LFC Staff', 'LFC Admins']],
-  'bureaucrat' => ['groups' => ['LFC Torque Admin', 'LFC Staff', 'LFC Admins']],
+  'sysop' => ['groups' => ['LFC Torque Admin', 'LFC Staff', 'LFC Admins', 'Torque Admin']],
+  'interface-admin' => ['groups' => ['LFC Torque Admin', 'LFC Staff', 'LFC Admins', 'Torque Admin']],
+  'bureaucrat' => ['groups' => ['LFC Torque Admin', 'LFC Staff', 'LFC Admins', 'Torque Admin']],
   'DecisionMakers' => ['groups' => ['LFC Decision Makers', 'Board Members']],
   'PseudoDecisionMakers' => ['groups' => ['LFC Pseudo Decision Makers', 'Pseudo Board Members']],
   'LFCEvaluators' => ['groups' => ['LFC Evaluators']],
@@ -151,10 +151,12 @@ $wgSimpleSAMLphp_GroupMap = [
   'LFCResearchPartners' => ['groups' => ['LFC Research Partners']],
   'LFCTorqueAdmin' => ['groups' => ['LFC Torque Admin', 'LFC Staff', 'LFC Admins']],
 
-  # After the reorganization
-  'sysop' => ['groups' => ['Torque Admin']],
-  'interface-admin' => ['groups' => ['Torque Admin']],
-  'bureaucrat' => ['groups' => ['Torque Admin']],
+  # After the reorganization.  When it's complete, uncomment the next three item.
+  # They had to be commented because they were interfernig the the above deprecated settings
+  # and causing failures for admins and staff.
+  #'sysop' => ['groups' => ['Torque Admin']],
+  #'interface-admin' => ['groups' => ['Torque Admin']],
+  #'bureaucrat' => ['groups' => ['Torque Admin']],
   'TorqueAdmin' => ['groups' => ['Torque Admin']],
   'LfcStaff' => ['groups' => ['LfC Staff']],
   'TorqueDecisionMaker' => ['groups' => ['Torque Decision Maker']],
