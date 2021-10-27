@@ -150,6 +150,7 @@ class BudgetDataAdder(competition.InformationAdder):
         else:
             return {}
 
+
 class ProposalMapToc(toc.Toc):
     def __init__(self):
         self.name = "Proposal_Map"
@@ -157,10 +158,12 @@ class ProposalMapToc(toc.Toc):
 
     def template_file(self):
         from pathlib import Path
+
         return Path("%s/proposal_map.html" % self.maps_dir).read_text()
 
     def raw(self):
         return False
+
 
 def main():
     """Compose the LFC input and emit it as html-ized csv."""
@@ -249,12 +252,17 @@ def main():
                 "Peer",
                 judge_evaluation_csv,
                 app_col_name="Application #",
+                score_rank_raw_col_name="OverallScoreRank",
                 score_rank_normalized_col_name="OverallScoreRankNormalized",
+                sum_of_scores_raw_col_name="SumOfScores",
                 sum_of_scores_normalized_col_name="SumOfScoresNormalized",
                 trait_col_name="Trait",
+                score_raw_col_name="TraitScore",
                 score_normalized_col_name="TraitScoreNormalized",
                 comments_col_name="TraitJudgeComment",
+                comments_score_raw_col_name="TraitScore",
                 comments_score_normalized_col_name="TraitScoreNormalized",
+                primary_rank=False,
             )
         )
 
@@ -264,12 +272,17 @@ def main():
                 "Panel",
                 panel_evaluation_csv,
                 app_col_name="Application #",
+                score_rank_raw_col_name="OverallScoreRank",
                 score_rank_normalized_col_name="OverallScoreRankNormalized",
+                sum_of_scores_raw_col_name="SumOfScores",
                 sum_of_scores_normalized_col_name="SumOfScoresNormalized",
                 trait_col_name="Trait",
+                score_raw_col_name="TraitScore",
                 score_normalized_col_name="TraitScoreNormalized",
                 comments_col_name="TraitJudgeComment",
+                comments_score_raw_col_name="TraitScore",
                 comments_score_normalized_col_name="TraitScoreNormalized",
+                primary_rank=True,
             )
         )
 
@@ -282,9 +295,7 @@ def main():
 
     comp.process_cells_special("Total Projected Costs", competition.NumberCommaizer())
     comp.process_cells_special("Priority Populations", competition.ToListProcessor())
-    comp.process_cells_special(
-        "Key Words and Phrases", competition.ToListProcessor()
-    )
+    comp.process_cells_special("Key Words and Phrases", competition.ToListProcessor())
     comp.process_cells_special(
         "Annual Operating Budget",
         competition.AnnualBudgetProcessor(
@@ -432,7 +443,7 @@ def main():
         competition.ColumnRenamer("Point of Intervention", "Project Focus")
     )
 
-    comp.sort("Panel Overall Score Rank Normalized", True)
+    comp.sort("Rank", True)
 
     list_toc = toc.ListToc("All_Proposals")
     list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
@@ -452,7 +463,7 @@ def main():
                 "right_aligned": True,
             },
             {
-                "name": "Panel Overall Score Rank Normalized",
+                "name": "Rank",
                 "heading": "Rank",
                 "right_aligned": True,
             },
@@ -488,23 +499,23 @@ def main():
         )
     )
 
-    if (config.geocode_api_key):
-      geocoder = Geocoder.Geocoder(config.geocode_api_key)
-      comp.add_supplemental_information(
-          competition.GeocodeAdder(
-              "Organization LatLng",
-              Geocoder.Geocoder.generate_address_query_lambda(
-                  address1='Street Address',
-                  address2='Address Line 2',
-                  city='City',
-                  state='Org State / Province',
-                  country='Org Country',
-                  locality='Org Locality / County / District',
-                  zipCode='Zip / Postal Code',
-              ),
-              geocoder,
-          )
-      )
+    if config.geocode_api_key:
+        geocoder = Geocoder.Geocoder(config.geocode_api_key)
+        comp.add_supplemental_information(
+            competition.GeocodeAdder(
+                "Organization LatLng",
+                Geocoder.Geocoder.generate_address_query_lambda(
+                    address1="Street Address",
+                    address2="Address Line 2",
+                    city="City",
+                    state="Org State / Province",
+                    country="Org Country",
+                    locality="Org Locality / County / District",
+                    zipCode="Zip / Postal Code",
+                ),
+                geocoder,
+            )
+        )
 
     comp.add_toc(ProposalMapToc())
     comp.process_tocs()

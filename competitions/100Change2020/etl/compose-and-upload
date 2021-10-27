@@ -156,7 +156,7 @@ def create_tdc_config(tdc_config_dir, comp):
             [
                 tdc.proposal_to_title_line(p)
                 for p in comp.ordered_proposals()
-                if int(p.cell("Panel Overall Score Rank Normalized")) < 101
+                if int(p.cell("Rank")) < 101
             ]
         )
 
@@ -165,10 +165,7 @@ def create_tdc_config(tdc_config_dir, comp):
             [
                 tdc.proposal_to_title_line(p)
                 for p in comp.ordered_proposals()
-                if (
-                    int(p.cell("Panel Overall Score Rank Normalized")) < 101
-                    or p.cell("Wild Card") == "Wild Card"
-                )
+                if (int(p.cell("Rank")) < 101 or p.cell("Wild Card") == "Wild Card")
             ]
         )
 
@@ -178,7 +175,7 @@ def create_tdc_config(tdc_config_dir, comp):
                 tdc.proposal_to_title_line(p)
                 for p in comp.ordered_proposals()
                 if (
-                    int(p.cell("Panel Overall Score Rank Normalized")) < 101
+                    int(p.cell("Rank")) < 101
                     or p.cell("Wild Card") == "Wild Card"
                     and p.cell("TR Disqualified") != "TR Disqualified"
                 )
@@ -191,7 +188,7 @@ def create_tdc_config(tdc_config_dir, comp):
             [
                 tdc.proposal_to_title_line(p)
                 for p in comp.ordered_proposals()
-                if int(p.cell("Panel Overall Score Rank Normalized")) < 202
+                if int(p.cell("Rank")) < 202
             ]
         )
 
@@ -200,7 +197,7 @@ def create_tdc_config(tdc_config_dir, comp):
             [
                 tdc.proposal_to_title_line(p)
                 for p in comp.ordered_proposals()
-                if int(p.cell("Panel Overall Score Rank Normalized")) != 9999
+                if int(p.cell("Rank")) != 9999
             ]
         )
 
@@ -213,7 +210,7 @@ class ApplicationLevelAdder(competition.InformationAdder):
 
     def cell(self, proposal, column_name):
         if (
-            int(proposal.cell("Panel Overall Score Rank Normalized")) < 101
+            int(proposal.cell("Rank")) < 101
             or proposal.cell("Wild Card") == "Wild Card"
         ) and proposal.cell("TR Disqualified") != "TR Disqualified":
             return "Highly Ranked"
@@ -241,7 +238,7 @@ class WildcardEligibleAdder(competition.InformationAdder):
         return ["Wild Card Eligible"]
 
     def cell(self, proposal, column_name):
-        rank = int(proposal.cell("Panel Overall Score Rank Normalized"))
+        rank = int(proposal.cell("Rank"))
         return "Wild Card Eligible" if rank > 100 and rank <= 201 else ""
 
 
@@ -268,6 +265,41 @@ class AppendixDisplayNames:
             name = re.sub("^[^_]*_", "", name)
             name = re.sub("_", " ", name)
             attachment.name = name
+
+
+class WiseHeadCorrection(competition.CellProcessor):
+    """Corrects the wisehead ranks based on a correction spreadsheet"""
+
+    def __init__(self, wisehead_corrected_scores_csv):
+        csv_reader = csv.reader(
+            open(wisehead_corrected_scores_csv, encoding="utf-8"),
+            delimiter=",",
+            quotechar='"',
+        )
+        header_row = next(csv_reader)
+        application_no_col = header_row.index("Review #")
+        overall_rank_col = header_row.index("Overall Rank")
+        score_total_col = header_row.index("Score Total")
+
+        self.data = {}
+        for row in csv_reader:
+            self.data[row[application_no_col]] = {
+                "Rank": row[overall_rank_col],
+                "Score": row[score_total_col],
+            }
+
+    def process_cell(self, proposal, column_name):
+        if proposal.key() in self.data:
+            if column_name == "Rank":
+                return self.data[proposal.key()]["Rank"]
+
+            if column_name == "Panel Overall Score":
+                score_field = proposal.cell(column_name)
+                score_field["Normalized Rank"] = self.data[proposal.key()]["Rank"]
+                score_field["Normalized"] = self.data[proposal.key()]["Score"]
+                return score_field
+
+        return proposal.cell(column_name)
 
 
 def main():
@@ -364,12 +396,17 @@ def main():
                 "Peer",
                 judge_evaluation_csv,
                 app_col_name="Application #",
+                score_rank_raw_col_name="OverallScoreRank",
                 score_rank_normalized_col_name="OverallScoreRankNormalized",
+                sum_of_scores_raw_col_name="SumOfScores",
                 sum_of_scores_normalized_col_name="SumOfScoresNormalized",
                 trait_col_name="Trait",
+                score_raw_col_name="TraitScore",
                 score_normalized_col_name="TraitScoreNormalized",
                 comments_col_name="TraitJudgeComment",
+                comments_score_raw_col_name="TraitScore",
                 comments_score_normalized_col_name="TraitScoreNormalized",
+                primary_rank=False,
             )
         )
 
@@ -380,30 +417,18 @@ def main():
                 wisehead_evaluation_csv,
                 app_col_name="Application #",
                 score_rank_normalized_col_name="OverallScoreRankNormalized",
+                score_rank_raw_col_name="OverallScoreRankNormalized",
                 sum_of_scores_normalized_col_name="SumOfScoresNormalized",
+                sum_of_scores_raw_col_name="SumOfScoresNormalized",
                 trait_col_name="Trait",
                 score_normalized_col_name="TraitScoreNormalized",
+                score_raw_col_name="TraitScoreNormalized",
                 comments_col_name="TraitJudgeComment",
                 comments_score_normalized_col_name="TraitScoreNormalized",
+                comments_score_raw_col_name="TraitScoreNormalized",
+                primary_rank=True,
             )
         )
-
-    comp.add_supplemental_information(
-        competition.LinkedSecondSheet(
-            wisehead_corrected_scores_csv,
-            "Review #",
-            [
-                {
-                    "source_name": "Overall Rank",
-                    "target_name": "Panel Overall Score Rank Normalized",
-                },
-                {
-                    "source_name": "Score Total",
-                    "target_name": "Panel Sum of Scores Normalized",
-                },
-            ],
-        )
-    )
 
     admin_review = competition.AdminReview(admin_review_csv, "Application #", "Status")
     comp.add_supplemental_information(admin_review)
@@ -416,6 +441,10 @@ def main():
     comp.add_supplemental_information(ApplicationLevelAdder())
 
     comp.process_cells_special("Priority Populations", competition.ToListProcessor())
+
+    wisehead_correction = WiseHeadCorrection(wisehead_corrected_scores_csv)
+    comp.process_cells_special("Rank", wisehead_correction)
+    comp.process_cells_special("Panel Overall Score", wisehead_correction)
 
     sdg_list = [
         "No Poverty",
@@ -728,7 +757,7 @@ def main():
     )
     comp.remove_information(competition.ColumnRemover("Primary Area of Expertise ID"))
 
-    comp.sort("Panel Overall Score Rank Normalized", True)
+    comp.sort("Rank", True)
 
     comp.add_toc(toc.GenericToc("Topic_TOC", "Primary Subject Area Category"))
     comp.add_toc(toc.GenericListToc("Population_TOC", "Priority Populations"))
@@ -750,7 +779,7 @@ def main():
                 "right_aligned": True,
             },
             {
-                "name": "Panel Overall Score Rank Normalized",
+                "name": "Rank",
                 "heading": "Rank",
                 "right_aligned": True,
             },
@@ -765,10 +794,7 @@ def main():
     finalist_candidates.proposals = [
         p
         for p in comp.ordered_proposals()
-        if (
-            int(p.cell("Panel Overall Score Rank Normalized")) < 101
-            or p.cell("Wild Card") == "Wild Card"
-        )
+        if (int(p.cell("Rank")) < 101 or p.cell("Wild Card") == "Wild Card")
         and p.cell("TR Disqualified") != "TR Disqualified"
     ]
     finalist_candidates.proposal_formatter = table_toc_formatter

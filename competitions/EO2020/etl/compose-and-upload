@@ -373,12 +373,17 @@ def main():
                 "Panel",
                 judge_evaluation_csv,
                 app_col_name="Application #",
+                score_rank_raw_col_name="OverallScoreRank",
                 score_rank_normalized_col_name="OverallScoreRankNormalized",
+                sum_of_scores_raw_col_name="SumOfScores",
                 sum_of_scores_normalized_col_name="SumOfScoresNormalized",
                 trait_col_name="Trait",
+                score_raw_col_name="TraitScore",
                 score_normalized_col_name="TraitScoreNormalized",
                 comments_col_name="TraitJudgeComment",
+                comments_score_raw_col_name="TraitScore",
                 comments_score_normalized_col_name="TraitScoreNormalized",
+                primary_rank=True,
             )
         )
 
@@ -393,8 +398,8 @@ def main():
     ):
         comp.transform_sheet(
             competition.ColumnRenamer(
-                "Panel %s Score Normalized" % old,
-                "Panel %s Score Normalized" % new,
+                "Panel %s Score" % old,
+                "Panel %s Score" % new,
             )
         )
         comp.transform_sheet(
@@ -551,7 +556,7 @@ def main():
         competition.ColumnRemover("Org Primary Area of Expertise ID")
     )
 
-    comp.sort("Panel Overall Score Rank Normalized", True)
+    comp.sort("Rank", True)
 
     comp.add_toc(toc.GenericToc("Topic_TOC", "Primary Subject Area Category"))
     comp.add_toc(toc.GenericListToc("Population_TOC", "Priority Populations"))
@@ -572,7 +577,7 @@ def main():
                 "right_aligned": True,
             },
             {
-                "name": "Panel Overall Score Rank Normalized",
+                "name": "Rank",
                 "heading": "Rank",
                 "right_aligned": True,
             },

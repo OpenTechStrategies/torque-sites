@@ -25,16 +25,11 @@ class RankBandFilter(utils.Filter):
 
     def document_value(self, document):
         rank_str = False
+
         try:
-            rank_str = document["Panel Overall Score Rank Normalized"]
+            rank_str = document["Rank"]
         except ValueError:
             pass
-
-        if not rank_str:
-            try:
-                rank_str = document["Peer Overall Score Rank Normalized"]
-            except ValueError:
-                pass
 
         if not rank_str:
             return "Unranked"

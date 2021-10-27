@@ -228,12 +228,17 @@ def main():
             "Peer",
             peer_to_peer_review_csv,
             app_col_name="Application #",
+            score_rank_raw_col_name="Overall Score Rank",
             score_rank_normalized_col_name="Overall Score Rank Normalized ",
+            sum_of_scores_raw_col_name="Sum Of Scores ",
             sum_of_scores_normalized_col_name="Sum Of Scores Normalized ",
             trait_col_name="Trait",
+            score_raw_col_name="Trait Score",
             score_normalized_col_name="Trait Score Normalized",
             comments_col_name="Trait Judge Comment ",
+            comments_score_raw_col_name="Trait Score",
             comments_score_normalized_col_name="Trait Score Normalized",
+            primary_rank=False,
         )
     )
 
@@ -242,12 +247,17 @@ def main():
             "Panel",
             expert_panel_review_csv,
             app_col_name="Application #",
+            score_rank_raw_col_name="Overall Score Rank",
             score_rank_normalized_col_name="Overall Score Rank Normalized ",
+            sum_of_scores_raw_col_name="Sum Of Scores ",
             sum_of_scores_normalized_col_name="Sum Of Scores Normalized ",
             trait_col_name="Trait",
+            score_raw_col_name="Trait Score",
             score_normalized_col_name="Trait Score Normalized",
             comments_col_name="Trait Judge Comment ",
+            comments_score_raw_col_name="Trait Score",
             comments_score_normalized_col_name="Trait Score Normalized",
+            primary_rank=True,
         )
     )
     comp.add_supplemental_information(LFCAnalysisAdder())
@@ -498,9 +508,7 @@ def main():
         competition.ColumnRenamer("External References", "Bibliography")
     )
     comp.transform_sheet(
-        competition.ColumnRenamer(
-            "Peer GAME CHANGING Score Normalized", "Peer IMPACTFUL Score Normalized"
-        )
+        competition.ColumnRenamer("Peer GAME CHANGING Score", "Peer IMPACTFUL Score")
     )
     comp.transform_sheet(
         competition.ColumnRenamer(
@@ -508,9 +516,7 @@ def main():
         )
     )
     comp.transform_sheet(
-        competition.ColumnRenamer(
-            "Panel GAME CHANGING Score Normalized", "Panel IMPACTFUL Score Normalized"
-        )
+        competition.ColumnRenamer("Panel GAME CHANGING Score", "Panel IMPACTFUL Score")
     )
     comp.transform_sheet(
         competition.ColumnRenamer(
@@ -518,9 +524,7 @@ def main():
         )
     )
     comp.transform_sheet(
-        competition.ColumnRenamer(
-            "Applicant Legal Name", "Legal Name"
-        )
+        competition.ColumnRenamer("Applicant Legal Name", "Legal Name")
     )
 
     comp.add_allowlist_exception("Organization location of formation", "Application")
@@ -539,7 +543,7 @@ def main():
     comp.remove_information(competition.ColumnRemover("Primary Subject Area ID"))
     comp.remove_information(competition.ColumnRemover("Primary Area of Expertise ID"))
 
-    comp.sort("Panel Overall Score Rank Normalized", True)
+    comp.sort("Rank", True)
 
     list_toc = toc.ListToc("All_Proposals")
     list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
@@ -559,7 +563,7 @@ def main():
                 "right_aligned": True,
             },
             {
-                "name": "Panel Overall Score Rank Normalized",
+                "name": "Rank",
                 "heading": "Rank",
                 "right_aligned": True,
             },
@@ -568,7 +572,11 @@ def main():
     comp.add_toc(list_toc)
 
     comp.add_toc(
-        toc.GenericToc("Funders", ["Funder #1", "Funder #2", "Funder #3"], sort=toc.GenericToc.SortMethod.COUNT)
+        toc.GenericToc(
+            "Funders",
+            ["Funder #1", "Funder #2", "Funder #3"],
+            sort=toc.GenericToc.SortMethod.COUNT,
+        )
     )
     comp.add_toc(toc.GenericListToc("Populations", "Priority Populations"))
     comp.add_toc(

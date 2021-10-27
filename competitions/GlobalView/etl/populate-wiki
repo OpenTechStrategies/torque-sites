@@ -36,50 +36,42 @@ competition_configs = {
     "LoneStar2020": {
         "sheet_name": "LoneStar2020",
         "wiki_key": "LoneStar2020",
-        "rank": "Panel Overall Score Rank Normalized",
-        "score": "Panel Sum of Scores Normalized",
+        "score": "Panel Overall Score",
     },
     "LLIIA2020": {
         "sheet_name": "LLIIA2020",
         "wiki_key": "LLIIA2020",
-        "rank": "Panel Overall Score Rank Normalized",
-        "score": "Panel Sum of Scores Normalized",
+        "score": "Panel Overall Score",
     },
     "100Change2020": {
         "sheet_name": "LFC100Change2020",
         "wiki_key": "100Change2020",
-        "rank": "Wise Head Overall Score Rank Normalized",
-        "score": "Wise Head Sum of Scores Normalized",
+        "score": "Panel Overall Score",
     },
     "100Change2017": {
         "sheet_name": "LFC100Change2017",
         "wiki_key": "100Change2017",
-        "score": "Total_Score",
-        "rank": "Ranking",
+        "score": "Panel Overall Score",
     },
     "EO2020": {
         "sheet_name": "EO2020",
         "wiki_key": "EO2020",
-        "rank": "Judge Overall Score Rank Normalized",
-        "score": "Judge Sum of Scores Normalized",
+        "score": "Panel Overall Score",
     },
     "RacialEquity2030": {
         "sheet_name": "RacialEquity2030",
         "wiki_key": "RacialEquity2030",
-        "rank": "Panel Overall Score Rank Normalized",
-        "score": "Panel Sum of Scores Normalized",
+        "score": "Panel Overall Score",
     },
     "Climate2030": {
         "sheet_name": "Climate2030",
         "wiki_key": "Climate2030",
-        "rank": "Panel Overall Score Rank Normalized",
-        "score": "Panel Sum of Scores Normalized",
+        "score": "Panel Overall Score",
     },
     "ECW2020": {
         "sheet_name": "ECW2020",
         "wiki_key": "ECW2020",
-        "rank": "Panel Overall Score Rank Normalized",
-        "score": "Panel Sum of Scores Normalized",
+        "score": "Panel Overall Score",
     },
     "Democracy22": {
         "sheet_name": "Democracy22",
@@ -108,13 +100,16 @@ class GroupedScoreToc(toc.GenericToc):
         # self.data = { x: self.default_grouping(x) for x in groupings }
 
         for proposal in competition.ordered_proposals():
-            if proposal.cell("Score"):
-                # This assumes no one ever scores 100.  And really, who does?
-                idx = 19 - math.floor(float(proposal.cell("Score")) / 5)
+            try:
+                if proposal.cell("Score"):
+                    # This assumes no one ever scores 100.  And really, who does?
+                    idx = 19 - math.floor(float(proposal.cell("Score")) / 5)
 
-                self.data[self.groupings[idx]]["all_proposal_ids"].append(
-                    proposal.key()
-                )
+                    self.data[self.groupings[idx]]["all_proposal_ids"].append(
+                        proposal.key()
+                    )
+            except ValueError:
+                pass
 
 
 class MultiCompAppsToc(toc.GenericToc):
@@ -268,10 +263,13 @@ def main():
                 competition.GlobalViewMediaWikiTitleAdder.title_column_name
             )
 
-            if "rank" in competition_configs[name]:
-                gv_proposal["Rank"] = proposal.cell(competition_configs[name]["rank"])
             if "score" in competition_configs[name]:
-                gv_proposal["Score"] = proposal.cell(competition_configs[name]["score"])
+                gv_proposal["Rank"] = proposal.cell(competition_configs[name]["score"])[
+                    "Normalized Rank"
+                ]
+                gv_proposal["Score"] = proposal.cell(
+                    competition_configs[name]["score"]
+                )["Normalized"]
             if not gv_proposal["Admin Review Status"]:
                 gv_proposal["Admin Review Status"] = "Valid"
             if not gv_proposal["Sustainable Development Goals"]:

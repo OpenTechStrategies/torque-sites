@@ -169,12 +169,17 @@ def main():
             "Peer",
             peer_rankings_csv,
             app_col_name="Application #",
+            score_rank_raw_col_name="Overall Score Rank",
             score_rank_normalized_col_name="Overall Score Rank Normalized ",
+            sum_of_scores_raw_col_name="Sum Of Scores ",
             sum_of_scores_normalized_col_name="Sum Of Scores Normalized ",
             trait_col_name="Trait",
+            score_raw_col_name="Trait Score",
             score_normalized_col_name="Trait Score Normalized",
             comments_col_name="Trait Judge Comment ",
+            comments_score_raw_col_name="Trait Score",
             comments_score_normalized_col_name="Trait Score Normalized",
+            primary_rank=True,
         )
     )
 
@@ -239,7 +244,6 @@ def main():
         )
     )
 
-
     for num in ["1", "2", "3"]:
         comp.transform_sheet(
             competition.PersonCombiner(
@@ -259,13 +263,13 @@ def main():
             )
         )
 
-
     for num in ["1", "2", "3", "5"]:
         comp.transform_sheet(
             competition.LocationCombiner(
                 column_name="Current Work #%s" % num,
                 state="Location of Current Work #%s State / Province" % num,
-                locality="Location of Current Work #%s Locality / District / County" % num,
+                locality="Location of Current Work #%s Locality / District / County"
+                % num,
                 country="Location of Current Work #%s Country" % num,
             )
         )
@@ -273,7 +277,9 @@ def main():
             competition.ColumnRemover("Location of Current Work #%s Country ID" % num)
         )
         comp.remove_information(
-            competition.ColumnRemover("Location of Current Work #%s Locality / District / County ID" % num)
+            competition.ColumnRemover(
+                "Location of Current Work #%s Locality / District / County ID" % num
+            )
         )
         comp.remove_information(
             competition.ColumnRemover(
@@ -296,18 +302,16 @@ def main():
         competition.ColumnRemover("Location of Current Solution #4 Locality ID")
     )
     comp.remove_information(
-        competition.ColumnRemover(
-            "Location of Current Solution #4 State ID"
-        )
+        competition.ColumnRemover("Location of Current Solution #4 State ID")
     )
-
 
     for num in ["1", "2", "3", "4", "5"]:
         comp.transform_sheet(
             competition.LocationCombiner(
                 column_name="Future Work #%s" % num,
                 state="Location of Future Work #%s State / Province" % num,
-                locality="Location of Future Work #%s Locality / District / County" % num,
+                locality="Location of Future Work #%s Locality / District / County"
+                % num,
                 country="Location of Future Work #%s Country" % num,
             )
         )
@@ -315,7 +319,9 @@ def main():
             competition.ColumnRemover("Location of Future Work #%s Country ID" % num)
         )
         comp.remove_information(
-            competition.ColumnRemover("Location of Future Work #%s Locality / District / County ID" % num)
+            competition.ColumnRemover(
+                "Location of Future Work #%s Locality / District / County ID" % num
+            )
         )
         comp.remove_information(
             competition.ColumnRemover(
@@ -327,13 +333,13 @@ def main():
     comp.transform_sheet(
         competition.ColumnRenamer("Competition domain", "Competition Domain")
     )
-    comp.transform_sheet(competition.ColumnRenamer("Solution Category", "Primary Subject Area Category"))
+    comp.transform_sheet(
+        competition.ColumnRenamer("Solution Category", "Primary Subject Area Category")
+    )
     comp.transform_sheet(
         competition.ColumnRenamer("EIN", "Applicant Tax Identification Number")
     )
-    comp.transform_sheet(
-        competition.ColumnRenamer("VIDEO PRESENTATION", "Video")
-    )
+    comp.transform_sheet(competition.ColumnRenamer("VIDEO PRESENTATION", "Video"))
     comp.transform_sheet(
         competition.ColumnRenamer("Organization name", "Organization Name")
     )
@@ -341,25 +347,35 @@ def main():
         competition.ColumnRenamer("Exclusive Summary", "Executive Summary")
     )
     comp.transform_sheet(
-        competition.ColumnRenamer("Lead Applicant Website or Social Media Page", "Organization Website")
+        competition.ColumnRenamer(
+            "Lead Applicant Website or Social Media Page", "Organization Website"
+        )
     )
     comp.transform_sheet(
-        competition.ColumnRenamer("Project Website or Social Media Page", "Project Website")
+        competition.ColumnRenamer(
+            "Project Website or Social Media Page", "Project Website"
+        )
     )
     comp.transform_sheet(
         competition.ColumnRenamer("Ability to Scale", "Ability To Scale")
     )
     comp.transform_sheet(
-        competition.ColumnRenamer("Stakeholder &amp; Community Engagement", "Community Engagement")
+        competition.ColumnRenamer(
+            "Stakeholder &amp; Community Engagement", "Community Engagement"
+        )
     )
 
     comp.add_allowlist_exception("Lead Applicant Name", "Application")
     comp.add_allowlist_exception("Team Partners", "Application")
 
-    comp.remove_information(competition.ColumnRemover("Application GUID + competition domain"))
+    comp.remove_information(
+        competition.ColumnRemover("Application GUID + competition domain")
+    )
     comp.remove_information(competition.ColumnRemover("Org Nation ID"))
     comp.remove_information(competition.ColumnRemover("Org State / Province ID"))
-    comp.remove_information(competition.ColumnRemover("Org Locality / District / County ID"))
+    comp.remove_information(
+        competition.ColumnRemover("Org Locality / District / County ID")
+    )
     comp.remove_information(competition.ColumnRemover("Priority Populations IDs"))
     comp.remove_information(competition.ColumnRemover("Primary Subject Area ID"))
     comp.remove_information(competition.ColumnRemover("Primary Area of Expertise ID"))
@@ -368,7 +384,7 @@ def main():
         comp.sorted_proposal_keys, attachments_dir
     )
     comp.add_supplemental_information(attachments)
-    comp.sort("Peer Overall Score Rank Normalized", True)
+    comp.sort("Rank", True)
 
     list_toc = toc.ListToc("All_Proposals")
     list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
@@ -388,7 +404,7 @@ def main():
                 "right_aligned": True,
             },
             {
-                "name": "Peer Overall Score Rank Normalized",
+                "name": "Rank",
                 "heading": "Peer Rank",
                 "right_aligned": True,
             },
@@ -472,7 +488,7 @@ def main():
         my_wiki.create_page(
             "Evaluations of %s" % proposal.cell("MediaWiki Title"),
             "{{ #tdcrender:Democracy22/id/" + proposal.key() + ".mwiki|Evaluations }}",
-            True
+            True,
         )
 
 

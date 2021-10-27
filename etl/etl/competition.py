@@ -144,8 +144,10 @@ class Competition:
         from etl import field_allowlist
 
         # Flattens the lists
-        allowlisted_fields = [ f for fieldlist in field_allowlist.allowlist.values() for f in fieldlist ]
-        exceptions = [ f for (f, g) in self.allowlist_exceptions ]
+        allowlisted_fields = [
+            f for fieldlist in field_allowlist.allowlist.values() for f in fieldlist
+        ]
+        exceptions = [f for (f, g) in self.allowlist_exceptions]
 
         passed_allowlist = True
         for column in self.columns:
@@ -1180,50 +1182,44 @@ class EvaluationAdder(InformationAdder):
     def __init__(
         *params,
         app_col_name,
+        score_rank_raw_col_name,
         score_rank_normalized_col_name,
+        sum_of_scores_raw_col_name,
         sum_of_scores_normalized_col_name,
         trait_col_name,
+        score_raw_col_name,
         score_normalized_col_name,
         comments_col_name,
-        comments_score_normalized_col_name
+        comments_score_raw_col_name,
+        comments_score_normalized_col_name,
+        primary_rank,
     ):
         """Takes a NAME representing the name of this evaluation data (Judge, Peer Review, etc)
         and CSV_READER representing evaluation data in a spreadsheet and turns that into a dict
         of dicts in the following form:
 
-          EVALUATION_DATA[app_id] = {
-            overall_score_rank_normalized: string,
-            sum_of_scores_normalized: string,
-            traits: array of TRAIT (below)
-          }
-
-          TRAIT = {
-            name: string,
-            score_normalized: string
-            comments: concatenated string, ready for list type
-            comment_scores: concatenated string, ready for list type
-          }
-
         The columns that data is looked up are required named integer arguments as follows:
-          - APP_COL: column with application number
-          - SCORE_RANK_NORMALIZED_COL: column with normalized score rank
-          - SUM_OF_SCORES_NORMALIZED_COL: column with normalized scores
-          - TRAIT_COL: column with the trait name
-          - SCORE_NORMALIZED_COL: column with the normalized score
-          - COMMENTS_COL: column with the comments
-          - COMMENTS_SCORE_NORMALIZED_COL: the normalized score of the commeng
+          - APP_COL_NAME: column with application number
+          - SCORE_RANK_RAW_COL_NAME: column with score rank
+          - SCORE_RANK_NORMALIZED_COL_NAME: column with normalized score rank
+          - SUM_OF_SCORES_RAW_COL_NAME: column with scores
+          - SUM_OF_SCORES_NORMALIZED_COL_NAME: column with normalized scores
+          - TRAIT_COL_NAME: column with the trait name
+          - SCORE_RAW_COL_NAME: column with the score
+          - SCORE_NORMALIZED_COL_NAME: column with the normalized score
+          - COMMENTS_COL_NAME: column with the comments
+          - COMMENTS_SCORE_RAW_COL_NAME: the normalized score of the commeng
+          - COMMENTS_SCORE_NORMALIZED_COL_NAME: the normalized score of the commeng
+          - PRIMARY_RANK: whether this is the ranking for the competition
 
         The scores for the traits are added up based here rather than in the
         spreasheet.  Then, comments are concatenated for that trait.
 
-        The following columns are added:
-          - <NAME> Overall Score Rank Normalized
-          - <NAME> Sum of Scores Normalized
+        The following fields are added:
+          - <NAME> Overall Score => { Raw, Normalized, Raw Rank, Normalized Rank }
           - Then for each unique TRAIT in the TRAIT_COL
-            - <NAME> <TRAIT>
-            - <NAME> <TRAIT> Comments
-            - <NAME> <TRAIT> Score Normalized
-            - <NAME> <TRAIT> Comment Scores Normalized
+            - <NAME> <TRAIT> Judge Data => { Comments, Scores => { Raw, Normalized }
+            - <NAME> <TRAIT> Score => { Raw, Normalized
         """
 
         self = params[0]
@@ -1241,25 +1237,36 @@ class EvaluationAdder(InformationAdder):
 
         app_col = header_row.index(app_col_name)
         score_rank_normalized_col = header_row.index(score_rank_normalized_col_name)
+        score_rank_raw_col = header_row.index(score_rank_raw_col_name)
         sum_of_scores_normalized_col = header_row.index(
             sum_of_scores_normalized_col_name
         )
+        sum_of_scores_raw_col = header_row.index(sum_of_scores_raw_col_name)
         trait_col = header_row.index(trait_col_name)
         score_normalized_col = header_row.index(score_normalized_col_name)
+        score_raw_col = header_row.index(score_raw_col_name)
         comments_col = header_row.index(comments_col_name)
         comments_score_normalized_col = header_row.index(
             comments_score_normalized_col_name
         )
+        comments_score_raw_col = header_row.index(comments_score_raw_col_name)
 
         for row in csv_reader:
             application_id = row[app_col]
             if not application_id in self.evaluation_data:
                 self.evaluation_data[application_id] = {
-                    "%s Overall Score Rank Normalized"
-                    % self.name: row[score_rank_normalized_col],
-                    "%s Sum of Scores Normalized"
-                    % self.name: row[sum_of_scores_normalized_col],
+                    "%s Overall Score"
+                    % self.name: {
+                        "Raw": row[sum_of_scores_raw_col],
+                        "Normalized": row[sum_of_scores_normalized_col],
+                        "Raw Rank": row[score_rank_raw_col],
+                        "Normalized Rank": row[score_rank_normalized_col],
+                    }
                 }
+                if primary_rank:
+                    self.evaluation_data[application_id]["Rank"] = row[
+                        score_rank_normalized_col
+                    ]
 
             evaluation_datum = self.evaluation_data[application_id]
 
@@ -1270,51 +1277,68 @@ class EvaluationAdder(InformationAdder):
             if "%s %s Judge Data" % (self.name, trait_name) not in evaluation_datum:
                 evaluation_datum["%s %s Judge Data" % (self.name, trait_name)] = {
                     "Comments": [],
-                    "Comment Scores Normalized": [],
+                    "Comment Scores": [],
                 }
-                evaluation_datum[
-                    "%s %s Score Normalized" % (self.name, trait_name)
-                ] = 0.0
+                evaluation_datum["%s %s Score" % (self.name, trait_name)] = {
+                    "Raw": 0.0,
+                    "Normalized": 0.0,
+                }
 
-            evaluation_datum[
-                "%s %s Score Normalized" % (self.name, trait_name)
-            ] += float(row[score_normalized_col])
+            evaluation_datum["%s %s Score" % (self.name, trait_name)]["Raw"] = round(
+                evaluation_datum["%s %s Score" % (self.name, trait_name)]["Raw"]
+                + float(row[score_raw_col]),
+                1,
+            )
+            evaluation_datum["%s %s Score" % (self.name, trait_name)][
+                "Normalized"
+            ] = round(
+                evaluation_datum["%s %s Score" % (self.name, trait_name)]["Normalized"]
+                + float(row[score_normalized_col]),
+                1,
+            )
             evaluation_datum["%s %s Judge Data" % (self.name, trait_name)][
                 "Comments"
             ].append(utils.fix_cell(row[comments_col].replace("\n", "")))
             evaluation_datum["%s %s Judge Data" % (self.name, trait_name)][
-                "Comment Scores Normalized"
-            ].append(row[comments_score_normalized_col])
+                "Comment Scores"
+            ].append(
+                {
+                    "Raw": round(float(row[comments_score_raw_col]), 1),
+                    "Normalized": round(float(row[comments_score_normalized_col]), 1),
+                }
+            )
 
         self.traits.sort()
 
-        self.regular_columns = [
-            "%s Overall Score Rank Normalized" % self.name,
-            "%s Sum of Scores Normalized" % self.name,
+        self.columns = [
+            "%s Overall Score" % self.name,
         ]
-        self.regular_columns.extend(
-            ["%s %s Score Normalized" % (self.name, trait) for trait in self.traits]
+        self.columns.extend(
+            ["%s %s Score" % (self.name, trait) for trait in self.traits]
         )
-        self.list_columns = []
-        self.list_columns.extend(
+        self.columns.extend(
             ["%s %s Judge Data" % (self.name, trait) for trait in self.traits]
         )
+        if primary_rank:
+            self.columns.append("Rank")
 
     def column_names(self):
-        return self.regular_columns + self.list_columns
+        return self.columns
 
     def cell(self, proposal, column_name):
         if proposal.key() not in self.evaluation_data:
-            if column_name == "%s Overall Score Rank Normalized" % self.name:
+            if column_name == "Rank":
                 return "9999"
-            return ""
+            if column_name == "%s Overall Score" % self.name:
+                return {
+                    "Normalized Rank": "9999",
+                    "Normalized": "N/A",
+                    "Raw": "N/A",
+                    "Raw Rank": "9999",
+                }
+            return {}
 
-        val = self.evaluation_data[proposal.key()][column_name]
-
-        if isinstance(val, float):
-            return "{0:.1f}".format(val)
-        else:
-            return val
+        return self.evaluation_data[proposal.key()][column_name]
 
 
 class GeocodeAdder(InformationAdder):
@@ -1343,15 +1367,15 @@ class GeocodeAdder(InformationAdder):
     def cell(self, proposal, column_name):
         address_pattern = self.address_pattern
         full_address = address_pattern(proposal)
-        if (full_address == ''):
+        if full_address == "":
             return ""
 
-        if (self.debug):
+        if self.debug:
             return "0,0"
 
         try:
             geocode_result = self.geocoder.geocode(full_address)
-            if (geocode_result is None):
+            if geocode_result is None:
                 print(f"COULD NOT GEOCODE: {full_address}")
             else:
                 print(f"GEOCODED: {full_address}")
