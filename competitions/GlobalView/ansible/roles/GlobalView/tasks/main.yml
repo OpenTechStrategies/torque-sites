@@ -39,6 +39,18 @@
     block: |
       include "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/torque-sites-config/disableteamcomments.php";
 
+- name: Install SideBar View
+  copy:
+    src: sidebar_view.php
+    dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/torque-sites-config/"
+
+- name: Enable Team Comments Disabler
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
+    marker: "## {mark} ANSIBLE SIDEBAR VIEW"
+    block: |
+      include "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/torque-sites-config/sidebar_view.php";
+
 # This is a nasty hack.  For certain large TOCs, mediawiki blows
 # up with an error about the strip state being exceeded, as it's set to
 # 5M.  These tocs are large enough to warrant a 10M size, however there's
