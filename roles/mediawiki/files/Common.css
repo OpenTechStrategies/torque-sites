@@ -207,13 +207,29 @@ body {
   display:block;
 }
 
-#p-Emulate input,select {
+#p-Emulate .emulategroup-emulating {
+  font-size:0.8em;
+  overflow:hidden;
+  text-overflow:ellipsis;
   width:130px;
+  white-space:nowrap;
+}
+
+#p-Emulate .emulategroup-selections {
+  text-align:center;
+}
+
+#p-Emulate select {
+  text-overflow: ellipsis;
+  width:130px;
+}
+
+#p-Emulate input {
+  width:100px;
 }
 
 #p-Emulate {
   line-height: 1.125em;
-  font-size: 0.75em;
 }
 
 #p-Emulate .currentlyemulating{

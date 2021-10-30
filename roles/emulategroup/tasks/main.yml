@@ -4,7 +4,7 @@
   git:
     repo: https://github.com/OpenTechStrategies/EmulateGroup
     dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/extensions/EmulateGroup/"
-    version: 51dc009
+    version: f0fc384
 
 - name: Transfer Config
   copy:
