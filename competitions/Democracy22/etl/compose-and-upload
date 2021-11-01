@@ -67,12 +67,24 @@ Command-line options:
                                   created already.
 """
 
-from etl import competition, wiki, toc, tdc
+from etl import competition, wiki, toc, tdc, Geocoder
 import config
 import getopt
 import sys
 import os
 import csv
+
+class ProposalMapToc(toc.Toc):
+    def __init__(self):
+        self.name = "Proposal_Map"
+        self.maps_dir = "templates"
+
+    def template_file(self):
+        from pathlib import Path
+        return Path("%s/proposal_map.html" % self.maps_dir).read_text()
+
+    def raw(self):
+        return False
 
 
 class LFCAnalysisAdder(competition.InformationAdder):
@@ -251,6 +263,46 @@ def main():
         ),
     )
 
+
+    if (config.geocode_api_key):
+      geocoder = Geocoder.Geocoder(config.geocode_api_key)
+      comp.add_supplemental_information(
+          competition.GeocodeAdder(
+              "Org LatLng",
+              Geocoder.Geocoder.generate_address_query_lambda(
+                  address1='Street Address',
+                  address2='Street Address Line 2',
+                  city='City',
+                  state='Org State / Province',
+                  country='Org Nation',
+                  locality='Org Locality / District / County',
+                  zipCode='Zip / Postal Code',
+              ),
+              geocoder,
+          )
+      )
+      comp.transform_sheet(
+          competition.ColumnSplitter(
+              "Org LatLng",
+              "Org Lat",
+              "Org Lng",
+              ",",
+          )
+      )
+    else:
+      comp.add_supplemental_information(
+        competition.StaticColumnAdder(
+          "Org Lat",
+          "0",
+        )
+      )
+      comp.add_supplemental_information(
+        competition.StaticColumnAdder(
+          "Org Lng",
+          "0",
+        )
+      )
+
     comp.transform_sheet(
         competition.LocationCombiner(
             column_name="Organization",
@@ -261,8 +313,13 @@ def main():
             locality="Org Locality / District / County",
             country="Org Nation",
             zip_postal="Zip / Postal Code",
+            lat="Org Lat",
+            lng="Org Lng",
         )
     )
+
+    comp.add_toc(ProposalMapToc())
+
     comp.transform_sheet(
         competition.PersonCombiner(
             column_name="Participant",

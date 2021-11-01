@@ -4,7 +4,7 @@
   git:
     repo: https://github.com/OpenTechStrategies/SimpleMaps
     dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/extensions/SimpleMaps/"
-    version: 227721d
+    version: d1eaaa16452795df0ac2d407dc000ad914471df2
 
 - name: Enable SimpleMaps
   lineinfile:
