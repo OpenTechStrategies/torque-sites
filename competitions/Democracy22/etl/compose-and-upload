@@ -75,6 +75,26 @@ import os
 import csv
 
 
+class LFCAnalysisAdder(competition.InformationAdder):
+    """Adds the columns for the LFC Analysis, all empty because these
+    cells are there to be edited upon later"""
+
+    def column_names(self):
+        return ["LFC Analysis"]
+
+    def cell(self, proposal, column_name):
+        return {
+            "Recommendation": "",
+            "Short Description": "",
+            "Overview": "",
+            "Strength of Approach": "",
+            "Risks and Challenges": "",
+            "Reputational Risks": "",
+            "Diversity, Equity and Inclusion": "",
+            "Other Considerations": "",
+        }
+
+
 def main():
     """Compose the LFC input and emit it as html-ized csv."""
     try:
@@ -384,6 +404,7 @@ def main():
         comp.sorted_proposal_keys, attachments_dir
     )
     comp.add_supplemental_information(attachments)
+    comp.add_supplemental_information(LFCAnalysisAdder())
     comp.sort("Rank", True)
 
     list_toc = toc.ListToc("All_Proposals")
