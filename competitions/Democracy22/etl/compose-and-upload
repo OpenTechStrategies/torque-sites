@@ -86,6 +86,17 @@ class ProposalMapToc(toc.Toc):
     def raw(self):
         return False
 
+class ChoroplethMapToc(toc.Toc):
+    def __init__(self):
+        self.name = "Choropleth_Map"
+        self.maps_dir = "templates"
+
+    def template_file(self):
+        from pathlib import Path
+        return Path("%s/choropleth_map.html" % self.maps_dir).read_text()
+
+    def raw(self):
+        return False
 
 class LFCAnalysisAdder(competition.InformationAdder):
     """Adds the columns for the LFC Analysis, all empty because these
@@ -319,6 +330,7 @@ def main():
     )
 
     comp.add_toc(ProposalMapToc())
+    comp.add_toc(ChoroplethMapToc())
 
     comp.transform_sheet(
         competition.PersonCombiner(
