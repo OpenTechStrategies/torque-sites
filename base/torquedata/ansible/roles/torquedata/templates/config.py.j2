@@ -1,5 +1,5 @@
 # This file is generated from the ansible setup script
-# 
+#
 # If it needs to be customized differently, you should do the customizations there.
 #
 # Database configuration for torquedata
@@ -14,6 +14,7 @@ MEDIA_ROOT="{{ torquedata_install_directory }}uploads"
 
 COLLECTIONS_ALIAS="competitions"
 DOCUMENTS_ALIAS="proposals"
+ENABLED_JINJA_EXTENSIONS = ['jinja2.ext.do']
 
 from core import utils
 class RankBandFilter(utils.Filter):
