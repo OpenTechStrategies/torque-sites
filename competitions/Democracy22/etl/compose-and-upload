@@ -105,6 +105,7 @@ def main():
                 "proposals-csv=",
                 "admin-review-csv=",
                 "peer-rankings-csv=",
+                "panel-rankings-csv=",
                 "tdc-config-dir=",
                 "attachments-dir=",
                 "correction-file=",
@@ -119,6 +120,7 @@ def main():
     proposals_csv = None
     admin_review_csv = None
     peer_rankings_csv = None
+    panel_rankings_csv = None
     attachments_dir = None
     tdc_config_dir = None
     correction_file = None
@@ -137,6 +139,8 @@ def main():
             admin_review_csv = a
         elif o == "--peer-rankings-csv":
             peer_rankings_csv = a
+        elif o == "--panel-rankings-csv":
+            panel_rankings_csv = a
         elif o == "--correction-file":
             correction_file = a
         elif o == "--attachments-dir":
@@ -199,6 +203,25 @@ def main():
             comments_col_name="Trait Judge Comment ",
             comments_score_raw_col_name="Trait Score",
             comments_score_normalized_col_name="Trait Score Normalized",
+            primary_rank=False,
+        )
+    )
+    comp.add_supplemental_information(
+        competition.EvaluationRankingsAdder(
+            panel_rankings_csv,
+            "Panel",
+            app_col_name="Review #",
+            overall_rank_col_name="Expert Panel Rank",
+            score_total_col_name="Score Total - Expert Panel",
+            trait_defs=[
+                {
+                    "name": "TRANSFORMATIVE",
+                    "source_col_name": "Trait 1 Score: Transformative",
+                },
+                {"name": "INNOVATIVE", "source_col_name": "Trait 2 Score: Innovative"},
+                {"name": "FEASIBLE", "source_col_name": "Trait 3 Score: Feasible"},
+                {"name": "SCALABLE", "source_col_name": "Trait 4 Score: Scalable"},
+            ],
             primary_rank=True,
         )
     )
@@ -400,8 +423,11 @@ def main():
     comp.remove_information(competition.ColumnRemover("Primary Subject Area ID"))
     comp.remove_information(competition.ColumnRemover("Primary Area of Expertise ID"))
 
-    attachments = competition.BasicAttachments(
+    attachments = competition.RegexSpecifiedAttachments(
         comp.sorted_proposal_keys, attachments_dir
+    )
+    attachments.specify_new_subcolumn(
+        ".*Expert Panel Scores and Comments.*", "Expert Panel Scores and Comments"
     )
     comp.add_supplemental_information(attachments)
     comp.add_supplemental_information(LFCAnalysisAdder())
@@ -411,7 +437,7 @@ def main():
     list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
         [
             {
-                "name": "Organization name",
+                "name": "Organization Name",
                 "heading": "Organization",
             },
             {
@@ -420,13 +446,13 @@ def main():
                 "link": True,
             },
             {
-                "name": "Application #",
-                "heading": "ID #",
+                "name": "Rank",
+                "heading": "Expert Panel Rank",
                 "right_aligned": True,
             },
             {
-                "name": "Rank",
-                "heading": "Peer Rank",
+                "name": ["Peer Overall Score", "Normalized Rank"],
+                "heading": "Peer to Peer Rank",
                 "right_aligned": True,
             },
         ]

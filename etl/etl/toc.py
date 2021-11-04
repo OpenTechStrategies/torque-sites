@@ -105,7 +105,8 @@ class WikiTableTocProposalFormatter(TocProposalFormatter):
             right_aligned: Boolean (defaults to false)
         }
 
-        Where NAME is the name of the column in the proposals,
+        Where NAME is the name of the column in the proposals (optionally an
+        array if the column is a more complex object and there are subfields),
         PROCESSOR is a function taking a the group_var and id_var as arguments
         (as those are necessary to find the information at template render
         time) and returning a String, HEADING is the heading for that column in
@@ -118,6 +119,9 @@ class WikiTableTocProposalFormatter(TocProposalFormatter):
         the PROCESSOR.  If both are included, NAME will be used.
         """
         self.column_definitions = column_definitions
+        for column_def in self.column_definitions:
+            if not isinstance(column_def["name"], list):
+                column_def["name"] = [column_def["name"]]
 
     def prefix(self, group_var_name):
         template = '{| class="wikitable bs-exportable exportable sortable" style="border-style: solid; border-color: gray; border-width: 5px;"\n'
@@ -129,7 +133,7 @@ class WikiTableTocProposalFormatter(TocProposalFormatter):
                     "{%% if %s|length == 0 or '%s' in (%s.values()|list|first) -%%}\n"
                     % (
                         group_var_name,
-                        column_def["name"],
+                        column_def["name"][0],
                         group_var_name,
                     )
                 )
@@ -150,7 +154,7 @@ class WikiTableTocProposalFormatter(TocProposalFormatter):
 
             if "name" in column_def:
                 template += "{%% if '%s' in %s[%s] -%%}\n" % (
-                    column_def["name"],
+                    column_def["name"][0],
                     group_var_name,
                     id_var_name,
                 )
@@ -169,10 +173,13 @@ class WikiTableTocProposalFormatter(TocProposalFormatter):
                 )
 
             if "name" in column_def:
-                template += "{{ %s[%s]['%s'] }}" % (
+                full_column_name = "".join(
+                    ["['%s']" % column_name for column_name in column_def["name"]]
+                )
+                template += "{{ %s[%s]%s }}" % (
                     group_var_name,
                     id_var_name,
-                    column_def["name"],
+                    full_column_name,
                 )
             elif "processor" in column_def:
                 template += column_def["processor"](group_var_name, id_var_name)

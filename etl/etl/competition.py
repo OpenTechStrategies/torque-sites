@@ -1100,6 +1100,7 @@ class EvaluationRankingsAdder(InformationAdder):
         overall_rank_col_name,
         score_total_col_name,
         trait_defs,
+        primary_rank,
     ):
         """Takes a CSV_LOCATION, reading the data about proposal based on
         APP_COL_NAME, and associating with the data in OVERALL_RANK_COL_NAME,
@@ -1121,6 +1122,7 @@ class EvaluationRankingsAdder(InformationAdder):
         self.name = name
         self.traits = []
         self.evaluation_data = {}
+        self.primary_rank = primary_rank
 
         header_row = next(csv_reader)
 
@@ -1136,33 +1138,36 @@ class EvaluationRankingsAdder(InformationAdder):
             application_id = row[app_col]
 
             evaluation_datum = {
-                "{} Overall Score Rank Normalized".format(self.name): row[
-                    overall_rank_col
-                ],
-                "{} Sum of Scores Normalized".format(self.name): row[score_total_col],
+                "{} Overall Score".format(self.name): {
+                    "Normalized": row[score_total_col],
+                    "Normalized Rank": row[overall_rank_col],
+                }
             }
 
+            if primary_rank:
+                evaluation_datum["Rank"] = row[overall_rank_col]
+
             for trait_def in trait_defs:
-                evaluation_datum[
-                    "{} {} Score Normalized".format(self.name, trait_def["name"])
-                ] = row[trait_def["col"]]
+                evaluation_datum["{} {} Score".format(self.name, trait_def["name"])] = {
+                    "Normalized": row[trait_def["col"]]
+                }
 
             self.evaluation_data[application_id] = evaluation_datum
 
     def column_names(self):
         names = [
-            "{} Overall Score Rank Normalized".format(self.name),
-            "{} Sum of Scores Normalized".format(self.name),
+            "{} Overall Score".format(self.name),
         ]
-        names.extend(
-            ["{} {} Score Normalized".format(self.name, trait) for trait in self.traits]
-        )
+        names.extend(["{} {} Score".format(self.name, trait) for trait in self.traits])
+
+        if self.primary_rank:
+            names.append("Rank")
 
         return names
 
     def cell(self, proposal, column_name):
         if proposal.key() not in self.evaluation_data:
-            if column_name == "%s Overall Score Rank Normalized" % self.name:
+            if column_name == "Rank":
                 return "9999"
             return ""
 
