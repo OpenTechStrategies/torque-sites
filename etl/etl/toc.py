@@ -120,7 +120,7 @@ class WikiTableTocProposalFormatter(TocProposalFormatter):
         """
         self.column_definitions = column_definitions
         for column_def in self.column_definitions:
-            if not isinstance(column_def["name"], list):
+            if "name" in column_def and not isinstance(column_def["name"], list):
                 column_def["name"] = [column_def["name"]]
 
     def prefix(self, group_var_name):
