@@ -238,6 +238,7 @@ def main():
             comments_col_name="Trait Judge Comment ",
             comments_score_raw_col_name="Trait Score",
             comments_score_normalized_col_name="Trait Score Normalized",
+            anonymous_judge_name_col_name="Anonymous Judge Name",
             primary_rank=False,
         )
     )
@@ -257,6 +258,7 @@ def main():
             comments_col_name="Trait Judge Comment ",
             comments_score_raw_col_name="Trait Score",
             comments_score_normalized_col_name="Trait Score Normalized",
+            anonymous_judge_name_col_name="Anonymous Judge Name",
             primary_rank=True,
         )
     )

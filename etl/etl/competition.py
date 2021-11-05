@@ -1197,6 +1197,7 @@ class EvaluationAdder(InformationAdder):
         comments_col_name,
         comments_score_raw_col_name,
         comments_score_normalized_col_name,
+        anonymous_judge_name_col_name,
         primary_rank,
     ):
         """Takes a NAME representing the name of this evaluation data (Judge, Peer Review, etc)
@@ -1223,7 +1224,7 @@ class EvaluationAdder(InformationAdder):
         The following fields are added:
           - <NAME> Overall Score => { Raw, Normalized, Raw Rank, Normalized Rank }
           - Then for each unique TRAIT in the TRAIT_COL
-            - <NAME> <TRAIT> Judge Data => { Comments, Scores => { Raw, Normalized }
+            - <NAME> <TRAIT> Judge Data => { Comments => [{ Comment, Judge Id, Score => { Raw, Normalized }]
             - <NAME> <TRAIT> Score => { Raw, Normalized
         """
 
@@ -1255,6 +1256,7 @@ class EvaluationAdder(InformationAdder):
             comments_score_normalized_col_name
         )
         comments_score_raw_col = header_row.index(comments_score_raw_col_name)
+        anonymous_judge_name_col = header_row.index(anonymous_judge_name_col_name) if anonymous_judge_name_col_name else None
 
         for row in csv_reader:
             application_id = row[app_col]
@@ -1282,7 +1284,6 @@ class EvaluationAdder(InformationAdder):
             if "%s %s Judge Data" % (self.name, trait_name) not in evaluation_datum:
                 evaluation_datum["%s %s Judge Data" % (self.name, trait_name)] = {
                     "Comments": [],
-                    "Comment Scores": [],
                 }
                 evaluation_datum["%s %s Score" % (self.name, trait_name)] = {
                     "Raw": 0.0,
@@ -1301,17 +1302,16 @@ class EvaluationAdder(InformationAdder):
                 + float(row[score_normalized_col]),
                 1,
             )
-            evaluation_datum["%s %s Judge Data" % (self.name, trait_name)][
-                "Comments"
-            ].append(utils.fix_cell(row[comments_col].replace("\n", "")))
-            evaluation_datum["%s %s Judge Data" % (self.name, trait_name)][
-                "Comment Scores"
-            ].append(
-                {
-                    "Raw": round(float(row[comments_score_raw_col]), 1),
-                    "Normalized": round(float(row[comments_score_normalized_col]), 1),
-                }
-            )
+
+            comment = {}
+            comment["Comment"] = utils.fix_cell(row[comments_col].replace("\n", ""))
+            comment["Score"] = {
+                "Raw": round(float(row[comments_score_raw_col]), 1),
+                "Normalized": round(float(row[comments_score_normalized_col]), 1),
+            }
+            if anonymous_judge_name_col:
+                comment["Anonymous Judge Name"] = row[anonymous_judge_name_col]
+            evaluation_datum["%s %s Judge Data" % (self.name, trait_name)]["Comments"].append(comment)
 
         self.traits.sort()
 
