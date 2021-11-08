@@ -31,11 +31,10 @@ python3 -V > /dev/null 2>&1 || { echo "python3 required, aborting" ; exit 1; }
 PROPOSALS_CSV="SDA2021_Registration_Application_2021-08-03_08-15-54.csv"
 ADMIN_REVIEW_CSV="AdminReviewP2P_SDA2021_08052021.csv"
 BASE_ATTACHMENTS="SDA2021_Registration_Application_attachments.zip"
-PANEL_REVIEW_ATTACHMENTS="Expert Panel Scores and Comments.zip"
 TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
 ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
 PEER_RANKINGS_FILE="SDA2021_Peer_Review_Judges_Anon_2021-09-17_12-20-30.csv"
-PANEL_RANKINGS_FILE="Stronger Democracy Evaluation Panel Rank for OTS.csv"
+PANEL_RANKINGS_FILE="SDA2021_PRELIMINARY_Evaluation_Panel_2021-11-04_05-53-54_anon.csv"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
 CORRECTION_FILE="SDA Updated Lead Applicant Names Corrections.csv"
 RUNNER="${LFC_DIR}"/compose-and-upload
@@ -71,7 +70,6 @@ if [ ! -d "${DATA_DIR}" ] ; then
   decrypt "${DATA_DIR}/${PEER_RANKINGS_FILE}" "${ENCRYPTED_DIR}/${PEER_RANKINGS_FILE}.gpg" "${GPG_PASSPHRASE}"
   decrypt "${DATA_DIR}/${PANEL_RANKINGS_FILE}" "${ENCRYPTED_DIR}/${PANEL_RANKINGS_FILE}.gpg" "${GPG_PASSPHRASE}"
   decrypt "${DATA_DIR}/${BASE_ATTACHMENTS}" "${ENCRYPTED_DIR}/${BASE_ATTACHMENTS}.gpg" "${GPG_PASSPHRASE}"
-  decrypt "${DATA_DIR}/${PANEL_REVIEW_ATTACHMENTS}" "${ENCRYPTED_DIR}/${PANEL_REVIEW_ATTACHMENTS}.gpg" "${GPG_PASSPHRASE}"
 
   mkdir -p ${TDC_CONFIG_DIR}
 
@@ -79,14 +77,6 @@ if [ ! -d "${DATA_DIR}" ] ; then
   mkdir -p $TMP_ATTACHMENTS_DIR
   unzip -d "${TMP_ATTACHMENTS_DIR}" "${DATA_DIR}/${BASE_ATTACHMENTS}"
   mv "${TMP_ATTACHMENTS_DIR}/SDA2021_Registration_Application_attachments/Valid" $ATTACHMENTS_DIR
-
-  mkdir -p $TMP_ATTACHMENTS_DIR
-  unzip -d $TMP_ATTACHMENTS_DIR "${DATA_DIR}/${PANEL_REVIEW_ATTACHMENTS}"
-  ls "$TMP_ATTACHMENTS_DIR/Expert Panel Scores and Comments" | grep "^[[:digit:]]\+_.*.pdf$" | while read file ; do
-    NUM=${file/_*/};
-    cp -v "$TMP_ATTACHMENTS_DIR/Expert Panel Scores and Comments/$file" "${ATTACHMENTS_DIR}/$NUM/$file"
-  done
-  rm -rf $TMP_ATTACHMENTS_DIR
 fi
 
 if ! echo "569707d729634521c25727b2de38683417d7ca84  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then

@@ -212,21 +212,21 @@ def main():
         )
     )
     comp.add_supplemental_information(
-        competition.EvaluationRankingsAdder(
-            panel_rankings_csv,
+        competition.EvaluationAdder(
             "Panel",
-            app_col_name="Review #",
-            overall_rank_col_name="Expert Panel Rank",
-            score_total_col_name="Score Total - Expert Panel",
-            trait_defs=[
-                {
-                    "name": "TRANSFORMATIVE",
-                    "source_col_name": "Trait 1 Score: Transformative",
-                },
-                {"name": "INNOVATIVE", "source_col_name": "Trait 2 Score: Innovative"},
-                {"name": "FEASIBLE", "source_col_name": "Trait 3 Score: Feasible"},
-                {"name": "SCALABLE", "source_col_name": "Trait 4 Score: Scalable"},
-            ],
+            panel_rankings_csv,
+            app_col_name="Application #",
+            score_rank_raw_col_name="Overall Score Rank",
+            score_rank_normalized_col_name="Overall Score Rank Normalized ",
+            sum_of_scores_raw_col_name="Sum Of Scores ",
+            sum_of_scores_normalized_col_name="Sum Of Scores Normalized ",
+            trait_col_name="Trait",
+            score_raw_col_name="Trait Score",
+            score_normalized_col_name="Trait Score Normalized",
+            comments_col_name="Trait Judge Comment ",
+            comments_score_raw_col_name="Trait Score",
+            comments_score_normalized_col_name="Trait Score Normalized",
+            anonymous_judge_name_col_name="Anonymous Judge Name",
             primary_rank=True,
         )
     )
@@ -428,11 +428,8 @@ def main():
     comp.remove_information(competition.ColumnRemover("Primary Subject Area ID"))
     comp.remove_information(competition.ColumnRemover("Primary Area of Expertise ID"))
 
-    attachments = competition.RegexSpecifiedAttachments(
+    attachments = competition.BasicAttachments(
         comp.sorted_proposal_keys, attachments_dir
-    )
-    attachments.specify_new_subcolumn(
-        ".*Expert Panel Scores and Comments.*", "Expert Panel Scores and Comments"
     )
     comp.add_supplemental_information(attachments)
     comp.add_supplemental_information(LFCAnalysisAdder())
