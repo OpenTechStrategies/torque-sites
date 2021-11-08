@@ -57,3 +57,33 @@ root mysql password.  Remove this after you're done!
 
 See the script for more information.  The settings are all done in variables
 at the top, so updating those should hopefully handle all of your needs.
+
+# airtable
+
+Scripts to manage getting information to and from airtable.
+
+## Setup
+
+To start, you need to install the pyairtable module
+
+```
+$ pip install pyairtable
+```
+
+You also need to configure it:
+
+```
+$ cd airtable
+$ cp config.py{tmpl,}
+$ $EDITOR config.py
+```
+
+## airtable-to-torque
+
+Imports data from airtable.  When the information doesn't match what's in torque,
+edits are made to torque via GlobalView.
+
+## torque-to-airtable
+
+Exports data to airtable.
+
