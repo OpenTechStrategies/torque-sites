@@ -228,6 +228,9 @@ def main():
     comp.add_supplemental_information(
         competition.StaticColumnAdder("Competition Name", "ECW2020")
     )
+    comp.add_supplemental_information(
+        competition.StaticColumnAdder("Achievement Level", "")
+    )
 
     comp.filter_proposals(
         competition.ColumnEqualsProposalFilter("Admin Review Status", "Not submitted")

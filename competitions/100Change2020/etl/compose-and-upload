@@ -441,6 +441,7 @@ def main():
     comp.add_supplemental_information(WildcardAdder(ots_metadata))
     # Must come after TR DQed and Wildcard
     comp.add_supplemental_information(ApplicationLevelAdder())
+    comp.process_cells_special("Application Level", fix_cell_processor)
 
     comp.process_cells_special("Priority Populations", competition.ToListProcessor())
 

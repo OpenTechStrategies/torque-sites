@@ -273,6 +273,9 @@ def main():
     comp.add_supplemental_information(
         competition.StaticColumnAdder("Competition Name", "RacialEquity2030")
     )
+    comp.add_supplemental_information(
+        competition.StaticColumnAdder("Achievement Level", "")
+    )
 
     comp.process_cells_special("Priority Populations", competition.ToListProcessor())
     comp.process_cells_special(

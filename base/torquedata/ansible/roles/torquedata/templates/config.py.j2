@@ -83,7 +83,19 @@ class CompetitionName(utils.Filter):
         return document["Competition Name"] or "Unknown"
 
 
+class AchievementLevel(utils.Filter):
+    def name(self):
+        return "achievement_level"
+
+    def display_name(self):
+        return "BSN Achievement Level"
+
+    def document_value(self, document):
+        return document["Achievement Level"] or "None"
+
+
 FILTERS = [
-    RankBandFilter(),
     CompetitionName(),
+    AchievementLevel(),
+    RankBandFilter(),
 ]

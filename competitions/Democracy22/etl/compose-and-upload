@@ -189,6 +189,10 @@ def main():
         competition.StaticColumnAdder("Competition Name", "Democracy22")
     )
     comp.add_supplemental_information(
+        competition.StaticColumnAdder("Achievement Level", "")
+    )
+
+    comp.add_supplemental_information(
         competition.EvaluationAdder(
             "Peer",
             peer_rankings_csv,

@@ -208,6 +208,10 @@ def main():
     comp.add_supplemental_information(
         competition.StaticColumnAdder("Competition Name", "100Change2017")
     )
+    comp.add_supplemental_information(
+        competition.StaticColumnAdder("Achievement Level", "")
+    )
+
     comp.add_supplemental_information(RankAdder(chipselections, semifinalists))
 
     fix_cell_processor = competition.FixCellProcessor()

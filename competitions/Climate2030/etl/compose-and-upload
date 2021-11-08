@@ -172,6 +172,9 @@ def main():
     comp.add_supplemental_information(
         competition.StaticColumnAdder("Competition Name", "Climate2030")
     )
+    comp.add_supplemental_information(
+        competition.StaticColumnAdder("Achievement Level", "")
+    )
 
     fix_cell_processor = competition.FixCellProcessor()
     comp.process_all_cells_special(fix_cell_processor)
