@@ -1558,30 +1558,6 @@ class NameSplitter(InformationTransformer):
             elif len(split_name) > 1:
                 return split_name[1]
 
-class ColumnSplitter(InformationTransformer):
-    """Takes a column and splits on the split string
-    into two new columns."""
-
-    def __init__(self, column_name, first_column, second_column, split_string=' '):
-        self.column_name = column_name
-        self.first_column = second_column
-        self.second_column = first_column
-        self.split_string = split_string
-
-    def columns_to_remove(self):
-        return [self.column_name]
-
-    def column_names(self):
-        return [self.first_column, self.second_column]
-
-    def cell(self, proposal, column_name):
-        if proposal.cell(self.column_name):
-            split_column = proposal.cell(self.column_name).split(self.split_string, 1)
-            if column_name == self.first_column:
-                return split_column[0]
-            elif len(split_column) > 1:
-                return split_column[1]
-
 
 class GeocodeProcessor(CellProcessor):
     """Decorates an address column with geocoded lat / lngs."""
