@@ -274,46 +274,6 @@ def main():
         ),
     )
 
-
-    if (config.geocode_api_key):
-      geocoder = Geocoder.Geocoder(config.geocode_api_key)
-      comp.add_supplemental_information(
-          competition.GeocodeAdder(
-              "Org LatLng",
-              Geocoder.Geocoder.generate_address_query_lambda(
-                  address1='Street Address',
-                  address2='Street Address Line 2',
-                  city='City',
-                  state='Org State / Province',
-                  country='Org Nation',
-                  locality='Org Locality / District / County',
-                  zipCode='Zip / Postal Code',
-              ),
-              geocoder,
-          )
-      )
-      comp.transform_sheet(
-          competition.ColumnSplitter(
-              "Org LatLng",
-              "Org Lat",
-              "Org Lng",
-              ",",
-          )
-      )
-    else:
-      comp.add_supplemental_information(
-        competition.StaticColumnAdder(
-          "Org Lat",
-          "0",
-        )
-      )
-      comp.add_supplemental_information(
-        competition.StaticColumnAdder(
-          "Org Lng",
-          "0",
-        )
-      )
-
     comp.transform_sheet(
         competition.LocationCombiner(
             column_name="Organization",
@@ -324,10 +284,12 @@ def main():
             locality="Org Locality / District / County",
             country="Org Nation",
             zip_postal="Zip / Postal Code",
-            lat="Org Lat",
-            lng="Org Lng",
         )
     )
+
+    if (config.geocode_api_key):
+        geocoder = Geocoder.Geocoder(config.geocode_api_key)
+        comp.process_cells_special("Organization Location", competition.GeocodeProcessor(geocoder))
 
     comp.add_toc(ProposalMapToc())
     comp.add_toc(ChoroplethMapToc())
