@@ -1346,52 +1346,6 @@ class EvaluationAdder(InformationAdder):
         return self.evaluation_data[proposal.key()][column_name]
 
 
-class GeocodeAdder(InformationAdder):
-    """Converts a specified set of address columns into geocode JSON columns."""
-
-    def __init__(
-        self,
-        new_column_name,
-        address_pattern,
-        geocoder,
-        debug=False,
-    ):
-        """Takes:
-        1. The name of the new column.
-        2. A method that takes a proposal and returns the address to be geocoded.
-        2. An instantiated Geocoder object.
-        """
-        self.new_column_name = new_column_name
-        self.address_pattern = address_pattern
-        self.geocoder = geocoder
-        self.debug = debug
-
-    def column_names(self):
-        return [self.new_column_name]
-
-    def cell(self, proposal, column_name):
-        address_pattern = self.address_pattern
-        full_address = address_pattern(proposal)
-        if full_address == "":
-            return ""
-
-        if self.debug:
-            return "0,0"
-
-        try:
-            geocode_result = self.geocoder.geocode(full_address)
-            if geocode_result is None:
-                print(f"COULD NOT GEOCODE: {full_address}")
-            else:
-                print(f"GEOCODED: {full_address}")
-                return f"{geocode_result.latitude},{geocode_result.longitude}"
-        except Exception as e:
-            print(f"Error Geocoding: {full_address}")
-            print(e)
-
-        return ""
-
-
 class ColumnRemover(InformationRemover):
     """Removes a single column from the spreadsheet."""
 
@@ -1460,6 +1414,8 @@ class LocationCombiner(InformationTransformer):
     ADDRESS_2 = "Address Line 2"
     CITY = "City"
     ZIP_POSTAL = "Zip/Postal Code"
+    LAT = "Lat"
+    LNG = "Lng"
 
     import importlib.resources as pkg_resources
     from . import data
@@ -1486,6 +1442,8 @@ class LocationCombiner(InformationTransformer):
         locality=None,
         country=None,
         zip_postal=None,
+        lat=None,
+        lng=None,
     ):
         self.column_config = {}
         if country:
@@ -1503,6 +1461,10 @@ class LocationCombiner(InformationTransformer):
             self.column_config[city] = LocationCombiner.CITY
         if zip_postal:
             self.column_config[zip_postal] = LocationCombiner.ZIP_POSTAL
+        if lat:
+            self.column_config[lat] = LocationCombiner.LAT
+        if lng:
+            self.column_config[lng] = LocationCombiner.LNG
 
         self.new_column_name = "%s Location" % column_name
 
@@ -1595,3 +1557,37 @@ class NameSplitter(InformationTransformer):
                 return split_name[0]
             elif len(split_name) > 1:
                 return split_name[1]
+
+
+class GeocodeProcessor(CellProcessor):
+    """Decorates an address column with geocoded lat / lngs."""
+    def __init__(self, geocoder):
+        self.geocoder = geocoder
+
+    def process_cell(self, proposal, column_name):
+        cell = proposal.cell(column_name)
+        full_address = Geocoder.Geocoder.get_address_query(
+            address1=cell[LocationCombiner.ADDRESS_1],
+            address2=cell[LocationCombiner.ADDRESS_2],
+            city=cell[LocationCombiner.CITY],
+            state=cell[LocationCombiner.STATE],
+            country=cell[LocationCombiner.COUNTRY],
+            locality=cell[LocationCombiner.LOCALITY],
+            zipCode=cell[LocationCombiner.ZIP_POSTAL],
+        )
+        if full_address == '':
+            return ''
+
+        try:
+            geocode_result = self.geocoder.geocode(full_address)
+            if geocode_result is None:
+                print(f"COULD NOT GEOCODE: {full_address}")
+            else:
+                print(f"GEOCODED: {full_address}")
+                cell[LocationCombiner.LAT] = geocode_result.latitude
+                cell[LocationCombiner.LNG] = geocode_result.longitude
+        except Exception as e:
+            print(f"Error Geocoding: {full_address}")
+            print(e)
+
+        return cell

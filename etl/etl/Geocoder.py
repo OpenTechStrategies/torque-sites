@@ -39,25 +39,3 @@ class Geocoder:
             zipCode,
         ])
         return ", ".join(address_arts)
-
-    @staticmethod
-    def generate_address_query_lambda(
-        address1='',
-        address2='',
-        city='',
-        state='',
-        country='',
-        locality='',
-        zipCode='',
-    ):
-      return (lambda proposal:
-        Geocoder.get_address_query(
-          address1=proposal.cell(address1),
-          address2=proposal.cell(address2),
-          city=proposal.cell(city),
-          state=proposal.cell(state),
-          country=proposal.cell(country),
-          locality=proposal.cell(locality),
-          zipCode=proposal.cell(zipCode),
-        )
-    )

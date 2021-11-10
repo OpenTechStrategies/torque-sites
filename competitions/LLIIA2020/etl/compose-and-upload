@@ -344,6 +344,11 @@ def main():
             zip_postal="Zip / Postal Code",
         )
     )
+
+    if config.geocode_api_key:
+        geocoder = Geocoder.Geocoder(config.geocode_api_key)
+        comp.process_cells_special("Organization Location", competition.GeocodeProcessor(geocoder))
+
     comp.transform_sheet(
         competition.PersonCombiner(
             column_name="Participant",
@@ -503,24 +508,6 @@ def main():
             ],
         )
     )
-
-    if config.geocode_api_key:
-        geocoder = Geocoder.Geocoder(config.geocode_api_key)
-        comp.add_supplemental_information(
-            competition.GeocodeAdder(
-                "Organization LatLng",
-                Geocoder.Geocoder.generate_address_query_lambda(
-                    address1="Street Address",
-                    address2="Address Line 2",
-                    city="City",
-                    state="Org State / Province",
-                    country="Org Country",
-                    locality="Org Locality / County / District",
-                    zipCode="Zip / Postal Code",
-                ),
-                geocoder,
-            )
-        )
 
     comp.add_toc(ProposalMapToc())
     comp.process_tocs()
