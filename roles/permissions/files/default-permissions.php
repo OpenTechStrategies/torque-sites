@@ -14,7 +14,7 @@ $wgGroupPermissions['OutsideReviewers']['read'] = true;
 $wgGroupPermissions["TorqueAdmin"]['read'] = true;
 $wgGroupPermissions["LfcStaff"]['read'] = true;
 $wgGroupPermissions["TorqueDecisionMaker"]['read'] = true;
-$wgGroupPermissions["TorquePartner"]['read'] = true;
+$wgGroupPermissions["LfcPartner"]['read'] = true;
 $wgGroupPermissions["TorqueDiligenceFinancial"]['read'] = true;
 $wgGroupPermissions["TorqueDiligenceNonFinancial"]['read'] = true;
 $wgGroupPermissions["TorqueBasic"]['read'] = true;
@@ -89,8 +89,8 @@ $wgGroupPermissions['TorqueDecisionMaker']['teamcommentseeusernames'] = true;
 $wgGroupPermissions['TorqueDecisionMaker']['picksome'] = true;
 $wgGroupPermissions['TorqueDecisionMaker']['picksome-write'] = true;
 
-$wgGroupPermissions['TorquePartner']['teamcomment'] = true;
-$wgGroupPermissions['TorquePartner']['picksome'] = true;
+$wgGroupPermissions['LfcPartner']['teamcomment'] = true;
+$wgGroupPermissions['LfcPartner']['picksome'] = true;
 
 
 # Disable Special:Log for groups that don't have view-special-log above
@@ -117,13 +117,6 @@ $wgHooks['SpecialPage_initList'][] = function ( &$list ) {
 # 
 # These are the MediaWiki Groups:
 $wgSimpleSAMLphp_SyncAllGroups_LocallyManaged = [
-  # Deprecated groups
-  "DecisionMakers",
-  "LFCConsultingPartners",
-  "LFCResearchPartners",
-  "LFCEvaluators",
-  "PseudoDecisionMakers",
-
   # After the reorganization
   "sysop",
   "bureaucrat",
@@ -131,7 +124,7 @@ $wgSimpleSAMLphp_SyncAllGroups_LocallyManaged = [
   "TorqueAdmin",
   "LfcStaff",
   "TorqueDecisionMaker",
-  "TorquePartner",
+  "LfcPartner",
   "TorqueDiligenceFinancial",
   "TorqueDiligenceNonFinancial",
   "TorqueBasic"
@@ -140,27 +133,16 @@ $wgSimpleSAMLphp_SyncAllGroups_LocallyManaged = [
 # And this is the mapping (MediaWiki on left, incoming SSO on right):
 #
 $wgSimpleSAMLphp_GroupMap = [
-  # Deprecated settings
-  'sysop' => ['groups' => ['LFC Torque Admin', 'LFC Staff', 'LFC Admins', 'Torque Admin']],
-  'interface-admin' => ['groups' => ['LFC Torque Admin', 'LFC Staff', 'LFC Admins', 'Torque Admin']],
-  'bureaucrat' => ['groups' => ['LFC Torque Admin', 'LFC Staff', 'LFC Admins', 'Torque Admin']],
-  'DecisionMakers' => ['groups' => ['LFC Decision Makers', 'Board Members']],
-  'PseudoDecisionMakers' => ['groups' => ['LFC Pseudo Decision Makers', 'Pseudo Board Members']],
-  'LFCEvaluators' => ['groups' => ['LFC Evaluators']],
-  'LFCConsultingPartners' => ['groups' => ['LFC Consultants']],
-  'LFCResearchPartners' => ['groups' => ['LFC Research Partners']],
-  'LFCTorqueAdmin' => ['groups' => ['LFC Torque Admin', 'LFC Staff', 'LFC Admins']],
-
   # After the reorganization.  When it's complete, uncomment the next three item.
   # They had to be commented because they were interfernig the the above deprecated settings
   # and causing failures for admins and staff.
-  #'sysop' => ['groups' => ['Torque Admin']],
-  #'interface-admin' => ['groups' => ['Torque Admin']],
-  #'bureaucrat' => ['groups' => ['Torque Admin']],
+  'sysop' => ['groups' => ['Torque Admin']],
+  'interface-admin' => ['groups' => ['Torque Admin']],
+  'bureaucrat' => ['groups' => ['Torque Admin']],
   'TorqueAdmin' => ['groups' => ['Torque Admin']],
   'LfcStaff' => ['groups' => ['LfC Staff']],
   'TorqueDecisionMaker' => ['groups' => ['Torque Decision Maker']],
-  'TorquePartner' => ['groups' => ['Torque Partner']],
+  'LfcPartner' => ['groups' => ['Lfc Partner']],
   'TorqueDiligenceFinancial' => ['groups' => ['Torque Diligence - Financial']],
   'TorqueDiligenceNonFinancial' => ['groups' => ['Torque Diligence - Non-Financial']],
   'TorqueBasic' => ['groups' => ['Torque Basic']]

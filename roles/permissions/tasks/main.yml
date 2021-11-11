@@ -20,13 +20,8 @@
 - name: Install Restricted group css
   raw: "php {{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/maintenance/edit.php -b MediaWiki:Group-{{ item }}.css < {{ mediawiki_install_directory }}/Group-Restricted.css"
   loop:
-    - PseudoDecisionMakers
-    - DecisionMakers
-    - LFCEvaluators
-    - LFCResearchPartners
-    - LFCConsultingPartners
     - TorqueDecisionMaker
-    - TorquePartner
+    - LfcPartner
     - TorqueDiligenceFinancial
     - TorqueDiligenceNonFinancial
     - TorqueBasic
