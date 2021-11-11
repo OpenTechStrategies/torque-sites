@@ -235,7 +235,7 @@ def main():
 
     comp.transform_sheet(
         competition.LocationCombiner(
-            column_name="Organization",
+            column_name="Organization Location",
             city="City",
             state="State / Province / Region",
             country="Country",
@@ -259,25 +259,25 @@ def main():
 
     comp.transform_sheet(
         competition.LocationCombiner(
-            column_name="Future Work #1",
+            column_name="Future Work #1 Location",
             country="Country/State 1",
         )
     )
     comp.transform_sheet(
         competition.LocationCombiner(
-            column_name="Future Work #2",
+            column_name="Future Work #2 Location",
             country="Country/State 2",
         )
     )
     comp.transform_sheet(
         competition.LocationCombiner(
-            column_name="Future Work #3",
+            column_name="Future Work #3 Location",
             country="Country/State 3",
         )
     )
     comp.transform_sheet(
         competition.LocationCombiner(
-            column_name="Future Work #4",
+            column_name="Future Work #4 Location",
             country="Other Work Location",
         )
     )

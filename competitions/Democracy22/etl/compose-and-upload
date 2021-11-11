@@ -276,7 +276,7 @@ def main():
 
     comp.transform_sheet(
         competition.LocationCombiner(
-            column_name="Organization",
+            column_name="Organization Location",
             address_1="Street Address",
             address_2="Street Address Line 2",
             city="City",
@@ -345,7 +345,7 @@ def main():
     for num in ["1", "2", "3", "5"]:
         comp.transform_sheet(
             competition.LocationCombiner(
-                column_name="Current Work #%s" % num,
+                column_name="Current Work #%s Location" % num,
                 state="Location of Current Work #%s State / Province" % num,
                 locality="Location of Current Work #%s Locality / District / County"
                 % num,
@@ -368,7 +368,7 @@ def main():
 
     comp.transform_sheet(
         competition.LocationCombiner(
-            column_name="Current Work #4",
+            column_name="Current Work #4 Location",
             state="Location of Current Solution #4 State",
             locality="Location of Current Solution #4 Locality",
             country="Location of Current Solution #4 Country",
@@ -387,7 +387,7 @@ def main():
     for num in ["1", "2", "3", "4", "5"]:
         comp.transform_sheet(
             competition.LocationCombiner(
-                column_name="Future Work #%s" % num,
+                column_name="Future Work #%s Location" % num,
                 state="Location of Future Work #%s State / Province" % num,
                 locality="Location of Future Work #%s Locality / District / County"
                 % num,

@@ -538,7 +538,7 @@ def main():
 
     comp.transform_sheet(
         competition.LocationCombiner(
-            column_name="Organization",
+            column_name="Organization Location",
             address_1="Street Address",
             city="City",
             state="State",
@@ -604,7 +604,7 @@ def main():
         ):
             comp.transform_sheet(
                 competition.LocationCombiner(
-                    column_name="%s #%s" % (new_work_type, new_num),
+                    column_name="%s #%s Location" % (new_work_type, new_num),
                     state="Location Of %s%s State" % (old_work_type, old_num),
                     locality="Location Of %s%s Locality" % (old_work_type, old_num),
                     country="Location Of %s%s Country" % (old_work_type, old_num),

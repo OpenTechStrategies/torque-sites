@@ -1403,7 +1403,7 @@ class ColumnCombiner(InformationTransformer):
 
 class LocationCombiner(InformationTransformer):
     """Takes Location based columns, and then combines them into a single
-    column with the the name "<COLUMN_NAME> Location"."""
+    column with the the name"""
 
     REGION = "Region"
     SUBREGION = "Subregion"
@@ -1466,7 +1466,7 @@ class LocationCombiner(InformationTransformer):
         if lng:
             self.column_config[lng] = LocationCombiner.LNG
 
-        self.new_column_name = "%s Location" % column_name
+        self.new_column_name = column_name
 
     def columns_to_remove(self):
         return self.column_config.keys()

@@ -177,7 +177,7 @@ def main():
 
     comp.transform_sheet(
         competition.LocationCombiner(
-            column_name="Organization",
+            column_name="Organization Location",
             address_1="Street Address",
             address_2="Address Line 2",
             city="City",
@@ -230,7 +230,7 @@ def main():
         for location_type in ["Current", "Future"]:
             comp.transform_sheet(
                 competition.LocationCombiner(
-                    column_name="%s Work #%s" % (location_type, num),
+                    column_name="%s Work #%s Location" % (location_type, num),
                     address_1="Location of %s Work #%s Street Address"
                     % (location_type, num),
                     address_2="Location of %s Work #%s Address Line 2"
