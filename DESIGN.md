@@ -59,8 +59,17 @@ for more.)
 ## Users and their capabilities.
 
 Every user of the system is authenticated; there is no anonymous
-access.  See the "User Groups" section farther down for the kinds of
-access permissions users can have.
+access.  We use the same authorization groups across competitions whenever
+possible, since access patterns tend to be the same.  The roles we've
+settled on are found on the
+[help wiki](https://torque.leverforchange.org/help).  See
+[roles/permissions/files/default-permissions.php](roles/permissions/files/default-permissions.php)
+for technical details of each role's access permissions.
+
+This section will always hold the canonical list of groups and their
+meanings.  For historical background, see
+[issue #62](https://github.com/OpenTechStrategies/torque-sites/issues/62) and
+the [2020-03-17 meeting notes](https://github.com/OpenTechStrategies/torque/wiki/Meeting-Notes#2020-03-17-frankkarl-discussion-re-eo-and-usergroup-permissions).
 
 Each of these user groups needs to be set up in torque configuration
 in order to view data.  In the case of group information coming from
@@ -134,77 +143,6 @@ this).  So once we have deployed a new enough version of MediaWiki,
 the special logout instructions here will no longer be needed.)
 
 ### User Groups
-
-We use the same authorization groups across competitions whenever
-possible, since access patterns tend to be the same.  The roles we've
-settled on are listed below (the "LFC" prefix helps MacFound IT track
-them in Okta).  See
-[roles/permissions/files/default-permissions.php](roles/permissions/files/default-permissions.php)
-for technical details of each role's access permissions.
-
-- **`LFC Evaluators`**
-
-  Someone who works with LFC to evaluate the proposals (or some subset
-  of proposals) in a competition.  A typical configuration would be
-  that they don't have edit ability but can make comments; they don't
-  necessarily see all fields or all attachments; and they might get
-  anonymized or pseudonymized versions of certain things (e.g.,
-  comments, attachments).
-
-  Most LFC Evaluators aren't employees of LFC; they're from
-  third-party organizations helping with evaluation.  However, there
-  is no reason in principle why one couldn't be an employee of LFC.
-
-- **`LFC Research Partners`**
-
-  Basically the same as "LFC Evaluators", but their purpose is to use
-  the proposals as input to some larger analytic goal.  This can
-  sometimes result in them having slightly different permissions,
-  which is why they are a distinct group.
-
-- **`LFC Staff`**
-
-  People who work at LFC and can see & edit basically everything about
-  a proposal.
-
-- **`LFC Admins`**
-
-  Like "LFC Staff", but in addition can perform administrative tasks
-  such as viewing logs, creating new users, etc.  (Note: There is a
-  legacy group **`LFC Torque Admin`** maintained by MacFound IT.  It
-  is [entirely coincident](https://github.com/OpenTechStrategies/torque-sites/blob/ac17a658d245de8d25e1865e341b5706ba2258d0/roles/permissions/files/default-permissions.php#L95)
-  with "LFC Admins".  Some day we should vet all of MacFound IT's
-  groups and make sure they match this list, but for now, just know
-  that these two groups have the same meaning.)
-
-
-- **`LFC Decision Makers`**
-
-  People who make decisions about the fate of proposals.  Typically,
-  this is a Board Member or other senior decision-maker at the donor
-  organization.  
-
-  The Torque interface is optimized to show decision support features
-  to LFC DecisionMakers: e.g., finalist selection, voting, being able
-  to see all scores and reviewer comments, etc.
-
-  Furthermore, the interface takes care to avoid showing them things
-  that might distract from decision support, such as administrative
-  links, edit links, etc.
-
-- **`LFC Pseudo Decision Makers`**
-
-  This is just a group for staff to use when they need to test how
-  things look for "LCF Decision Makers".
-
-- **`LFC Robots`**
-
-  Automated bots and processes get this group when they log in.
-
-This section will always hold the canonical list of groups and their
-meanings.  For historical background, see
-[issue #62](https://github.com/OpenTechStrategies/torque-sites/issues/62) and
-the [2020-03-17 meeting notes](https://github.com/OpenTechStrategies/torque/wiki/Meeting-Notes#2020-03-17-frankkarl-discussion-re-eo-and-usergroup-permissions).
 
 ### Granting API access
 
