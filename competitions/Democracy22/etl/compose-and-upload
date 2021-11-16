@@ -139,6 +139,7 @@ def main():
                 "peer-rankings-csv=",
                 "panel-rankings-csv=",
                 "tdc-config-dir=",
+                "finalists=",
                 "attachments-dir=",
                 "correction-file=",
                 "pare=",
@@ -155,6 +156,7 @@ def main():
     panel_rankings_csv = None
     attachments_dir = None
     tdc_config_dir = None
+    finalists = False
     correction_file = None
     pare = None
     collection_only = False
@@ -175,6 +177,8 @@ def main():
             panel_rankings_csv = a
         elif o == "--correction-file":
             correction_file = a
+        elif o == "--finalists":
+            finalists = a
         elif o == "--attachments-dir":
             attachments_dir = a
         else:
@@ -581,6 +585,15 @@ def main():
             "{{ #tdcrender:Democracy22/id/" + proposal.key() + ".mwiki|Evaluations }}",
             True,
         )
+
+    with open(finalists) as f:
+        for key in f.read().splitlines():
+            if key in comp.proposals:
+                proposal = comp.proposals[key]
+                my_wiki.create_page(
+                    "LFC Analysis of %s" % proposal.cell("MediaWiki Title"),
+                    "{{ #tdcrender:Democracy22/id/" + key + ".mwiki|LFCAnalysis }}",
+                )
 
 
 if __name__ == "__main__":
