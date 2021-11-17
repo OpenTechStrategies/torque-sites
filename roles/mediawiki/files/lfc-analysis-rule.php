@@ -24,6 +24,9 @@
 
 # The tabs get ordered in the order of the array.  This means you need to overwrite it
 # completely if you'd like these tabs to appear elsewhere in the order
+#
+# If overridden by a function of zero arguments, that will get called (useful if the tabs
+# shown depends on some runtime rules, like user group)
 $wgLFCExtraTabs = [
   ["LFC Analysis of ", "LFC Analysis", "lfcanalysis"],
   ["Evaluations of ", "Evaluations", "evaluations"]
@@ -40,6 +43,10 @@ $wgHooks['SkinTemplateNavigation'][] = function ( $template, &$links ) {
 
   $originalPageTitle = $currentTitle;
   $main_tab_name = 'Proposal';
+
+  if(is_callable($wgLFCExtraTabs)) {
+    $wgLFCExtraTabs = call_user_func($wgLFCExtraTabs);
+  }
 
   foreach($wgLFCExtraTabs as $tab) {
     if($tab[2] == 'main') {
