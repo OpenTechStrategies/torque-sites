@@ -260,7 +260,7 @@ def main():
 
         for proposal in comp.ordered_proposals():
             gv_proposal = {c: proposal.cell(c) for c in columns}
-            gv_key = ("%s_%s" % (name, proposal.key()),)
+            gv_key = ("%s_%s" % (name, proposal.key()))
             gv_proposal["Global Application #"] = gv_key
             gv_proposal["Competition Application #"] = proposal.key()
             gv_proposal["Wiki Key"] = competition_configs[name]["wiki_key"]
