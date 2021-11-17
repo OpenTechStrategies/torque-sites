@@ -205,6 +205,10 @@ more secret information
     - Add the proposals from `<DATADIR>/$SHORTNAME/tdcconfig/AllProposals`
 25. Add to Global View
 26. Complete the checklist below
+    - In `etl/deploy`, `etl/populate-wiki`, and `ansible/roles/GlobalView/tasks/main.yml`
+    - Rerun ansible for GlobalView with competitionconfig
+      - `ansible-playbook -i inv/prod --tags=competitionconfig GlobalView.yml`
+    - Rerun etl for GlobalView
 
 ## Post-installation checklist for new competition instances
 

@@ -36,20 +36,6 @@ ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
 TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
 RUNNER="${LFC_DIR}"/compose-and-upload
 
-decrypt () {
-  local output_location=${1}
-  local encrypted_location=${2}
-  local passphrase=${3}
-
-  if [ -z "${passphrase}" ]; then
-    echo 'NO PASSPHRASE'
-    gpg -o ${output_location} --decrypt ${encrypted_location} || exit 1
-  else
-    echo 'PASSPHRASE'
-    gpg --batch --passphrase "${passphrase}" -o ${output_location} --decrypt ${encrypted_location} || exit 1
-  fi
-}
-
 if [ ! -d "${DATA_DIR}" ] ; then
   echo "Stage 0: Setting up data directory..."
 

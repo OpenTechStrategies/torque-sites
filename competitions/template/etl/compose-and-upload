@@ -103,7 +103,7 @@ def main():
         sys.stderr.write(__doc__)
         sys.exit(1)
 
-    comp = competition.Competition(
+    comp = competition.CsvBasedCompetition(
         proposals_csv, "<COMPETITION_NAME>", "Application #", pare
     )
 
@@ -148,6 +148,13 @@ def main():
         comp.sorted_proposal_keys, attachments_dir
     )
     comp.add_supplemental_information(attachments)
+    comp.add_supplemental_information(
+        competition.StaticColumnAdder("Competition Name", "<COMPETITION_NAME>")
+    )
+    # Placeholder for future data imported from airtable
+    comp.add_supplemental_information(
+        competition.StaticColumnAdder("Achievement Level", "")
+    )
     comp.sort("Organization Name")
 
     list_toc = toc.ListToc("All_Proposals")
@@ -255,7 +262,7 @@ def main():
         tdc.ValidProposals(comp, "Admin Review Status", "Valid").generate(
             tdc_config_dir
         )
-        tdc.AllColumns(comp).generate(tdc_config_dir)
+        tdc.Columns(comp).generate(tdc_config_dir)
         tdc.ProcessedCollection(comp).generate(tdc_config_dir)
 
     my_wiki = wiki.WikiSession(
