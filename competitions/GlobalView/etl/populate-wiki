@@ -76,6 +76,12 @@ competition_configs = {
     "Democracy22": {
         "sheet_name": "Democracy22",
         "wiki_key": "Democracy22",
+        "score": "Panel Overall Score",
+    },
+    "ChicagoPrize": {
+        "sheet_name": "ChicagoPrize",
+        "wiki_key": "ChicagoPrize",
+        "score": "Panel Overall Score",
     },
 }
 
