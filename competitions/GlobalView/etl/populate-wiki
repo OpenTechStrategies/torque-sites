@@ -265,6 +265,7 @@ def main():
             gv_proposal["Competition Application #"] = proposal.key()
             gv_proposal["Wiki Key"] = competition_configs[name]["wiki_key"]
             gv_proposal["Competition Name"] = name
+            gv_proposal["Collection Name"] = competition_configs[name]["sheet_name"]
             gv_proposal["MediaWiki Title"] = proposal.cell(
                 competition.GlobalViewMediaWikiTitleAdder.title_column_name
             )
