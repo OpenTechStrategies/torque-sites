@@ -1449,6 +1449,8 @@ class LocationCombiner(InformationTransformer):
         if country:
             self.column_config[country] = LocationCombiner.COUNTRY
             self.include_region = True
+        else:
+            self.include_region = False
         if state:
             self.column_config[state] = LocationCombiner.STATE
         if locality:

@@ -424,6 +424,9 @@ class GeographicToc(Toc):
         self.competition_name = competition.name
 
         def add_proposal_to_data(proposal, data, column, granularities):
+            if granularities[0] not in proposal.cell(column):
+                return
+
             val = proposal.cell(column)[granularities[0]].strip()
             if not val:
                 return
