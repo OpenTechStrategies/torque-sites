@@ -1,0 +1,95 @@
+#!/bin/bash
+
+# Copyright (C) 2017, 2019, 2020  Open Tech Strategies, LLC
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+# 
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+SCRIPT_DIR=`dirname "$BASH_SOURCE"`
+COMMON_SCRIPT_DIR="${SCRIPT_DIR}/../../../etl/common/deploy"
+source "${COMMON_SCRIPT_DIR}/utils"
+source "${COMMON_SCRIPT_DIR}/init"
+
+COMPETITION="ChicagoPrize"
+LFC_DIR=`dirname "${0}"`
+
+DATA_DIR="${BASE_DATA_DIR}/${COMPETITION}"
+
+# Make sure we have python3
+python3 -V > /dev/null 2>&1 || { echo "python3 required, aborting" ; exit 1; }
+
+PROPOSALS_CSV="Application and registration data 20190910.csv"
+ADMIN_REVIEW_CSV="PTF-Admin-Review-valid-invalid.csv"
+EXPERT_PANEL_CSV="ChicagoPrize_Evaluation_Panel_Data-anon-20191024.csv"
+
+TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
+ATTACHMENTS_DIR="${DATA_DIR}/attachments/"
+TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
+RUNNER="${LFC_DIR}"/compose-and-upload
+
+if [ ! -d "${DATA_DIR}" ] ; then
+  echo "Stage 0: Setting up data directory..."
+
+  if [ "${OTS_DIR}" = "" ] ; then
+    echo "ERROR: \$OTS_DIR is not set up"
+    echo ""
+    echo "See bureaucracy/onboarding about setting the OTS_DIR environment variable up"
+    exit 1
+  fi
+
+  ENCRYPTED_DIR="${OTS_DIR}/clients/lever-for-change/torque-sites/${COMPETITION}/data/bigdata"
+  if [ ! -d "${ENCRYPTED_DIR}" ] ; then
+    echo "ERROR: it looks like your encrypted dir isn't checked out"
+    echo ""
+    echo "It was expected to be in:"
+    echo "  $ENCRYPTED_DIR"
+    echo ""
+    echo "You will need to check out the subversion torque-sites data, and then"
+    echo "run get-bigdata from ${OTS_DIR}/clients/lever-for-change/torque-sites/${COMPETITION}/data/"
+    exit 1
+  fi
+
+  mkdir -p $DATA_DIR
+  echo "Decrypting..."
+
+  decrypt "${DATA_DIR}/${PROPOSALS_CSV}" "${ENCRYPTED_DIR}/${PROPOSALS_CSV}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${ADMIN_REVIEW_CSV}" "${ENCRYPTED_DIR}/${ADMIN_REVIEW_CSV}.gpg" "${GPG_PASSPHRASE}"
+  decrypt "${DATA_DIR}/${EXPERT_PANEL_CSV}" "${ENCRYPTED_DIR}/${EXPERT_PANEL_CSV}.gpg" "${GPG_PASSPHRASE}"
+
+  mkdir -p ${TDC_CONFIG_DIR}
+fi
+
+if ! echo "553c716d7ddb071824acfd3dd61e655278a45eb4  $DATA_DIR/$PROPOSALS_CSV" | sha1sum -c &> /dev/null ; then
+  echo "ERROR: SHA of PROPOSALS_CSV did not match expectation!"
+  echo "This means that we most likely got a new file, which may have the old"
+  echo "errors in it (specifically the organization proposal 829)."
+  echo "If we got a new file and there are no further errors, you"
+  echo "can remove this check from torque-refresh!  If not, please"
+  echo "make adjustments in a new file and update the sha."
+  exit 1
+fi
+
+mkdir -p $TDC_CONFIG_DIR
+
+${RUNNER} --proposals-csv="${DATA_DIR}/${PROPOSALS_CSV}" \
+          --admin-review="${DATA_DIR}/${ADMIN_REVIEW_CSV}" \
+          --expert-panel-csv="${DATA_DIR}/${EXPERT_PANEL_CSV}" \
+          $PARE \
+          $CSV_ONLY \
+          --tdc-config-dir="${TDC_CONFIG_DIR}"
+if [ $? -ne 0 ]; then
+		echo Failure!
+		exit 1
+fi
+
+echo "Done creating wiki."
