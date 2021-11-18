@@ -41,29 +41,6 @@ $wgGroupPermissions['API_OTS']['read'] = true;
 $wgAvailableRights[] = 'view-special-log';
 $wgGroupPermissions['*']['view-special-log'] = false;
 
-
-# Configuration of different user groups
-# DEPRECATED
-$wgGroupPermissions['sysop']['generated'] = true;
-$wgGroupPermissions['sysop']['edittorqueconfig'] = true;
-$wgGroupPermissions['sysop']['torquedataconnect-admin'] = true;
-$wgGroupPermissions['sysop']['teamcomment'] = true;
-$wgGroupPermissions['sysop']['teamcommentseeusernames'] = true;
-$wgGroupPermissions['sysop']['picksome'] = true;
-$wgGroupPermissions['sysop']['picksome-admin'] = true;
-$wgGroupPermissions['sysop']['view-special-log'] = true;
-$wgGroupPermissions['sysop']['torquedataconnect-edit'] = true;
-$wgGroupPermissions['sysop']['emulategroup'] = true;
-$wgGroupPermissions['DecisionMakers']['teamcomment'] = true;
-$wgGroupPermissions['DecisionMakers']['teamcommentseeusernames'] = true;
-$wgGroupPermissions['DecisionMakers']['picksome'] = true;
-$wgGroupPermissions['DecisionMakers']['picksome-write'] = true;
-$wgGroupPermissions['PseudoDecisionMakers']['teamcomment'] = true;
-$wgGroupPermissions['PseudoDecisionMakers']['teamcommentseeusernames'] = true;
-$wgGroupPermissions['LFCConsultingPartners']['torquedataconnect-edit'] = true;
-$wgGroupPermissions['LFCResearchPartners']['teamcomment'] = true;
-$wgGroupPermissions['LFCEvaluators']['teamcomment'] = true;
-
 # For reorganization
 $wgGroupPermissions['TorqueAdmin']['generated'] = true;
 $wgGroupPermissions['TorqueAdmin']['edittorqueconfig'] = true;
