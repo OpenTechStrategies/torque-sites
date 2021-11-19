@@ -98,7 +98,8 @@ class ScoreTransformer(competition.InformationTransformer):
 
     def column_names(self):
         return [
-            "Panel Overall Score",
+            "Panel Score",
+            "Panel Rank",
             "Panel IMPACTFUL Score",
             "Panel EVIDENCE-BASED Score",
             "Panel FEASIBLE Score",
@@ -107,10 +108,13 @@ class ScoreTransformer(competition.InformationTransformer):
         ]
 
     def cell(self, proposal, column_name):
-        if column_name == "Panel Overall Score":
+        if column_name == "Panel Score":
             return {
                 "Normalized": proposal.cell("Total_Score"),
-                "Normalized Rank": proposal.cell("Ranking"),
+            }
+        if column_name == "Panel Rank":
+            return {
+                "Normalized": proposal.cell("Ranking"),
             }
         if column_name == "Panel IMPACTFUL Score":
             return {"Normalized": proposal.cell("Trait1_Score")}

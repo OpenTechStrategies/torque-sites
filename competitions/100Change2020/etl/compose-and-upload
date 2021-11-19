@@ -293,11 +293,15 @@ class WiseHeadCorrection(competition.CellProcessor):
             if column_name == "Rank":
                 return self.data[proposal.key()]["Rank"]
 
-            if column_name == "Panel Overall Score":
+            if column_name == "Panel Score":
                 score_field = proposal.cell(column_name)
-                score_field["Normalized Rank"] = self.data[proposal.key()]["Rank"]
                 score_field["Normalized"] = self.data[proposal.key()]["Score"]
                 return score_field
+
+            if column_name == "Panel Rank":
+                rank_field = proposal.cell(column_name)
+                rank_field["Normalized"] = self.data[proposal.key()]["Rank"]
+                return rank_field
 
         return proposal.cell(column_name)
 
@@ -447,7 +451,8 @@ def main():
 
     wisehead_correction = WiseHeadCorrection(wisehead_corrected_scores_csv)
     comp.process_cells_special("Rank", wisehead_correction)
-    comp.process_cells_special("Panel Overall Score", wisehead_correction)
+    comp.process_cells_special("Panel Score", wisehead_correction)
+    comp.process_cells_special("Panel Rank", wisehead_correction)
 
     sdg_list = [
         "No Poverty",

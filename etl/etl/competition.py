@@ -1138,9 +1138,11 @@ class EvaluationRankingsAdder(InformationAdder):
             application_id = row[app_col]
 
             evaluation_datum = {
-                "{} Overall Score".format(self.name): {
+                "{} Score".format(self.name): {
                     "Normalized": row[score_total_col],
-                    "Normalized Rank": row[overall_rank_col],
+                },
+                "{} Rank".format(self.name): {
+                    "Normalized": row[overall_rank_col],
                 }
             }
 
@@ -1156,7 +1158,8 @@ class EvaluationRankingsAdder(InformationAdder):
 
     def column_names(self):
         names = [
-            "{} Overall Score".format(self.name),
+            "{} Score".format(self.name),
+            "{} Rank".format(self.name),
         ]
         names.extend(["{} {} Score".format(self.name, trait) for trait in self.traits])
 
@@ -1222,7 +1225,8 @@ class EvaluationAdder(InformationAdder):
         spreasheet.  Then, comments are concatenated for that trait.
 
         The following fields are added:
-          - <NAME> Overall Score => { Raw, Normalized, Raw Rank, Normalized Rank }
+          - <NAME> Score => { Raw, Normalized }
+          - <NAME> Rank => { Raw, Normalized }
           - Then for each unique TRAIT in the TRAIT_COL
             - <NAME> <TRAIT> Judge Data => { Comments => [{ Comment, Judge Id, Score => { Raw, Normalized }]
             - <NAME> <TRAIT> Score => { Raw, Normalized
@@ -1262,12 +1266,13 @@ class EvaluationAdder(InformationAdder):
             application_id = row[app_col]
             if not application_id in self.evaluation_data:
                 self.evaluation_data[application_id] = {
-                    "%s Overall Score"
-                    % self.name: {
+                    "%s Score" % self.name: {
                         "Raw": row[sum_of_scores_raw_col],
                         "Normalized": row[sum_of_scores_normalized_col],
-                        "Raw Rank": row[score_rank_raw_col],
-                        "Normalized Rank": row[score_rank_normalized_col],
+                    },
+                    "%s Rank" % self.name: {
+                        "Raw": row[score_rank_raw_col],
+                        "Normalized": row[score_rank_normalized_col],
                     }
                 }
                 if primary_rank:
@@ -1316,7 +1321,8 @@ class EvaluationAdder(InformationAdder):
         self.traits.sort()
 
         self.columns = [
-            "%s Overall Score" % self.name,
+            "%s Score" % self.name,
+            "%s Rank" % self.name,
         ]
         self.columns.extend(
             ["%s %s Score" % (self.name, trait) for trait in self.traits]
@@ -1334,12 +1340,15 @@ class EvaluationAdder(InformationAdder):
         if proposal.key() not in self.evaluation_data:
             if column_name == "Rank":
                 return "9999"
-            if column_name == "%s Overall Score" % self.name:
+            if column_name == "%s Score" % self.name:
                 return {
-                    "Normalized Rank": "9999",
                     "Normalized": "N/A",
                     "Raw": "N/A",
-                    "Raw Rank": "9999",
+                }
+            if column_name == "%s Rank" % self.name:
+                return {
+                    "Normalized": "9999",
+                    "Raw ": "9999",
                 }
             return {}
 

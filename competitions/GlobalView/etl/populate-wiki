@@ -36,52 +36,52 @@ competition_configs = {
     "LoneStar2020": {
         "sheet_name": "LoneStar2020",
         "wiki_key": "LoneStar2020",
-        "score": "Panel Overall Score",
+        "score": "Panel Score",
     },
     "LLIIA2020": {
         "sheet_name": "LLIIA2020",
         "wiki_key": "LLIIA2020",
-        "score": "Panel Overall Score",
+        "score": "Panel Score",
     },
     "100Change2020": {
         "sheet_name": "LFC100Change2020",
         "wiki_key": "100Change2020",
-        "score": "Panel Overall Score",
+        "score": "Panel Score",
     },
     "100Change2017": {
         "sheet_name": "LFC100Change2017",
         "wiki_key": "100Change2017",
-        "score": "Panel Overall Score",
+        "score": "Panel Score",
     },
     "EO2020": {
         "sheet_name": "EO2020",
         "wiki_key": "EO2020",
-        "score": "Panel Overall Score",
+        "score": "Panel Score",
     },
     "RacialEquity2030": {
         "sheet_name": "RacialEquity2030",
         "wiki_key": "RacialEquity2030",
-        "score": "Panel Overall Score",
+        "score": "Panel Score",
     },
     "Climate2030": {
         "sheet_name": "Climate2030",
         "wiki_key": "Climate2030",
-        "score": "Panel Overall Score",
+        "score": "Panel Score",
     },
     "ECW2020": {
         "sheet_name": "ECW2020",
         "wiki_key": "ECW2020",
-        "score": "Panel Overall Score",
+        "score": "Panel Score",
     },
     "Democracy22": {
         "sheet_name": "Democracy22",
         "wiki_key": "Democracy22",
-        "score": "Panel Overall Score",
+        "score": "Panel Score",
     },
     "ChicagoPrize": {
         "sheet_name": "ChicagoPrize",
         "wiki_key": "ChicagoPrize",
-        "score": "Panel Overall Score",
+        "score": "Panel Score",
     },
 }
 
@@ -271,9 +271,7 @@ def main():
             )
 
             if "score" in competition_configs[name]:
-                gv_proposal["Rank"] = proposal.cell(competition_configs[name]["score"])[
-                    "Normalized Rank"
-                ]
+                gv_proposal["Rank"] = proposal.cell("Rank")
                 gv_proposal["Score"] = proposal.cell(
                     competition_configs[name]["score"]
                 )["Normalized"]
