@@ -118,15 +118,6 @@ class LFCAnalysisAdder(competition.InformationAdder):
         }
 
 
-class PeerRankAdder(competition.InformationAdder):
-    """Temporary class to add peer rank as a standalone column"""
-    def column_names(self):
-        return ["Peer Rank"]
-
-    def cell(self, proposal, column_name):
-        return proposal.cell("Peer Overall Score")["Normalized Rank"]
-
-
 def main():
     """Compose the LFC input and emit it as html-ized csv."""
     try:
@@ -270,7 +261,6 @@ def main():
     comp.process_cells_special("Priority Populations", competition.ToListProcessor())
     comp.process_cells_special("Total Projected Costs", competition.NumberCommaizer())
     comp.process_cells_special("Budget Data", competition.BudgetTableProcessor())
-    comp.add_supplemental_information(PeerRankAdder())
     comp.process_cells_special(
         "Annual Operating Budget",
         competition.AnnualBudgetProcessor(
