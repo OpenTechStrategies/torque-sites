@@ -29,8 +29,8 @@ class RankBandFilter(utils.Filter):
 
         try:
             rank_str = document["Rank"]
-        except ValueError:
-            pass
+        except KeyError:
+            return "UNPERMISSIONED"
 
         if not rank_str:
             return "Unranked"
@@ -68,6 +68,9 @@ class RankBandFilter(utils.Filter):
         ]
         names.sort(key=lambda name: correct_order.index(name) if name in correct_order else len(correct_order))
         return names
+
+    def ignored_values(self):
+        return ["UNPERMISSIONED"]
 
 
 class CompetitionName(utils.Filter):
