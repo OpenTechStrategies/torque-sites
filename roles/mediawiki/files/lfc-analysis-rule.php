@@ -27,10 +27,19 @@
 #
 # If overridden by a function of zero arguments, that will get called (useful if the tabs
 # shown depends on some runtime rules, like user group)
-$wgLFCExtraTabs = [
-  ["LFC Analysis of ", "LFC Analysis", "lfcanalysis"],
-  ["Evaluations of ", "Evaluations", "evaluations"]
-];
+$wgLFCExtraTabs = function() {
+  global $wgUser;
+
+  # This permission "lfcanalysis" is set up in default-permissions
+  if($wgUser->isSafeToLoad() && $wgUser->isAllowed("lfcanalysis")) {
+    return [
+      ["LFC Analysis of ", "LFC Analysis", "lfcanalysis"],
+      ["Evaluations of ", "Evaluations", "evaluations"]
+    ];
+  } else {
+    return [["Evaluations of ", "Evaluations", "evaluations"]];
+  }
+};
 
 $wgHooks['SkinTemplateNavigation'][] = function ( $template, &$links ) {
   # Proposals should only be living in the main namespace

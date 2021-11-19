@@ -27,6 +27,7 @@ $wgGroupPermissions['bot']['generated'] = true;
 # Disable teamcomments for users on this wiki by default.
 $wgGroupPermissions['*']['teamcomment'] = false;
 $wgGroupPermissions['*']['teamcommentseeusernames'] = false;
+$wgGroupPermissions['*']['lfcanalysis'] = false;
 
 # API-using groups
 # These are local login users (as that's required to use api.php) and so
@@ -52,6 +53,7 @@ $wgGroupPermissions['TorqueAdmin']['picksome-admin'] = true;
 $wgGroupPermissions['TorqueAdmin']['view-special-log'] = true;
 $wgGroupPermissions['TorqueAdmin']['torquedataconnect-edit'] = true;
 $wgGroupPermissions['TorqueAdmin']['emulategroup'] = true;
+$wgGroupPermissions['TorqueAdmin']['lfcanalysis'] = true;
 
 $wgGroupPermissions['LfcStaff']['edittorqueconfig'] = true;
 $wgGroupPermissions['LfcStaff']['teamcomment'] = true;
@@ -60,14 +62,21 @@ $wgGroupPermissions['LfcStaff']['picksome'] = true;
 $wgGroupPermissions['LfcStaff']['view-special-log'] = true;
 $wgGroupPermissions['LfcStaff']['torquedataconnect-edit'] = true;
 $wgGroupPermissions['LfcStaff']['emulategroup'] = true;
+$wgGroupPermissions['LfcStaff']['lfcanalysis'] = true;
 
 $wgGroupPermissions['TorqueDecisionMaker']['teamcomment'] = true;
 $wgGroupPermissions['TorqueDecisionMaker']['teamcommentseeusernames'] = true;
 $wgGroupPermissions['TorqueDecisionMaker']['picksome'] = true;
 $wgGroupPermissions['TorqueDecisionMaker']['picksome-write'] = true;
+$wgGroupPermissions['TorqueDecisionMaker']['lfcanalysis'] = true;
 
 $wgGroupPermissions['LfcPartner']['teamcomment'] = true;
 $wgGroupPermissions['LfcPartner']['picksome'] = true;
+$wgGroupPermissions['LfcPartner']['lfcanalysis'] = true;
+
+$wgGroupPermissions['TorqueDiligenceFinancial']['lfcanalysis'] = true;
+
+$wgGroupPermissions['TorqueDiligenceNonFinancial']['lfcanalysis'] = true;
 
 
 # Disable Special:Log for groups that don't have view-special-log above
