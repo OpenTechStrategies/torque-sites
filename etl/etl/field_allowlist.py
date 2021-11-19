@@ -151,10 +151,16 @@ allowlist = {
         "Panel TRANSFORMATIVE Score",
     ],
     "Confidential": [
-        "Peer Overall Score",
-        "Panel Overall Score",
-        "Rank",
         "Restricted Attachments",
+    ],
+    "ConfidentialScores": [
+        "Peer Score",
+        "Panel Score",
+    ],
+    "ConfidentialRanks": [
+        "Peer Rank",
+        "Panel Rank",
+        "Rank",
     ],
     "Analysis": [
         "LFC Analysis",
