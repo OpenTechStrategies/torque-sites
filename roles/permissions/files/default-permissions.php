@@ -129,6 +129,7 @@ $wgSimpleSAMLphp_GroupMap = [
   'LfcStaff' => ['groups' => ['LfC Staff']],
   'TorqueDecisionMaker' => ['groups' => ['Torque Decision Maker']],
   'LfcPartner' => ['groups' => ['LfC Partner']],
+  'TorqueEvaluator' => ['groups' => ['Torque Evaluator']],
   'TorqueDiligenceFinancial' => ['groups' => ['Torque Diligence - Financial']],
   'TorqueDiligenceNonFinancial' => ['groups' => ['Torque Diligence - Non-Financial']],
   'TorqueBasic' => ['groups' => ['Torque Basic']]
