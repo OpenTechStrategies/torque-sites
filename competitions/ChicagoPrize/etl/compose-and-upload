@@ -263,6 +263,12 @@ def main():
     my_wiki.collection_only = collection_only
     my_wiki.upload_collection(comp)
 
+    for proposal in comp.proposals.values():
+        my_wiki.create_page(
+            "Evaluations of %s" % proposal.cell("MediaWiki Title"),
+            "{{ #tdcrender:ChicagoPrize/id/" + proposal.key() + ".mwiki|Evaluations }}",
+            True
+        )
 
 if __name__ == "__main__":
     main()

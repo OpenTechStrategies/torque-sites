@@ -14,8 +14,8 @@
     - activitylog
     - embed_video
     - permissions
-    # PickSome has to come after SimpleBook so the left menu bar is correct
     - torquedataconnect
+    - emulategroup
     - ChicagoPrize
     # This should always go last, to run db updates and restart
     - finishmediawiki
