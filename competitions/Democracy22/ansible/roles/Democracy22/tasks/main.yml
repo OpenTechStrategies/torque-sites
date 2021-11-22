@@ -10,10 +10,3 @@
     path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
     regexp: ^\$wgLogos = .*
     line: $wgLogos = [ 'svg' => "$wgResourceBasePath/resources/assets/Democracy22_Logo.svg" ];
-
-- name: Install additional tab configurations
-  blockinfile:
-    path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
-    marker: "## {mark} ANSIBLE ADDITIONAL TAB CONFIG"
-    block: |
-      $wgGroupPermissions['LfcPartner']['lfcanalysis'] = false;
