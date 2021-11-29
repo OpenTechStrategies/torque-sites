@@ -59,22 +59,28 @@ for more.)
 ## Users and their capabilities.
 
 Every user of the system is authenticated; there is no anonymous
-access.  We use the same authorization groups across competitions whenever
+access.
+
+### User Groups
+
+We use the same authorization groups across competitions whenever
 possible, since access patterns tend to be the same.  The roles we've
 settled on are found on the
 [help wiki](https://torque.leverforchange.org/help).  See
 [roles/permissions/files/default-permissions.php](roles/permissions/files/default-permissions.php)
 for technical details of each role's access permissions.
 
-This section will always hold the canonical list of groups and their
-meanings.  For historical background, see
-[issue #62](https://github.com/OpenTechStrategies/torque-sites/issues/62) and
-the [2020-03-17 meeting notes](https://github.com/OpenTechStrategies/torque/wiki/Meeting-Notes#2020-03-17-frankkarl-discussion-re-eo-and-usergroup-permissions).
-
 Each of these user groups needs to be set up in torque configuration
 in order to view data.  In the case of group information coming from
 outside (see below about Okta), a mapping needs to be done to these
 groups.
+
+Note that this "User Groups" section should always be present because
+older documents may still point to it.  (For historical background,
+see [issue
+#62](https://github.com/OpenTechStrategies/torque-sites/issues/62) and
+the [2020-03-17 meeting
+notes](https://github.com/OpenTechStrategies/torque/wiki/Meeting-Notes#2020-03-17-frankkarl-discussion-re-eo-and-usergroup-permissions).)
 
 ### Shared user accounts
 
@@ -141,8 +147,6 @@ so that MediaWiki will show a logout button when a user is locally
 logged in (there's an internal `LocalLogin` variable that tracks
 this).  So once we have deployed a new enough version of MediaWiki,
 the special logout instructions here will no longer be needed.)
-
-### User Groups
 
 ### Granting API access
 
