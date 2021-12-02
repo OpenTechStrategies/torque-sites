@@ -7,6 +7,9 @@
 {%- for proposal_id, proposal in Democracy22.items() %}
   {%- if proposal['Organization Location']['State/Province'] in results %}
     {%- set state = proposal['Organization Location']['State/Province'] %}
+    {%- if state == "" %}
+      {%- set state = proposal['Organization Location']['Locality/District/County'] %}
+    {%- endif %}
     {%- do results.update({state: results[state] + 1}) %}
     {%- if results[state] > globals['max'] %}
       {%- do globals.update({'max': results[state]}) %}
