@@ -86,6 +86,22 @@ class ProposalMapToc(toc.Toc):
     def raw(self):
         return False
 
+class FinalistMapToc(toc.Toc):
+    def __init__(self, finalist_proposal_ids):
+        self.name = "Finalist_Map"
+        self.maps_dir = "templates"
+        self.finalist_proposal_ids = finalist_proposal_ids
+
+    def template_file(self):
+        from pathlib import Path
+        return Path("%s/finalist_map.html" % self.maps_dir).read_text()
+
+    def raw(self):
+        return False
+
+    def grouped_data(self):
+        return {"finalist_proposal_ids": self.finalist_proposal_ids}
+
 class ChoroplethMapToc(toc.Toc):
     def __init__(self):
         self.name = "Choropleth_Map"
@@ -542,6 +558,7 @@ def main():
             ]
         )
         comp.add_toc(semifinalist_toc)
+        comp.add_toc(FinalistMapToc(finalist_proposal_ids=finalist_data))
 
     comp.add_toc(toc.GenericListToc("Populations", "Priority Populations"))
     comp.add_toc(toc.GenericToc("Solution_Categories", "Primary Subject Area Category"))
