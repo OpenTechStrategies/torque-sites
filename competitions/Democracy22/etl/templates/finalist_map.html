@@ -1,0 +1,30 @@
+{|class="simpleMap" data-settings="solutionCategoryMap"
+!Lat
+!Lng
+!Popup Content
+!Icon
+!Layer
+{%- for proposal_id, proposal in Democracy22.items() %}
+{%- if proposal_id in finalist_proposal_ids %}
+|-
+| {{ proposal['Organization Location']['Lat'] }}
+| {{ proposal['Organization Location']['Lng'] }}
+| <h2>{{ proposal['Organization Name'] }}</h2>
+
+* <b>Location:</b> {{ proposal['Organization Location']['City'] }}
+* <b>Solution Category:</b> {{ proposal['Primary Subject Area Category'] }}
+
+[[{{ proposal['MediaWiki Title'] }}]]
+| {{ {
+    "Policymaking": "green",
+    "Civic Engagement": "orange",
+    "Voting &amp; Elections": "purple"
+  }[proposal['Primary Subject Area Category']] | default('black') }}
+| {{ {
+    "Policymaking": "policymaking",
+    "Civic Engagement": "civicEngagement",
+    "Voting &amp; Elections": "votingAndElections"
+  }[proposal['Primary Subject Area Category']] | default('default') }}
+{%- endif %}
+{%- endfor %}
+|}
