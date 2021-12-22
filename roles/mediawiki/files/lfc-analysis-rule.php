@@ -41,17 +41,38 @@ $wgLFCExtraTabs = function() {
   }
 };
 
+function extractTabOverrideFlags ( $template ) {
+  $wikiPage = new WikiPage($template->getTitle());
+  $pageContent = $wikiPage->getContent();
+  $pageText = $pageContent ? $pageContent->getText() : "";
+  $tabOverridePattern = '/<!--\s?TABS:\s?([^\s]*)\s?-->/';
+  $tabOverrides = preg_match_all(
+    $tabOverridePattern,
+    $pageText,
+    $matches,
+  );
+  return $matches[1];
+}
+
 $wgHooks['SkinTemplateNavigation'][] = function ( $template, &$links ) {
   # Proposals should only be living in the main namespace
   if(!array_key_exists('main', $links['namespaces'])) {
     return;
   }
   global $wgLFCExtraTabs;
+  global $wgLFCExtraTabOverrides;
 
   $currentTitle = $template->getTitle()->getFullText();
 
   $originalPageTitle = $currentTitle;
   $main_tab_name = 'Proposal';
+
+  $tabOverrideFlags = extractTabOverrideFlags($template);
+  foreach ($tabOverrideFlags as $tabOverrideFlag) {
+    if (array_key_exists($tabOverrideFlag, $wgLFCExtraTabOverrides)) {
+      $wgLFCExtraTabs = $wgLFCExtraTabOverrides[$tabOverrideFlag];
+    }
+  }
 
   if(is_callable($wgLFCExtraTabs)) {
     $wgLFCExtraTabs = call_user_func($wgLFCExtraTabs);
