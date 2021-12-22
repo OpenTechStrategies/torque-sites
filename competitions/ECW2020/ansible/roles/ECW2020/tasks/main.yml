@@ -35,3 +35,20 @@
     block: |
       $wgGroupPermissions['LFCEvaluators']['teamcomment'] = false;
       $wgGroupPermissions['DecisionMakers']['teamcomment'] = false;
+
+- name: Install additional tab configurations
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
+    marker: "## {mark} ANSIBLE ADDITIONAL TAB CONFIG"
+    block: |
+      $wgLFCExtraTabOverrides = [
+        "FINALIST" => [
+          ["Factsheet for", "Factsheet", "main"],
+          ["Prospectus for ", "Prospectus", "prospectus"],
+          ["Appendices of ",  "Appendices", "appendices"],
+          ["Analysis of ",  "Analysis", "analysis"],
+          ["Diligence for ", "Diligence", "diligence"],
+          ["Application for ", "Application", "application"],
+          ["Evaluations of ", "Evaluations", "evaluations"],
+        ],
+      ];
