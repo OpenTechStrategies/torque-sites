@@ -1,23 +1,24 @@
 from pyairtable import Table
 from etl import field_allowlist
-import mwclient
+from torqueclient import Torque
 import config
 
 airtable_table_name = 'Proposals'
 
 competition_mapping = {
-    "100&Change 2020": "LFC100Change2020",
+    "100&Change 2021": "LFC100Change2020",
     "Larsen Lam ICONIQ Impact Award": "LLIIA2020",
     "Lone Star Prize": "LoneStar2020",
     "Economic Opportunity Challenge": "EO2020",
-    "100&Change 2016": "LFC100Change2017",
+    "100&Change 2017": "LFC100Change2017",
     "2030 Climate Challenge": "Climate2030",
     "Equality Can't Wait Challenge": "ECW2020",
     "Racial Equity 2030": "RacialEquity2030",
+    "Stronger Democracy Award": "Democracy22",
+    "Chicago Prize": "ChicagoPrize",
 }
 
-torque_site = mwclient.Site('torque.leverforchange.org/', 'GlobalView/', scheme="https")
-torque_site.login(config.GLOBALVIEW_USER, config.GLOBALVIEW_PASSWORD)
+torque = Torque('https://torque.leverforchange.org/GlobalView', config.GLOBALVIEW_USER, config.GLOBALVIEW_PASSWORD)
 
 table = Table(config.AIRTABLE_API_KEY, config.AIRTABLE_BASE_ID, airtable_table_name)
 
@@ -60,25 +61,21 @@ def compare_to_torque(proposal):
 
     competition = proposal["Competition Name"]
     app_id = proposal["Application #"]
-    torque_proposal = torque_site.api(
-        "torquedataconnect",
-        format="json",
-        path="/competitions/%s/proposals/%s" % (competition, app_id)
-    )
-    torque_proposal = torque_proposal["result"]
+    torque_proposal = torque.competitions[competition].proposals[app_id]
 
     if torque_proposal is None:
         print("%s #%s wasn't found in torque" % (competition, app_id))
     else:
         num_to_be_updated = 0
-        for field, value in torque_proposal.items():
+        for field in torque_proposal.keys():
+            value = torque_proposal[field]
             if field == "Competition Name":
                 value = torque_comp_name(value)
             if value and field in proposal and str(value) != str(proposal[field]):
                 updateable_fields.add(field)
                 num_to_be_updated += 1
         for field, value in proposal.items():
-            if value and field not in torque_proposal:
+            if value and field not in torque_proposal.keys():
                 updateable_fields.add(field)
                 num_to_be_updated += 1
         if num_to_be_updated > 0:
