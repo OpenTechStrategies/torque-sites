@@ -67,3 +67,14 @@
     regexp: "	protected \\$sizeLimit = 5000000;"
     replace: "	protected $sizeLimit = 10000000;"
 
+- name: Install additional tab configurations
+  tags: override
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
+    marker: "## {mark} ANSIBLE ADDITIONAL TAB CONFIG"
+    block: |
+      $wgLFCExtraTabOverrides = [
+        "PROPOSAL" => [
+          ["Proposal", "Original Proposal", "main"],
+        ],
+      ];
