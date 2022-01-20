@@ -101,6 +101,7 @@ $wgHooks['SkinTemplateNavigation'][] = function ( $template, &$links ) {
       $main_tab = $links['namespaces']['main'];
       unset($links['namespaces']['main']);
       $links['namespaces']['main'] = $main_tab;
+      $links['namespaces']['main']['text'] = $main_tab_name;
       continue;
     }
 
@@ -114,7 +115,6 @@ $wgHooks['SkinTemplateNavigation'][] = function ( $template, &$links ) {
     # Add the tab to the top of the page.  If happen to be on the tab, then we should
     # reflect that visually.
     if($on_this_tab || $tab_title->exists()) {
-      $links['namespaces']['main']['text'] = $main_tab_name;
       $links['namespaces'][$tab_namespace] = [
        'class' => ($on_this_tab ? 'selected' : ''),
        'href' => ($on_this_tab ? $template->getTitle()->getLocalUrl() : $tab_title->getLocalUrl()),
