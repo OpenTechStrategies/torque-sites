@@ -94,6 +94,20 @@ class AchievementLevel(utils.Filter):
     def document_value(self, document):
         return document.get("Achievement Level", "None")
 
+    def sort(self, names):
+        correct_order = [
+            "Awardee",
+            "Finalist",
+            "100&Change Top 100",
+            "Idea Lab",
+            "Top Proposal",
+            "Member",
+            "Former BSN",
+            "None",
+        ]
+        names.sort(key=lambda name: correct_order.index(name) if name in correct_order else len(correct_order))
+        return names
+
 
 class Top200(utils.Filter):
     def name(self):
