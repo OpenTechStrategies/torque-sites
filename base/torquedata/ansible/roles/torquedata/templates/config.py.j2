@@ -81,7 +81,7 @@ class CompetitionName(utils.Filter):
         return "Competition"
 
     def document_value(self, document):
-        return document["Competition Name"] or "Unknown"
+        return document.get("Competition Name", "Unknown")
 
 
 class AchievementLevel(utils.Filter):
@@ -92,7 +92,7 @@ class AchievementLevel(utils.Filter):
         return "BSN Achievement Level"
 
     def document_value(self, document):
-        return document["Achievement Level"] or "None"
+        return document.get("Achievement Level", "None")
 
 
 FILTERS = [
