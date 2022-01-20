@@ -95,8 +95,23 @@ class AchievementLevel(utils.Filter):
         return document.get("Achievement Level", "None")
 
 
+class Top200(utils.Filter):
+    def name(self):
+        return "top_200"
+
+    def display_name(self):
+        return "100&Change Top 200"
+
+    def document_value(self, document):
+        return document.get("Top 200", "None")
+
+    def ignored_values(self):
+        return ["None"]
+
+
 FILTERS = [
     CompetitionName(),
     AchievementLevel(),
     RankBandFilter(),
+    Top200(),
 ]

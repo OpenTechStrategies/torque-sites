@@ -242,6 +242,17 @@ class WildcardEligibleAdder(competition.InformationAdder):
         return "Wild Card Eligible" if rank > 100 and rank <= 201 else ""
 
 
+class Top200Adder(competition.InformationAdder):
+    """Adds whether this proposal is wildcard eligible"""
+
+    def column_names(self):
+        return ["Top 200"]
+
+    def cell(self, proposal, column_name):
+        # 202 because of duplicate
+        return "Top 200" if int(proposal.cell("Rank")) < 202 else ""
+
+
 class TRDisqualifiedAdder(competition.InformationAdder):
     """Adds whether this proposal has been disaqualified upon review"""
 
@@ -443,6 +454,7 @@ def main():
     comp.add_supplemental_information(TRDisqualifiedAdder(ots_metadata))
     comp.add_supplemental_information(WildcardEligibleAdder())
     comp.add_supplemental_information(WildcardAdder(ots_metadata))
+    comp.add_supplemental_information(Top200Adder())
     # Must come after TR DQed and Wildcard
     comp.add_supplemental_information(ApplicationLevelAdder())
     comp.process_cells_special("Application Level", fix_cell_processor)
@@ -653,6 +665,7 @@ def main():
     comp.add_allowlist_exception("Wild Card Eligible", "Panel")
     comp.add_allowlist_exception("Wild Card", "Panel")
     comp.add_allowlist_exception("TR Disqualified", "Panel")
+    comp.add_allowlist_exception("Top 200", "Panel")
 
     comp.transform_sheet(competition.ColumnRenamer("Participant key", "GUID"))
     comp.transform_sheet(
