@@ -1,0 +1,12 @@
+---
+
+- name: Transfer NewIdeas Logo
+  copy:
+    src: NewIdeas_Logo.png
+    dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/resources/assets/NewIdeas_Logo.png"
+
+- name: Install NewIdeas Logo
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
+    regexp: ^\$wgLogos = .*
+    line: $wgLogos = [ '1x' => "$wgResourceBasePath/resources/assets/NewIdeas_Logo.png" ];
