@@ -8,7 +8,7 @@ The configuration for simplesaml is:
     Audience Restriction URL: https://torque.leverforchange.org/simplesaml/module.php/saml/sp/metadata.php/<COMPETITION_NAME>
     Default Relay State URL: https://torque.leverforchange.org/<COMPETITION_NAME>/index.php/?saml_sso=<COMPETITION_NAME>
 
-As normal, we'll need okta enabled for the LFC Torque Admin group, as well as the LFC Torque Group
+As normal, we'll need okta enabled for the Torque Admin group, as well as the LfC Staff group
 
 The variables we'll need set up are:
 
