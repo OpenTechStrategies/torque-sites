@@ -19,10 +19,12 @@ class WikiSession:
         self.competition_name = competition_name
         self.collection_only = False
 
-    def upload_collection(self, comp):
+    def upload_collection(self, comp, validate=True):
         """Uploads the collection, the tocs, and creates the pages for
         a Competition COMP"""
-        comp.validate_fields()
+        if validate:
+            comp.validate_fields()
+
         self.site.raw_call(
             "api",
             {
