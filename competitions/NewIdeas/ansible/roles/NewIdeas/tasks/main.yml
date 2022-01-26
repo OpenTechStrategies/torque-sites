@@ -10,3 +10,15 @@
     path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
     regexp: ^\$wgLogos = .*
     line: $wgLogos = [ '1x' => "$wgResourceBasePath/resources/assets/NewIdeas_Logo.png" ];
+
+- name: Transfer NewIdeas configuration
+  copy:
+    src: newideas.php
+    dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/torque-sites-config/"
+
+- name: Enable NewIdeas configuration
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
+    marker: "## {mark} ANSIBLE NEW IDEAS CONFIG"
+    block: |
+      include "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/torque-sites-config/newideas.php";
