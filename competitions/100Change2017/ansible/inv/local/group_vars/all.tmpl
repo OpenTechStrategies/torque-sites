@@ -60,6 +60,20 @@ mediawiki_mwlib_password: ${MEDIAWIKI_MWLIB_PASSWORD}
 mediawiki_csv2wiki_username: csv2wiki
 mediawiki_csv2wiki_password: ${MEDIAWIKI_CSV2WIKI_PASSWORD}
 
-# See https://www.mediawiki.org/wiki/Manual:$wgServer, as it suggests
-# that localhost is not used unless you are running locally only
-mediawiki_server: http://localhost
+# The user and password for (local) torque administration
+mediawiki_torqueadmin_username: torqueadmin
+mediawiki_torqueadmin_password: ${MEDIAWIKI_TORQUEADMIN_PASSWORD}
+
+# Directory to install simplesaml
+simplesaml_install_directory: ${SIMPLESAML_INSTALL_DIRECTORY}
+
+# The metadata declaration, in the form of key => location.  The METADATA_NAME should
+# correspond to the single sign on url you have set up in okta, which will be of the form
+# http://<installationbox>/simplesaml/module.php/saml/sp/saml2-acs.php/__METADATA_NAME__
+#
+# Then the URL here should be the metadata url you receive from okta when looking at
+# your application settings for "Identity Provider metadata"
+#
+# See https://developer.okta.com/code/php/simplesamlphp/ for more information
+simplesaml_okta_metadata_name: ${SIMPLESAML_OKTA_METADATA_NAME}
+simplesaml_okta_metadata_url: ${SIMPLESAML_OKTA_METADATA_URL}
