@@ -1,12 +1,5 @@
 ---
-competition_name: <COMPETITION_NAME>
-
-# The sheet that this wiki is going to act on.  Most of the time
-# this will be the same as the competition name (above), but sometimes
-# this is different when either the competition name doesn't work as
-# a sheet name (for instance, if it starts with a number), or if
-# this wiki should act on a different sheet.
-torquedataconnect_collection_name: <COMPETITION_NAME>
+competition_name: Backstage
 
 # Root web directory (where symlinks to the mediawiki instances
 # are installed)
@@ -39,17 +32,6 @@ mediawiki_install_directory: ${MEDIAWIKI_INSTALL_DIRECTORY}
 # The password for the mediawiki user admin to run automated
 # commands against wikis (such as csv2wiki, setup, etc)
 mediawiki_admin_password: ${MEDIAWIKI_ADMIN_PASSWORD}
-
-# The user and password for the mwlib pdf printing process
-#
-# The password must not have spaces.
-mediawiki_mwlib_username: mwlib
-mediawiki_mwlib_password: ${MEDIAWIKI_MWLIB_PASSWORD}
-
-# The user and password for loading the wiki externally
-# using csv2wiki in coordination with the LFC repository
-mediawiki_csv2wiki_username: csv2wiki
-mediawiki_csv2wiki_password: ${MEDIAWIKI_CSV2WIKI_PASSWORD}
 
 # Directory to install simplesaml
 simplesaml_install_directory: ${SIMPLESAML_INSTALL_DIRECTORY}

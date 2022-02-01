@@ -1,0 +1,12 @@
+---
+
+- name: Transfer Backstage Logo
+  copy:
+    src: LeverForChange_Logo.png
+    dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/resources/assets/Backstage_Logo.png"
+
+- name: Install Backstage Logo
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
+    regexp: ^\$wgLogos = .*
+    line: $wgLogos = [ '1x' => "$wgResourceBasePath/resources/assets/Backstage_Logo.png" ];
