@@ -92,7 +92,7 @@ class AchievementLevel(utils.Filter):
         return "BSN Achievement Level"
 
     def document_value(self, document):
-        return document.get("Achievement Level", "None")
+        return document.get("Achievement Level", "UNPERMISSIONED")
 
     def sort(self, names):
         correct_order = [
@@ -107,6 +107,9 @@ class AchievementLevel(utils.Filter):
         ]
         names.sort(key=lambda name: correct_order.index(name) if name in correct_order else len(correct_order))
         return names
+
+    def ignored_values(self):
+        return ["UNPERMISSIONED"]
 
 
 class Top200(utils.Filter):
