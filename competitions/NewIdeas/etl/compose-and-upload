@@ -111,7 +111,7 @@ def main():
     comp.sort("Nominator")
 
     list_toc = toc.ListToc("All_Ideas")
-    list_toc.idea_formatter = toc.WikiTableTocProposalFormatter(
+    list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
         [
             {
                 "name": "Nominator",
@@ -122,16 +122,11 @@ def main():
                 "heading": "Idea",
                 "link": True,
             },
-            {
-                "name": "Number",
-                "heading": "Number",
-                "right_aligned": True,
-            },
         ]
     )
     comp.add_toc(list_toc)
     comp.add_toc(
-        toc.GenericToc("Nominators", "Nominator", sort=toc.GenericToc.SortMethod.COUNT)
+        toc.GenericToc("Nominators", "Nominator")
     )
 
     comp.process_tocs()
