@@ -132,3 +132,57 @@ FILTERS = [
     RankBandFilter(),
     Top200(),
 ]
+
+class LocationProcessor(utils.CsvFieldProcessor):
+    def __init__(self, include_address):
+        self.include_address = include_address
+
+    def field_names(self, field_name):
+        names = []
+        if self.include_address:
+            names.append("%s Address" % field_name)
+
+        names.extend([
+            "%s State/Province" % field_name,
+            "%s Country" % field_name,
+        ])
+
+        return names
+
+    def process_value(self, value):
+        values = []
+        if self.include_address:
+            if value and value.__getitem__:
+                 values.append(
+                     "%s %s, %s %s" % (
+                             value.get("Street Address", ""),
+                             value.get("Addres Line 2", ""),
+                             value.get("City", ""),
+                             value.get("Zip/Postal Code", "")
+                 ))
+            else:
+                values.append("")
+
+        if value and value.__getitem__:
+            values.extend([
+                value.get("State/Province", ""),
+                value.get("Country", ""),
+            ])
+        else:
+            values.extend(["", ""])
+
+        return values
+
+CSV_PROCESSORS = {
+    "Organization Location": LocationProcessor(include_address=True),
+    "Current Work #1 Location": LocationProcessor(include_address=False),
+    "Current Work #2 Location": LocationProcessor(include_address=False),
+    "Current Work #3 Location": LocationProcessor(include_address=False),
+    "Current Work #4 Location": LocationProcessor(include_address=False),
+    "Current Work #5 Location": LocationProcessor(include_address=False),
+    "Future Work #1 Location": LocationProcessor(include_address=False),
+    "Future Work #2 Location": LocationProcessor(include_address=False),
+    "Future Work #3 Location": LocationProcessor(include_address=False),
+    "Future Work #4 Location": LocationProcessor(include_address=False),
+    "Future Work #5 Location": LocationProcessor(include_address=False),
+}
