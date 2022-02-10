@@ -168,10 +168,6 @@
   command: "php {{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/maintenance/createAndPromote.php --bot --force --dbuser=\"{{ db_username }}\" --dbpass=\"{{ db_password }}\" \"{{ mediawiki_csv2wiki_username }}\" \"{{ mediawiki_csv2wiki_password }}\""
   when: mediawiki_csv2wiki_username is defined
 
-- name: Create torqueadmin user
-  command: "php {{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/maintenance/createAndPromote.php --force --dbuser=\"{{ db_username }}\" --dbpass=\"{{ db_password }}\" --custom-groups=\"TorqueAdmin\" \"{{ mediawiki_torqueadmin_username }}\" \"{{ mediawiki_torqueadmin_password }}\""
-  when: mediawiki_torqueadmin_username is defined
-
 - name: Enable Common.css on Login Page
   blockinfile:
     marker: "## {mark} ANSIBLE ENABLE CSS ON LOGIN"
