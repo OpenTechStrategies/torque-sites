@@ -14,4 +14,20 @@ $wgAPIMaxResultSize = 1024 * 1024 * 512;
 $wgTorqueDataConnectCache = true;
 $wgTorqueDataConnectWikiUsername = "{{ mediawiki_csv2wiki_username }}";
 $wgTorqueDataConnectWikiPassword = "{{ mediawiki_csv2wiki_password }}";
+
+$tdcOverrideMessage = [
+  "torquedataconnect-sidebar-csv" => "Download CSV",
+  "torquedataconnect-csv-document-header" => "Proposals",
+  "torquedataconnect-csv-all-documents" => "Select All Proposals",
+  "torquedataconnect-csv-none-documents" => "Unselect All Proposals",
+  "torquedataconnect-csv-template-documents" => "Use $1 Proposals",
+  "torquedataconnect-csv-custom-documents" => "Use Custom Proposals",
+
+];
+$wgHooks['MessagesPreLoad'][] = function($title, &$message, $code) {
+  global $tdcOverrideMessage;
+  if(array_key_exists(strtolower($title), $tdcOverrideMessage)) {
+    $message = $tdcOverrideMessage[strtolower($title)];
+  }
+};
 ?>

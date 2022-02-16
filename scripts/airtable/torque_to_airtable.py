@@ -20,10 +20,14 @@ def airtable_comp_name(torque_name):
 
 def map_annual_operating(operating_budget):
     return {
+        "Less than $1 Million": "Less than $1 Million",
         "$1 to $5 Million": "$1.0 to 5 Million",
         "$5 to $10 Million": "$5.1 to 10 Million",
         "$10 to $25 Million": "$10.1 to 25 Million",
         "$25 to $50 Million": "$25.1 to 50 Million",
+        "$50 to $100 Million": "$50.1 to 100 Million",
+        "$100 to $500 Million": "$100.1 to 500 Million",
+        "$1 Billion +": "$1 Billion +",
     }[operating_budget]
 
 
@@ -33,6 +37,12 @@ def map_legal_status(legal_status):
         "An entity under section 501(c)(3) and 509(a)(1) or (2) of the IRC": "An entity under section 501(c)(3) and 509(a)(1) or (2)",
         "An entity under section 501(c)(4) of the IRC": None,
     }[legal_status]
+
+
+def map_country(country):
+    return {
+        "United States": "United States of America",
+    }.get(country, country)
 
 
 def remove_brs(text):
@@ -81,8 +91,8 @@ def create_or_find_organization(torque_proposal):
 
 
 def lookup_global_location(location):
-    airtable_loc = domestic_table.all(
-        formula=match({"Country Name": location["Country"]})
+    airtable_loc = global_table.all(
+        formula=match({"Country Name": map_country(location["Country"])})
     )
     if len(airtable_loc) == 0:
         raise Exception("Couldn't find country %s" % location["Country"])
@@ -138,7 +148,7 @@ def create_airtable_dict(torque_proposal, airtable_proposal_fields={}):
                 formula=match({"Candid Label": pop})
             )
             priority_populations.append(airtable_pop[0]["id"])
-        dict["Priority Populations"] = (priority_populations,)
+        dict["Priority Populations"] = priority_populations
 
     if not in_airtable("Global Current Work Locations"):
         current_global_work_locations = []
@@ -156,10 +166,10 @@ def create_airtable_dict(torque_proposal, airtable_proposal_fields={}):
                     lookup_global_location(torque_location)
                 )
         dict["Global Current Work Locations"] = (
-            list(set(current_global_work_locations)),
+            list(set(current_global_work_locations))
         )
         dict["U.S. Domestic Current Work Locations"] = (
-            list(set(current_domestic_work_locations)),
+            list(set(current_domestic_work_locations))
         )
 
     if not in_airtable("Global Proposed Work Locations"):
@@ -176,12 +186,8 @@ def create_airtable_dict(torque_proposal, airtable_proposal_fields={}):
                     lookup_global_location(torque_location)
                 )
 
-        dict["Global Proposed Work Locations"] = (
-            list(set(future_global_work_locations)),
-        )
-        dict["U.S. Domestic Proposed Work Locations"] = (
-            list(set(future_domestic_work_locations)),
-        )
+        dict["Global Proposed Work Locations"] = list(set(future_global_work_locations))
+        dict["U.S. Domestic Proposed Work Locations"] = list(set(future_domestic_work_locations))
 
     if not in_airtable("Lead Organization"):
         organization = create_or_find_organization(torque_proposal)
@@ -219,6 +225,8 @@ def create_airtable_dict(torque_proposal, airtable_proposal_fields={}):
     for key in potential_dict.keys():
         if not in_airtable(key):
             dict[key] = potential_dict[key]
+
+    #print(dict)
 
     return dict
 
