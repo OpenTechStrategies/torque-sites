@@ -1,7 +1,6 @@
 ---
 
 - name: Check out SimpleBook
-  tags: simplebook-redeploy
   git:
     repo: https://github.com/OpenTechStrategies/SimpleBook
     dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/extensions/SimpleBook"

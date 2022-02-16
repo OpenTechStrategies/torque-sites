@@ -12,7 +12,6 @@
     line: $wgLogos = [ '1x' => "$wgResourceBasePath/resources/assets/LeverForChange_Logo.png" ];
 
 - name: Install TorqueDataConnect GlobalView Variables
-  tags: competitionconfig
   blockinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
     marker: "## {mark} ANSIBLE PICKSOME OVERRIDE CONFIG"
@@ -61,14 +60,12 @@
 #
 # It also might not.
 - name: Change Strip State size limit
-  tags: demo
   replace:
     path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/includes/parser/StripState.php"
     regexp: "	protected \\$sizeLimit = 5000000;"
     replace: "	protected $sizeLimit = 10000000;"
 
 - name: Install additional tab configurations
-  tags: override
   blockinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
     marker: "## {mark} ANSIBLE ADDITIONAL TAB CONFIG"

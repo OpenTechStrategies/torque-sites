@@ -92,26 +92,22 @@
     state: directory
 
 - name: Check out SimpleBook
-  tags: simplebook-redeploy
   git:
     repo: https://github.com/OpenTechStrategies/SimpleBook
     dest: "{{ simplebook_install_directory }}"
     version: "{{ simplebook_git_version }}"
 
 - name: Run pipenv install
-  tags: simplebook-redeploy
   command: "pipenv install"
   args:
     chdir: "{{ simplebook_install_directory }}/services/api"
 
 - name: Run yarn install
-  tags: simplebook-redeploy
   command: "yarn install"
   args:
     chdir: "{{ simplebook_install_directory }}/services/api/mw2pdf"
 
 - name: Run yarn build
-  tags: simplebook-redeploy
   command: "yarn build"
   args:
     chdir: "{{ simplebook_install_directory }}/services/api/mw2pdf"
@@ -123,7 +119,6 @@
     dest: /etc/supervisor/conf.d/simplebook.conf
 
 - name: Restart supervisor for simplebook
-  tags: simplebook-redeploy
   become_user: root
   supervisorctl:
     name: 'simplebook:'
