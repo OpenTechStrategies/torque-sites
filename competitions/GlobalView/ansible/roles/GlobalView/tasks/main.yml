@@ -75,3 +75,16 @@
           ["Proposal", "Original Proposal", "main"],
         ],
       ];
+
+- name: Transfer TorqueWikiOverride group css
+  copy:
+    src: TorqueWikiOverride.css
+    dest: "{{ mediawiki_install_directory }}/TorqueWikiOverride.css"
+
+- name: Install TorqueWikiOverride group css
+  raw: "php {{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/maintenance/edit.php -b MediaWiki:TorqueWikiOverride.css < {{ mediawiki_install_directory }}/TorqueWikiOverride.css"
+
+- name: Remove TorqueWikiOverride group css
+  file:
+    path: "{{ mediawiki_install_directory }}/TorqueWikiOverride.css"
+    state: absent
