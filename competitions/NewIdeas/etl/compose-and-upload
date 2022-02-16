@@ -142,6 +142,9 @@ def main():
     comp.add_toc(
         toc.GenericToc("Nominators", "Nominator")
     )
+    comp.add_toc(
+        toc.GenericToc("Subject", "Subject")
+    )
 
     comp.process_tocs()
 

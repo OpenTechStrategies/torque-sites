@@ -28,7 +28,7 @@ DATA_DIR="${BASE_DATA_DIR}/${COMPETITION}"
 # Make sure we have python3
 python3 -V > /dev/null 2>&1 || { echo "python3 required, aborting" ; exit 1; }
 
-IDEAS_CSV="New Ideas data.csv"
+IDEAS_CSV="New Ideas Wiki Subject Codes (2-7-22).csv"
 
 TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
 IDEA_PDFS="New Ideas PDFs-20220214T143001Z-001.zip"
@@ -82,7 +82,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   mkdir -p ${TDC_CONFIG_DIR}
 fi
 
-if ! echo "6516a3d67b9539923fcfbb3f55e6f3170b19cce3  $DATA_DIR/$IDEAS_CSV" | sha1sum -c &> /dev/null ; then
+if ! echo "ff2717b6e6243fdf685904cdc82fc767f65f5550  $DATA_DIR/$IDEAS_CSV" | sha1sum -c &> /dev/null ; then
   echo "ERROR: SHA of IDEAS_CSV did not match expectation!"
   echo "This means that we most likely got a new file, which may have the old"
   echo "errors in it."
