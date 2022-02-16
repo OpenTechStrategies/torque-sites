@@ -22,3 +22,17 @@
     marker: "## {mark} ANSIBLE NEW IDEAS CONFIG"
     block: |
       include "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/torque-sites-config/newideas.php";
+
+# New Ideas wiki has a different look and feel from other wikis, so it gets a special Common.css
+- name: Transfer New Ideas Common group css
+  copy:
+    src: Common.css
+    dest: "{{ mediawiki_install_directory }}/Common.css"
+
+- name: Install New Ideas Common group css
+  raw: "php {{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/maintenance/edit.php -b MediaWiki:Common.css < {{ mediawiki_install_directory }}/Common.css"
+
+- name: Remove New Ideas Common group css
+  file:
+    path: "{{ mediawiki_install_directory }}/Common.css"
+    state: absent
