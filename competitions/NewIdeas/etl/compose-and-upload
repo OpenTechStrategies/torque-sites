@@ -23,6 +23,7 @@ Usage:
 
   $ compose-and-upload \\
        --ideas-csv=IDEAS_CSV \\
+       --attachments-dir=ATTACHMENTS_DIR \\
        --tdc-config-dir=TDC_CONFIG_DIR \\
        --pare=PARE \\
        --collection-only
@@ -30,6 +31,10 @@ Usage:
 Command-line options:
   --ideas-csv FILE                FILE is a CSV file representing the bulk
                                   of the idea information
+
+  --attachments-dir DIR           DIR is a directory for compose-and-upload to look in for what attachments
+                                  will be uploaded to the torque wiki.  It needs to have subdirectories
+                                  by idea number.
 
   --tdc-config-dir DIR            DIR is the location for files that are the base configuration files
                                   needed by TorqueDataConnect, and can be optionally, manually, put on
@@ -63,6 +68,7 @@ def main():
             "",
             [
                 "ideas-csv=",
+                "attachments-dir=",
                 "tdc-config-dir=",
                 "pare=",
                 "collection-only",
@@ -74,6 +80,7 @@ def main():
 
     ideas_csv = None
     tdc_config_dir = None
+    attachments_dir = None
     pare = None
     collection_only = False
     for o, a in opts:
@@ -83,6 +90,8 @@ def main():
             pare = a
         elif o == "--collection-only":
             collection_only = True
+        elif o == "--attachments-dir":
+            attachments_dir = a
         elif o == "--tdc-config-dir":
             tdc_config_dir = a
         else:
@@ -108,6 +117,11 @@ def main():
     comp.add_supplemental_information(
         competition.StaticColumnAdder("Competition Name", "NewIdeas")
     )
+    attachments = competition.BasicAttachments(
+        comp.sorted_proposal_keys, attachments_dir
+    )
+    comp.add_supplemental_information(attachments)
+
     comp.sort("Nominator")
 
     list_toc = toc.ListToc("All_Ideas")
@@ -141,6 +155,7 @@ def main():
     )
     my_wiki.collection_only = collection_only
     my_wiki.upload_collection(comp, validate=False)
+    my_wiki.upload_attachments(attachments.attachments)
 
 
 if __name__ == "__main__":
