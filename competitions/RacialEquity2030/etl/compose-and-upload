@@ -312,6 +312,11 @@ def main():
             }
         ),
     )
+    comp.process_cells_special(
+        "Primary Subject Area",
+        competition.PrimarySubjectAreaProcessor()
+    )
+
 
     attachments = competition.BasicAttachments(
         comp.sorted_proposal_keys, attachments_dir
@@ -591,7 +596,7 @@ def main():
             competition.SustainableDevelopmentGoalProcessor.official_sdgs,
         )
     )
-    comp.add_toc(toc.GenericToc("Subject_Areas", "Primary Subject Area"))
+    comp.add_toc(toc.PrimarySubjectAreaToc("Subject_Areas", "Primary Subject Area"))
 
     comp.add_toc(
         toc.GeographicToc(

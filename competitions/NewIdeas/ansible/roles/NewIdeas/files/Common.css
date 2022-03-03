@@ -250,6 +250,10 @@ body {
   display:none;
 }
 
+#t-torquedataconnect-csv {
+  display:none;
+}
+
 @media print {
 
   .torque-edit {

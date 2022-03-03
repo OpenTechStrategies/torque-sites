@@ -345,6 +345,10 @@ def main():
             }
         ),
     )
+    comp.process_cells_special(
+        "Primary Subject Area",
+        competition.PrimarySubjectAreaProcessor()
+    )
 
     attachments.specify_new_subcolumn(
         ".*Finalist Memo.*", "Finalist Memo Attachment", 1

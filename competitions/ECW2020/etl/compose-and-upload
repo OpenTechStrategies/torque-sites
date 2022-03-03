@@ -255,6 +255,10 @@ def main():
             }
         ),
     )
+    comp.process_cells_special(
+        "Primary Subject Area",
+        competition.PrimarySubjectAreaProcessor()
+    )
 
     comp.add_supplemental_information(
         competition.EvaluationAdder(

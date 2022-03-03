@@ -506,3 +506,25 @@ class GeographicToc(Toc):
             template += "{%- endfor %}\n"
 
         return template
+
+
+class PrimarySubjectAreaToc(GenericToc):
+    """A special case of GenericToc for Primary Subject Area,
+    that operates on the complex object in that field in a special
+    case."""
+
+    def process_competition(self, competition):
+        self.competition_name = competition.name
+
+        # Allows someone outside to set which specific proposals we should use.
+        if self.proposals is None:
+            self.proposals = competition.ordered_proposals()
+
+        for proposal in self.proposals:
+            datum = proposal.cell(self.columns[0])
+            if datum:
+                key = datum["Level 1"]
+                if key not in self.data:
+                    self.groupings.append(key)
+                    self.data[key] = super().default_grouping(key)
+                self.data[key]["all_proposal_ids"].append(proposal.key())

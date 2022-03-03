@@ -502,6 +502,11 @@ def main():
         for column in correction_processor.columns_affected():
             comp.process_cells_special(column, correction_processor)
 
+    comp.process_cells_special(
+        "Primary Subject Area",
+        competition.PrimarySubjectAreaProcessor()
+    )
+
     attachments = competition.RegexSpecifiedAttachments(
         comp.sorted_proposal_keys, attachments_dir
     )

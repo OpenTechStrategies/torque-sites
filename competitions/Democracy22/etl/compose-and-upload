@@ -293,6 +293,11 @@ def main():
             }
         ),
     )
+    comp.process_cells_special(
+        "Primary Subject Area",
+        competition.PrimarySubjectAreaProcessor()
+    )
+
 
     comp.transform_sheet(
         competition.LocationCombiner(

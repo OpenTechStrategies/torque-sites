@@ -1602,3 +1602,56 @@ class GeocodeProcessor(CellProcessor):
             print(e)
 
         return cell
+
+
+class PrimarySubjectAreaProcessor(CellProcessor):
+    """Coverts a primary subject area to a complex according to LFC Application codes"""
+    def __init__(self):
+        import importlib.resources as pkg_resources
+        from . import data
+        self.subject_area_data = {}
+        csv_reader = csv.reader(
+            pkg_resources.open_text(data, "Subject Area Codes.csv", encoding="utf-8"),
+            delimiter=",",
+            quotechar='"',
+        )
+        next(csv_reader)
+
+        def add_to_subject_area_data(msg, datum):
+            if msg.lower() in self.subject_area_data:
+                raise Exception("%s already in subject area data" % msg)
+            else:
+                self.subject_area_data[msg.lower()] = datum
+
+        for row in csv_reader:
+            datum = {
+                "Preferred Label": row[0],
+                "PCS Code": row[1],
+                "Category": row[2],
+                "Level": row[3],
+                "Level 1": row[4],
+                "Level 2": row[5],
+                "Level 3": row[6],
+                "Level 4": row[7],
+            }
+
+            if datum["Level 4"]:
+                add_to_subject_area_data(datum["Level 4"], datum)
+            elif datum["Level 3"]:
+                add_to_subject_area_data(datum["Level 3"], datum)
+            elif datum["Level 2"]:
+                add_to_subject_area_data(datum["Level 2"], datum)
+            elif datum["Level 1"]:
+                add_to_subject_area_data(datum["Level 1"], datum)
+
+
+    def process_cell(self, proposal, column_name):
+        cell = proposal.cell(column_name)
+
+        if not cell:
+            return None
+
+        if cell.lower() in self.subject_area_data:
+            return self.subject_area_data[cell.lower()]
+        else:
+            raise Exception("Could not find subject area %s" % cell)

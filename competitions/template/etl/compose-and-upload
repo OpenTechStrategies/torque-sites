@@ -143,6 +143,11 @@ def main():
             }
         ),
     )
+    comp.process_cells_special(
+       "Primary Subject Area",
+        competition.PrimarySubjectAreaProcessor()
+    )
+
 
     attachments = competition.BasicAttachments(
         comp.sorted_proposal_keys, attachments_dir
