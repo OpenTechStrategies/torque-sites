@@ -468,6 +468,7 @@ def main():
     comp.process_cells_special("Rank", wisehead_correction)
     comp.process_cells_special("Panel Score", wisehead_correction)
     comp.process_cells_special("Panel Rank", wisehead_correction)
+    comp.process_cells_special("Key Words", competition.ToListProcessor())
 
     sdg_list = [
         "No Poverty",
