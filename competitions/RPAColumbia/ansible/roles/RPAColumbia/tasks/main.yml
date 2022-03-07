@@ -1,0 +1,65 @@
+---
+
+- name: Transfer LFC Logo
+  copy:
+    src: RPAColumbia_Logo.png
+    dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/resources/assets/RPAColumbia_Logo.png"
+
+- name: Install LFC Logo
+  lineinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
+    regexp: ^\$wgLogos = .*
+    line: $wgLogos = [ '1x' => "$wgResourceBasePath/resources/assets/RPAColumbia_Logo.png" ];
+
+- name: Install TorqueDataConnect RPAColumbia Variables
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
+    marker: "## {mark} ANSIBLE TDC OVERRIDE CONFIG"
+    block: |
+      $wgTorqueDataConnectMultiWikiConfig = [];
+      $wgTorqueDataConnectMultiWikiConfig["LLIIA2020"] = "LLIIA2020";
+      $wgTorqueDataConnectMultiWikiConfig["LFC100Change2020"] = "100Change2020";
+      $wgTorqueDataConnectMultiWikiConfig["Climate2030"] = "Climate2030";
+
+- name: Install TorqueDataConnect RPAColumbia Permissions Overrides
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
+    marker: "## {mark} ANSIBLE RPA OVERRIDE CONFIG"
+    block: |
+      $wgGroupPermissions["RPAColumbia"]["read"] = true;
+      $wgTorqueDataConnectView = json_encode(array("wiki_key" => "RPAColumbia", "view" => "Default"));
+
+- name: Enable Team Comments Disabler
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
+    marker: "## {mark} ANSIBLE SIDEBAR VIEW"
+    block: |
+      include "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/torque-sites-config/sidebar_view.php";
+
+- name: Install additional tab configurations
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
+    marker: "## {mark} ANSIBLE ADDITIONAL TAB CONFIG"
+    block: |
+      $wgLFCExtraTabOverrides = [
+        "PROPOSAL" => [
+          ["Proposal", "Original Proposal", "main"],
+        ],
+      ];
+
+# RPA Columbia wiki has a different look and feel from other wikis, so it gets a special Common.css
+- name: Transfer Common group css
+  tags: css
+  copy:
+    src: Common.css
+    dest: "{{ mediawiki_install_directory }}/Common.css"
+
+- name: Install Common group css
+  tags: css
+  raw: "php {{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/maintenance/edit.php -b MediaWiki:Common.css < {{ mediawiki_install_directory }}/Common.css"
+
+- name: Remove Common group css
+  tags: css
+  file:
+    path: "{{ mediawiki_install_directory }}/Common.css"
+    state: absent
