@@ -236,7 +236,7 @@ def main():
         competition.ColumnEqualsProposalFilter("Admin Review Status", "Not submitted")
     )
     comp.process_cells_special("Priority Populations", competition.ToListProcessor())
-    comp.process_cells_special("Total Projected Costs", competition.NumberCommaizer())
+    comp.process_cells_special("Total Projected Costs", competition.StringToNumber())
     comp.process_cells_special("Budget data", competition.BudgetTableProcessor())
 
     comp.process_cells_special(

@@ -294,7 +294,7 @@ def main():
     comp.process_cells_special("FUNDER 2 Name", funder_processor)
     comp.process_cells_special("FUNDER 3 Name", funder_processor)
 
-    comp.process_cells_special("Total Projected Costs", competition.NumberCommaizer())
+    comp.process_cells_special("Total Projected Costs", competition.StringToNumber())
     comp.process_cells_special("Budget Data", competition.BudgetTableProcessor())
     comp.process_cells_special(
         "Annual Operating Budget",

@@ -275,7 +275,7 @@ def main():
     )
 
     comp.process_cells_special("Priority Populations", competition.ToListProcessor())
-    comp.process_cells_special("Total Projected Costs", competition.NumberCommaizer())
+    comp.process_cells_special("Total Projected Costs", competition.StringToNumber())
     comp.process_cells_special("Budget Data", competition.BudgetTableProcessor())
     comp.process_cells_special(
         "Annual Operating Budget",

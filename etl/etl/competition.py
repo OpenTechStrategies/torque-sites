@@ -535,15 +535,17 @@ class BudgetTableProcessor(CellProcessor):
         return budget_row_data
 
 
-class NumberCommaizer(CellProcessor):
-    """A CellProcessor that takes large numbers and inserts commas where appropriate,
-    and does nothing if it looks like they aren't large numbers."""
+class StringToNumber(CellProcessor):
+    """A CellProcessor that takes numbers as Strings and converts them to
+    floats/integers.  If they aren't a valid number, sets to None"""
 
     def process_cell(self, proposal, column_name):
-        """Return the CELL with commas as if it were a large number,
-        or do nothing if not parseable as a number"""
-
-        return utils.commaize_number(proposal.cell(column_name))
+        try:
+            print(float(proposal.cell(column_name)))
+            return float(proposal.cell(column_name))
+        except ValueError:
+            print("Failed to convert %s to a number, in %s" % (proposal.cell(column_name), proposal.key()))
+            return None
 
 
 class CorrectionData(CellProcessor):

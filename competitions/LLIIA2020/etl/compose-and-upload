@@ -298,7 +298,7 @@ def main():
     if budget_csv is not None:
         comp.add_supplemental_information(BudgetDataAdder(budget_csv))
 
-    comp.process_cells_special("Total Projected Costs", competition.NumberCommaizer())
+    comp.process_cells_special("Total Projected Costs", competition.StringToNumber())
     comp.process_cells_special("Priority Populations", competition.ToListProcessor())
     comp.process_cells_special("Key Words and Phrases", competition.ToListProcessor())
     comp.process_cells_special(

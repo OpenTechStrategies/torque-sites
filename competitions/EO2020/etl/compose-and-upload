@@ -321,6 +321,9 @@ def main():
     comp.add_supplemental_information(
         competition.StaticColumnAdder("Achievement Level", "")
     )
+    comp.add_supplemental_information(
+        competition.StaticColumnAdder("Total Projected Costs", 10000000)
+    )
 
     fix_cell_processor = competition.FixCellProcessor()
     comp.process_all_cells_special(fix_cell_processor)

@@ -65,6 +65,10 @@ def form_well(html):
 def fix_cell(cell):
     """Return a cleaned up version of the CELL that will work well
     with mediawiki, mainly through text subsitution."""
+
+    if not isinstance(cell, str):
+        return cell
+
     # A straight-up HTML-unescaping might be the right thing
     # (i.e., cell = html_parser.unescape(cell) below)
     # in the long run, but for now, let's do the same limited

@@ -133,7 +133,7 @@ def main():
         competition.StaticColumnAdder("Achievement Level", "")
     )
 
-    comp.process_cells_special("Total Projected Costs", competition.NumberCommaizer())
+    comp.process_cells_special("Organization Budget", competition.StringToNumber())
 
     comp.add_supplemental_information(
         competition.EvaluationAdder(

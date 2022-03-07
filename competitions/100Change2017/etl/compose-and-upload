@@ -215,6 +215,9 @@ def main():
     comp.add_supplemental_information(
         competition.StaticColumnAdder("Achievement Level", "")
     )
+    comp.add_supplemental_information(
+        competition.StaticColumnAdder("Total Projected Costs", 100000000)
+    )
 
     comp.add_supplemental_information(RankAdder(chipselections, semifinalists))
 

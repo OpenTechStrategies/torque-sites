@@ -224,6 +224,9 @@ def main():
     comp.add_supplemental_information(
         competition.StaticColumnAdder("Achievement Level", "")
     )
+    comp.add_supplemental_information(
+        competition.StaticColumnAdder("Total Projected Costs", 10000000)
+    )
 
     fix_cell_processor = competition.FixCellProcessor()
     comp.process_all_cells_special(fix_cell_processor)
@@ -242,9 +245,6 @@ def main():
     )
 
     comp.process_cells_special("Priority Populations", competition.ToListProcessor())
-    comp.process_cells_special(
-        "Total Resource Requirements", competition.NumberCommaizer()
-    )
     comp.process_cells_special("Budget data", competition.BudgetTableProcessor())
     comp.process_cells_special(
         "Annual Operating Budget",
