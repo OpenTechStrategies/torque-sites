@@ -113,6 +113,7 @@ def main():
         "Wiki Key",
         "Collection Name",
         "Project Title",
+        "Project Description",
         "Organization Name",
         "Organization Location",
         "Priority Populations",
@@ -168,6 +169,22 @@ def main():
         "Organization Name", competition.RemoveHTMLBRsProcessor(" ")
     )
 
+    def title_column(group_var_name, id_var_name):
+        template = "[[{{ %s[%s]['%s'] }}|{{ %s[%s]['%s'] }}]]<br>" % (
+            group_var_name,
+            id_var_name,
+            competition.MediaWikiTitleAdder.title_column_name,
+            group_var_name,
+            id_var_name,
+            "Project Title",
+        )
+        template += "<div style='text-indent:20px'>{{ %s[%s]['%s'] }}</div>" % (
+            group_var_name,
+            id_var_name,
+            "Project Description",
+        )
+        return template
+
     list_toc = toc.ListToc("All_Proposals")
     list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
         [
@@ -176,9 +193,8 @@ def main():
                 "heading": "Organization",
             },
             {
-                "name": "Project Title",
+                "processor": title_column,
                 "heading": "Title",
-                "link": True,
             },
             {
                 "name": "Competition Name",
