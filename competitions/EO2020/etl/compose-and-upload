@@ -324,6 +324,12 @@ def main():
     comp.add_supplemental_information(
         competition.StaticColumnAdder("Total Projected Costs", 10000000)
     )
+    comp.add_supplemental_information(
+        competition.StaticColumnAdder(
+            "Sustainable Development Goals",
+            [{"number": 8, "title": "Decent Work and Economic Growth" }]
+        )
+    )
 
     fix_cell_processor = competition.FixCellProcessor()
     comp.process_all_cells_special(fix_cell_processor)

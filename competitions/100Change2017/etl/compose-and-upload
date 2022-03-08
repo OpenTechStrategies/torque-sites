@@ -218,6 +218,9 @@ def main():
     comp.add_supplemental_information(
         competition.StaticColumnAdder("Total Projected Costs", 100000000)
     )
+    comp.add_supplemental_information(
+        competition.StaticColumnAdder("Sustainable Development Goals", "")
+    )
 
     comp.add_supplemental_information(RankAdder(chipselections, semifinalists))
 
@@ -231,6 +234,17 @@ def main():
         )
         for column in correction_processor.columns_affected():
             comp.process_cells_special(column, correction_processor)
+
+    comp.process_cells_special(
+        "Sustainable Development Goals",
+        competition.ToListProcessor(split_string="|"),
+    )
+    comp.process_cells_special(
+        "Sustainable Development Goals",
+        competition.SustainableDevelopmentGoalProcessor(
+            competition.SustainableDevelopmentGoalProcessor.official_sdgs
+        ),
+    )
 
     attachments = competition.RegexSpecifiedAttachments(
         comp.sorted_proposal_keys, attachments_dir

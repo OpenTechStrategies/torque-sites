@@ -215,6 +215,13 @@ body {
   display:block;
 }
 
+/*
+ * This allows us to conditionally disable number on TOCs as needed.
+ *
+ * See https://www.mediawiki.org/wiki/Manual:Table_of_contents
+ */
+.noautonum .tocnumber { display: none; }
+
 #p-Emulate .emulategroup-emulating {
   font-size:0.8em;
   overflow:hidden;

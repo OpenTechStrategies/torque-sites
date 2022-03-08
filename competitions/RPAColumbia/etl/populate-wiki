@@ -246,10 +246,9 @@ def main():
     )
 
     comp.add_toc(
-        toc.GenericListToc(
+        toc.SustainableDevelopmentGoalToc(
             "Sustainable_Development_Goals",
             "Sustainable Development Goals",
-            competition.SustainableDevelopmentGoalProcessor.official_sdgs,
         )
     )
 

@@ -410,7 +410,10 @@ class ToListProcessor(CellProcessor):
 
     def process_cell(self, proposal, column_name):
         cell = proposal.cell(column_name)
-        return [elem.strip() for elem in cell.split(self.split_string)]
+        if cell:
+            return [elem.strip() for elem in cell.split(self.split_string)]
+        else:
+            return []
 
 
 class ToSpecifiedListProcessor(CellProcessor):
@@ -484,7 +487,7 @@ class SustainableDevelopmentGoalProcessor(CellProcessor):
     official_sdgs = [
         "No Poverty",
         "Zero Hunger",
-        "Good Health and Well-being",
+        "Good Health and Well-Being",
         "Quality Education",
         "Gender Equality",
         "Clean Water and Sanitation",
@@ -498,7 +501,7 @@ class SustainableDevelopmentGoalProcessor(CellProcessor):
         "Life Below Water",
         "Life on Land",
         "Peace, Justice and Strong Institutions",
-        "Partnerships for the Goals",
+        "Partnership for the Goals",
     ]
 
     def __init__(self, sdg_list):
@@ -510,9 +513,16 @@ class SustainableDevelopmentGoalProcessor(CellProcessor):
         new_cell = []
         for value in cell:
             if value not in self.reverse_mapping.keys():
-                raise Exception("'%s' is not a configured sdg value" % value)
+                raise Exception("'%s' is not a configured sdg value on proposal %s" % (value, proposal.key()))
 
-            new_cell.append(self.official_sdgs[self.reverse_mapping[value]])
+            idx = self.reverse_mapping[value]
+
+            new_cell.append(
+                {
+                    "number": idx + 1,
+                    "title": self.official_sdgs[idx]
+                }
+            )
 
         return new_cell
 
@@ -541,7 +551,6 @@ class StringToNumber(CellProcessor):
 
     def process_cell(self, proposal, column_name):
         try:
-            print(float(proposal.cell(column_name)))
             return float(proposal.cell(column_name))
         except ValueError:
             print("Failed to convert %s to a number, in %s" % (proposal.cell(column_name), proposal.key()))

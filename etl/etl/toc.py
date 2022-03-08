@@ -274,7 +274,7 @@ class GenericToc(Toc):
     def template_file(self):
         template = ""
         if self.include_wiki_toc():
-            template += "__TOC__"
+            template += self.include_wiki_toc()
             template += ""
 
         template += "{% for group in groups %}\n"
@@ -318,8 +318,9 @@ class GenericToc(Toc):
         return {"groups": list(self.data.values())}
 
     def include_wiki_toc(self):
-        """Add the wiki __TOC__ if this returns True"""
-        return True
+        """When a value is returned, add that as the __TOC__, and
+        if False/None returned, then omit completely."""
+        return "__TOC__"
 
 
 class GenericListToc(GenericToc):
@@ -528,3 +529,36 @@ class PrimarySubjectAreaToc(GenericToc):
                     self.groupings.append(key)
                     self.data[key] = super().default_grouping(key)
                 self.data[key]["all_proposal_ids"].append(proposal.key())
+
+class SustainableDevelopmentGoalToc(GenericToc):
+    """A special case of GenericToc for Sustainable Development Goals,
+    which are objects created by the SustainableDevelopmentGoalProcessor
+    and are ordered specifically to that list."""
+
+    def __init__(self, name, column):
+        from etl import competition
+        super().__init__(
+            name,
+            column,
+            [
+                "%s: %s" % (number + 1, title)
+                for (number, title)
+                in enumerate(competition.SustainableDevelopmentGoalProcessor.official_sdgs)
+            ])
+
+    def process_competition(self, competition):
+        self.competition_name = competition.name
+
+        # Allows someone outside to set which specific proposals we should use.
+        if self.proposals is None:
+            self.proposals = competition.ordered_proposals()
+
+        for proposal in self.proposals:
+            sdgs = proposal.cell(self.columns[0])
+            for sdg in sdgs:
+                sdg_string = "%s: %s" % (sdg["number"], sdg["title"])
+                self.data[sdg_string]["all_proposal_ids"].append(proposal.key())
+
+    def include_wiki_toc(self):
+        """We want to override so that we can disable numbering on the TOC"""
+        return "<div class='noautonum'>__TOC__</div>"

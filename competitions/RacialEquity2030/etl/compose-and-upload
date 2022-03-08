@@ -282,11 +282,28 @@ def main():
         "Sustainable Development Goals",
         competition.ToListProcessor(split_string="|"),
     )
+    sdgs = [
+        "No Poverty",
+        "Zero Hunger",
+        "Good Health and Well-being",
+        "Quality Education",
+        "Gender Equality",
+        "Clean Water and Sanitation",
+        "Affordable and Clean Energy",
+        "Decent Work and Economic Growth",
+        "Industry, Innovation and Infrastructure",
+        "Reduced Inequality",
+        "Sustainable Cities and Communities",
+        "Responsible Consumption and Production",
+        "Climate Action",
+        "Life Below Water",
+        "Life on Land",
+        "Peace, Justice and Strong Institutions",
+        "Partnerships for the Goals",
+    ]
     comp.process_cells_special(
         "Sustainable Development Goals",
-        competition.SustainableDevelopmentGoalProcessor(
-            competition.SustainableDevelopmentGoalProcessor.official_sdgs
-        ),
+        competition.SustainableDevelopmentGoalProcessor(sdgs),
     )
 
     funder_processor = FundersCorrectionProcessor(funders_correction)
@@ -590,10 +607,9 @@ def main():
     )
     comp.add_toc(toc.GenericListToc("Populations", "Priority Populations"))
     comp.add_toc(
-        toc.GenericListToc(
+        toc.SustainableDevelopmentGoalToc(
             "Sustainable_Development_Goals",
             "Sustainable Development Goals",
-            competition.SustainableDevelopmentGoalProcessor.official_sdgs,
         )
     )
     comp.add_toc(toc.PrimarySubjectAreaToc("Subject_Areas", "Primary Subject Area"))

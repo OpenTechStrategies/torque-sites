@@ -234,6 +234,12 @@ def main():
     comp.add_supplemental_information(
         competition.StaticColumnAdder("Achievement Level", "")
     )
+    comp.add_supplemental_information(
+        competition.StaticColumnAdder(
+            "Sustainable Development Goals",
+            [{"number": 16, "title": "Peace, Justice and Strong Institutions" }]
+        )
+    )
 
     comp.add_supplemental_information(
         competition.EvaluationAdder(

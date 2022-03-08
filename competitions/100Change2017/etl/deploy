@@ -75,6 +75,7 @@ RECLASSIFICATION_CSV="geo-and-topic-revisions-Reclassify-themes-ALL-complete-(me
 EXCLUDED_REVIEW_NUMBERS_TXT="excluded-review-numbers.txt"
 ATTACHMENT_ZIP="Generated-Attachments-From-Mediawiki.zip"
 OTS_CORRECTION_FILE="OTS_Corrections.csv"
+SDG_CORRECTION_FILE="100Change2017_SDG_Corrections.csv"
 CHIP_SELECTIONS_FILE="chipselections.dat"
 SEMI_FINALISTS_FILE="semifinalists.dat"
 
@@ -114,6 +115,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   decrypt ${DATA_DIR}/${RECLASSIFICATION_XLSX} ${ENCRYPTED_DIR}/${RECLASSIFICATION_XLSX}.gpg "${GPG_PASSPHRASE}"
   decrypt ${DATA_DIR}/${ATTACHMENT_ZIP} ${ENCRYPTED_DIR}/${ATTACHMENT_ZIP}.gpg "${GPG_PASSPHRASE}"
   decrypt ${DATA_DIR}/${OTS_CORRECTION_FILE} ${ENCRYPTED_DIR}/${OTS_CORRECTION_FILE}.gpg "${GPG_PASSPHRASE}"
+  decrypt ${DATA_DIR}/${SDG_CORRECTION_FILE} ${ENCRYPTED_DIR}/${SDG_CORRECTION_FILE}.gpg "${GPG_PASSPHRASE}"
   decrypt ${DATA_DIR}/${CHIP_SELECTIONS_FILE} ${ENCRYPTED_DIR}/${CHIP_SELECTIONS_FILE}.gpg "${GPG_PASSPHRASE}"
   decrypt ${DATA_DIR}/${SEMI_FINALISTS_FILE} ${ENCRYPTED_DIR}/${SEMI_FINALISTS_FILE}.gpg "${GPG_PASSPHRASE}"
 
@@ -346,7 +348,8 @@ ${RUNNER} --proposals-csv="${DATA_DIR}/${STAGE_FINAL_CSV}" \
           --attachments-dir=${ATTACHMENTS_DIR} \
           --chipselections=${DATA_DIR}/${CHIP_SELECTIONS_FILE} \
           --semifinalists=${DATA_DIR}/${SEMI_FINALISTS_FILE} \
-          --correction-file="${DATA_DIR}/${OTS_CORRECTION_FILE}"
+          --correction-file="${DATA_DIR}/${OTS_CORRECTION_FILE}" \
+          --correction-file="${DATA_DIR}/${SDG_CORRECTION_FILE}"
 if [ $? -ne 0 ]; then
 		echo Upload failure!
 		exit 1
