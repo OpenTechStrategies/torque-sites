@@ -27,6 +27,7 @@
       $wgTorqueDataConnectMultiWikiConfig["LoneStar2020"] = "LoneStar2020";
       $wgTorqueDataConnectMultiWikiConfig["Democracy22"] = "Democracy22";
       $wgTorqueDataConnectMultiWikiConfig["ChicagoPrize"] = "ChicagoPrize";
+      $tdcOverrideMessage["torquedataconnect-sidebar-csv"] = "Download All as CSV";
 
 - name: Install Team Comments Disabler
   copy:
