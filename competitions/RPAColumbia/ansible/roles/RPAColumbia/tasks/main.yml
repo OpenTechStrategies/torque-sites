@@ -20,6 +20,7 @@
       $wgTorqueDataConnectMultiWikiConfig["LLIIA2020"] = "LLIIA2020";
       $wgTorqueDataConnectMultiWikiConfig["LFC100Change2020"] = "100Change2020";
       $wgTorqueDataConnectMultiWikiConfig["Climate2030"] = "Climate2030";
+      $wgLFCPickSomeEligiblePage = "TorqueConfig:AllProposals";
 
 - name: Install TorqueDataConnect RPAColumbia Permissions Overrides
   blockinfile:
@@ -27,6 +28,10 @@
     marker: "## {mark} ANSIBLE RPA OVERRIDE CONFIG"
     block: |
       $wgGroupPermissions["RPAColumbia"]["read"] = true;
+      $wgGroupPermissions['RPAColumbia']['teamcomment'] = true;
+      $wgGroupPermissions['RPAColumbia']['teamcommentseeusernames'] = true;
+      $wgGroupPermissions['RPAColumbia']['picksome'] = true;
+      $wgGroupPermissions['RPAColumbia']['picksome-write'] = true;
       $wgTorqueDataConnectView = json_encode(array("wiki_key" => "RPAColumbia", "view" => "Default"));
 
 - name: Enable Team Comments Disabler
