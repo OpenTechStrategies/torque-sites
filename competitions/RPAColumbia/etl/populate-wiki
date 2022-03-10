@@ -114,6 +114,7 @@ def main():
         "Collection Name",
         "Project Title",
         "Project Description",
+        "Executive Summary",
         "Organization Name",
         "Organization Location",
         "Priority Populations",
@@ -169,44 +170,50 @@ def main():
         "Organization Name", competition.RemoveHTMLBRsProcessor(" ")
     )
 
-    def title_column(group_var_name, id_var_name):
-        template = "[[{{ %s[%s]['%s'] }}|{{ %s[%s]['%s'] }}]]<br>" % (
-            group_var_name,
-            id_var_name,
-            competition.MediaWikiTitleAdder.title_column_name,
-            group_var_name,
-            id_var_name,
-            "Project Title",
-        )
-        template += "<div style='text-indent:20px'>{{ %s[%s]['%s'] }}</div>" % (
-            group_var_name,
-            id_var_name,
-            "Project Description",
-        )
-        return template
+    class AllProposalsList(toc.ListToc):
+        def __init__(self, page_name, column_name):
+            super().__init__(page_name)
 
-    list_toc = toc.ListToc("All_Proposals")
-    list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
-        [
-            {
-                "name": "Organization Name",
-                "heading": "Organization",
-            },
-            {
-                "processor": title_column,
-                "heading": "Title",
-            },
-            {
-                "name": "Competition Name",
-                "heading": "Competition",
-            },
-            {
-                "name": "Competition Application #",
-                "heading": "ID #",
-                "right_aligned": True,
-            },
-        ]
-    )
+            def title_column(group_var_name, id_var_name):
+                template = "[[{{ %s[%s]['%s'] }}|{{ %s[%s]['%s'] }}]]<br>" % (
+                    group_var_name,
+                    id_var_name,
+                    competition.MediaWikiTitleAdder.title_column_name,
+                    group_var_name,
+                    id_var_name,
+                    "Project Title",
+                )
+                template += "<div style='text-indent:20px'>{{ %s[%s]['%s'] }}</div>" % (
+                    group_var_name,
+                    id_var_name,
+                    column_name,
+                )
+                return template
+
+            self.proposal_formatter = toc.WikiTableTocProposalFormatter(
+                 [
+                     {
+                         "name": "Organization Name",
+                         "heading": "Organization",
+                     },
+                     {
+                         "processor": title_column,
+                         "heading": "Title",
+                     },
+                     {
+                         "name": "Competition Name",
+                         "heading": "Competition",
+                     },
+                     {
+                         "name": "Competition Application #",
+                         "heading": "ID #",
+                         "right_aligned": True,
+                     },
+                 ]
+             )
+
+    comp.add_toc(AllProposalsList("All_Proposals", "Project Description"))
+    comp.add_toc(AllProposalsList("All_Proposals_Executive_Summary", "Executive Summary"))
 
     comp.add_toc(
         toc.GeographicToc(
@@ -238,7 +245,6 @@ def main():
     ]
     comp.add_toc(state_toc)
 
-    comp.add_toc(list_toc)
     comp.add_toc(
         toc.GenericListToc(
             "Populations", "Priority Populations", None, toc.GenericToc.SortMethod.COUNT
