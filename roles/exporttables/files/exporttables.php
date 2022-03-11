@@ -5,4 +5,5 @@ wfLoadExtension('BlueSpiceFoundation');
 wfLoadExtension('BlueSpiceUniversalExport');
 wfLoadExtension('BlueSpiceUEModuleTable2Excel');
 wfLoadExtension('BlueSpiceExportTables');
+$wgFooterIcons['poweredby']['bluespice'] = [];
 ?>

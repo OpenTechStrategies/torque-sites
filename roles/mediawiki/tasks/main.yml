@@ -92,6 +92,7 @@
     - upload-config.php
     - lfc-analysis-rule.php
     - special-log.php
+    - disable-poweredby-mediawiki.php
 
 - name: Enable Configs
   blockinfile:
@@ -101,6 +102,7 @@
       include "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/torque-sites-config/upload-config.php";
       include "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/torque-sites-config/lfc-analysis-rule.php";
       include "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/torque-sites-config/special-log.php";
+      include "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/torque-sites-config/disable-poweredby-mediawiki.php";
 
 - name: Remove Old Upload Config
   blockinfile:

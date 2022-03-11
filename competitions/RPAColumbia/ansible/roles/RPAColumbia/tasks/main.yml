@@ -33,6 +33,23 @@
       $wgGroupPermissions['RPAColumbia']['picksome-write'] = true;
       $wgTorqueDataConnectView = json_encode(array("wiki_key" => "RPAColumbia", "view" => "Default"));
 
+- name: Install Poweredby RPAColumbia Logo
+  copy:
+    src: PoweredbyLeverforChange.svg
+    dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/resources/assets/PoweredbyLeverforChange.svg"
+
+- name: Enable Poweredby RPAColumbia Logo
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
+    marker: "## {mark} ANSIBLE RPA OVERRIDE CONFIG"
+    block: |
+      $wgFooterIcons['poweredby']['leverforchange'] = [
+        "src" => "$wgResourceBasePath/resources/assets/PoweredbyLeverforChange.svg",
+        "alt" => "Powered by Lever For Change",
+        "url" => "https://www.leverforchange.org",
+        "height" => "40",
+      ];
+
 - name: Install PickSome RPAColumbia Variables
   blockinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
