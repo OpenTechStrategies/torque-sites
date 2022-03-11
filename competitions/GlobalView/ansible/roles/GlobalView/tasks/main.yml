@@ -73,7 +73,8 @@
     block: |
       $wgLFCExtraTabOverrides = [
         "PROPOSAL" => [
-          ["Proposal", "Original Proposal", "main"],
+          ["Original Proposal", "Original Proposal", "main"],
+          ["Proposals Similar to ", "Similar Proposals", "similarproposals"],
         ],
       ];
 

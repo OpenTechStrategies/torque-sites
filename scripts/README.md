@@ -87,3 +87,7 @@ edits are made to torque via GlobalView.
 
 Exports data to airtable.
 
+# similarities
+
+Script to add similarity data from LFC at a global scale.  Uses `similarities.csv`
+from the subversion repository (in GlobalView's bigdata).
