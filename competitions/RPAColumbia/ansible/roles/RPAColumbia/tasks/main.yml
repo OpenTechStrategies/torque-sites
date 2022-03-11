@@ -47,7 +47,8 @@
         "src" => "$wgResourceBasePath/resources/assets/PoweredbyLeverforChange.svg",
         "alt" => "Powered by Lever For Change",
         "url" => "https://www.leverforchange.org",
-        "height" => "40",
+        "height" => "80",
+        "width" => "120",
       ];
 
 - name: Install PickSome RPAColumbia Variables
