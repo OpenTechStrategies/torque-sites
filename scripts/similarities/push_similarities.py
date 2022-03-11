@@ -62,7 +62,7 @@ for [proposal_id, similar_proposal_ids, distances] in similarities_reader:
             break
         similar_proposal = convert_proposal_id(similar_proposal_id)
         similar_proposal["Distance"] = float(distance)
-        similar_proposal["Torque URI"] = proposal_torque_uri(proposal)
+        similar_proposal["Torque URI"] = proposal_torque_uri(similar_proposal)
         similar_proposals.append(similar_proposal)
 
     torque.competitions["GlobalView"].proposals[proposal_to_globalview_id(proposal)]["Similar Proposals"] = similar_proposals
