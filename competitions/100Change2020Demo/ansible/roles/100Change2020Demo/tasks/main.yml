@@ -2,14 +2,14 @@
 
 - name: Transfer LFC Logo
   copy:
-    src: LeverForChange_Logo.png
-    dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/resources/assets/LeverForChange_Logo.png"
+    src: LeverForChange_Logo.svg
+    dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/resources/assets/LeverForChange_Logo.svg"
 
 - name: Install LFC Logo
   lineinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
     regexp: ^\$wgLogos = .*
-    line: $wgLogos = [ '1x' => "$wgResourceBasePath/resources/assets/LeverForChange_Logo.png" ];
+    line: $wgLogos = [ 'svg' => "$wgResourceBasePath/resources/assets/LeverForChange_Logo.svg" ];
 
 - name: Install Demo.php
   copy:
