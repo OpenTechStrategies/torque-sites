@@ -58,7 +58,7 @@ for [proposal_id, similar_proposal_ids, distances] in similarities_reader:
     proposal = convert_proposal_id(proposal_id)
     similar_proposals = []
     for (similar_proposal_id, distance, idx) in zip(similar_proposal_ids.split(","), distances.split(","), range(5)):
-        if idx > 4:
+        if idx > 4 or not similar_proposal_id:
             break
         similar_proposal = convert_proposal_id(similar_proposal_id)
         similar_proposal["Distance"] = float(distance)
