@@ -1,0 +1,207 @@
+#!/usr/bin/env python3
+
+__doc__ = """\
+Pull fresh data from submittable for the Build a World of Play competition
+
+Usage:
+
+  $ compose-and-upload \\
+       --proposals-json=PROPOSALS_CSV
+
+Command-line options:
+  --proposals-json FILE           FILE is the json file that this will get output to.
+"""
+
+from etl import submittable
+import config
+import sys
+import getopt
+
+torque_mappings = {
+    "35b56741-4818-47b2-bda6-31a073f5d56a": "Application #",
+    "d4e96b3b-dd81-4b25-938a-fc52ad2e4e89": "Project Title",
+    "ae02a344-4490-4ca5-b9b9-19b3c1a354e1": "Project Description",
+    "44135f50-ddbe-44cc-8653-2c7c2169f4a1": "Executive Summary",
+    "a763f158-44a7-4777-a3bc-a9e56ba6f634": "Project Website",
+    "5adaf21c-b790-4ae9-ac78-2f203de3c562": "Video",
+    "25405889-de81-409a-9e59-14b07de6d7d4": "Key Words and Phrases",
+    "99ce0da8-d191-4558-ab99-931e147ad152": "Total Resource Requirements",
+    "33aaec7b-68dc-4240-b37f-d5c1ca350191": "Total Projected Costs",
+    "49a4126e-dc27-49e4-9ddb-5c11a4263559": "Budget Narrative",
+    "1a0e1695-59dc-47ba-8207-73df4aba25a1": "Timeline and Milestones",
+    "cac12aa2-b373-485f-b5df-2eec9ba27cfa": "Theory of Change",
+    "adbefc30-2b0a-4d4f-83b3-30bfdc5f2d46": "Why Your Team",
+    "3b4e25e1-a14b-4500-a1dc-5aa95cc7209f": "Challenge Statement",
+    "00558ab7-2f0c-4745-bfd4-f2edbaa656b0": "Solution Overview",
+    "eec66325-4c88-4689-ad50-44f5ccf89943": "Diversity-Equity-Inclusion",
+    "986d27e7-b657-4c68-98e3-37e93c107984": "Innovation",
+    "af35f0cc-8bf5-480d-9079-28015e314eb7": "Community Engagement",
+    "e0120278-79a6-43c1-a354-0450455874ba": "Barrier Assessment and Risk Mitigation",
+
+    "cc61adc2-3915-48f6-b386-4c0405c5d941": "Primary Contact|Name",
+    "ed3abcab-3b8f-4c27-a069-39c0382dee2c": "Primary Contact|Email",
+    "180dd84a-9a34-4d68-b87f-2b1ce7b2bf2d": "Primary Contact|Phone",
+    "dd5c0dca-ff07-4887-a3f3-438b1db60192": "Primary Contact|Title",
+
+    "8dcc4269-7c00-4099-8a9c-c19c0800f378": "Organization Location|Street Address",
+    "04c19823-10c1-4a9c-a5e6-8b69fc83a431": "Organization Location|Address Line 2",
+    "b7cab3db-e15c-40d2-a6fd-93c37141a509": "Organization Location|Zip/Postal Code",
+    "03ed85f1-b327-4319-8fa4-b12fe9d0af7d": "Organization Location|City",
+    "58892cc5-bcfd-42b8-b102-04e082279eda": "Organization Location|State/Province",
+    "5fe779ba-79c9-47be-af2f-6eff9c718bc6": "Organization Location|Country",
+
+    "4a1f8b5f-a39f-470b-abca-1d30b595975a": "Secondary Contact|Name",
+    "32df3887-b040-433d-95fd-2229b8aeeffe": "Secondary Contact|Email",
+    "8a708881-dd65-45d7-8786-701175b6b722": "Secondary Contact|Phone",
+    "17d07586-c8f8-446d-b1c1-5d3b39a32cda": "Secondary Contact|Title",
+    "b9e744f8-410b-4da5-afc4-3fc98a0de8f2": "Primary Contact|Name",
+    "bdc867bf-ebab-4885-a0b0-a5d24c132b23": "Primary Contact|Email",
+    "abdf9904-0dfa-4157-9826-a31f15b6754a": "Primary Contact|Phone",
+    "2f9cbc49-e952-4f22-8fe7-3305328614e8": "Primary Contact|Title",
+
+    "4b506781-019d-4c06-86ba-fd7929aae5b8": "Key Partner #1",
+    "05674c54-c028-4c26-a86d-1e871de84e19": "Key Partner #2",
+    "6513da44-b47e-4180-a746-05359658d767": "Key Partner #3",
+    "c7754b83-cec4-443a-ae52-5af02cfa7aec": "Key Partner #4",
+    "c0f3ac7b-e869-495b-a454-7a98a9c0acbf": "Key Partner #5",
+
+    "2e7d9f9b-2e4a-4594-a691-b6bbe9ac80a2": "Priority Populations|1",
+    "91ee40d0-fa23-499d-b1eb-f82ce9d01555": "Priority Populations|2",
+    "335c252e-2885-4a30-b508-f4bd8fa87305": "Priority Populations|3",
+
+    "336c431d-bdaf-4db1-b52c-c6e3276d677b": "Organization Name",
+    "bdb7a1f4-a926-4b18-b31b-4e769a95db2b": "Organization Location|Street Address",
+    "48ea0d02-c57d-4359-9be1-dd0fd7801617": "Organization Location|Address Line 2",
+    "4d19933c-d899-490e-a696-81d348078bb8": "Organization Location|Zip/Postal Code",
+    "a2d47a3c-a6df-4732-a90e-85aed0998d36": "Organization Location|City",
+    "b377988e-62b2-4a03-9828-d4c782b8b99c": "Organization Location|Country",
+
+    "e1ce5521-3823-488f-b66d-513c7aca64c9": "Organization Name",
+    "1cc07458-218d-4b0c-95dd-8e4a3f6ddded": "Applicant Tax Identification Number",
+    "cfc75219-cee3-4c00-9cb0-e7e9cc6898bc": "Organization Legal Status",
+
+    "97d96208-03a9-420f-b3ce-032952eef686": "Number of Employees",
+    "90688ba9-1cf6-4f06-9d78-88931087a910": "Annual Operating Budget",
+    "ceb1499f-0bef-4a8a-a0d0-a3f4a9f05132": "Organization Legal Status",
+    "175fda5c-c848-498c-a0c8-ccd5aa7702be": "Organization Website",
+
+    "9369fccb-4a38-4ade-8872-a70e0968f29a": "Sustainable Development Goals",
+    "e9c8be98-f16e-433d-b7fd-0427773a5908": "Bibliography",
+    "3ab0f1c4-4c54-40d5-8a06-91e55dc550b3": "Measurement of Results",
+    "eacc9639-5344-44d9-be3b-9ef770d3e1c5": "Other Considerations",
+    "8c1eb3fb-d055-400e-b2c9-51b16cc77f3f": "Primary Subject Area",
+
+    "73fdb915-fd40-4be2-a5c7-a1a32293569b": "Funder #1",
+    "a55a8db2-5b38-43e0-887c-f02fb0a7bca9": "Funder #1: Amount of Funding",
+    "64cff14e-79a4-4cfc-b6a3-7ab8d2b14aad": "Funder #2",
+    "6c3bf1e7-2f12-4037-a09a-0c849f76d6e6": "Funder #2: Amount of Funding",
+    "775c7eaa-c68b-4672-9350-f762775a2d0b": "Funder #3",
+    "2f0a8154-6292-4d64-9aca-464997ec59cb": "Funder #3: Amount of Funding",
+
+    "fb574d5c-27bb-411c-b7fc-8cdb20988c38": "Current Work #1 Location|Country",
+    "4cb2c795-1c22-422b-ad7b-1000b74b7119": "Current Work #1 Location|State/Province",
+    "f4b0f351-a946-4140-9214-6855e48b6f4d": "Current Work #2 Location|Country",
+    "45ad8b8f-69c8-431c-a730-91161d3d65d8": "Current Work #2 Location|State/Province",
+    "8ff44d73-ae16-49ff-9c42-be1009ca6a61": "Current Work #3 Location|Country",
+    "bcfb8163-5b04-4180-80ab-d471c46362a3": "Current Work #3 Location|State/Province",
+    "4780959a-92ee-407b-bd11-8365617322d9": "Current Work #4 Location|Country",
+    "f3446730-6526-4da9-8777-f69593036d5e": "Current Work #4 Location|State/Province",
+    "4738e75e-ee88-4d1f-ab9d-5e6926b97d35": "Current Work #5 Location|Country",
+    "Current Work #5 Location|State/Province": "Current Work #5 Location|State/Province", # this is because they forgot it, but we want our data to be complete
+    "20c03d98-5425-42a7-a056-55b3f181cf71": "Future Work #1 Location|Country",
+    "4a8aaabf-0400-48a3-a528-390294d6046f": "Future Work #1 Location|State/Province",
+    "d1ea50cc-af9b-408d-922a-202b5dc3bb83": "Future Work #2 Location|Country",
+    "3cbe629b-13f4-4cc0-8031-a69296999bba": "Future Work #2 Location|State/Province",
+    "daad74f2-297b-4a79-aa10-f17ef8173f2d": "Future Work #3 Location|Country",
+    "91efe876-9f33-4d42-b22c-83cf77239357": "Future Work #3 Location|State/Province",
+    "7d5ba497-e1c8-42c9-a079-d26f171206c8": "Future Work #4 Location|Country",
+    "4c3f939a-4158-413b-a3ee-3e2445127db4": "Future Work #4 Location|State/Province",
+    "98e67282-30ca-4859-84f9-2564fc04f40f": "Future Work #5 Location|Country",
+    "3a855cd1-f0c4-46ea-b51d-cca6dc3e139e": "Future Work #5 Location|State/Province",
+
+    "5886e767-b368-47cf-b01a-b72c39781dca": False, # Acceptance of Terms & Conditions
+    "c0ea57aa-16c5-47a3-98c6-39f53bd80f22": False, # Does lead org have a website
+    "e60b0144-767c-47bb-8f9a-00e938bf4d70": False, # Enter additional future work?
+    "0df920d0-ca8f-4c01-9837-0a091476ad84": False, # Enter additional Current work?
+    "5577c63a-add1-44cb-8121-c913bcc2a11a": False, # Has lead org changed since reg
+    "925d720e-13b6-4717-8428-364d6c0b96b2": False, # Any addiontal key partners?
+    "23b8fea8-b3f7-495d-a30a-61b8eb15e6ee": False, # Any addiontal key partners?
+    "63dba02d-4e3c-4469-9261-42c787d7b890": False, # Any addiontal key partners?
+    "747da8d3-9100-4dfd-9504-bc0e65984f7f": False, # Any addiontal key partners?
+    "08b93f9e-759e-4e95-9bbd-86dd2793ad5f": False, # Additional Priority Pop
+    "c7e8a470-99fb-4d53-9e8e-f10a74da404b": False, # Additional Priority Pop
+    "a533aff7-76e5-41f3-ab9d-094239ef3a0b": False, # Additional Future Work
+    "42c8c3cd-89ed-4d31-997d-8f8899226b6a": False, # Additional Future Work
+    "c4f1880d-8436-4cf4-8532-2e0294932e57": False, # Additional Future Work
+    "d10a95cb-8a71-4c05-9d66-a301ca6e31da": False, # Additional Current Work
+    "632ec62d-88d8-4ad3-915a-127e17e996fb": False, # Additional Current Work
+    "f8abb2de-5b15-447f-88e7-4f7a23fb77a0": False, # Additional Funder
+    "8d43fb07-ada2-4810-8f86-6b6443095d09": False, # Additional Funder
+
+    "201daf14-a0b2-4524-beda-1950902e359c": "UNKNOWN",
+    "8dec2d26-9fde-4c80-8ef2-2ee4dc574de9": "UNKNOWN",
+    "32a859b3-dc6d-4256-bf0f-708a9f02dc07": "UNKNOWN",
+    "ecb00e8e-93c8-4766-95ab-e927e6e04c66": "UNKNOWN",
+    "9c80c311-73b8-45cf-a3d1-fbdbbbf87c1c": "UNKNOWN",
+    "8cc3e88c-3949-435c-a963-5319ac8fc4f1": "UNKNOWN",
+    "96085aec-872e-435e-8f9a-c46d593de6ce": "UNKNOWN",
+    "0c422683-f17c-4e7a-a3fb-2dd6c6ee6048": "UNKNOWN",
+    "ee43f897-edcb-4f20-ade3-358886c5025e": "UNKNOWN",
+    "e4e92578-ca2d-40d6-baa1-5e473aae097d": "UNKNOWN",
+    "ac86d9ff-de53-4ab9-9409-15ac9d64fbbd": "UNKNOWN",
+    "b875045c-4589-4246-ba67-c13959d86083": "UNKNOWN",
+    "b05d76f8-f621-4867-9e7d-15816dc65ca4": "UNKNOWN",
+    "ddb4cb62-7ac1-4d8b-86e7-e98aa2ba1b69": "UNKNOWN",
+    "ecd5f318-8e73-43a3-a6d8-d0e54b964f08": "UNKNOWN",
+    "48bb5bb3-94b3-4bd1-8ffa-3d43deb10aaf": "UNKNOWN",
+    "86f0508a-710d-43df-9ec0-76f9da1c97d8": "UNKNOWN",
+    "564205bb-05bd-45cd-b331-07d1b1a666eb": "UNKNOWN",
+    "69151cc6-5c16-467e-b949-f99e5abb0491": "UNKNOWN",
+    "fb6ed96d-80ac-43ee-a3f7-ee93775b5182": "UNKNOWN",
+    "835672d2-0b50-4c93-a712-322ca0948cf2": "UNKNOWN",
+    "f7f16700-4c56-4b7f-ad10-f1c798b94c96": "UNKNOWN",
+    "fe9995b4-6044-492d-ab75-8c8885feeac6": "UNKNOWN",
+    "4be0f263-4bb8-4b4a-8050-629670da7a69": "UNKNOWN",
+    "40a54899-7055-4843-91f0-7a502cffecbc": "UNKNOWN",
+    "1c07963a-4cc0-4529-8dee-a28dd61bfc2e": "UNKNOWN",
+    "37efed31-25c4-4933-8dd2-9be5ce3248cd": "UNKNOWN",
+    "cace8ef7-87d7-46c4-b20b-d5da76f549c1": "UNKNOWN",
+}
+
+def main():
+    try:
+        opts, args = getopt.getopt(
+            sys.argv[1:],
+            "",
+            [
+                "proposals-json=",
+            ],
+        )
+    except getopt.GetoptError as err:
+        sys.stderr.write("ERROR: '%s'\n" % err)
+        sys.exit(2)
+
+    proposals_json = None
+    for o, a in opts:
+        if o == "--proposals-json":
+            proposals_json = a
+        else:
+            sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
+            sys.exit(2)
+
+    if proposals_json is None:
+        sys.stderr.write("ERROR: need --proposals-json option.\n\n")
+        sys.stderr.write(__doc__)
+        sys.exit(1)
+
+    sub = submittable.Submittable(
+        config.submittable_api_key,
+        torque_mappings,
+        "c3c35d62-d3fd-4afb-a719-dfec4966e0a1",
+        "53dae2bd-5f18-4c3e-8b2c-3d9261f49afd"
+    )
+
+    sub.output_data_file(proposals_json)
+
+if __name__ == "__main__":
+    main()

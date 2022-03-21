@@ -1,0 +1,56 @@
+#!/bin/bash
+
+SCRIPT_DIR=`dirname "$BASH_SOURCE"`
+COMMON_SCRIPT_DIR="${SCRIPT_DIR}/../../../etl/common/deploy"
+source "${COMMON_SCRIPT_DIR}/utils"
+source "${COMMON_SCRIPT_DIR}/init"
+
+COMPETITION="BaWoP22"
+LFC_DIR=`dirname "${0}"`
+
+DATA_DIR="${BASE_DATA_DIR}/${COMPETITION}"
+
+# Make sure we have python3
+python3 -V > /dev/null 2>&1 || { echo "python3 required, aborting" ; exit 1; }
+
+PROPOSALS_JSON="BaWoP22_Application_Data.json"
+
+TMP_ATTACHMENTS_DIR="${DATA_DIR}/tmpattachments"
+TDC_CONFIG_DIR="${DATA_DIR}/tdcconfig"
+RUNNER="${LFC_DIR}"/pull-from-submittable
+
+if [ ! -d "${DATA_DIR}" ] ; then
+  echo "${DATA_DIR} not yet set up, please run ./deploy ${DATA_DIR} first to make sure"
+  echo "it pulls all the files needed from subversion first"
+  exit 1
+fi
+
+if [ "${OTS_DIR}" = "" ] ; then
+  echo "ERROR: \$OTS_DIR is not set up"
+  echo ""
+  echo "See bureaucracy/onboarding about setting the OTS_DIR environment variable up"
+  exit 1
+fi
+
+ENCRYPTED_DIR="${OTS_DIR}/clients/lever-for-change/torque-sites/${COMPETITION}/data/bigdata"
+if [ ! -d "${ENCRYPTED_DIR}" ] ; then
+  echo "ERROR: it looks like your encrypted dir isn't checked out"
+  echo ""
+  echo "It was expected to be in:"
+  echo "  $ENCRYPTED_DIR"
+  echo ""
+  echo "You will need to check out the subversion torque-sites data, and then"
+  echo "run get-bigdata from ${OTS_DIR}/clients/lever-for-change/torque-sites/${COMPETITION}/data/"
+  exit 1
+fi
+
+${RUNNER} --proposals-json="${DATA_DIR}/${PROPOSALS_JSON}"
+if [ $? -ne 0 ]; then
+		echo Failure!
+		exit 1
+fi
+
+echo "Remember to update the sha1sum in ./deploy to $(sha1sum $DATA_DIR/$PROPOSALS_JSON)"
+echo "Encrypting to $ENCRYPTED_DIR/$PROPOSALS_JSON.gpg, remember to commit in subversion"
+encrypt $DATA_DIR/$PROPOSALS_JSON $ENCRYPTED_DIR/$PROPOSALS_JSON.gpg
+echo "Done refreshing."
