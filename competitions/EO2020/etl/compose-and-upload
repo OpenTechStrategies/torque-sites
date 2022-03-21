@@ -621,7 +621,7 @@ def main():
         comp.add_toc(top13)
 
     comp.add_toc(
-        toc.GeographicToc(
+        toc.MultiLevelToc(
             "Geographic_TOC",
             [
                 "Future Work #1 Location",

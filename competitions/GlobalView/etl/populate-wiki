@@ -379,7 +379,7 @@ def main():
     )
 
     comp.add_toc(
-        toc.GeographicToc(
+        toc.MultiLevelToc(
             "Organization_Geography",
             [
                 "Organization Location",

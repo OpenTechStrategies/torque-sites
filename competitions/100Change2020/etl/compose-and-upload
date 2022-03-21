@@ -831,7 +831,7 @@ def main():
     comp.add_toc(finalist_candidates)
 
     comp.add_toc(
-        toc.GeographicToc(
+        toc.MultiLevelToc(
             "Geographic_TOC",
             [
                 "Current Work #1 Location",

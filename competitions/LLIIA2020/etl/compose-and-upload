@@ -491,7 +491,7 @@ def main():
     comp.add_toc(toc.AnnualBudgetToc("Annual Operating Budget"))
 
     comp.add_toc(
-        toc.GeographicToc(
+        toc.MultiLevelToc(
             "Geographic_TOC",
             [
                 "Current Work #1 Location",

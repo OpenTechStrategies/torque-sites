@@ -406,12 +406,13 @@ class AnnualBudgetToc(GenericToc):
         )
 
 
-class GeographicToc(Toc):
+class MultiLevelToc(Toc):
     """A toc where the grouping is multi level.  For instance, for a given
     competition, we might want to group first by Country, then by State, then
     by County, but for another we might want to group by Region, SubRegion, Country,
     AND State.  This Toc handles all the collating of the data, and then puts
-    out the toc in a general way."""
+    out the toc in a general way.  This works for any column (or set of columns)
+    that are complex objects where there's progressively more specific groupings."""
 
     def __init__(self, name, columns, location_granularities):
         super().__init__()
@@ -425,23 +426,20 @@ class GeographicToc(Toc):
         self.competition_name = competition.name
 
         def add_proposal_to_data(proposal, data, column, granularities):
+            if len(granularities) == 0:
+                return True
+
             if granularities[0] not in proposal.cell(column):
-                return
+                return True
 
             val = proposal.cell(column)[granularities[0]].strip()
             if not val:
-                return
-            if len(granularities) > 1:
-                if val not in data:
-                    data[val] = {"shown": False, "subcolumn": {}}
-                add_proposal_to_data(
-                    proposal, data[val]["subcolumn"], column, granularities[1:]
-                )
-            else:
-                if val not in data:
-                    data[val] = {"shown": False, "proposals": []}
-                if proposal.key() not in data[val]["proposals"]:
-                    data[val]["proposals"].append(proposal.key())
+                return True
+
+            if val not in data:
+                data[val] = {"num": 0, "proposals": [], "subcolumn": {}}
+            if add_proposal_to_data(proposal, data[val]["subcolumn"], column, granularities[1:]):
+                data[val]["proposals"].append(proposal.key())
 
         if self.proposals is None:
             self.proposals = competition.ordered_proposals()
@@ -463,72 +461,66 @@ class GeographicToc(Toc):
         self.data = sort_data(self.data)
 
     def grouped_data(self):
-        return {"groups": self.data}
+        return {"everything": {"subcolumn": self.data } }
 
     def template_file(self):
-        template = "__TOC__"
-        template += ""
-        template += "{%- for subcolumn_name_0, subcolumn_data_0 in groups.items() %}\n"
-        for i in range(1, self.num_levels):
-            template += (
+        self.template = "__TOC__\n"
+        self.template += '{% set subcolumn_data_0 = everything -%}\n'
+
+        def build_show_settings(i):
+            if i == self.num_levels + 1:
+                return
+
+            self.template += (
+                '{%%- for subcolumn_name_%s, subcolumn_data_%s in subcolumn_data_%s["subcolumn"].items() -%%}\n'
+                % (i, i, i - 1)
+            )
+            self.template += '{%%- for proposal_id in subcolumn_data_%s["proposals"] -%%}\n' % i
+            self.template += "{%%- if proposal_id in %s.keys() -%%}\n" % self.competition_name
+
+            for showing_idx in range(1, i+1):
+                self.template += '{%%- set _ = subcolumn_data_%s.update({"num": subcolumn_data_%s["num"] + 1 }) -%%}\n' % (showing_idx, showing_idx)
+
+            self.template += "{%- endif -%}\n"
+
+            self.template += "{%- endfor -%}\n"
+            build_show_settings(i + 1)
+            self.template += "{%- endfor -%}\n"
+
+        build_show_settings(1)
+
+        def build_display_proposals(i):
+            if i == self.num_levels + 1:
+                return
+
+            self.template += (
                 '{%%- for subcolumn_name_%s, subcolumn_data_%s in subcolumn_data_%s["subcolumn"].items() %%}\n'
                 % (i, i, i - 1)
             )
 
-        template += '{%%- for proposal_id in subcolumn_data_%s["proposals"] -%%}\n' % (
-            self.num_levels - 1
-        )
-        template += "{%% if proposal_id in %s.keys() %%}\n" % self.competition_name
-        template += '{%- if not subcolumn_data_0["shown"] -%}\n'
-        template += '{%- set _ = subcolumn_data_0.update({"shown": True }) %}\n'
-        template += "= {{ subcolumn_name_0 }} =\n"
-        for i in range(1, self.num_levels):
-            template += "{%- endif -%}\n"
-            template += '{%%- if not subcolumn_data_%s["shown"] -%%}\n' % i
-            template += (
-                '{%%- set _ = subcolumn_data_%s.update({"shown": True }) %%}\n' % i
+            self.template += '{%%- if subcolumn_data_%s["num"] > 0 -%%}\n' % i
+            self.template += "<div id='{{ subcolumn_name_%s }}'></div>\n" % i
+            self.template += "%s {{ subcolumn_name_%s }} ({{ subcolumn_data_%s['num'] }}) %s\n" % ("=" * i, i, i, "=" * i,)
+
+            self.template += self.proposal_formatter.prefix(self.competition_name)
+            self.template += '{%% for proposal_id in subcolumn_data_%s["proposals"] -%%}\n' % i
+            self.template += "{%%- if proposal_id in %s.keys() -%%}\n" % self.competition_name
+            self.template += self.proposal_formatter.format_proposal(
+                self.competition_name, "proposal_id"
             )
-            template += "%s {{ subcolumn_name_%s }} %s\n" % (
-                "=" * (i + 1),
-                i,
-                "=" * (i + 1),
-            )
+            self.template += "{% endif -%}\n"
+            self.template += "{%- endfor -%}\n"
 
-        template += self.proposal_formatter.prefix(self.competition_name)
+            build_display_proposals(i + 1)
 
-        template += "{% endif -%}\n"
-        template += self.proposal_formatter.format_proposal(
-            self.competition_name, "proposal_id"
-        )
-        template += "{% endif -%}\n"
-        template += "{% endfor %}\n"
-        template += self.proposal_formatter.suffix()
-        for _ in range(self.num_levels):
-            template += "{%- endfor %}\n"
+            self.template += "{%- endif -%}\n"
+            self.template += "{%- endfor -%}\n"
+            self.template += self.proposal_formatter.suffix()
 
-        return template
+        build_display_proposals(1)
 
+        return self.template
 
-class PrimarySubjectAreaToc(GenericToc):
-    """A special case of GenericToc for Primary Subject Area,
-    that operates on the complex object in that field in a special
-    case."""
-
-    def process_competition(self, competition):
-        self.competition_name = competition.name
-
-        # Allows someone outside to set which specific proposals we should use.
-        if self.proposals is None:
-            self.proposals = competition.ordered_proposals()
-
-        for proposal in self.proposals:
-            datum = proposal.cell(self.columns[0])
-            if datum:
-                key = datum["Level 1"]
-                if key not in self.data:
-                    self.groupings.append(key)
-                    self.data[key] = super().default_grouping(key)
-                self.data[key]["all_proposal_ids"].append(proposal.key())
 
 class SustainableDevelopmentGoalToc(GenericToc):
     """A special case of GenericToc for Sustainable Development Goals,

@@ -216,7 +216,7 @@ def main():
     comp.add_toc(AllProposalsList("All_Proposals_Executive_Summary", "Executive Summary"))
 
     comp.add_toc(
-        toc.GeographicToc(
+        toc.MultiLevelToc(
             "Organization_Geography_By_Country",
             [
                 "Organization Location",
@@ -229,7 +229,7 @@ def main():
         )
     )
 
-    state_toc = toc.GeographicToc(
+    state_toc = toc.MultiLevelToc(
         "Organization_Geography_By_State",
         [
             "Organization Location",

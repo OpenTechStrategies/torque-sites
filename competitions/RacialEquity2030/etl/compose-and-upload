@@ -612,10 +612,12 @@ def main():
             "Sustainable Development Goals",
         )
     )
-    comp.add_toc(toc.PrimarySubjectAreaToc("Subject_Areas", "Primary Subject Area"))
+    comp.add_toc(toc.MultiLevelToc("Subject_Areas",
+        [ "Primary Subject Area" ],
+        [ "Level 1", "Level 2", "Level 3", "Level 4" ]))
 
     comp.add_toc(
-        toc.GeographicToc(
+        toc.MultiLevelToc(
             "Current_Work_Locations",
             [
                 "Current Work #1 Location",
@@ -632,7 +634,7 @@ def main():
     )
 
     comp.add_toc(
-        toc.GeographicToc(
+        toc.MultiLevelToc(
             "Future_Work_Locations",
             [
                 "Future Work #1 Location",
