@@ -401,6 +401,15 @@ class RemoveHTMLBRsProcessor(CellProcessor):
         )
 
 
+class StripRegexProcessor(CellProcessor):
+    """A CellProcessor that strips data based on inputted regex."""
+    def __init__(self, regex):
+        self.regex = re.compile(regex)
+
+    def process_cell(self, proposal, column_name):
+        return self.regex.sub("", proposal.cell(column_name))
+
+
 class ToListProcessor(CellProcessor):
     """A CellProcessor that splits a cell on the initialized SPLIT_STRING
     (defautling to comma: ",") into a list."""
@@ -1421,6 +1430,30 @@ class ColumnCombiner(InformationTransformer):
         }
 
 
+class ColumnCombinerToArray(InformationTransformer):
+    """Takes a list of column names, and a new column name for
+    which to combine these into.
+
+    [ "Priority Populations|1", "Priority Populations|2", "Priority Populations|3",  ]
+
+    with the new column name of "Priority Populations", which would
+    create a field "Priority Populations" with the value:
+    [ <value>, <value>, <value>, ]"""
+
+    def __init__(self, new_column_name, columns):
+        self.new_column_name = new_column_name
+        self.columns = columns
+
+    def columns_to_remove(self):
+        return self.columns
+
+    def column_names(self):
+        return [self.new_column_name]
+
+    def cell(self, proposal, column_name):
+        return [ proposal.cell(old_col) for old_col in self.columns ]
+
+
 class LocationCombiner(InformationTransformer):
     """Takes Location based columns, and then combines them into a single
     column with the the name"""
@@ -1558,13 +1591,13 @@ class PersonCombiner(ColumnCombiner):
 
 
 class NameSplitter(InformationTransformer):
-    """Takes a column representing a name, and splits on the first space
-    into first and last name columns."""
+    """Takes a column with a dictionary representing a name (as from submittable)
+    and splits it into first and last name columns."""
 
-    def __init__(self, column_name, first_name, last_name):
+    def __init__(self, column_name):
         self.column_name = column_name
-        self.first_name = first_name
-        self.last_name = last_name
+        self.first_name = column_name + "|First Name"
+        self.last_name = column_name + "|Last Name"
 
     def columns_to_remove(self):
         return [self.column_name]
@@ -1574,11 +1607,10 @@ class NameSplitter(InformationTransformer):
 
     def cell(self, proposal, column_name):
         if proposal.cell(self.column_name):
-            split_name = proposal.cell(self.column_name).split(" ", 1)
             if column_name == self.first_name:
-                return split_name[0]
-            elif len(split_name) > 1:
-                return split_name[1]
+                return proposal.cell(self.column_name)["first_name"]
+            elif column_name == self.last_name:
+                return proposal.cell(self.column_name)["last_name"]
 
 
 class GeocodeProcessor(CellProcessor):
@@ -1617,7 +1649,7 @@ class GeocodeProcessor(CellProcessor):
 
 class PrimarySubjectAreaProcessor(CellProcessor):
     """Coverts a primary subject area to a complex according to LFC Application codes"""
-    def __init__(self):
+    def __init__(self, by_code=False):
         import importlib.resources as pkg_resources
         from . import data
         self.subject_area_data = {}
@@ -1646,7 +1678,9 @@ class PrimarySubjectAreaProcessor(CellProcessor):
                 "Level 4": row[7],
             }
 
-            if datum["Level 4"]:
+            if by_code:
+                add_to_subject_area_data(datum["PCS Code"], datum)
+            elif datum["Level 4"]:
                 add_to_subject_area_data(datum["Level 4"], datum)
             elif datum["Level 3"]:
                 add_to_subject_area_data(datum["Level 3"], datum)

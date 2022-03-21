@@ -1,0 +1,343 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2017, 2019, 2020 Open Tech Strategies, LLC
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+__doc__ = """\
+Compose all of the Lever for Change Lego Build a World of Play Proposal CSV files.
+
+Usage:
+
+  $ compose-and-upload \\
+       --proposals-json=PROPOSALS_CSV \\
+       --tdc-config-dir=TDC_CONFIG_DIR \\
+       --pare=PARE \\
+       --collection-only
+
+Command-line options:
+  --proposals-json FILE           FILE is a CSV file representing the bulk
+                                  of the proposal information
+
+  --tdc-config-dir DIR            DIR is the location for files that are the base configuration files
+                                  needed by TorqueDataConnect, and can be optionally, manually, put on
+                                  the torque wiki.  We don't automatically do that because we want to
+                                  overwrite the configuration out there.
+
+  --pare ARG                      If ARG is a number, reduce the number of items to 1/ARG.  If
+                                  ARG begins with +, then ARG is a comma separated list of
+                                  keys to include.  If ARG begins with @, then ARG is a
+                                  file with a list of keys to include.  For both + and @,
+                                  the list of keys will be limited to only the ones provided.
+
+  --collection-only               Only upload the created CSV file.  Don't upload attachments or
+                                  create wiki pages.  For use to speed up process when wiki has been
+                                  created already.
+"""
+
+from etl import competition, wiki, toc, tdc
+import config
+import getopt
+import sys
+import os
+
+
+def main():
+    """Compose the LFC input and upload it to the wiki."""
+    try:
+        opts, args = getopt.getopt(
+            sys.argv[1:],
+            "",
+            [
+                "proposals-json=",
+                "tdc-config-dir=",
+                "pare=",
+                "collection-only",
+            ],
+        )
+    except getopt.GetoptError as err:
+        sys.stderr.write("ERROR: '%s'\n" % err)
+        sys.exit(2)
+
+    proposals_json = None
+    attachments_dir = None
+    tdc_config_dir = None
+    pare = None
+    collection_only = False
+    for o, a in opts:
+        if o == "--proposals-json":
+            proposals_json = a
+        elif o == "--pare":
+            pare = a
+        elif o == "--collection-only":
+            collection_only = True
+        elif o == "--tdc-config-dir":
+            tdc_config_dir = a
+        else:
+            sys.stderr.write("ERROR: unrecognized option '%s'\n" % o)
+            sys.exit(2)
+
+    if proposals_json is None:
+        sys.stderr.write("ERROR: need --proposals-json option.\n\n")
+        sys.stderr.write(__doc__)
+        sys.exit(1)
+
+    comp = competition.JsonBasedCompetition(
+        proposals_json, "BaWoP22", "Application #", pare
+    )
+
+    fix_cell_processor = competition.FixCellProcessor()
+    comp.process_all_cells_special(fix_cell_processor)
+    fix_cell_processor.report()
+
+    comp.process_cells_special(
+        "Organization Name", competition.RemoveHTMLBRsProcessor()
+    )
+    comp.process_cells_special("Project Title", competition.RemoveHTMLBRsProcessor())
+
+    comp.add_supplemental_information(competition.MediaWikiTitleAdder("Project Title"))
+    comp.add_supplemental_information(
+        competition.GlobalViewMediaWikiTitleAdder("BaWoP22", "Project Title")
+    )
+
+    sdg_list = [
+        'SDG 1 - No Poverty;',
+        'SDG 2 - Zero Hunger;',
+        'SDG 3 - Good Health & Well-Being;',
+        'SDG 4 - Quality Education;',
+        'SDG 5 - Gender Equality;',
+        'SDG 6 - Clean Water & Sanitation;',
+        'SDG 7 - Affordable & Clean Energy;',
+        'SDG 8 - Decent Work & Economic Growth;',
+        'SDG 9 - Industry, Innovation, & Infrastructure;',
+        'SDG 10 - Reduced Inequalities;',
+        'SDG 11 - Sustainable Cities & Communities;',
+        'SDG 12 - Responsible Consumption & Production;',
+        'SDG 13 - Climate Action;',
+        'SDG 14 - Life Below Water;',
+    ]
+    comp.process_cells_special(
+        "Sustainable Development Goals",
+        competition.SustainableDevelopmentGoalProcessor(sdg_list),
+    )
+
+    comp.process_cells_special(
+        "Annual Operating Budget",
+        competition.AnnualBudgetProcessor(
+            {
+                competition.AnnualBudget.LESS_THAN_1_MIL: "Less than $1 Million",
+                competition.AnnualBudget.BETWEEN_1_MIL_AND_5_MIL: "$1.0 to 5.0 Million",
+                competition.AnnualBudget.BETWEEN_5_MIL_AND_10_MIL: "$5.1 to 10 Million",
+                competition.AnnualBudget.BETWEEN_10_MIL_AND_25_MIL: "$10.1 to 25 Million",
+                competition.AnnualBudget.BETWEEN_25_MIL_AND_50_MIL: "$25.1 to 50 Million",
+                competition.AnnualBudget.BETWEEN_50_MIL_AND_100_MIL: "$50.1 to 100 Million",
+                competition.AnnualBudget.BETWEEN_100_MIL_AND_500_MIL: "$100.1 to 500 Million",
+                competition.AnnualBudget.BETWEEN_500_MIL_AND_1_BIL: "$500.1 Million to $1 Billion",
+                competition.AnnualBudget.MORE_THAN_1_BIL: "$1 Billion +",
+            }
+        ),
+    )
+    for idx in ["1", "2", "3"]:
+       comp.process_cells_special(
+          "Priority Populations|%s" % idx,
+          competition.StripRegexProcessor(": ?.*$")
+       )
+    comp.process_cells_special(
+       "Primary Subject Area",
+       competition.StripRegexProcessor("^.*: ?")
+    )
+    comp.process_cells_special(
+       "Primary Subject Area",
+        competition.PrimarySubjectAreaProcessor(True)
+    )
+
+
+    comp.add_supplemental_information(
+        competition.StaticColumnAdder("Competition Name", "BaWoP22")
+    )
+    # Placeholder for future data imported from airtable
+    comp.add_supplemental_information(
+        competition.StaticColumnAdder("Achievement Level", "")
+    )
+
+    comp.process_cells_special(
+        "Organization Location|Country",
+        competition.StripRegexProcessor(" ?:.*")
+    )
+    comp.transform_sheet(
+        competition.LocationCombiner(
+            column_name="Organization Location",
+            address_1="Organization Location|Street Address",
+            address_2="Organization Location|Address Line 2",
+            city="Organization Location|City",
+            state="Organization Location|State/Province",
+            country="Organization Location|Country",
+            zip_postal="Organization Location|Zip/Postal Code",
+        )
+    )
+
+    for contact in ["Primary", "Secondary"]:
+        comp.transform_sheet(
+            competition.NameSplitter("%s Contact|Name" % contact)
+        )
+        comp.transform_sheet(
+            competition.PersonCombiner(
+                column_name="%s Contact" % contact,
+                first_name="%s Contact|Name|First Name" % contact,
+                last_name="%s Contact|Name|Last Name" % contact,
+                title="%s Contact|Title" % contact,
+                phone="%s Contact|Phone" % contact,
+                email="%s Contact|Email" % contact,
+            )
+        )
+
+    for num in ["1", "2", "3", "4", "5"]:
+        for work in ["Current", "Future"]:
+             comp.process_cells_special(
+                 "%s Work #%s Location|Country" % (work, num),
+                 competition.StripRegexProcessor(" ?:.*")
+             )
+             comp.transform_sheet(
+                 competition.LocationCombiner(
+                     column_name="%s Work #%s Location" % (work, num),
+                     state="%s Work #%s Location|State/Province" % (work, num),
+                     country="%s Work #%s Location|Country" % (work, num),
+                 )
+             )
+
+    comp.transform_sheet(
+        competition.ColumnCombinerToArray("Priority Populations", [
+            "Priority Populations|1",
+            "Priority Populations|2",
+            "Priority Populations|3",
+        ]
+    ))
+    comp.remove_information(competition.ColumnRemover("UNKNOWN"))
+
+    comp.sort("Organization Name")
+
+    list_toc = toc.ListToc("All_Proposals")
+    list_toc.proposal_formatter = toc.WikiTableTocProposalFormatter(
+        [
+            {
+                "name": "Organization Name",
+                "heading": "Organization",
+            },
+            {
+                "name": "Project Title",
+                "heading": "Title",
+                "link": True,
+            },
+            {
+                "name": "Application #",
+                "heading": "ID #",
+                "right_aligned": True,
+            },
+        ]
+    )
+    comp.add_toc(list_toc)
+
+    comp.add_toc(toc.GenericListToc("Populations", "Priority Populations"))
+    comp.add_toc(toc.AnnualBudgetToc("Annual Operating Budget"))
+
+    comp.add_toc(
+        toc.MultiLevelToc(
+            "Organization_Location",
+            [
+                "Organization Location",
+            ],
+            [
+                competition.LocationCombiner.COUNTRY,
+                competition.LocationCombiner.STATE,
+            ],
+        )
+    )
+
+    comp.add_toc(
+        toc.MultiLevelToc(
+            "Primary_Subject_Area",
+            [
+                "Primary Subject Area",
+            ],
+            [
+                "Level 1",
+                "Level 2",
+                "Level 3",
+                "Level 4",
+            ],
+        )
+    )
+
+    for loc_type in ["Current", "Future"]:
+        comp.add_toc(
+            toc.MultiLevelToc(
+                "%s_Work_Locations" % loc_type,
+                [
+                    "%s Work #1 Location" % loc_type,
+                    "%s Work #2 Location" % loc_type,
+                    "%s Work #3 Location" % loc_type,
+                    "%s Work #4 Location" % loc_type,
+                    "%s Work #5 Location" % loc_type,
+                ],
+                [
+                    competition.LocationCombiner.COUNTRY,
+                    competition.LocationCombiner.STATE,
+                ],
+            )
+        )
+
+    comp.add_toc(
+        toc.GenericToc(
+            "Number_of_Employees",
+            "Number of Employees",
+            [
+                "Fewer than 10 Full-time Employees",
+                "10 to 25 Full-time Employees",
+                "26 to 50 Full-time Employees",
+                "51 to 100 Full-time Employees",
+                "101 to 300 Full-time Employees",
+                "301 to 500 Full-time Employees",
+                "501 to 1,000 Full-time Employees",
+                "1,000+ Full-time Employees",
+            ],
+        )
+    )
+
+    comp.add_toc(
+        toc.SustainableDevelopmentGoalToc(
+            "Sustainable_Development_Goals",
+            "Sustainable Development Goals",
+        )
+    )
+
+    comp.process_tocs()
+
+    if tdc_config_dir is not None:
+        tdc.AllProposals(comp).generate(tdc_config_dir)
+        tdc.ValidProposals(comp, "Admin Review Status", "Valid").generate(
+            tdc_config_dir
+        )
+        tdc.Columns(comp).generate(tdc_config_dir)
+        tdc.ProcessedCollection(comp).generate(tdc_config_dir)
+
+    my_wiki = wiki.WikiSession(
+        config.username, config.password, comp.name, config.wiki_url
+    )
+    my_wiki.collection_only = collection_only
+    my_wiki.upload_collection(comp)
+
+
+if __name__ == "__main__":
+    main()
