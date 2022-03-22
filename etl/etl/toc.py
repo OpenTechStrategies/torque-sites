@@ -465,6 +465,7 @@ class MultiLevelToc(Toc):
 
     def template_file(self):
         self.template = "__TOC__\n"
+        self.template += "<div class='multileveltoc'>\n"
         self.template += '{% set subcolumn_data_0 = everything -%}\n'
 
         def build_show_settings(i):
@@ -497,6 +498,7 @@ class MultiLevelToc(Toc):
                 '{%%- for subcolumn_name_%s, subcolumn_data_%s in subcolumn_data_%s["subcolumn"].items() %%}\n'
                 % (i, i, i - 1)
             )
+            self.template += "<div class='multileveltoc_body'>\n"
 
             self.template += '{%%- if subcolumn_data_%s["num"] > 0 -%%}\n' % i
             self.template += "<div id='{{ subcolumn_name_%s }}'></div>\n" % i
@@ -516,8 +518,10 @@ class MultiLevelToc(Toc):
             self.template += "{%- endif -%}\n"
             self.template += "{%- endfor -%}\n"
             self.template += self.proposal_formatter.suffix()
+            self.template += "</div>\n"
 
         build_display_proposals(1)
+        self.template += "</div>\n"
 
         return self.template
 

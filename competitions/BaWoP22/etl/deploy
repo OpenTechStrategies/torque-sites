@@ -74,7 +74,7 @@ if [ ! -d "${DATA_DIR}" ] ; then
   rm -rf ${DATA_DIR}/${TMP_ATTACHMENTS_DIR}
 fi
 
-if ! echo "c0d5e78fc5b550c9e04d919d168a3ab119133cfc  $DATA_DIR/$PROPOSALS_JSON" | sha1sum -c &> /dev/null ; then
+if ! echo "861fc8defa4435d9c3ba0f634bef8d4d35a977fd  $DATA_DIR/$PROPOSALS_JSON" | sha1sum -c &> /dev/null ; then
   echo "ERROR: SHA of PROPOSALS_JSON did not match expectation!"
   echo "This means that we most likely got a new file, which may have the old"
   echo "errors in it (specifically the organization proposal 829)."
