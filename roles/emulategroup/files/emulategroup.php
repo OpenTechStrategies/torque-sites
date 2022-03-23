@@ -1,7 +1,7 @@
 <?php
 wfLoadExtension('EmulateGroup');
 $wgEmulateGroupGroupList = function() {
-  $groupNames = TorqueDataConnectConfig::getConfiguredGroups();
+  $groupNames = TorqueConfig::getConfiguredGroups();
   sort($groupNames);
   return $groupNames;
 };

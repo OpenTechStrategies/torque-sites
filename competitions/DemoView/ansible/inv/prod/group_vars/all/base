@@ -1,7 +1,7 @@
 ---
 competition_name: DemoView
 db_username: DemoView_rw
-torquedataconnect_collection_name: DemoView
+torque_collection_name: DemoView
 html_directory: /var/www/html
 mediawiki_server: https://torque.leverforchange.org
 mediawiki_install_directory: /home/deploy/DemoView/
@@ -10,8 +10,8 @@ mediawiki_csv2wiki_username: csv2wiki
 
 simplesaml_install_directory: /home/deploy/simplesaml/
 
-torquedata_git_version: cee8b0e
-torquedata_server_port: 5001
+torque_version: 0.2.4
+torque_server_port: 5001
 
 # This is only needed for ots deployments, and so not part of the template
 deployment_user: deploy

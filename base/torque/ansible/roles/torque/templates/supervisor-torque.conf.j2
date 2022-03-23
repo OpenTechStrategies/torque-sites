@@ -1,0 +1,8 @@
+[program:{{ supervisor_torque_name }}]
+directory={{ torque_install_directory }}
+user:{{ deployment_user }}
+command=pipenv run python manage.py runserver {{ torque_port }}
+autostart=true
+autorestart=false
+redirect_stderr=true
+redirect_stdout=true

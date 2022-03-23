@@ -7,15 +7,15 @@ function lfc( &$title, &$article, &$output, &$user, $request, $mediaWiki ) {
           $view = "Demo";
           $group = "sysop";
   } else {
-    $view = TorqueDataConnectConfig::getCurrentView(); 
-    $group = TorqueDataConnectConfig::getValidGroup($user); 
+    $view = TorqueConfig::getCurrentView(); 
+    $group = TorqueConfig::getValidGroup($user); 
   }
   if($view == "Demo" &&
     preg_match("/(\d)/", $title->getText())) {
-    global $wgTorqueDataConnectGroup, $wgTorqueDataConnectView, $wgTorqueDataConnectRaw;
-    $wgTorqueDataConnectRaw = true;
-    $wgTorqueDataConnectView = $view;
-    $wgTorqueDataConnectGroup = $group;
+    global $wgTorqueGroup, $wgTorqueView, $wgTorqueRaw;
+    $wgTorqueRaw = true;
+    $wgTorqueView = $view;
+    $wgTorqueGroup = $group;
 
     $page = new WikiPage($title);
 

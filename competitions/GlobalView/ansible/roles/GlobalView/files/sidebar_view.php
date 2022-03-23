@@ -25,6 +25,6 @@ $wgHooks['SidebarBeforeOutput'][] = function (Skin $skin, &$bar) {
 };
 
 if(array_key_exists("globalview_summaryview", $_COOKIE)) {
-  $wgTorqueDataConnectView = json_encode(array("wiki_key" => "GlobalView", "view" => "Summary"));
+  $wgTorqueView = json_encode(array("wiki_key" => "GlobalView", "view" => "Summary"));
 }
 ?>

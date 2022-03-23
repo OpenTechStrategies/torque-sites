@@ -1,7 +1,7 @@
 ---
 competition_name: BaWoP22
 db_username: BaWoP22_rw
-torquedataconnect_collection_name: BaWoP22
+torque_collection_name: BaWoP22
 
 html_directory: /var/www/html
 mediawiki_server: https://torque.leverforchange.org

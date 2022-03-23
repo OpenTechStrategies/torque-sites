@@ -1,7 +1,7 @@
 ---
 competition_name: EO2020
 db_username: EO2020_rw
-torquedataconnect_collection_name: EO2020
+torque_collection_name: EO2020
 
 html_directory: /var/www/html
 mediawiki_server: https://torque.leverforchange.org

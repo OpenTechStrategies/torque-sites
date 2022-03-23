@@ -5,7 +5,7 @@ $wgGroupPermissions['NewIdeas']['teamcomment'] = true;
 $wgGroupPermissions['NewIdeas']['teamcommentseeusernames'] = true;
 $wgGroupPermissions['NewIdeas']['picksome'] = true;
 $wgGroupPermissions['NewIdeas']['view-special-log'] = true;
-$wgGroupPermissions['NewIdeas']['torquedataconnect-edit'] = true;
+$wgGroupPermissions['NewIdeas']['torque-edit'] = true;
 $wgGroupPermissions['NewIdeas']['emulategroup'] = true;
 $wgGroupPermissions['NewIdeas']['lfcanalysis'] = true;
 

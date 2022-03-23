@@ -1,6 +1,0 @@
----
-torquedata_install_directory: /home/deploy/torquedata/
-
-deployment_user: deploy
-torquedata_port: 5000
-supervisor_torquedata_name: torquedata

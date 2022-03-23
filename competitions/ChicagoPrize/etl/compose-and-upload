@@ -35,7 +35,7 @@ Command-line options:
   --expert-pane-csv FILE          FILE is a CSV file representing the expert panel reviews
 
   --tdc-config-dir DIR            DIR is the location for files that are the base configuration files
-                                  needed by TorqueDataConnect, and can be optionally, manually, put on
+                                  needed by Torque, and can be optionally, manually, put on
                                   the torque wiki.  We don't automatically do that because we want to
                                   overwrite the configuration out there.
 

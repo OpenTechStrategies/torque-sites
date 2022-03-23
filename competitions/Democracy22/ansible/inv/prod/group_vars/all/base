@@ -1,7 +1,7 @@
 ---
 competition_name: Democracy22
 db_username: Democracy22_rw
-torquedataconnect_collection_name: Democracy22
+torque_collection_name: Democracy22
 
 html_directory: /var/www/html
 mediawiki_server: https://torque.leverforchange.org

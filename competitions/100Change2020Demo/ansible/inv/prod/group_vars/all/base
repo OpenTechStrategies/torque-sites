@@ -7,4 +7,4 @@ mediawiki_install_directory: /home/deploy/100Change2020demo/
 mediawiki_csv2wiki_username: csv2wiki
 deployment_user: deploy
 
-torquedataconnect_collection_name: LFC100Change2020
+torque_collection_name: LFC100Change2020

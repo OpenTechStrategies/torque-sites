@@ -10,6 +10,6 @@
   $wgCheckFileExtensions = false;
   $wgGroupPermissions['bot']['edit'] = true;
   $wgGroupPermissions['bot']['upload'] = true;
-  $wgGroupPermissions['bot']['torquedataconnect-admin'] = true;
+  $wgGroupPermissions['bot']['torque-admin'] = true;
   $wgGroupPermissions['autoconfirmed']['reupload'] = true;
 ?>

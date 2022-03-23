@@ -1,6 +1,6 @@
 ---
 competition_name: GlobalView
-torquedataconnect_collection_name: GlobalView
+torque_collection_name: GlobalView
 db_username: GlobalView_rw
 
 html_directory: /var/www/html

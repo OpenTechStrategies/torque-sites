@@ -389,7 +389,7 @@ def fetch_proposals(site, competition, username, password, wiki, sheet):
             # 
             # When we call
             #
-            #   site.api("torquedataconnect", format="json", path="/" + sheet)
+            #   site.api("torque", format="json", path="/" + sheet)
             # 
             # it returns a dict with one key, the sheet name, and the
             # value is a list of all the proposals (each one
@@ -423,7 +423,7 @@ def fetch_proposals(site, competition, username, password, wiki, sheet):
                              path = "/" + wiki + "/",
                              scheme = "https")
         site.login(username, password)
-        tmp = site.api("torquedataconnect", format="json", path="/" + sheet)
+        tmp = site.api("torque", format="json", path="/" + sheet)
         with open(cache, "w") as f:
             json.dump(tmp, f)
         proposals = tmp[sheet]

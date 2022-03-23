@@ -14,7 +14,7 @@
     - activitylog
     - embed_video
     - permissions
-    - torquedataconnect
+    - torque
     - emulategroup
     - ChicagoPrize
     # This should always go last, to run db updates and restart

@@ -11,8 +11,8 @@ $logTitlesOverrideMessages = [
   "dellogpage" => "Page Deletion",
   "newuserlogpage" => "User Creation",
   "log-name-teamcomments" => "Comments",
-  "torquedataconnect-apiaccesslog" => "API Accesses",
-  "torquedataconnect-datachangeslog" => "Data Changes",
+  "torque-apiaccesslog" => "API Accesses",
+  "torque-datachangeslog" => "Data Changes",
   "rightslog" => "Changes to Access Control / Permissions"
 ];
 

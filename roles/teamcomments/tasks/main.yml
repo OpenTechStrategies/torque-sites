@@ -14,6 +14,6 @@
       wfLoadExtension('TeamComments');
       $wgTeamCommentsCheatSheetLocation = "Wiki_Markup_Cheat_Sheet";
       $wgTeamCommentsUserPseudonymizer = function($username) {
-        return "Pseudonymous User #" . TorqueDataConnectUserLookup::lookupByUsername($username)->{"id"};
+        return "Pseudonymous User #" . TorqueUserLookup::lookupByUsername($username)->{"id"};
       };
 

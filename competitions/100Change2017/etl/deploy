@@ -330,11 +330,11 @@ echo ""
 # Give the processed CSV its final name, for delivery to LFC.
 cp "${DATA_DIR}"/"${STAGE_3_CSV}" "${DATA_DIR}"/"${STAGE_FINAL_CSV}"
 
-### Upload the spreadsheet and TOCs to a running instance of torquedata
+### Upload the spreadsheet and TOCs to a running instance of torque
 #
 # There's a dependency on a running version of mediawiki
-# with a torquedata service running behind it, and a version of
-# the TorqueDataConnect running on the mediawiki
+# with a torque service running behind it, and a version of
+# the Torque running on the mediawiki
 #
 # Because attachments take a bit of time to upload, and we have no current
 # method to see if they have been uploaded, we just use a simple environment

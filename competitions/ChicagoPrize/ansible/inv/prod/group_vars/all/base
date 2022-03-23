@@ -1,7 +1,7 @@
 ---
 competition_name: ChicagoPrize
 db_username: ChicagoPrize_rw
-torquedataconnect_collection_name: ChicagoPrize
+torque_collection_name: ChicagoPrize
 
 html_directory: /var/www/html
 mediawiki_server: https://torque.leverforchange.org

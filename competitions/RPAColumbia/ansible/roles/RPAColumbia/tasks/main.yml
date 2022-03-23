@@ -11,17 +11,17 @@
     regexp: ^\$wgLogos = .*
     line: $wgLogos = [ '1x' => "$wgResourceBasePath/resources/assets/RPAColumbia_Logo.png" ];
 
-- name: Install TorqueDataConnect RPAColumbia Variables
+- name: Install Torque RPAColumbia Variables
   blockinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
     marker: "## {mark} ANSIBLE TDC OVERRIDE CONFIG"
     block: |
-      $wgTorqueDataConnectMultiWikiConfig = [];
-      $wgTorqueDataConnectMultiWikiConfig["LLIIA2020"] = "LLIIA2020";
-      $wgTorqueDataConnectMultiWikiConfig["LFC100Change2020"] = "100Change2020";
-      $wgTorqueDataConnectMultiWikiConfig["Climate2030"] = "Climate2030";
+      $wgTorqueMultiWikiConfig = [];
+      $wgTorqueMultiWikiConfig["LLIIA2020"] = "LLIIA2020";
+      $wgTorqueMultiWikiConfig["LFC100Change2020"] = "100Change2020";
+      $wgTorqueMultiWikiConfig["Climate2030"] = "Climate2030";
 
-- name: Install TorqueDataConnect RPAColumbia Permissions Overrides
+- name: Install Torque RPAColumbia Permissions Overrides
   blockinfile:
     path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
     marker: "## {mark} ANSIBLE RPA OVERRIDE CONFIG"
@@ -31,7 +31,7 @@
       $wgGroupPermissions['RPAColumbia']['teamcommentseeusernames'] = true;
       $wgGroupPermissions['RPAColumbia']['picksome'] = true;
       $wgGroupPermissions['RPAColumbia']['picksome-write'] = true;
-      $wgTorqueDataConnectView = json_encode(array("wiki_key" => "RPAColumbia", "view" => "Default"));
+      $wgTorqueView = json_encode(array("wiki_key" => "RPAColumbia", "view" => "Default"));
 
 - name: Install Poweredby RPAColumbia Logo
   copy:

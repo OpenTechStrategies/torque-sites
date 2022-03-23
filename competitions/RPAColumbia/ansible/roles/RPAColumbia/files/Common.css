@@ -173,11 +173,11 @@ body {
   min-width: 300px;
 }
 
-.torquedataconnect-searchfilters .torquedataconnect-filterresult {
+.torque-searchfilters .torque-filterresult {
   position:relative;
 }
 
-.torquedataconnect-searchfilters .torquedataconnect-filtercount {
+.torque-searchfilters .torque-filtercount {
   position:absolute;
   display:block;
   text-align:right;
@@ -186,17 +186,17 @@ body {
   z-index:-1;
 }
 
-.mw-body-content .torquedataconnect-searchfilters h1 {
+.mw-body-content .torque-searchfilters h1 {
   margin-top:.1em;
   text-transform: none;
 }
 
-.mw-body-content .torquedataconnect-searchcsv h1 {
+.mw-body-content .torque-searchcsv h1 {
   margin-top:.1em;
   text-transform: none;
 }
 
-.torquedataconnect-searchfilters {
+.torque-searchfilters {
   width:200px;
 }
 

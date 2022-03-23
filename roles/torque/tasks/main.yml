@@ -1,0 +1,21 @@
+---
+
+- name: Retrieve Torque extension
+  tags: torque
+  unarchive:
+    src: "https://github.com/OpenTechStrategies/torque/releases/download/{{ torque_extension_version }}/Torque-{{ torque_extension_version }}.tar.gz"
+    remote_src: yes
+    dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/extensions/"
+
+- name: Transfer Config
+  tags: torque
+  template:
+    src: torque.php.j2
+    dest: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/torque-sites-config/torque.php"
+
+- name: Enable Torque
+  blockinfile:
+    path: "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/LocalSettings.php"
+    marker: "## {mark} ANSIBLE TORQUE CONFIG"
+    block: |
+      include "{{ mediawiki_install_directory }}/mediawiki-{{ mediawiki_version }}/torque-sites-config/torque.php";

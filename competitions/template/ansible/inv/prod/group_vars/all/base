@@ -1,7 +1,7 @@
 ---
 competition_name: <COMPETITION_NAME>
 db_username: <COMPETITION_NAME>_rw
-torquedataconnect_collection_name: <COMPETITION_NAME>
+torque_collection_name: <COMPETITION_NAME>
 
 html_directory: /var/www/html
 mediawiki_server: https://torque.leverforchange.org

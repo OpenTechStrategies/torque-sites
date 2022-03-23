@@ -196,7 +196,7 @@ from ansible instructions above for the following:
 
 * base/simplebook
 * base/helpwiki
-* base/torquedata
+* base/torque
 * base/simplesaml
 
 ## NOTE about simplesaml secrets in other environments

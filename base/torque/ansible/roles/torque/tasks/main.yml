@@ -1,0 +1,72 @@
+---
+
+- name: install prerequisites
+  become_user: root
+  # See https://www.mediawiki.org/wiki/Manual:Installation_requirements
+  apt:
+    name: "{{ item }}"
+      #update_cache: yes # commented out for dev purposes
+    state: present
+  loop:
+    - pipenv
+    - postgresql
+    - python3-psycopg2
+    - supervisor
+
+- name: Create database user
+  become: true
+  become_user: postgres
+  postgresql_user:
+    name: "{{ db_username }}"
+    password: "{{ db_password }}"
+    state: present
+
+- name: create postgresql db
+  become: true
+  become_user: postgres
+  postgresql_db:
+    name: "{{ supervisor_torque_name }}"
+    state: present
+    owner: "{{ db_username }}"
+
+- name: Setup installation directory
+  file:
+    path: "{{ torque_install_directory }}"
+    state: directory
+
+- name: Install torque configuration templates
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ torque_install_directory }}/{{ item }}"
+  loop:
+    - Pipfile
+    - settings.py
+
+- name: Install torque configuration files
+  copy:
+    src: "{{ item }}"
+    dest: "{{ torque_install_directory }}/"
+  loop:
+    - manage.py
+
+- name: Run pipenv install
+  command: "pipenv install"
+  args:
+    chdir: "{{ torque_install_directory }}/"
+
+- name: Run Migrations
+  command: "pipenv run python manage.py migrate"
+  args:
+    chdir: "{{ torque_install_directory }}/"
+
+- name: Install torque supervisor
+  become_user: root
+  template:
+    src: supervisor-torque.conf.j2
+    dest: /etc/supervisor/conf.d/{{ supervisor_torque_name}}.conf
+
+- name: Restart supervisor for torque
+  become_user: root
+  supervisorctl:
+    name: "{{ supervisor_torque_name }}"
+    state: restarted

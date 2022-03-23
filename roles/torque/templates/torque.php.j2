@@ -1,0 +1,33 @@
+<?php
+define("TORQUE_CONFIG", 4000);
+define("TORQUE_CONFIG_TALK", 4001);
+$wgExtraNamespaces[TORQUE_CONFIG] = "TorqueConfig";
+$wgExtraNamespaces[TORQUE_CONFIG_TALK] = "TorqueConfig_talk";
+$wgNamespaceProtection[TORQUE_CONFIG] = array("edittorqueconfig");
+$wgTorqueCollectionName = "{{ torque_collection_name }}";
+$wgTorqueWikiKey = "{{ competition_name }}";
+$wgTorqueServerLocation = "http://localhost:{{ torque_server_port }}";
+$wgTorqueConfigPage = "TorqueConfig:MainConfig";
+$wgTorqueNotFoundMessage = "This proposal has been disqualified in admin, peer, or expert review.";
+wfLoadExtension('Torque');
+$wgAPIMaxResultSize = 1024 * 1024 * 512;
+$wgTorqueCache = true;
+$wgTorqueWikiUsername = "{{ mediawiki_csv2wiki_username }}";
+$wgTorqueWikiPassword = "{{ mediawiki_csv2wiki_password }}";
+
+$tdcOverrideMessage = [
+  "torque-sidebar-csv" => "Download CSV",
+  "torque-csv-document-header" => "Proposals",
+  "torque-csv-all-documents" => "Select All Proposals",
+  "torque-csv-none-documents" => "Unselect All Proposals",
+  "torque-csv-template-documents" => "Use $1 Proposals",
+  "torque-csv-custom-documents" => "Use Custom Proposals",
+
+];
+$wgHooks['MessagesPreLoad'][] = function($title, &$message, $code) {
+  global $tdcOverrideMessage;
+  if(array_key_exists(strtolower($title), $tdcOverrideMessage)) {
+    $message = $tdcOverrideMessage[strtolower($title)];
+  }
+};
+?>

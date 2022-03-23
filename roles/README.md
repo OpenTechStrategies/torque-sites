@@ -61,8 +61,8 @@ of the mediawiki instance, and then include that file in `LocalSettings.php`
   [simplebook base](../base/simplebook) service to be installed.
 * [teamcomments/](teamcomments/) - Checkout and installation of the
   [Team Comments Extension](https://github.com/OpenTechStrategies/TeamComments/)
-* [torquedataconnect/](torquedataconnect/) - Checkout and installation of
-  the TorqueDataConnect extension from [torque](https://github.com/OpenTechStrategies/torque).
+* [torque/](torque/) - Checkout and installation of
+  the Torque extension from [torque](https://github.com/OpenTechStrategies/torque).
   Requires a running torque system to be [installed from base](../base/torque).  The
   checkout sha in this role does not necessarily need to match the checkout sha in the
   base directory.  The checkout doesn't happen in the extensions directory (unlike other

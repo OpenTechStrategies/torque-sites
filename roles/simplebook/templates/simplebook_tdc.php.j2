@@ -2,11 +2,11 @@
 $wgHooks['BeforeInitialize'][] = function(&$title, &$article = null, &$output, &$user, $request, $mediaWiki) {
   global $wgSimpleBookPassthroughParameters,
     $wgSimpleBookRenderingCredentials,
-    $wgTorqueDataConnectGroup,
-    $wgTorqueDataConnectRenderToHTML,
-    $wgTorqueDataConnectView;
-  $group = TorqueDataConnectConfig::getValidGroup($user);
-  $view = $wgTorqueDataConnectView ?: "";
+    $wgTorqueGroup,
+    $wgTorqueRenderToHTML,
+    $wgTorqueView;
+  $group = TorqueConfig::getValidGroup($user);
+  $view = $wgTorqueView ?: "";
   $wgSimpleBookPassthroughParameters = [
     'torqueGroup' => $group,
     'torqueView' => $view,
@@ -17,9 +17,9 @@ $wgHooks['BeforeInitialize'][] = function(&$title, &$article = null, &$output, &
   ];
 
   if($user && strtolower($user->getName()) == "{{ mediawiki_mwlib_username }}") {
-    $wgTorqueDataConnectRenderToHTML = false;
-    $wgTorqueDataConnectGroup = $request->getText('torqueGroup', false);
-    $wgTorqueDataConnectView = $request->getText('torqueView', false);
+    $wgTorqueRenderToHTML = false;
+    $wgTorqueGroup = $request->getText('torqueGroup', false);
+    $wgTorqueView = $request->getText('torqueView', false);
   }
 };
 ?>

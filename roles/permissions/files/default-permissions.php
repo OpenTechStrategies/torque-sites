@@ -45,13 +45,13 @@ $wgGroupPermissions['*']['view-special-log'] = false;
 # For reorganization
 $wgGroupPermissions['TorqueAdmin']['generated'] = true;
 $wgGroupPermissions['TorqueAdmin']['edittorqueconfig'] = true;
-$wgGroupPermissions['TorqueAdmin']['torquedataconnect-admin'] = true;
+$wgGroupPermissions['TorqueAdmin']['torque-admin'] = true;
 $wgGroupPermissions['TorqueAdmin']['teamcomment'] = true;
 $wgGroupPermissions['TorqueAdmin']['teamcommentseeusernames'] = true;
 $wgGroupPermissions['TorqueAdmin']['picksome'] = true;
 $wgGroupPermissions['TorqueAdmin']['picksome-admin'] = true;
 $wgGroupPermissions['TorqueAdmin']['view-special-log'] = true;
-$wgGroupPermissions['TorqueAdmin']['torquedataconnect-edit'] = true;
+$wgGroupPermissions['TorqueAdmin']['torque-edit'] = true;
 $wgGroupPermissions['TorqueAdmin']['emulategroup'] = true;
 $wgGroupPermissions['TorqueAdmin']['lfcanalysis'] = true;
 
@@ -60,7 +60,7 @@ $wgGroupPermissions['LfcStaff']['teamcomment'] = true;
 $wgGroupPermissions['LfcStaff']['teamcommentseeusernames'] = true;
 $wgGroupPermissions['LfcStaff']['picksome'] = true;
 $wgGroupPermissions['LfcStaff']['view-special-log'] = true;
-$wgGroupPermissions['LfcStaff']['torquedataconnect-edit'] = true;
+$wgGroupPermissions['LfcStaff']['torque-edit'] = true;
 $wgGroupPermissions['LfcStaff']['emulategroup'] = true;
 $wgGroupPermissions['LfcStaff']['lfcanalysis'] = true;
 

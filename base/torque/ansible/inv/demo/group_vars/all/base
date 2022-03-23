@@ -1,0 +1,8 @@
+---
+torque_install_directory: /home/deploy/torque-demo/
+
+db_username: torquedemo_rw
+deployment_user: deploy
+torque_port: 5001
+supervisor_torque_name: torque-demo
+torque_git_version: cee8b0e

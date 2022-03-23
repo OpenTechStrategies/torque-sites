@@ -1,0 +1,2 @@
+[torque]
+localhost  ansible_connection=local

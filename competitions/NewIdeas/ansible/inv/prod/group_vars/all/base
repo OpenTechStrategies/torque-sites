@@ -1,7 +1,7 @@
 ---
 competition_name: NewIdeas
 db_username: NewIdeas_rw
-torquedataconnect_collection_name: NewIdeas
+torque_collection_name: NewIdeas
 
 html_directory: /var/www/html
 mediawiki_server: https://torque.leverforchange.org

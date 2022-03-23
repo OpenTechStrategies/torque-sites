@@ -12,7 +12,7 @@
   roles:
     - mediawiki
     - embed_video
-    - torquedataconnect
+    - torque
     - permissions
     - emulategroup
     - 100Change2020Demo

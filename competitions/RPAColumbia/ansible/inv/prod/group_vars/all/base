@@ -1,6 +1,6 @@
 ---
 competition_name: RPAColumbia
-torquedataconnect_collection_name: RPAColumbia
+torque_collection_name: RPAColumbia
 db_username: RPAColumbia_rw
 
 html_directory: /var/www/html

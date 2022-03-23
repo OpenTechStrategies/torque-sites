@@ -6,7 +6,7 @@ competition_name: DemoView
 # this is different when either the competition name doesn't work as
 # a sheet name (for instance, if it starts with a number), or if
 # this wiki should act on a different sheet.
-torquedataconnect_collection_name: DemoView
+torque_collection_name: DemoView
 
 # Root web directory (where symlinks to the mediawiki instances
 # are installed)
@@ -15,7 +15,7 @@ html_directory: ${HTML_DIRECTORY}
 
 # We need to know what user we're deploying as, but the reason
 # here is complex.  At the base level, we need to know what
-# user torquedata should be running as.  But more than that,
+# user torque should be running as.  But more than that,
 # we need to know who to 'become' in the ansible sense when
 # we're not becoming root.  The reason we have to specify
 # in a different variable than 'ansible_become_user', is
@@ -61,7 +61,7 @@ mediawiki_torqueadmin_username: torqueadmin
 mediawiki_torqueadmin_password: ${MEDIAWIKI_TORQUEADMIN_PASSWORD}
 
 # The port the local torque server is running
-torquedata_server_port: ${TORQUEDATA_SERVER_PORT}
+torque_server_port: ${TORQUE_SERVER_PORT}
 
 # Directory to install simplesaml
 simplesaml_install_directory: ${SIMPLESAML_INSTALL_DIRECTORY}

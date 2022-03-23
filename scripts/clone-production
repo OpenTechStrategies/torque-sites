@@ -10,11 +10,11 @@
 # piecemeal as it was created.  But it should work!
 
 COMPETITIONS="100Change2017 100Change2020 Climate2030 ECW2020 EO2020 GlobalView LLIIA2020 LoneStar2020 RacialEquity2030 Democracy22"
-BASE="simplebook simplesaml torquedata"
-DIRECTORIES="$COMPETITIONS simplesaml simplebook torquedata"
+BASE="simplebook simplesaml torque"
+DIRECTORIES="$COMPETITIONS simplesaml simplebook torque"
 TORQUE_SITES_DIRECTORY="/tmp/torque-sites"
 TORQUE_SITES_SHA="main"
-PG_DATABASES="100Change2017 torquedata"
+PG_DATABASES="100Change2017 torque"
 MYSQL_DATABASES="100Change2020 Climate2030 ECW2020 EO2020 GlobalView LLIIA2020 LoneStar2020 RacialEquity2030 Democracy22 simplesamlphp"
 PRODUCTION_SERVER="torque.leverforchange.org"
 TARGET_SERVER="wiki.opentechstrategies.com"
@@ -44,7 +44,7 @@ done
 (
   cd $TORQUE_SITES_DIRECTORY
 
-  opass show clients/lever-for-change/torquedata/ansible/prod > base/torquedata/ansible/inv/prod/group_vars/all/secret
+  opass show clients/lever-for-change/torque/ansible/prod > base/torque/ansible/inv/prod/group_vars/all/secret
   opass show clients/lever-for-change/simplesaml/ansible/prod > base/simplesaml/ansible/inv/prod/group_vars/all/secret
   for base in $BASE ; do
     sed -i -e "s/$PRODUCTION_SERVER/$TARGET_SERVER/" base/$base/ansible/inv/prod/hosts

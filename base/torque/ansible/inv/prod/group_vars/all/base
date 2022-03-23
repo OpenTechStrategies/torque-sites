@@ -1,0 +1,6 @@
+---
+torque_install_directory: /home/deploy/torque/
+
+deployment_user: deploy
+torque_port: 5000
+supervisor_torque_name: torque

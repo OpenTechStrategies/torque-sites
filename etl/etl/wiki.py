@@ -28,7 +28,7 @@ class WikiSession:
         self.site.raw_call(
             "api",
             {
-                "action": "torquedataconnectuploadcollection",
+                "action": "torqueuploadcollection",
                 "format": "json",
                 "object_name": "proposal",
                 "collection_name": self.competition_name,
@@ -58,7 +58,7 @@ class WikiSession:
                 self.site.raw_call(
                     "api",
                     {
-                        "action": "torquedataconnectuploadattachment",
+                        "action": "torqueuploadattachment",
                         "format": "json",
                         "collection_name": self.competition_name,
                         "object_id": attachment.key,
@@ -74,7 +74,7 @@ class WikiSession:
         self.site.raw_call(
             "api",
             {
-                "action": "torquedataconnectuploadtoc",
+                "action": "torqueuploadtoc",
                 "format": "json",
                 "collection_name": self.competition_name,
                 "toc_name": toc.name,

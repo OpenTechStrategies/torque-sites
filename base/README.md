@@ -20,6 +20,6 @@ The current set includes:
   We currently use it for Okta for certain competitions.  See
   [the main simplesamlphp site](https://simplesamlphp.org/) for more
   information.
-* torquedata - Ansible scripts to install the
+* torque - Ansible scripts to install the
   [torque system](https://github.com/opentechstrategies/torque/)
   mentioned above.
