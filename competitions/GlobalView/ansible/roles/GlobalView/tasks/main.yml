@@ -75,6 +75,7 @@
         "PROPOSAL" => [
           ["Original Proposal", "Original Proposal", "main"],
           ["Proposals Similar to ", "Similar Proposals", "similarproposals"],
+          ["Evaluations of ", "Evaluations", "evaluations"],
         ],
       ];
 
