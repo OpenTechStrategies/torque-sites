@@ -28,16 +28,31 @@ def map_annual_operating(operating_budget):
         "$100 to $500 Million": "$100.1 to 500 Million",
         "$200 to 500 Million": "$200.1 to 500 Million",
         "$100 to 200 Million": "$100.1 to 200 Million",
-        "$500 Million to $1 Billion": "$500.1 Million to 1 Billion",
+        "$500 Million to $1 Billion": "$500.1 Million to $1 Billion",
         "$1 Billion +": "$1 Billion +",
     }[operating_budget]
+
+
+def map_number_employees(num_employees):
+    # These are from EO2020
+    return {
+        "Up to 10 Full-time Employees": "Fewer than 10 Full-time Employees",
+        "&gt;10 to 25 Full-time Employees": "10 to 25 Full-time Employees",
+        "&gt;25 to 50 Full-time Employees": "26 to 50 Full-time Employees",
+        "&gt;50 to 100 Full-time Employees": "51 to 100 Full-time Employees",
+        "&gt;100 to 300 Full-time Employees": "101 to 300 Full-time Employees",
+        "&gt;300 to 500 Full-time Employees": "301 to 500 Full-time Employees",
+    }.get(num_employees, num_employees)
 
 
 def map_legal_status(legal_status):
     return {
         "A private foundation under section 501(c)(3) of the IRC": "A private foundation under section 501(c)(3)",
         "An entity under section 501(c)(3) and 509(a)(1) or (2) of the IRC": "An entity under section 501(c)(3) and 509(a)(1) or (2)",
+        "A public college or university under section 501(c)(3) of the IRC that has received a tax determination letter from the IRS.": None,
+        'An entity under section 501(c)(3) and 509(a)(1) or (2) of the Internal Revenue Code ("IRC") that has received a tax determination letter from the Internal Revenue Service ("IRS"), including but not limited to local nonprofit organizations pending federal tax exemption status.': "An entity under section 501(c)(3) and 509(a)(1) or (2)",
         "An entity under section 501(c)(4) of the IRC": None,
+        "true": None,
     }[legal_status]
 
 
@@ -94,9 +109,6 @@ def create_or_find_organization(torque_proposal):
             # "Organization HQ":
             "Organization Legal Status": map_legal_status(
                 torque_proposal["Organization Legal Status"]
-            ),
-            "Annual Operating Budget": map_annual_operating(
-                torque_proposal["Annual Operating Budget"]
             ),
             "Organization Website": torque_proposal["Organization Website"],
         }
@@ -253,12 +265,12 @@ def create_airtable_dict(torque_proposal, airtable_proposal_fields={}):
             potential_dict["Primary Contact"] = (
                 torque_proposal["Primary Contact"]["First Name"]
                 + " "
-                + torque_proposal["Primary Contact"]["Last Name"],
+                + torque_proposal["Primary Contact"]["Last Name"]
             )
         if "Email" in torque_proposal["Primary Contact"]:
-            potential_dict["Primary Contact Email"] = (
-                torque_proposal["Primary Contact"]["Email"],
-            )
+            potential_dict["Primary Contact Email"] = torque_proposal[
+                "Primary Contact"
+            ]["Email"]
 
     if (
         "Secondary Contact" in torque_proposal.keys()
@@ -268,17 +280,17 @@ def create_airtable_dict(torque_proposal, airtable_proposal_fields={}):
             potential_dict["Secondary Contact"] = (
                 torque_proposal["Secondary Contact"]["First Name"]
                 + " "
-                + torque_proposal["Secondary Contact"]["Last Name"],
+                + torque_proposal["Secondary Contact"]["Last Name"]
             )
         if "Email" in torque_proposal["Secondary Contact"]:
-            potential_dict["Secondary Contact Email"] = (
-                torque_proposal["Secondary Contact"]["Email"],
-            )
+            potential_dict["Secondary Contact Email"] = torque_proposal[
+                "Secondary Contact"
+            ]["Email"]
 
     if "Number of Employees" in torque_proposal.keys():
-        potential_dict["Number of Full-Time Employees"] = torque_proposal[
-            "Number of Employees"
-        ]
+        potential_dict["Number of Full-Time Employees"] = map_number_employees(
+            torque_proposal["Number of Employees"]
+        )
 
     if "Annual Operating Budget" in torque_proposal.keys():
         potential_dict["Annual Operating Budget"] = map_annual_operating(
@@ -346,7 +358,7 @@ for competition, ids in config.TORQUE_PROPOSALS_TO_SYNC.items():
             )
             table.update(proposals[0]["id"], dict_for_update)
         elif len(proposals) == 0:
-            print("Creating id: " + id)
+            print("Creating %s: %s" % (competition, id))
             dict_for_creation = create_airtable_dict(torque_proposal)
             table.create(dict_for_creation)
         else:
