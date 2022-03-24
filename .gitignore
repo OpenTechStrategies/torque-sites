@@ -1,9 +1,0 @@
-csv2wiki-config
-config.py
-__pycache__
-\#*
-.\#*
-csv2wiki
-macfound-*-csv2wiki-config
-*.retry
-secret

@@ -1,2 +1,0 @@
-[torquedata]
-torque.leverforchange.org ansible_ssh_user="{{ lookup('env','OTS_USERNAME') }}"

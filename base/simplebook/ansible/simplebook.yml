@@ -1,7 +1,0 @@
----
-
-- hosts: simplebook
-  become: true
-  become_user: "{{ deployment_user }}"
-  roles:
-  - simplebook

@@ -1,2 +1,0 @@
-[simplebook]
-localhost  ansible_connection=local

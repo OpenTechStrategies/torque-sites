@@ -1,5 +1,0 @@
-[mediawiki]
-localhost  ansible_connection=local
-
-[mysql]
-localhost  ansible_connection=local
